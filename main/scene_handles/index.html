@@ -896,6 +896,18 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dd><p>A scale for resizing the GLB asset. Synchronized automatically when assigned.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.GlbHandle.cast_shadow">
+<span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.GlbHandle.cast_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>If set to true mesh will cast a shadow. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.GlbHandle.receive_shadow">
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.GlbHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>If set to true mesh will receive shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1003,6 +1015,12 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dt class="sig sig-object py" id="viser.GridHandle.section_size">
 <span class="sig-name descname"><span class="pre">section_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#viser.GridHandle.section_size" title="Link to this definition">¶</a></dt>
 <dd><p>Size of each section in the grid. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.GridHandle.shadow_opacity">
+<span class="sig-name descname"><span class="pre">shadow_opacity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#viser.GridHandle.shadow_opacity" title="Link to this definition">¶</a></dt>
+<dd><p>If true, shadows are casted onto the grid plane. Synchronized automatically when assigned.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1336,6 +1354,18 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="viser.MeshHandle.cast_shadow">
+<span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.MeshHandle.cast_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>If set to true mesh will cast a shadow. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.MeshHandle.receive_shadow">
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.MeshHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>If set to true mesh will receive shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshHandle.material">
 <span class="sig-name descname"><span class="pre">material</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'standard'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon3'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon5'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshHandle.material" title="Link to this definition">¶</a></dt>
 <dd><p>Material type of the mesh. Synchronized automatically when assigned.</p>
@@ -1485,6 +1515,18 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.side">
 <span class="sig-name descname"><span class="pre">side</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'front'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'back'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'double'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.side" title="Link to this definition">¶</a></dt>
 <dd><p>Side of the surface to render. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.MeshSkinnedHandle.cast_shadow">
+<span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.cast_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>If set to true mesh will cast a shadow. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.MeshSkinnedHandle.receive_shadow">
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>If set to true mesh will receive shadows. Synchronized automatically when assigned.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2082,6 +2124,12 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dd><p>Intensity of the directional light. Synchronized automatically when assigned.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.DirectionalLightHandle.cast_shadow">
+<span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.DirectionalLightHandle.cast_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>If set to true mesh will cast a shadow. Synchronized automatically when assigned.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -2265,6 +2313,12 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dd><p>Decay of the point light. Synchronized automatically when assigned.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.PointLightHandle.cast_shadow">
+<span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.PointLightHandle.cast_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>If set to true mesh will cast a shadow. Synchronized automatically when assigned.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -2411,6 +2465,12 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dd><p>Decay of the spot light. Synchronized automatically when assigned.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.SpotLightHandle.cast_shadow">
+<span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.SpotLightHandle.cast_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>If set to true mesh will cast a shadow. Synchronized automatically when assigned.</p>
+</dd></dl>
+
 </dd></dl>
 
 <!-- prettier-ignore-end --></section>
@@ -2543,6 +2603,8 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.GlbHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">GlbHandle.wxyz</span></code></a></li>
 <li><a class="reference internal" href="#viser.GlbHandle.glb_data"><code class="docutils literal notranslate"><span class="pre">GlbHandle.glb_data</span></code></a></li>
 <li><a class="reference internal" href="#viser.GlbHandle.scale"><code class="docutils literal notranslate"><span class="pre">GlbHandle.scale</span></code></a></li>
+<li><a class="reference internal" href="#viser.GlbHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">GlbHandle.cast_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.GlbHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">GlbHandle.receive_shadow</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GridHandle"><code class="docutils literal notranslate"><span class="pre">GridHandle</span></code></a><ul>
@@ -2562,6 +2624,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.GridHandle.section_color"><code class="docutils literal notranslate"><span class="pre">GridHandle.section_color</span></code></a></li>
 <li><a class="reference internal" href="#viser.GridHandle.section_thickness"><code class="docutils literal notranslate"><span class="pre">GridHandle.section_thickness</span></code></a></li>
 <li><a class="reference internal" href="#viser.GridHandle.section_size"><code class="docutils literal notranslate"><span class="pre">GridHandle.section_size</span></code></a></li>
+<li><a class="reference internal" href="#viser.GridHandle.shadow_opacity"><code class="docutils literal notranslate"><span class="pre">GridHandle.shadow_opacity</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.Gui3dContainerHandle"><code class="docutils literal notranslate"><span class="pre">Gui3dContainerHandle</span></code></a><ul>
@@ -2612,6 +2675,8 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.MeshHandle.opacity"><code class="docutils literal notranslate"><span class="pre">MeshHandle.opacity</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshHandle.flat_shading"><code class="docutils literal notranslate"><span class="pre">MeshHandle.flat_shading</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshHandle.side"><code class="docutils literal notranslate"><span class="pre">MeshHandle.side</span></code></a></li>
+<li><a class="reference internal" href="#viser.MeshHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">MeshHandle.cast_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.MeshHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">MeshHandle.receive_shadow</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshHandle.material"><code class="docutils literal notranslate"><span class="pre">MeshHandle.material</span></code></a></li>
 </ul>
 </li>
@@ -2634,6 +2699,8 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle.opacity"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.opacity</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle.flat_shading"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.flat_shading</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle.side"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.side</span></code></a></li>
+<li><a class="reference internal" href="#viser.MeshSkinnedHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.cast_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.MeshSkinnedHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.receive_shadow</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle.material"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.material</span></code></a></li>
 </ul>
 </li>
@@ -2726,6 +2793,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.DirectionalLightHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">DirectionalLightHandle.wxyz</span></code></a></li>
 <li><a class="reference internal" href="#viser.DirectionalLightHandle.color"><code class="docutils literal notranslate"><span class="pre">DirectionalLightHandle.color</span></code></a></li>
 <li><a class="reference internal" href="#viser.DirectionalLightHandle.intensity"><code class="docutils literal notranslate"><span class="pre">DirectionalLightHandle.intensity</span></code></a></li>
+<li><a class="reference internal" href="#viser.DirectionalLightHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">DirectionalLightHandle.cast_shadow</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.AmbientLightHandle"><code class="docutils literal notranslate"><span class="pre">AmbientLightHandle</span></code></a><ul>
@@ -2759,6 +2827,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.PointLightHandle.intensity"><code class="docutils literal notranslate"><span class="pre">PointLightHandle.intensity</span></code></a></li>
 <li><a class="reference internal" href="#viser.PointLightHandle.distance"><code class="docutils literal notranslate"><span class="pre">PointLightHandle.distance</span></code></a></li>
 <li><a class="reference internal" href="#viser.PointLightHandle.decay"><code class="docutils literal notranslate"><span class="pre">PointLightHandle.decay</span></code></a></li>
+<li><a class="reference internal" href="#viser.PointLightHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">PointLightHandle.cast_shadow</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.RectAreaLightHandle"><code class="docutils literal notranslate"><span class="pre">RectAreaLightHandle</span></code></a><ul>
@@ -2785,6 +2854,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.SpotLightHandle.angle"><code class="docutils literal notranslate"><span class="pre">SpotLightHandle.angle</span></code></a></li>
 <li><a class="reference internal" href="#viser.SpotLightHandle.penumbra"><code class="docutils literal notranslate"><span class="pre">SpotLightHandle.penumbra</span></code></a></li>
 <li><a class="reference internal" href="#viser.SpotLightHandle.decay"><code class="docutils literal notranslate"><span class="pre">SpotLightHandle.decay</span></code></a></li>
+<li><a class="reference internal" href="#viser.SpotLightHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">SpotLightHandle.cast_shadow</span></code></a></li>
 </ul>
 </li>
 </ul>
