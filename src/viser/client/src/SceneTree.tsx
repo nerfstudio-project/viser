@@ -412,6 +412,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             ref={ref}
             glb_data={new Uint8Array(message.props.glb_data)}
             scale={message.props.scale}
+            cast_shadow={message.props.cast_shadow}
+            receive_shadow={message.props.receive_shadow}
+
           />
         ),
       };

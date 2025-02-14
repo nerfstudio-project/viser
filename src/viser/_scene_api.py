@@ -564,6 +564,8 @@ class SceneApi:
         name: str,
         glb_data: bytes,
         scale: float = 1.0,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -581,6 +583,8 @@ class SceneApi:
               define a kinematic tree.
             glb_data: A binary payload.
             scale: A scale for resizing the GLB asset.
+            cast_shadow: TODO
+            receive_shadow: TODO
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -588,7 +592,9 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-        message = _messages.GlbMessage(name, _messages.GlbProps(glb_data, scale))
+        message = _messages.GlbMessage(
+            name, _messages.GlbProps(glb_data, scale, cast_shadow, receive_shadow)
+        )
         return GlbHandle._make(self, message, name, wxyz, position, visible)
 
     def add_line_segments(
@@ -1278,6 +1284,8 @@ class SceneApi:
         self,
         name: str,
         mesh: trimesh.Trimesh,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
         scale: float = 1.0,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
@@ -1289,6 +1297,8 @@ class SceneApi:
             name: A scene tree name. Names in the format of /parent/child can be used to
               define a kinematic tree.
             mesh: A trimesh mesh object.
+            cast_shadow: TODO
+            receive_shadow: TODO
             scale: A scale for resizing the mesh.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
@@ -1305,6 +1315,8 @@ class SceneApi:
                 name,
                 glb_data=glb_data,
                 scale=scale,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
                 wxyz=wxyz,
                 position=position,
                 visible=visible,

@@ -256,6 +256,10 @@ class GlbProps:
     """A binary payload containing the GLB data. Synchronized automatically when assigned."""
     scale: float
     """A scale for resizing the GLB asset. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """If set to true mesh will receive shadows. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass

@@ -166,8 +166,8 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
 /** Component for rendering the contents of GLB files. */
 export const GlbAsset = React.forwardRef<
   THREE.Group,
-  { glb_data: Uint8Array<ArrayBuffer>; scale: number }
->(function GlbAsset({ glb_data, scale }, ref) {
+  { glb_data: Uint8Array<ArrayBuffer>; scale: number; cast_shadow: boolean; receive_shadow: boolean; }
+>(function GlbAsset({ glb_data, scale, cast_shadow, receive_shadow }, ref) {
   // We track both the GLTF asset itself and all meshes within it. Meshes are
   // used for hover effects.
 
@@ -200,8 +200,8 @@ export const GlbAsset = React.forwardRef<
           if (obj instanceof THREE.Mesh){
             obj.geometry.computeVertexNormals();
             obj.geometry.computeBoundingSphere();
-            obj.castShadow = true;
-            obj.receiveShadow = true;
+            obj.castShadow = cast_shadow;
+            obj.receiveShadow = receive_shadow;
             obj.material = newMaterial;
             meshes.push(obj);}
         });
@@ -687,8 +687,8 @@ export const ViserMesh = React.forwardRef<
         geometry={geometry}
         material={material}
         skeleton={skeleton}
-        castShadow
-        receiveShadow
+        castShadow={message.props.cast_shadow}
+        receiveShadow={message.props.receive_shadow}
         // TODO: leaving culling on (default) sometimes causes the
         // mesh to randomly disappear, as of r3f==8.16.2.
         //
@@ -706,8 +706,8 @@ export const ViserMesh = React.forwardRef<
         ref={ref as React.ForwardedRef<THREE.Mesh>}
         geometry={geometry}
         material={material}
-        castShadow
-        receiveShadow
+        castShadow={message.props.cast_shadow}
+        receiveShadow={message.props.receive_shadow}
       >
         <OutlinesIfHovered alwaysMounted />
       </mesh>
