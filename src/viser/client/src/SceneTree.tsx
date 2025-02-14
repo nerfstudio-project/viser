@@ -192,6 +192,16 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     }
 
     case "GridMessage": {
+      let shadowPlane;
+      if (message.props.shadow_opacity > 0.0) {
+        shadowPlane = <mesh rotation={[0, 0, 0]} position={[0, 0, -0.01]} receiveShadow>
+        <planeGeometry args={[message.props.width, message.props.height]} />
+        <shadowMaterial opacity={message.props.shadow_opacity} />
+      </mesh>;
+      } else {
+        // when opacity = 0.0, no shadowPlane for performance
+        shadowPlane = <></>;
+      }
       return {
         makeObject: (ref) => (
           <group ref={ref}>
@@ -240,6 +250,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                             : undefined
               }
             />
+            {shadowPlane}
           </group>
         ),
       };
@@ -401,6 +412,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             ref={ref}
             glb_data={new Uint8Array(message.props.glb_data)}
             scale={message.props.scale}
+            cast_shadow={message.props.cast_shadow}
+            receive_shadow={message.props.receive_shadow}
+
           />
         ),
       };
@@ -504,6 +518,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             ref={ref}
             intensity={message.props.intensity}
             color={rgbToInt(message.props.color)}
+            castShadow={message.props.cast_shadow}
           />
         ),
       };
@@ -546,6 +561,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             color={rgbToInt(message.props.color)}
             distance={message.props.distance}
             decay={message.props.decay}
+            castShadow={message.props.cast_shadow}
           />
         ),
       };
@@ -577,6 +593,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             angle={message.props.angle}
             penumbra={message.props.penumbra}
             decay={message.props.decay}
+            castShadow={message.props.cast_shadow}
           />
         ),
       };

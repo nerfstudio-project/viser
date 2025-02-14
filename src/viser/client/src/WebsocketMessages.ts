@@ -26,7 +26,12 @@ export interface CameraFrustumMessage {
 export interface GlbMessage {
   type: "GlbMessage";
   name: string;
-  props: { glb_data: Uint8Array; scale: number };
+  props: {
+    glb_data: Uint8Array;
+    scale: number;
+    cast_shadow: boolean;
+    receive_shadow: boolean;
+  };
 }
 /** Coordinate frame message.
  *
@@ -79,6 +84,7 @@ export interface GridMessage {
     section_color: [number, number, number];
     section_thickness: number;
     section_size: number;
+    shadow_opacity: number;
   };
 }
 /** Add a 2D label to the scene.
@@ -125,7 +131,11 @@ export interface PointCloudMessage {
 export interface DirectionalLightMessage {
   type: "DirectionalLightMessage";
   name: string;
-  props: { color: [number, number, number]; intensity: number };
+  props: {
+    color: [number, number, number];
+    intensity: number;
+    cast_shadow: boolean;
+  };
 }
 /** Ambient light message.
  *
@@ -161,6 +171,7 @@ export interface PointLightMessage {
     intensity: number;
     distance: number;
     decay: number;
+    cast_shadow: boolean;
   };
 }
 /** Rectangular Area light message.
@@ -191,6 +202,7 @@ export interface SpotLightMessage {
     angle: number;
     penumbra: number;
     decay: number;
+    cast_shadow: boolean;
   };
 }
 /** Mesh message.
@@ -210,6 +222,8 @@ export interface MeshMessage {
     opacity: number | null;
     flat_shading: boolean;
     side: "front" | "back" | "double";
+    cast_shadow: boolean;
+    receive_shadow: boolean;
     material: "standard" | "toon3" | "toon5";
   };
 }
@@ -228,6 +242,8 @@ export interface SkinnedMeshMessage {
     opacity: number | null;
     flat_shading: boolean;
     side: "front" | "back" | "double";
+    cast_shadow: boolean;
+    receive_shadow: boolean;
     material: "standard" | "toon3" | "toon5";
     bone_wxyzs: Uint8Array;
     bone_positions: Uint8Array;
@@ -845,13 +861,14 @@ export interface EnvironmentMapMessage {
   environment_intensity: number;
   environment_wxyz: [number, number, number, number];
 }
-/** Spot light message.
+/** Default light message.
  *
  * (automatically generated)
  */
 export interface EnableLightsMessage {
   type: "EnableLightsMessage";
   enabled: boolean;
+  cast_shadow: boolean;
 }
 /** Server -> client message to set a skinned mesh bone's orientation.
  *

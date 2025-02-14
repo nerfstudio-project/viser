@@ -166,17 +166,18 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
 /** Component for rendering the contents of GLB files. */
 export const GlbAsset = React.forwardRef<
   THREE.Group,
-  { glb_data: Uint8Array<ArrayBuffer>; scale: number }
->(function GlbAsset({ glb_data, scale }, ref) {
+  { glb_data: Uint8Array<ArrayBuffer>; scale: number; cast_shadow: boolean; receive_shadow: boolean; }
+>(function GlbAsset({ glb_data, scale, cast_shadow, receive_shadow }, ref) {
   // We track both the GLTF asset itself and all meshes within it. Meshes are
   // used for hover effects.
+
   const [gltf, setGltf] = React.useState<GLTF>();
   const [meshes, setMeshes] = React.useState<THREE.Mesh[]>([]);
 
   // glTF/GLB files support animations.
   const mixerRef = React.useRef<THREE.AnimationMixer | null>(null);
-
   React.useEffect(() => {
+    const newMaterial = new THREE.MeshStandardMaterial()
     const loader = new GLTFLoader();
 
     // We use a CDN for Draco. We could move this locally if we want to use Viser offline.
@@ -196,17 +197,25 @@ export const GlbAsset = React.forwardRef<
         }
         const meshes: THREE.Mesh[] = [];
         gltf?.scene.traverse((obj) => {
-          if (obj instanceof THREE.Mesh) meshes.push(obj);
+          if (obj instanceof THREE.Mesh){
+            obj.geometry.computeVertexNormals();
+            obj.geometry.computeBoundingSphere();
+            obj.castShadow = cast_shadow;
+            obj.receiveShadow = receive_shadow;
+            obj.material = newMaterial;
+            meshes.push(obj);}
         });
+        
         setMeshes(meshes);
         setGltf(gltf);
+        
       },
       (error) => {
         console.log("Error loading GLB!");
         console.log(error);
       },
     );
-
+    
     return () => {
       if (mixerRef.current) mixerRef.current.stopAllAction();
 
@@ -247,13 +256,14 @@ export const GlbAsset = React.forwardRef<
       gltf?.scene.traverse(disposeNode);
     };
   }, [glb_data]);
-
+  
   useFrame((_, delta) => {
     if (mixerRef.current) {
       mixerRef.current.update(delta);
     }
+   
   });
-
+  
   return (
     <group ref={ref}>
       {gltf === undefined ? null : (
@@ -446,6 +456,7 @@ export const ViserMesh = React.forwardRef<
     texture.needsUpdate = true;
     return texture;
   };
+ 
   const assertUnreachable = (x: never): never => {
     throw new Error(`Should never get here! ${x}`);
   };
@@ -529,7 +540,7 @@ export const ViserMesh = React.forwardRef<
     );
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
-
+    
     let skeleton = undefined;
     if (message.type === "SkinnedMeshMessage") {
       // Skinned mesh.
@@ -676,6 +687,8 @@ export const ViserMesh = React.forwardRef<
         geometry={geometry}
         material={material}
         skeleton={skeleton}
+        castShadow={message.props.cast_shadow}
+        receiveShadow={message.props.receive_shadow}
         // TODO: leaving culling on (default) sometimes causes the
         // mesh to randomly disappear, as of r3f==8.16.2.
         //
@@ -693,6 +706,8 @@ export const ViserMesh = React.forwardRef<
         ref={ref as React.ForwardedRef<THREE.Mesh>}
         geometry={geometry}
         material={material}
+        castShadow={message.props.cast_shadow}
+        receiveShadow={message.props.receive_shadow}
       >
         <OutlinesIfHovered alwaysMounted />
       </mesh>

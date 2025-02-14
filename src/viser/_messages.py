@@ -256,6 +256,10 @@ class GlbProps:
     """A binary payload containing the GLB data. Synchronized automatically when assigned."""
     scale: float
     """A scale for resizing the GLB asset. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """If set to true mesh will receive shadows. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -332,6 +336,8 @@ class GridProps:
     """Thickness of the section lines. Synchronized automatically when assigned."""
     section_size: float
     """Size of each section in the grid. Synchronized automatically when assigned."""
+    shadow_opacity: float
+    """If true, shadows are casted onto the grid plane. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -396,7 +402,6 @@ class PointCloudProps:
 
 
 @dataclasses.dataclass
-@dataclasses.dataclass
 class DirectionalLightMessage(_CreateSceneNodeMessage):
     """Directional light message."""
 
@@ -409,6 +414,8 @@ class DirectionalLightProps:
     """Color of the directional light. Synchronized automatically when assigned."""
     intensity: float
     """Intensity of the directional light. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -460,6 +467,8 @@ class PointLightProps:
     """Distance of the point light. Synchronized automatically when assigned."""
     decay: float
     """Decay of the point light. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -502,6 +511,8 @@ class SpotLightProps:
     """Penumbra of the spot light. Synchronized automatically when assigned."""
     decay: float
     """Decay of the spot light. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
 
     def __post_init__(self):
         assert self.angle <= np.pi / 2
@@ -537,9 +548,10 @@ class EnvironmentMapMessage(Message):
 
 @dataclasses.dataclass
 class EnableLightsMessage(Message):
-    """Spot light message."""
+    """Default light message."""
 
     enabled: bool
+    cast_shadow: bool
 
 
 @dataclasses.dataclass
@@ -567,6 +579,10 @@ class MeshProps:
     """Whether to do flat shading. Synchronized automatically when assigned."""
     side: Literal["front", "back", "double"]
     """Side of the surface to render. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """If set to true mesh will receive shadows. Synchronized automatically when assigned."""
     material: Literal["standard", "toon3", "toon5"]
     """Material type of the mesh. Synchronized automatically when assigned."""
 

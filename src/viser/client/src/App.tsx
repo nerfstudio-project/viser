@@ -396,6 +396,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           // Release drag lock.
           pointerInfo.isDragging = false;
         }}
+        shadows
       >
         {inView ? null : <DisableRender />}
         <BackgroundImage />
@@ -416,6 +417,9 @@ function DefaultLights() {
   const viewer = React.useContext(ViewerContext)!;
   const enableDefaultLights = viewer.useSceneTree(
     (state) => state.enableDefaultLights,
+  );
+  const castShadow = viewer.useSceneTree(
+    (state) => state.castShadow,
   );
   const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
 
@@ -493,6 +497,7 @@ function DefaultLights() {
       />
     );
   }
+  console.log("castshadows", castShadow)
   if (enableDefaultLights)
     return (
       <>
@@ -500,11 +505,13 @@ function DefaultLights() {
           color={0xffffff}
           intensity={2.0}
           position={[0, 1, 0]}
+          castShadow={castShadow}
         />
         <directionalLight
           color={0xffffff}
           intensity={0.4}
           position={[0, -1, 0]}
+          castShadow={castShadow}
         />
         {envMapNode}
       </>
