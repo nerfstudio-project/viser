@@ -541,7 +541,9 @@ class SceneApi:
             )
         )
 
-    def enable_default_lights(self, enabled: bool = True, cast_shadow: bool = False) -> None:
+    def enable_default_lights(
+        self, enabled: bool = True, cast_shadow: bool = False
+    ) -> None:
         """Enable/disable the default lights in the scene. If not otherwise
         specified, default lighting will be enabled.
 
@@ -553,7 +555,9 @@ class SceneApi:
                 not want default lighting.
             cast_shadow:  If set to true light will cast dynamic shadows
         """
-        self._websock_interface.queue_message(_messages.EnableLightsMessage(enabled, cast_shadow))
+        self._websock_interface.queue_message(
+            _messages.EnableLightsMessage(enabled, cast_shadow)
+        )
 
     def add_glb(
         self,
@@ -954,6 +958,7 @@ class SceneApi:
         section_color: RgbTupleOrArray = (140, 140, 140),
         section_thickness: float = 1.0,
         section_size: float = 1.0,
+        shadow_opacity: float = 0.0,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -975,6 +980,7 @@ class SceneApi:
             section_color: Color of the grid sections as an RGB tuple.
             section_thickness: Thickness of the section lines.
             section_size: Size of each section in the grid.
+            shadow_opacity: Opacity of shadows casted onto grid plane, 0: no shadows, 1: black shadows
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -996,6 +1002,7 @@ class SceneApi:
                 section_color=_encode_rgb(section_color),
                 section_thickness=section_thickness,
                 section_size=section_size,
+                shadow_opacity=shadow_opacity,
             ),
         )
         return GridHandle._make(self, message, name, wxyz, position, visible)
@@ -1209,8 +1216,8 @@ class SceneApi:
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
-        cast_shadow: bool=True,
-        receive_shadow: bool=True,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,

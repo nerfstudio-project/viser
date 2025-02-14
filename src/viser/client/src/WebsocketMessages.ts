@@ -79,6 +79,7 @@ export interface GridMessage {
     section_color: [number, number, number];
     section_thickness: number;
     section_size: number;
+    shadow_opacity: number;
   };
 }
 /** Add a 2D label to the scene.

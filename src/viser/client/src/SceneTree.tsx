@@ -192,6 +192,16 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     }
 
     case "GridMessage": {
+      let shadowPlane;
+      if (message.props.shadow_opacity > 0.0) {
+        shadowPlane = <mesh rotation={[0, 0, 0]} position={[0, 0, -0.01]} receiveShadow>
+        <planeGeometry args={[message.props.width, message.props.height]} />
+        <shadowMaterial opacity={message.props.shadow_opacity} />
+      </mesh>;
+      } else {
+        // when opacity = 0.0, no shadowPlane for performance
+        shadowPlane = <></>;
+      }
       return {
         makeObject: (ref) => (
           <group ref={ref}>
@@ -240,6 +250,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                             : undefined
               }
             />
+            {shadowPlane}
           </group>
         ),
       };

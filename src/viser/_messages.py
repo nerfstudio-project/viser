@@ -332,6 +332,8 @@ class GridProps:
     """Thickness of the section lines. Synchronized automatically when assigned."""
     section_size: float
     """Size of each section in the grid. Synchronized automatically when assigned."""
+    shadow_opacity: float
+    """If true, shadows are casted onto the grid plane. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -465,7 +467,6 @@ class PointLightProps:
     """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
 
 
-
 @dataclasses.dataclass
 class RectAreaLightMessage(_CreateSceneNodeMessage):
     """Rectangular Area light message."""
@@ -508,7 +509,6 @@ class SpotLightProps:
     """Decay of the spot light. Synchronized automatically when assigned."""
     cast_shadow: bool
     """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
-
 
     def __post_init__(self):
         assert self.angle <= np.pi / 2
@@ -581,6 +581,7 @@ class MeshProps:
     """If set to true mesh will receive shadows. Synchronized automatically when assigned."""
     material: Literal["standard", "toon3", "toon5"]
     """Material type of the mesh. Synchronized automatically when assigned."""
+
     def __post_init__(self):
         # Check shapes.
         assert self.vertices.shape[-1] == 3

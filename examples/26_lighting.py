@@ -17,13 +17,7 @@ def main() -> None:
     faces = mesh.faces
     print(f"Loaded mesh with {vertices.shape} vertices, {faces.shape} faces")
     print(mesh)
-    mesh2 = trimesh.load_mesh(str(Path(__file__).parent / "assets/plane.obj"))
-    assert isinstance(mesh, trimesh.Trimesh)
-    # mesh2.apply_scale(0.05)
-    vertices2 = mesh2.vertices
-    faces2 = mesh2.faces
-    print(f"Loaded mesh with {vertices2.shape} vertices, {faces2.shape} faces")
-    print(mesh2)
+
     # Start Viser server with mesh.
     server = viser.ViserServer()
 
@@ -40,13 +34,8 @@ def main() -> None:
         wxyz=tf.SO3.from_x_radians(np.pi / 2).wxyz,
         position=(0.0, 5.0, 0.0),
     )
-    server.scene.add_mesh_simple(
-        name="/plane",
-        vertices=vertices2,
-        faces=faces2,
-        wxyz=tf.SO3.from_x_radians(np.pi / 2).wxyz,
-        position=(0.0, 0.0, -1.0),
-    )
+
+    grid = server.scene.add_grid("grid", shadow_opacity=0.2)
 
     # adding controls to custom lights in the scene
     server.scene.add_transform_controls("/control0", position=(0.0, 10.0, 5.0))
@@ -55,9 +44,7 @@ def main() -> None:
     server.scene.add_label("/control1/label", "Point")
 
     directional_light = server.scene.add_light_directional(
-        name="/control0/directional_light",
-        color=(186, 219, 173),
-        cast_shadow=True
+        name="/control0/directional_light", color=(186, 219, 173), cast_shadow=True
     )
     point_light = server.scene.add_light_point(
         name="/control1/point_light",
@@ -65,15 +52,35 @@ def main() -> None:
         intensity=30.0,
     )
 
+    with server.gui.add_folder("Grid Shadows"):
+        # Create grid shadows toggle
+        grid_shadows = server.gui.add_slider(
+            "Intensity",
+            min=0.0,
+            max=1.0,
+            step=0.01,
+            initial_value=grid.shadow_opacity,
+        )
+
+        @grid_shadows.on_update
+        def _(_) -> None:
+            grid.shadow_opacity = grid_shadows.value
+
     # Create default light toggle.
     gui_default_lights = server.gui.add_checkbox("Default lights", initial_value=True)
-    gui_default_shadows = server.gui.add_checkbox("Default shadows", initial_value=False)
+    gui_default_shadows = server.gui.add_checkbox(
+        "Default shadows", initial_value=False
+    )
 
     gui_default_lights.on_update(
-        lambda _: server.scene.enable_default_lights(gui_default_lights.value, gui_default_shadows.value)
+        lambda _: server.scene.enable_default_lights(
+            gui_default_lights.value, gui_default_shadows.value
+        )
     )
     gui_default_shadows.on_update(
-        lambda _: server.scene.enable_default_lights(gui_default_lights.value, gui_default_shadows.value)
+        lambda _: server.scene.enable_default_lights(
+            gui_default_lights.value, gui_default_shadows.value
+        )
     )
 
     # Create light control inputs.
@@ -88,10 +95,7 @@ def main() -> None:
             step=0.01,
             initial_value=directional_light.intensity,
         )
-        gui_directional_shadows = server.gui.add_checkbox(
-            "Shadows",
-            True
-        )
+        gui_directional_shadows = server.gui.add_checkbox("Shadows", True)
 
         @gui_directional_color.on_update
         def _(_) -> None:
@@ -100,11 +104,10 @@ def main() -> None:
         @gui_directional_intensity.on_update
         def _(_) -> None:
             directional_light.intensity = gui_directional_intensity.value
-        
+
         @gui_directional_shadows.on_update
         def _(_) -> None:
             directional_light.cast_shadow = gui_directional_shadows.value
-
 
     with server.gui.add_folder("Point light"):
         gui_point_color = server.gui.add_rgb("Color", initial_value=point_light.color)
@@ -115,10 +118,7 @@ def main() -> None:
             step=0.01,
             initial_value=point_light.intensity,
         )
-        gui_point_shadows = server.gui.add_checkbox(
-            "Shadows",
-            True
-        )
+        gui_point_shadows = server.gui.add_checkbox("Shadows", True)
 
         @gui_point_color.on_update
         def _(_) -> None:
@@ -127,7 +127,7 @@ def main() -> None:
         @gui_point_intensity.on_update
         def _(_) -> None:
             point_light.intensity = gui_point_intensity.value
-        
+
         @gui_point_shadows.on_update
         def _(_) -> None:
             point_light.cast_shadow = gui_point_shadows.value
