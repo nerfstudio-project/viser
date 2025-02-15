@@ -18,6 +18,7 @@ Example adding lights and enabling shadow rendering.
 
         import numpy as np
         import trimesh
+
         import viser
         import viser.transforms as tf
 
