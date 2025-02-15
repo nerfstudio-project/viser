@@ -168,7 +168,7 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
 export const GlbAsset = React.forwardRef<
   THREE.Group,
   {
-    glb_data: Uint8Array<ArrayBufferLike>;
+    glb_data: Uint8Array<ArrayBuffer>;
     scale: number;
   }
 >(function GlbAsset({ glb_data, scale }, ref) {
@@ -189,7 +189,7 @@ export const GlbAsset = React.forwardRef<
     loader.setDRACOLoader(dracoLoader);
 
     loader.parse(
-      glb_data.buffer as ArrayBuffer,
+      glb_data.buffer,
       "",
       (gltf) => {
         if (gltf.animations && gltf.animations.length) {
