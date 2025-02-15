@@ -168,7 +168,7 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
 export const GlbAsset = React.forwardRef<
   THREE.Group,
   {
-    glb_data: Uint8Array<ArrayBuffer>;
+    glb_data: Uint8Array<ArrayBufferLike>;
     scale: number;
   }
 >(function GlbAsset({ glb_data, scale }, ref) {
@@ -189,7 +189,7 @@ export const GlbAsset = React.forwardRef<
     loader.setDRACOLoader(dracoLoader);
 
     loader.parse(
-      glb_data.buffer,
+      glb_data.buffer as ArrayBuffer,
       "",
       (gltf) => {
         if (gltf.animations && gltf.animations.length) {
@@ -950,7 +950,11 @@ export const AutoShadowDirectionalLight = React.forwardRef<
     const box = new THREE.Box3();
     scene.traverse((obj) => {
       const obj_ = obj as THREE.Mesh;
-      if (obj_.castShadow && obj_.geometry && obj_.computeBoundingBox) {
+      if (
+        obj_.castShadow &&
+        obj_.geometry &&
+        obj_.geometry.computeBoundingBox
+      ) {
         obj_.geometry.computeBoundingBox();
         box.expandByObject(obj);
       }
