@@ -170,10 +170,8 @@ export const GlbAsset = React.forwardRef<
   {
     glb_data: Uint8Array<ArrayBuffer>;
     scale: number;
-    cast_shadow: boolean;
-    receive_shadow: boolean;
   }
->(function GlbAsset({ glb_data, scale, cast_shadow, receive_shadow }, ref) {
+>(function GlbAsset({ glb_data, scale }, ref) {
   // We track both the GLTF asset itself and all meshes within it. Meshes are
   // used for hover effects.
 
@@ -205,8 +203,8 @@ export const GlbAsset = React.forwardRef<
           if (obj instanceof THREE.Mesh) {
             obj.geometry.computeVertexNormals();
             obj.geometry.computeBoundingSphere();
-            obj.castShadow = cast_shadow;
-            obj.receiveShadow = receive_shadow;
+            obj.castShadow = true;
+            obj.receiveShadow = true;
             meshes.push(obj);
           }
         });
@@ -690,8 +688,8 @@ export const ViserMesh = React.forwardRef<
         geometry={geometry}
         material={material}
         skeleton={skeleton}
-        castShadow={message.props.cast_shadow}
-        receiveShadow={message.props.receive_shadow}
+        castShadow
+        receiveShadow
         // TODO: leaving culling on (default) sometimes causes the
         // mesh to randomly disappear, as of r3f==8.16.2.
         //
@@ -709,8 +707,8 @@ export const ViserMesh = React.forwardRef<
         ref={ref as React.ForwardedRef<THREE.Mesh>}
         geometry={geometry}
         material={material}
-        castShadow={message.props.cast_shadow}
-        receiveShadow={message.props.receive_shadow}
+        castShadow
+        receiveShadow
       >
         <OutlinesIfHovered alwaysMounted />
       </mesh>
@@ -903,7 +901,8 @@ export const AutoShadowDirectionalLight = React.forwardRef<
     color?: THREE.ColorRepresentation;
     castShadow?: boolean;
     position?: [number, number, number];
-    padding?: number;
+    paddingScale?: number;
+    paddingAdd?: number;
     updateFrequency?: number;
   }
 >(function AutoShadowDirectionalLight(
@@ -912,8 +911,9 @@ export const AutoShadowDirectionalLight = React.forwardRef<
     color = "white",
     castShadow = true,
     position = [0.0, 0.0, 0.0],
-    padding = 1.3,
-    updateFrequency = 60,
+    paddingScale = 1.5,
+    paddingAdd = 0.3,
+    updateFrequency = 30,
   },
   ref,
 ) {
@@ -980,30 +980,30 @@ export const AutoShadowDirectionalLight = React.forwardRef<
     lightSpaceBox.getCenter(center);
 
     const paddedBox = new THREE.Box3(
-      center.clone().sub(size.clone().multiplyScalar(padding * 0.5)),
-      center.clone().add(size.clone().multiplyScalar(padding * 0.5)),
+      center.clone().sub(size.clone().multiplyScalar(paddingScale * 0.5)),
+      center.clone().add(size.clone().multiplyScalar(paddingScale * 0.5)),
     );
 
     // Update the orthographic shadow camera if applicable
     if (light.shadow.camera instanceof THREE.OrthographicCamera) {
       const camera = light.shadow.camera;
 
-      camera.left = paddedBox.min.y;
-      camera.right = paddedBox.max.y;
-      camera.top = paddedBox.max.x;
-      camera.bottom = paddedBox.min.x;
+      camera.left = paddedBox.min.y - paddingAdd;
+      camera.right = paddedBox.max.y + paddingAdd;
+      camera.top = paddedBox.max.x + paddingAdd;
+      camera.bottom = paddedBox.min.x - paddingAdd;
 
       camera.updateProjectionMatrix();
     }
-  }, [scene, padding, castShadow]);
+  }, [scene, paddingScale, castShadow]);
 
   // Optionally update shadow camera on every frame (or at a given frequency)
   useFrame(() => {
     if (!castShadow) return;
-    frameCount.current += 1;
     if (updateFrequency === 0 || frameCount.current % updateFrequency === 0) {
       updateShadowCameraBounds();
     }
+    frameCount.current += 1;
   });
 
   return (

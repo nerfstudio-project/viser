@@ -15,9 +15,8 @@ from typing import Literal
 
 import numpy as np
 import tyro
-from robot_descriptions.loaders.yourdfpy import load_robot_description
-
 import viser
+from robot_descriptions.loaders.yourdfpy import load_robot_description
 from viser.extras import ViserUrdf
 
 
@@ -89,7 +88,7 @@ def main(
     viser_urdf.update_cfg(np.array(initial_config))
 
     # Create grid.
-    grid = server.scene.add_grid(
+    server.scene.add_grid(
         "/grid",
         width=2,
         height=2,

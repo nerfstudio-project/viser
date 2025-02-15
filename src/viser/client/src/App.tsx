@@ -6,7 +6,12 @@ import { useInView } from "react-intersection-observer";
 
 import { Notifications } from "@mantine/notifications";
 
-import { Environment, PerformanceMonitor, Stats } from "@react-three/drei";
+import {
+  Environment,
+  PerformanceMonitor,
+  SoftShadows,
+  Stats,
+} from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 
