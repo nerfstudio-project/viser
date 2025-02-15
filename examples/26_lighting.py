@@ -1,9 +1,13 @@
+"""Lighting and Shadows
+
+Example adding lights and enabling shadow rendering.
+"""
+
 import time
 from pathlib import Path
 
 import numpy as np
 import trimesh
-
 import viser
 import viser.transforms as tf
 
