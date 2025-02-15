@@ -69,6 +69,7 @@ def main(
 ) -> None:
     # Start viser server.
     server = viser.ViserServer()
+    server.scene.enable_default_lights(cast_shadow=True)
 
     # Load URDF.
     #
@@ -86,6 +87,19 @@ def main(
 
     # Set initial robot configuration.
     viser_urdf.update_cfg(np.array(initial_config))
+
+    # Create grid.
+    grid = server.scene.add_grid(
+        "/grid",
+        width=2,
+        height=2,
+        position=(
+            0.0,
+            0.0,
+            # Get the minimum z value of the trimesh scene.
+            viser_urdf._urdf.scene.bounds[0, 2],
+        ),
+    )
 
     # Create joint reset button.
     reset_button = server.gui.add_button("Reset")

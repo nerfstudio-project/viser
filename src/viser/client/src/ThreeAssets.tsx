@@ -32,6 +32,7 @@ import {
   SkinnedMeshMessage,
 } from "./WebsocketMessages";
 import { ViewerContext } from "./ViewerContext";
+import { shadowArgs } from "./ShadowArgs";
 
 type AllPossibleThreeJSMaterials =
   | MeshBasicMaterial
@@ -166,7 +167,12 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
 /** Component for rendering the contents of GLB files. */
 export const GlbAsset = React.forwardRef<
   THREE.Group,
-  { glb_data: Uint8Array<ArrayBuffer>; scale: number; cast_shadow: boolean; receive_shadow: boolean; }
+  {
+    glb_data: Uint8Array<ArrayBuffer>;
+    scale: number;
+    cast_shadow: boolean;
+    receive_shadow: boolean;
+  }
 >(function GlbAsset({ glb_data, scale, cast_shadow, receive_shadow }, ref) {
   // We track both the GLTF asset itself and all meshes within it. Meshes are
   // used for hover effects.
@@ -177,7 +183,6 @@ export const GlbAsset = React.forwardRef<
   // glTF/GLB files support animations.
   const mixerRef = React.useRef<THREE.AnimationMixer | null>(null);
   React.useEffect(() => {
-    const newMaterial = new THREE.MeshStandardMaterial()
     const loader = new GLTFLoader();
 
     // We use a CDN for Draco. We could move this locally if we want to use Viser offline.
@@ -197,25 +202,24 @@ export const GlbAsset = React.forwardRef<
         }
         const meshes: THREE.Mesh[] = [];
         gltf?.scene.traverse((obj) => {
-          if (obj instanceof THREE.Mesh){
+          if (obj instanceof THREE.Mesh) {
             obj.geometry.computeVertexNormals();
             obj.geometry.computeBoundingSphere();
             obj.castShadow = cast_shadow;
             obj.receiveShadow = receive_shadow;
-            obj.material = newMaterial;
-            meshes.push(obj);}
+            meshes.push(obj);
+          }
         });
-        
+
         setMeshes(meshes);
         setGltf(gltf);
-        
       },
       (error) => {
         console.log("Error loading GLB!");
         console.log(error);
       },
     );
-    
+
     return () => {
       if (mixerRef.current) mixerRef.current.stopAllAction();
 
@@ -256,14 +260,13 @@ export const GlbAsset = React.forwardRef<
       gltf?.scene.traverse(disposeNode);
     };
   }, [glb_data]);
-  
+
   useFrame((_, delta) => {
     if (mixerRef.current) {
       mixerRef.current.update(delta);
     }
-   
   });
-  
+
   return (
     <group ref={ref}>
       {gltf === undefined ? null : (
@@ -456,7 +459,7 @@ export const ViserMesh = React.forwardRef<
     texture.needsUpdate = true;
     return texture;
   };
- 
+
   const assertUnreachable = (x: never): never => {
     throw new Error(`Should never get here! ${x}`);
   };
@@ -540,7 +543,7 @@ export const ViserMesh = React.forwardRef<
     );
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
-    
+
     let skeleton = undefined;
     if (message.type === "SkinnedMeshMessage") {
       // Skinned mesh.
@@ -891,3 +894,130 @@ export function OutlinesIfHovered(
     />
   );
 }
+
+/** Helper for adding a directional light with automatic shadow camera bounds. */
+export const AutoShadowDirectionalLight = React.forwardRef<
+  THREE.DirectionalLight,
+  {
+    intensity?: number;
+    color?: THREE.ColorRepresentation;
+    castShadow?: boolean;
+    position?: [number, number, number];
+    padding?: number;
+    updateFrequency?: number;
+  }
+>(function AutoShadowDirectionalLight(
+  {
+    intensity = 1,
+    color = "white",
+    castShadow = true,
+    position = [0.0, 0.0, 0.0],
+    padding = 1.3,
+    updateFrequency = 60,
+  },
+  ref,
+) {
+  const localRef = React.useRef<THREE.DirectionalLight>();
+  const frameCount = React.useRef(0);
+
+  // Get the scene object from the three fiber context.
+  // This is a hack, see: https://github.com/pmndrs/react-three-fiber/issues/2725
+  const { scene: root } = useThree();
+  const scene = React.useMemo(() => {
+    let object: THREE.Object3D | null = root;
+    while (object) {
+      if (object instanceof THREE.Scene) return object;
+      object = object.parent;
+    }
+    throw new Error("Could not find scene object in r3f context!");
+  }, [root]);
+
+  const updateShadowCameraBounds = React.useCallback(() => {
+    if (!castShadow) return;
+    if (!localRef.current) return;
+    const light = localRef.current;
+
+    // Ensure matrices are updated
+    light.shadow.camera.updateMatrixWorld();
+
+    // Compute the light space matrix by inverting the light's world matrix
+    const lightSpaceMatrix = new THREE.Matrix4()
+      .copy(light.shadow.camera.matrixWorld)
+      .invert();
+
+    // Compute the scene bounding box (only for meshes)
+    const box = new THREE.Box3();
+    scene.traverse((obj) => {
+      if (obj instanceof THREE.Mesh && obj.castShadow) {
+        obj.geometry.computeBoundingBox();
+        box.expandByObject(obj);
+      }
+    });
+    if (box.isEmpty()) return;
+
+    // Transform each corner of the bounding box into light space
+    const corners = [
+      new THREE.Vector3(box.min.x, box.min.y, box.min.z),
+      new THREE.Vector3(box.min.x, box.min.y, box.max.z),
+      new THREE.Vector3(box.min.x, box.max.y, box.min.z),
+      new THREE.Vector3(box.min.x, box.max.y, box.max.z),
+      new THREE.Vector3(box.max.x, box.min.y, box.min.z),
+      new THREE.Vector3(box.max.x, box.min.y, box.max.z),
+      new THREE.Vector3(box.max.x, box.max.y, box.min.z),
+      new THREE.Vector3(box.max.x, box.max.y, box.max.z),
+    ];
+    const lightSpacePoints = corners.map((point) =>
+      point.applyMatrix4(lightSpaceMatrix),
+    );
+
+    // Compute bounds in light space
+    const lightSpaceBox = new THREE.Box3().setFromPoints(lightSpacePoints);
+
+    // Apply padding (scale the size)
+    const size = new THREE.Vector3();
+    lightSpaceBox.getSize(size);
+    const center = new THREE.Vector3();
+    lightSpaceBox.getCenter(center);
+
+    const paddedBox = new THREE.Box3(
+      center.clone().sub(size.clone().multiplyScalar(padding * 0.5)),
+      center.clone().add(size.clone().multiplyScalar(padding * 0.5)),
+    );
+
+    // Update the orthographic shadow camera if applicable
+    if (light.shadow.camera instanceof THREE.OrthographicCamera) {
+      const camera = light.shadow.camera;
+
+      camera.left = paddedBox.min.y;
+      camera.right = paddedBox.max.y;
+      camera.top = paddedBox.max.x;
+      camera.bottom = paddedBox.min.x;
+
+      camera.updateProjectionMatrix();
+    }
+  }, [scene, padding, castShadow]);
+
+  // Optionally update shadow camera on every frame (or at a given frequency)
+  useFrame(() => {
+    if (!castShadow) return;
+    frameCount.current += 1;
+    if (updateFrequency === 0 || frameCount.current % updateFrequency === 0) {
+      updateShadowCameraBounds();
+    }
+  });
+
+  return (
+    <directionalLight
+      ref={(obj) => {
+        localRef.current = obj!;
+        if (typeof ref === "function") ref(obj!);
+        else if (ref) ref.current = obj;
+      }}
+      position={position}
+      intensity={intensity}
+      color={color}
+      castShadow={castShadow}
+      {...shadowArgs}
+    />
+  );
+});

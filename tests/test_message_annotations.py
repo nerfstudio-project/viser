@@ -1,4 +1,4 @@
-from dataclasses import fields, is_dataclass
+from dataclasses import is_dataclass
 from typing import get_type_hints
 
 from viser.infra._messages import Message
