@@ -516,7 +516,7 @@ function DefaultLights() {
           color={0xffffff}
           intensity={0.4}
           position={[0, -1, 0]}
-          castShadow={enableDefaultLightsShadows}
+          castShadow={false /* Let's only cast a shadow from above. */}
         />
         {envMapNode}
       </>

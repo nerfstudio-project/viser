@@ -14,7 +14,7 @@ import tyro
 from tqdm.auto import tqdm
 
 import viser
-import viser.transforms as tf
+import viser.transforms as vtf
 from viser.extras.colmap import (
     read_cameras_binary,
     read_images_binary,
@@ -26,6 +26,7 @@ def main(
     colmap_path: Path = Path(__file__).parent / "assets/colmap_garden/sparse/0",
     images_path: Path = Path(__file__).parent / "assets/colmap_garden/images_8",
     downsample_factor: int = 2,
+    reorient_scene: bool = True,
 ) -> None:
     """Visualize COLMAP sparse reconstruction outputs.
 
@@ -37,20 +38,51 @@ def main(
     server = viser.ViserServer()
     server.gui.configure_theme(titlebar_content=None, control_layout="collapsible")
 
+    server.scene.enable_default_lights(cast_shadow=True)
+
     # Load the colmap info.
     cameras = read_cameras_binary(colmap_path / "cameras.bin")
     images = read_images_binary(colmap_path / "images.bin")
     points3d = read_points3d_binary(colmap_path / "points3D.bin")
+
+    points = np.array([points3d[p_id].xyz for p_id in points3d])
+    colors = np.array([points3d[p_id].rgb for p_id in points3d])
+
     gui_reset_up = server.gui.add_button(
         "Reset up direction",
         hint="Set the camera control 'up' direction to the current camera's 'up'.",
     )
 
+    # Let's rotate the scene so the average camera direction is pointing up.
+    if reorient_scene:
+        average_up = (
+            vtf.SO3(np.array([img.qvec for img in images.values()]))
+            @ np.array([0.0, -1.0, 0.0])  # -y is up in the local frame!
+        ).mean(axis=0)
+        average_up /= np.linalg.norm(average_up)
+
+        rotate_axis = np.cross(average_up, np.array([0.0, 0.0, 1.0]))
+        rotate_axis /= np.linalg.norm(rotate_axis)
+        rotate_angle = np.arccos(np.dot(average_up, np.array([0.0, 0.0, 1.0])))
+        R_scene_colmap = vtf.SO3.exp(rotate_axis * rotate_angle)
+        server.scene.add_frame(
+            "/colmap",
+            show_axes=False,
+            wxyz=R_scene_colmap.wxyz,
+        )
+    else:
+        R_scene_colmap = vtf.SO3.identity()
+
+    # Get transformed z-coordinates and place grid at 5th percentile height.
+    transformed_z = (R_scene_colmap @ points)[..., 2]
+    grid_height = float(np.percentile(transformed_z, 5))
+    server.scene.add_grid(name="/grid", position=(0.0, 0.0, grid_height))
+
     @gui_reset_up.on_click
     def _(event: viser.GuiEvent) -> None:
         client = event.client
         assert client is not None
-        client.camera.up_direction = tf.SO3(client.camera.wxyz) @ np.array(
+        client.camera.up_direction = vtf.SO3(client.camera.wxyz) @ np.array(
             [0.0, -1.0, 0.0]
         )
 
@@ -71,9 +103,6 @@ def main(
     gui_point_size = server.gui.add_slider(
         "Point size", min=0.01, max=0.1, step=0.001, initial_value=0.05
     )
-
-    points = np.array([points3d[p_id].xyz for p_id in points3d])
-    colors = np.array([points3d[p_id].rgb for p_id in points3d])
 
     point_mask = np.random.choice(points.shape[0], gui_points.value, replace=False)
     point_cloud = server.scene.add_point_cloud(
@@ -116,8 +145,8 @@ def main(
             if not image_filename.exists():
                 continue
 
-            T_world_camera = tf.SE3.from_rotation_and_translation(
-                tf.SO3(img.qvec), img.tvec
+            T_world_camera = vtf.SE3.from_rotation_and_translation(
+                vtf.SO3(img.qvec), img.tvec
             ).inverse()
             frame = server.scene.add_frame(
                 f"/colmap/frame_{img_id}",

@@ -1,5 +1,6 @@
 export const shadowArgs = {
-  "shadow-camera-near": 0.001, // Near plane
+  "shadow-camera-near": 0.001,
+  "shadow-camera-far": 500.0,
   "shadow-bias": -0.0001,
   "shadow-mapSize-width": 1024,
   "shadow-mapSize-height": 1024,

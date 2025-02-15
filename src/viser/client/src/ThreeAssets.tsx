@@ -731,7 +731,7 @@ export const ViserImage = React.forwardRef<THREE.Group, ImageMessage>(
     }, [message.props.media_type, message.props._data]);
     return (
       <group ref={ref}>
-        <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}>
+        <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)} castShadow>
           <OutlinesIfHovered />
           <planeGeometry
             attach="geometry"
@@ -837,6 +837,7 @@ export const CameraFrustum = React.forwardRef<
           // 0.999999 is to avoid z-fighting with the frustum lines.
           position={[0.0, 0.0, z * 0.999999]}
           rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
+          castShadow
         >
           <planeGeometry
             attach="geometry"
@@ -948,8 +949,9 @@ export const AutoShadowDirectionalLight = React.forwardRef<
     // Compute the scene bounding box (only for meshes)
     const box = new THREE.Box3();
     scene.traverse((obj) => {
-      if (obj instanceof THREE.Mesh && obj.castShadow) {
-        obj.geometry.computeBoundingBox();
+      const obj_ = obj as THREE.Mesh;
+      if (obj_.castShadow && obj_.geometry && obj_.computeBoundingBox) {
+        obj_.geometry.computeBoundingBox();
         box.expandByObject(obj);
       }
     });
