@@ -243,7 +243,9 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
       vec2 v2 = min(sqrt(2.0 * lambda2), 1024.0) * vec2(diagonalVector.y, -diagonalVector.x);
   
       // Get the spherical harmonic view direction in world coordinates and calculate color
-      vec3 viewDir = normalize(center - cameraPosition);
+      // vec3 viewDir = normalize(center - cameraPosition);
+      vec3 t_group_camera = -(transpose(mat3(T_camera_group)) * T_camera_group[3].xyz);
+      vec3 viewDir = normalize(center - t_group_camera);
       const float C0 = 0.28209479177387814;
       const float C1 = 0.4886025119029199;
       const float C2[5] = float[5](
@@ -280,16 +282,6 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   
       vec3 rgb = C0 * sh_coeffs[0]; // line 74 of plenoxels
       vec3 pointFive = vec3(0.5, 0.5, 0.5);
-  
-      //vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
-      
-      // could be useful code for debugging (make sure to set 1 gaussian to use this)
-      // if (sh_coeffs[0].x > 1.0 && sh_coeffs[0].x < 1.6) {
-      //     vRgba = vec4(1.0, 0.0, 0.0, 1.0);
-      // } else {
-      //     vRgba = vec4(1.0, 1.0, 1.0, 1.0);
-      // }
-  
   
       // ----GSPLAT IMPLEMENTATION-----
   
@@ -330,39 +322,6 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
                       pSH15 * sh_coeffs[15];
       
       vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
-  
-      // -----INRIA IMPLEMENTATION-----
-      // // degree 1 coefficents
-      // rgb = rgb -
-      //         C1 * y * sh_coeffs[1] +
-      //         C1 * z * sh_coeffs[2] -
-      //         C1 * x * sh_coeffs[3];
-      // // degree 2 coefficents
-      // rgb = rgb + 
-      //         C2[0] * xy * sh_coeffs[4] +
-      //         C2[1] * yz * sh_coeffs[5] + 
-      //         C2[2] * (2.0 - zz - xx - yy) * sh_coeffs[6] +
-      //         C2[3] * xz * sh_coeffs[7] + 
-      //         C2[4] * (xx - yy) * sh_coeffs[8];
-      // // degree 3 coefficents
-      // rgb = rgb + 
-      //         C3[0] * y * (3.0 * xx - yy) * sh_coeffs[9] +
-      //         C3[1] * xy * z * sh_coeffs[10] + 
-      //         C3[2] * y * (4.0 * zz - xx - yy) * sh_coeffs[11] +
-      //         C3[3] * z * (2.0 * zz - 3.0 * xx - 3.0 * yy) * sh_coeffs[12] +
-      //         C3[4] * x * (4.0 * zz - xx - yy) * sh_coeffs[13] + 
-      //         C3[5] * z * (xx - yy) * sh_coeffs[14] + 
-      //         C3[6] * x * (xx - 3.0 * yy) * sh_coeffs[15];
-      // vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
-      
-  
-      // this is the og code
-      // vRgba = vec4(
-      //   float(rgbaUint32 & uint(0xFF)) / 255.0,
-      //   float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
-      //   float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
-      //   float(rgbaUint32 >> uint(24)) / 255.0
-      // );
   
       // Throw the Gaussian off the screen if it's too close, too far, or too small.
       float weightedDeterminant = vRgba.a * (diag1 * diag2 - offDiag * offDiag);
