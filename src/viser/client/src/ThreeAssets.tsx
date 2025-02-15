@@ -956,6 +956,9 @@ export const AutoShadowDirectionalLight = React.forwardRef<
     if (box.isEmpty()) return;
 
     // Transform each corner of the bounding box into light space
+    // TODO: for very large scenes, it could be helpful to factor in the
+    // viewport here. But this would complicate rendering from virtual
+    // cameras.
     const corners = [
       new THREE.Vector3(box.min.x, box.min.y, box.min.z),
       new THREE.Vector3(box.min.x, box.min.y, box.max.z),
