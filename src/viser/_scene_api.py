@@ -542,7 +542,9 @@ class SceneApi:
         )
 
     def enable_default_lights(
-        self, enabled: bool = True, cast_shadow: bool = False
+        self,
+        enabled: bool = True,
+        cast_shadow: bool = False,
     ) -> None:
         """Enable/disable the default lights in the scene. If not otherwise
         specified, default lighting will be enabled.
@@ -553,7 +555,7 @@ class SceneApi:
         Args:
             enabled: True if user wants default lighting. False if user does
                 not want default lighting.
-            cast_shadow:  If set to true light will cast dynamic shadows
+            cast_shadow:  If set to True light will cast dynamic shadows
         """
         self._websock_interface.queue_message(
             _messages.EnableLightsMessage(enabled, cast_shadow)
@@ -564,8 +566,6 @@ class SceneApi:
         name: str,
         glb_data: bytes,
         scale: float = 1.0,
-        cast_shadow: bool = True,
-        receive_shadow: bool = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -583,8 +583,6 @@ class SceneApi:
               define a kinematic tree.
             glb_data: A binary payload.
             scale: A scale for resizing the GLB asset.
-            cast_shadow: TODO
-            receive_shadow: TODO
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -592,9 +590,7 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-        message = _messages.GlbMessage(
-            name, _messages.GlbProps(glb_data, scale, cast_shadow, receive_shadow)
-        )
+        message = _messages.GlbMessage(name, _messages.GlbProps(glb_data, scale))
         return GlbHandle._make(self, message, name, wxyz, position, visible)
 
     def add_line_segments(
@@ -964,7 +960,7 @@ class SceneApi:
         section_color: RgbTupleOrArray = (140, 140, 140),
         section_thickness: float = 1.0,
         section_size: float = 1.0,
-        shadow_opacity: float = 0.0,
+        shadow_opacity: float = 0.15,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1110,8 +1106,6 @@ class SceneApi:
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
-        cast_shadow: bool = True,
-        receive_shadow: bool = True,
         wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1138,8 +1132,6 @@ class SceneApi:
             flat_shading: Whether to do flat shading. This argument is ignored
                 when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
-            cast_shadow: If set to true mesh will cast a shadow
-            receive_shadow: If set to true mesh will receive shadows
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this mesh is initially visible.
@@ -1185,8 +1177,6 @@ class SceneApi:
                 opacity=opacity,
                 flat_shading=flat_shading,
                 side=side,
-                cast_shadow=cast_shadow,
-                receive_shadow=receive_shadow,
                 material=material,
                 bone_wxyzs=bone_wxyzs.astype(np.float32),
                 bone_positions=bone_positions.astype(np.float32),
@@ -1222,8 +1212,6 @@ class SceneApi:
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
-        cast_shadow: bool = True,
-        receive_shadow: bool = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1244,8 +1232,6 @@ class SceneApi:
             flat_shading: Whether to do flat shading. This argument is ignored
                 when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
-            cast_shadow: If set to true mesh will cast a shadow
-            receive_shadow: If set to true mesh will receive shadows
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this mesh is initially visible.
@@ -1273,8 +1259,6 @@ class SceneApi:
                 opacity=opacity,
                 flat_shading=flat_shading,
                 side=side,
-                cast_shadow=cast_shadow,
-                receive_shadow=receive_shadow,
                 material=material,
             ),
         )
@@ -1284,8 +1268,6 @@ class SceneApi:
         self,
         name: str,
         mesh: trimesh.Trimesh,
-        cast_shadow: bool = True,
-        receive_shadow: bool = True,
         scale: float = 1.0,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
@@ -1297,8 +1279,6 @@ class SceneApi:
             name: A scene tree name. Names in the format of /parent/child can be used to
               define a kinematic tree.
             mesh: A trimesh mesh object.
-            cast_shadow: TODO
-            receive_shadow: TODO
             scale: A scale for resizing the mesh.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
@@ -1315,8 +1295,6 @@ class SceneApi:
                 name,
                 glb_data=glb_data,
                 scale=scale,
-                cast_shadow=cast_shadow,
-                receive_shadow=receive_shadow,
                 wxyz=wxyz,
                 position=position,
                 visible=visible,

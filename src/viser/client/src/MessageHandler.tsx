@@ -200,7 +200,10 @@ function useMessageHandler() {
 
       // Disable/enable default lighting
       case "EnableLightsMessage": {
-        viewer.useSceneTree.setState({ enableDefaultLights: message.enabled,  castShadow: message.cast_shadow});
+        viewer.useSceneTree.setState({
+          enableDefaultLights: message.enabled,
+          enableDefaultLightsShadows: message.cast_shadow,
+        });
         return;
       }
 

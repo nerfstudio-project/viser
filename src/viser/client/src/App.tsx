@@ -44,6 +44,7 @@ import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
 import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
+import { AutoShadowDirectionalLight } from "./ThreeAssets";
 
 THREE.ColorManagement.enabled = true;
 
@@ -418,8 +419,8 @@ function DefaultLights() {
   const enableDefaultLights = viewer.useSceneTree(
     (state) => state.enableDefaultLights,
   );
-  const castShadow = viewer.useSceneTree(
-    (state) => state.castShadow,
+  const enableDefaultLightsShadows = viewer.useSceneTree(
+    (state) => state.enableDefaultLightsShadows,
   );
   const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
 
@@ -497,21 +498,20 @@ function DefaultLights() {
       />
     );
   }
-  console.log("castshadows", castShadow)
   if (enableDefaultLights)
     return (
       <>
-        <directionalLight
+        <AutoShadowDirectionalLight
           color={0xffffff}
           intensity={2.0}
-          position={[0, 1, 0]}
-          castShadow={castShadow}
+          position={[-0.2, 1, -0.2]}
+          castShadow={enableDefaultLightsShadows}
         />
-        <directionalLight
+        <AutoShadowDirectionalLight
           color={0xffffff}
           intensity={0.4}
           position={[0, -1, 0]}
-          castShadow={castShadow}
+          castShadow={false /* Let's only cast a shadow from above. */}
         />
         {envMapNode}
       </>

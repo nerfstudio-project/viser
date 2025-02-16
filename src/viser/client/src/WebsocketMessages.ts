@@ -26,12 +26,7 @@ export interface CameraFrustumMessage {
 export interface GlbMessage {
   type: "GlbMessage";
   name: string;
-  props: {
-    glb_data: Uint8Array;
-    scale: number;
-    cast_shadow: boolean;
-    receive_shadow: boolean;
-  };
+  props: { glb_data: Uint8Array; scale: number };
 }
 /** Coordinate frame message.
  *
@@ -222,8 +217,6 @@ export interface MeshMessage {
     opacity: number | null;
     flat_shading: boolean;
     side: "front" | "back" | "double";
-    cast_shadow: boolean;
-    receive_shadow: boolean;
     material: "standard" | "toon3" | "toon5";
   };
 }
@@ -242,8 +235,6 @@ export interface SkinnedMeshMessage {
     opacity: number | null;
     flat_shading: boolean;
     side: "front" | "back" | "double";
-    cast_shadow: boolean;
-    receive_shadow: boolean;
     material: "standard" | "toon3" | "toon5";
     bone_wxyzs: Uint8Array;
     bone_positions: Uint8Array;
