@@ -172,7 +172,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
     // Calculate the spherical harmonics.
     vec3 viewDir = normalize(center - cameraPosition);
-    // // 0.5 * sqrt(1.0 / pi)
+        // // 0.5 * sqrt(1.0 / pi)
     const float C0 = 0.28209479177387814;   
     // sqrt(3.0 / (4.0 * pi)) * [y]
     // sqrt(3.0 / (4.0 * pi)) * [z]
@@ -240,45 +240,45 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
     // 1st degree
 
-    // float pSH1 = C1[0] * y;
-    // float pSH2 = C1[1] * z;
-    // float pSH3 = C1[2] * x;
+    float pSH1 = C1[0] * y;
+    float pSH2 = C1[1] * z;
+    float pSH3 = C1[2] * x;
 
-    // rgb = rgb + pSH1 * sh_coeffs[1] +
-    //             pSH2 * sh_coeffs[2] + 
-    //             pSH3 * sh_coeffs[3];
+    rgb = rgb + pSH1 * sh_coeffs[1] +
+                pSH2 * sh_coeffs[2] + 
+                pSH3 * sh_coeffs[3];
 
-    // // 2nd degree
+    // 2nd degree
 
-    // float pSH4 = C2[0] * xy;
-    // float pSH5 = C2[1] * yz;
-    // float pSH6 = C2[2] * (3.0 * zz - 1.0);
-    // float pSH7 = C2[3] * xz;
-    // float pSH8 = C2[4] * (xx - yy);
+    float pSH4 = C2[0] * xy;
+    float pSH5 = C2[1] * yz;
+    float pSH6 = C2[2] * (3.0 * zz - 1.0);
+    float pSH7 = C2[3] * xz;
+    float pSH8 = C2[4] * (xx - yy);
 
-    // rgb = rgb + pSH4 * sh_coeffs[4] + 
-    //             pSH5 * sh_coeffs[5] + 
-    //             pSH6 * sh_coeffs[6] + 
-    //             pSH7 * sh_coeffs[7] + 
-    //             pSH8 * sh_coeffs[8];
+    rgb = rgb + pSH4 * sh_coeffs[4] + 
+                pSH5 * sh_coeffs[5] + 
+                pSH6 * sh_coeffs[6] + 
+                pSH7 * sh_coeffs[7] + 
+                pSH8 * sh_coeffs[8];
 
-    // // 3rd degree
+    // 3rd degree
 
-    // float pSH9 = C3[0] * y * (3.0 * xx - yy);
-    // float pSH10 = C3[1] * x * y * z;
-    // float pSH11 = C3[2] * y * (5.0 * zz - 1.0);
-    // float pSH12 = C3[3] * z * (5.0 * zz - 3.0);
-    // float pSH13 = C3[4] * x * (5.0 * zz - 1.0);
-    // float pSH14 = C3[5] * (xx - yy) * z;
-    // float pSH15 = C3[6] * x * (xx - 3.0 * yy);
+    float pSH9 = C3[0] * y * (3.0 * xx - yy);
+    float pSH10 = C3[1] * x * y * z;
+    float pSH11 = C3[2] * y * (5.0 * zz - 1.0);
+    float pSH12 = C3[3] * z * (5.0 * zz - 3.0);
+    float pSH13 = C3[4] * x * (5.0 * zz - 1.0);
+    float pSH14 = C3[5] * (xx - yy) * z;
+    float pSH15 = C3[6] * x * (xx - 3.0 * yy);
 
-    // rgb = rgb + pSH9 * sh_coeffs[9] + 
-    //             pSH10 * sh_coeffs[10] + 
-    //             pSH11 * sh_coeffs[11] + 
-    //             pSH12 * sh_coeffs[12] + 
-    //             pSH13 * sh_coeffs[13] + 
-    //             pSH14 * sh_coeffs[14] + 
-    //             pSH15 * sh_coeffs[15];
+    rgb = rgb + pSH9 * sh_coeffs[9] + 
+                pSH10 * sh_coeffs[10] + 
+                pSH11 * sh_coeffs[11] + 
+                pSH12 * sh_coeffs[12] + 
+                pSH13 * sh_coeffs[13] + 
+                pSH14 * sh_coeffs[14] + 
+                pSH15 * sh_coeffs[15];
 
     vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
     
@@ -383,6 +383,9 @@ export function useGaussianMeshProps(
 
   // NEW ADDITION*******************************************************
   // Values taken from PR https://github.com/nerfstudio-project/viser/pull/286/files
+  // WIDTH AND HEIGHT ARE MEASURED IN TEXELS
+  // As 48 x float16 = 96 bytes and each texel is 4 uint32s = 16 bytes
+  // We can fit 6 spherical harmonics coefficients in a single texel
   const shTextureWidth = Math.min(numGaussians * 6, maxTextureSize);
   const shTextureHeight = Math.ceil((numGaussians * 6) / shTextureWidth);
   const shBufferPadded = new Uint32Array(shTextureWidth * shTextureHeight * 4);
@@ -397,8 +400,8 @@ export function useGaussianMeshProps(
   shTextureBuffer.internalFormat = "RGBA32UI";
   shTextureBuffer.needsUpdate = true;
 
-  const normTexturwWidth = Math.min(numGaussians * 6, maxTextureSize);
-  const normTextureHeight = Math.ceil((numGaussians * 6) / normTexturwWidth);
+  const normTexturwWidth = Math.min(numGaussians, maxTextureSize);
+  const normTextureHeight = Math.ceil((numGaussians) / normTexturwWidth);
   const normBufferPadded = new Uint32Array(normTexturwWidth * normTextureHeight * 4);
   normBufferPadded.set(combinedNormBuffer);
   const normTextureBuffer = new THREE.DataTexture(

@@ -46,7 +46,15 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
     colors = 0.5 + SH_C0 * np.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]], axis=1)
     opacities = 1.0 / (1.0 + np.exp(-v["opacity"][:, None]))
     dc_coeffs = np.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]], axis=1)
-    rest_coeffs = np.stack([v[f"f_rest_{i}"] for i in range(45)], axis=1)
+    # Rest coefficients 0-14 belongs to RED channel, 15-29 to GREEN, 30-44 to BLUE
+    # Due to spherical harmonic calculations calculating a triplet at a time
+    # we need to stack them by (0,15,30), (1,16,31), ..., (14,29,44)
+    rest_coeffs = []
+    for i in range(15):
+        rest_coeffs.append(v[f"f_rest_{i}"])
+        rest_coeffs.append(v[f"f_rest_{i + 15}"])
+        rest_coeffs.append(v[f"f_rest_{i + 30}"])
+    rest_coeffs = np.stack(rest_coeffs, axis=1)
     sh_coeffs = np.concatenate([dc_coeffs, rest_coeffs], axis=1)
     normals = np.stack([v["nx"], v["ny"], v["nz"]], axis=-1)
 
@@ -72,7 +80,7 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
 
 
 def main(splat_paths: tuple[Path, ...]) -> None:
-    server = viser.ViserServer(port=8001)
+    server = viser.ViserServer(port=8014)
     server.gui.configure_theme(dark_mode=True)
     gui_reset_up = server.gui.add_button(
         "Reset up direction",
