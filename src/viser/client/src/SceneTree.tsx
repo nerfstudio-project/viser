@@ -500,15 +500,6 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 ),
               )
             }
-            norm_buffer={
-              new Uint32Array(
-                message.props.norm_buffer.buffer.slice(
-                  message.props.norm_buffer.byteOffset,
-                  message.props.norm_buffer.byteOffset +
-                    message.props.norm_buffer.byteLength,
-                ),
-              )
-            }
           />
         ),
       };

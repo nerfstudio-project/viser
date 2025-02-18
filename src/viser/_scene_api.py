@@ -1294,7 +1294,6 @@ class SceneApi:
         covariances: np.ndarray,
         rgbs: np.ndarray,
         opacities: np.ndarray,
-        normals: np.ndarray | None = None,
         sh_coeffs: np.ndarray | None = None,
         wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
@@ -1355,20 +1354,23 @@ class SceneApi:
                 ],
             ).view(np.uint32)
         else:
-            sh_buffer = np.zeros((num_gaussians, 48), dtype=np.float16).view(np.uint32)
+            SH_C0 = 0.28209479177387814
+            dc_coeffs = (rgbs - 0.5) / SH_C0
+            sh_buffer = np.concatenate(
+                [
+                    dc_coeffs, np.zeros((num_gaussians, 45))
+                ],
+                axis=1,
+                dtype=np.float16,
+            ).view(np.uint32)
+            # sh_buffer = np.zeros((num_gaussians, 48), dtype=np.float16).view(np.uint32)
 
-        if normals is not None:
-            assert normals.shape == (num_gaussians, 3)
-            norm_buffer = normals.astype(np.float32).view(np.uint8).view(np.uint32)
-        else:
-            norm_buffer = np.zeros((num_gaussians, 3), dtype=np.float32).view(np.uint8).view(np.uint32)
 
         message = _messages.GaussianSplatsMessage(
             name=name,
             props=_messages.GaussianSplatsProps(
                 buffer=buffer,
                 sh_buffer=sh_buffer,
-                norm_buffer=norm_buffer,
             ),
         )
         node_handle = GaussianSplatHandle._make(
