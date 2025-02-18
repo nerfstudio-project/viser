@@ -139,7 +139,6 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
         triu01.y, triu23.y, triu45.x,
         triu23.x, triu45.x, triu45.y
     );
-
     mat3 J = mat3(
         // Matrices are column-major.
         focal.x / c_cam.z, 0., 0.0,
@@ -272,7 +271,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
     // Throw the Gaussian off the screen if it's too close, too far, or too small.
     float weightedDeterminant = vRgba.a * (diag1 * diag2 - offDiag * offDiag);
-    if (weightedDeterminant < 0.5)
+    if (weightedDeterminant < 0.25)
       return;
     vPosition = position.xy;
 
@@ -359,7 +358,6 @@ export function useGaussianMeshProps(
   textureT_camera_groups.internalFormat = "RGBA32F";
   textureT_camera_groups.needsUpdate = true;
 
-  // NEW ADDITION*******************************************************
   // Values taken from PR https://github.com/nerfstudio-project/viser/pull/286/files
   // WIDTH AND HEIGHT ARE MEASURED IN TEXELS
   // As 48 x float16 = 96 bytes and each texel is 4 uint32s = 16 bytes
@@ -377,9 +375,6 @@ export function useGaussianMeshProps(
   );
   shTextureBuffer.internalFormat = "RGBA32UI";
   shTextureBuffer.needsUpdate = true;
-
-  // END NEW ADDITION***************************************************
-
 
   const material = new GaussianSplatMaterial({
     // @ts-ignore

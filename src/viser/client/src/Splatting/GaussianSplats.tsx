@@ -75,7 +75,6 @@ export const SplatObject = React.forwardRef<
     (state) => state.nodeRefFromId,
   );
   const name = React.useMemo(() => uuidv4(), [buffer]);
-  // Inspired from PR, maybe should look more similar to the original code above
   const sh_buffer_name = `sh_buffer_${name}`;
 
   React.useEffect(() => {
@@ -349,9 +348,6 @@ function mergeGaussianGroups(groupBufferFromName: {
       ([key]) => !key.startsWith("sh_buffer_")
     )
   );
-
-  // Temporarily using groupBufferFromName instead of groupBufferFromNameFiltered
-  // because it causes an error in the shader
   for (const buffer of Object.values(groupBufferFromNameFiltered)) {
     totalBufferLength += buffer.length;
   }

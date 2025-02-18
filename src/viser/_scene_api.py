@@ -1310,7 +1310,6 @@ class SceneApi:
             covariances: Second moment for each Gaussian. (N, 3, 3).
             rgbs: Color for each Gaussian. (N, 3).
             opacities: Opacity for each Gaussian. (N, 1).
-            normals: Normals for each Gaussian. (N, 3).
             sh_coeffs: Spherical harmonics coefficients for each Gaussian. (N, 48).
             wxyz: R_parent_local transformation.
             position: t_parent_local transformation.
@@ -1327,7 +1326,6 @@ class SceneApi:
 
         # Get upper-triangular terms of covariance matrix.
         cov_triu = covariances.reshape((-1, 9))[:, np.array([0, 1, 2, 4, 5, 8])]
-
         buffer = np.concatenate(
             [
                 # First texelFetch.
@@ -1354,6 +1352,10 @@ class SceneApi:
                 ],
             ).view(np.uint32)
         else:
+            # To ensure backwards compatibility, we'll compute SH coefficients from
+            # the RGB values.
+            # However, this is not efficient as packets sent to client
+            # will be larger. TODO: Permanently incorporate colors with SH coefficients.
             SH_C0 = 0.28209479177387814
             dc_coeffs = (rgbs - 0.5) / SH_C0
             sh_buffer = np.concatenate(
@@ -1363,8 +1365,6 @@ class SceneApi:
                 axis=1,
                 dtype=np.float16,
             ).view(np.uint32)
-            # sh_buffer = np.zeros((num_gaussians, 48), dtype=np.float16).view(np.uint32)
-
 
         message = _messages.GaussianSplatsMessage(
             name=name,
