@@ -44,6 +44,7 @@ import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
 import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
+import { AutoShadowDirectionalLight } from "./ThreeAssets";
 
 THREE.ColorManagement.enabled = true;
 
@@ -396,6 +397,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           // Release drag lock.
           pointerInfo.isDragging = false;
         }}
+        shadows
       >
         {inView ? null : <DisableRender />}
         <BackgroundImage />
@@ -416,6 +418,9 @@ function DefaultLights() {
   const viewer = React.useContext(ViewerContext)!;
   const enableDefaultLights = viewer.useSceneTree(
     (state) => state.enableDefaultLights,
+  );
+  const enableDefaultLightsShadows = viewer.useSceneTree(
+    (state) => state.enableDefaultLightsShadows,
   );
   const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
 
@@ -496,15 +501,17 @@ function DefaultLights() {
   if (enableDefaultLights)
     return (
       <>
-        <directionalLight
+        <AutoShadowDirectionalLight
           color={0xffffff}
           intensity={2.0}
-          position={[0, 1, 0]}
+          position={[-0.2, 1, -0.2]}
+          castShadow={enableDefaultLightsShadows}
         />
-        <directionalLight
+        <AutoShadowDirectionalLight
           color={0xffffff}
           intensity={0.4}
           position={[0, -1, 0]}
+          castShadow={false /* Let's only cast a shadow from above. */}
         />
         {envMapNode}
       </>

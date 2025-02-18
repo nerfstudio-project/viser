@@ -87,6 +87,9 @@ See here for download instructions:
             server.scene.set_up_direction("+y")
             server.gui.configure_theme(control_layout="collapsible")
 
+            server.scene.enable_default_lights(cast_shadow=True)
+            server.scene.add_grid("/grid", position=(0.0, -1.3, 0.0), plane="xz")
+
             # Main loop. We'll read pose/shape from the GUI elements, compute the mesh,
             # and then send the updated mesh in a loop.
             model = SmplHelper(model_path)

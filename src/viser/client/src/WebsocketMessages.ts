@@ -79,6 +79,7 @@ export interface GridMessage {
     section_color: [number, number, number];
     section_thickness: number;
     section_size: number;
+    shadow_opacity: number;
   };
 }
 /** Add a 2D label to the scene.
@@ -125,7 +126,11 @@ export interface PointCloudMessage {
 export interface DirectionalLightMessage {
   type: "DirectionalLightMessage";
   name: string;
-  props: { color: [number, number, number]; intensity: number };
+  props: {
+    color: [number, number, number];
+    intensity: number;
+    cast_shadow: boolean;
+  };
 }
 /** Ambient light message.
  *
@@ -161,6 +166,7 @@ export interface PointLightMessage {
     intensity: number;
     distance: number;
     decay: number;
+    cast_shadow: boolean;
   };
 }
 /** Rectangular Area light message.
@@ -191,6 +197,7 @@ export interface SpotLightMessage {
     angle: number;
     penumbra: number;
     decay: number;
+    cast_shadow: boolean;
   };
 }
 /** Mesh message.
@@ -848,13 +855,14 @@ export interface EnvironmentMapMessage {
   environment_intensity: number;
   environment_wxyz: [number, number, number, number];
 }
-/** Spot light message.
+/** Default light message.
  *
  * (automatically generated)
  */
 export interface EnableLightsMessage {
   type: "EnableLightsMessage";
   enabled: boolean;
+  cast_shadow: boolean;
 }
 /** Server -> client message to set a skinned mesh bone's orientation.
  *

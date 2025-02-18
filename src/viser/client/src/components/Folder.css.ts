@@ -3,13 +3,20 @@ import { vars } from "../AppTheme";
 
 export const folderWrapper = style({
   position: "relative",
-  marginTop: vars.spacing.xs,
   marginLeft: vars.spacing.xs,
   marginRight: vars.spacing.xs,
-  marginBottom: vars.spacing.md,
-  ":last-child": {
-    marginBottom: vars.spacing.xs,
+  // If there's a GUI element above, we need more margin.
+  marginTop: vars.spacing.md,
+  ":first-child": {
+    marginTop: vars.spacing.xs,
   },
+  // If there's a GUI element below, we need more margin.
+  // Note: 0.5em is the vertical margin below general GUI elements.
+  marginBottom: "0.7em",
+  ":last-child": {
+    marginBottom: "0.5em",
+  },
+  paddingBottom: `calc(${vars.spacing.xs} - 0.5em)`,
 });
 
 export const folderLabel = style({

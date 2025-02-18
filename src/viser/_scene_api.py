@@ -267,6 +267,7 @@ class SceneApi:
         name: str,
         color: Tuple[int, int, int] = (255, 255, 255),
         intensity: float = 1.0,
+        cast_shadow: bool = False,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -279,6 +280,7 @@ class SceneApi:
                 define a kinematic tree.
             color: Color of the light.
             intensity: Light's strength/intensity.
+            cast_shadow: If set to true light will cast dynamic shadows
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -288,7 +290,7 @@ class SceneApi:
         """
 
         message = _messages.DirectionalLightMessage(
-            name, _messages.DirectionalLightProps(color, intensity)
+            name, _messages.DirectionalLightProps(color, intensity, cast_shadow)
         )
         return DirectionalLightHandle._make(
             self, message, name, wxyz, position, visible
@@ -363,6 +365,7 @@ class SceneApi:
         intensity: float = 1.0,
         distance: float = 0.0,
         decay: float = 2.0,
+        cast_shadow: bool = False,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -377,6 +380,7 @@ class SceneApi:
             intensity: Light's strength/intensity.
             distance: Maximum distance of light.
             decay: The amount the light dims along the distance of the light.
+            cast_shadow: If set to true light will cast dynamic shadows
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -392,6 +396,7 @@ class SceneApi:
                 intensity=intensity,
                 distance=distance,
                 decay=decay,
+                cast_shadow=cast_shadow,
             ),
         )
         return PointLightHandle._make(self, message, name, wxyz, position, visible)
@@ -445,6 +450,7 @@ class SceneApi:
         penumbra: float = 0.0,
         decay: float = 2.0,
         intensity: float = 1.0,
+        cast_shadow: bool = False,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -463,6 +469,7 @@ class SceneApi:
                 Between 0 and 1.
             decay: The amount the light dims along the distance of the light.
             intensity: Light's strength/intensity.
+            cast_shadow: If set to true light will cast dynamic shadows
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -474,7 +481,7 @@ class SceneApi:
         message = _messages.SpotLightMessage(
             name,
             _messages.SpotLightProps(
-                color, intensity, distance, angle, penumbra, decay
+                color, intensity, distance, angle, penumbra, decay, cast_shadow
             ),
         )
         return SpotLightHandle._make(self, message, name, wxyz, position, visible)
@@ -534,7 +541,11 @@ class SceneApi:
             )
         )
 
-    def enable_default_lights(self, enabled: bool = True) -> None:
+    def enable_default_lights(
+        self,
+        enabled: bool = True,
+        cast_shadow: bool = False,
+    ) -> None:
         """Enable/disable the default lights in the scene. If not otherwise
         specified, default lighting will be enabled.
 
@@ -544,8 +555,11 @@ class SceneApi:
         Args:
             enabled: True if user wants default lighting. False if user does
                 not want default lighting.
+            cast_shadow:  If set to True light will cast dynamic shadows
         """
-        self._websock_interface.queue_message(_messages.EnableLightsMessage(enabled))
+        self._websock_interface.queue_message(
+            _messages.EnableLightsMessage(enabled, cast_shadow)
+        )
 
     def add_glb(
         self,
@@ -946,6 +960,7 @@ class SceneApi:
         section_color: RgbTupleOrArray = (140, 140, 140),
         section_thickness: float = 1.0,
         section_size: float = 1.0,
+        shadow_opacity: float = 0.15,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -967,6 +982,7 @@ class SceneApi:
             section_color: Color of the grid sections as an RGB tuple.
             section_thickness: Thickness of the section lines.
             section_size: Size of each section in the grid.
+            shadow_opacity: Opacity of shadows casted onto grid plane, 0: no shadows, 1: black shadows
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -988,6 +1004,7 @@ class SceneApi:
                 section_color=_encode_rgb(section_color),
                 section_thickness=section_thickness,
                 section_size=section_size,
+                shadow_opacity=shadow_opacity,
             ),
         )
         return GridHandle._make(self, message, name, wxyz, position, visible)

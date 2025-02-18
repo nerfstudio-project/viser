@@ -21,6 +21,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { HoverableContext } from "./HoverContext";
 import {
+  AutoShadowDirectionalLight,
   CameraFrustum,
   CoordinateFrame,
   GlbAsset,
@@ -35,6 +36,7 @@ import { SplatObject } from "./Splatting/GaussianSplats";
 import { Paper } from "@mantine/core";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Line } from "./Line";
+import { shadowArgs } from "./ShadowArgs";
 
 function rgbToInt(rgb: [number, number, number]): number {
   return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
@@ -192,6 +194,57 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     }
 
     case "GridMessage": {
+      const gridQuaternion = new THREE.Quaternion().setFromEuler(
+        // There's redundancy here when we set the side to
+        // THREE.DoubleSide, where xy and yx should be the same.
+        //
+        // But it makes sense to keep this parameterization because
+        // specifying planes by xy seems more natural than the normal
+        // direction (z, +z, or -z), and it opens the possibility of
+        // rendering only FrontSide or BackSide grids in the future.
+        //
+        // If we add support for FrontSide or BackSide, we should
+        // double-check that the normal directions from each of these
+        // rotations match the right-hand rule!
+        message.props.plane == "xz"
+          ? new THREE.Euler(0.0, 0.0, 0.0)
+          : message.props.plane == "xy"
+            ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+            : message.props.plane == "yx"
+              ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+              : message.props.plane == "yz"
+                ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                : message.props.plane == "zx"
+                  ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                  : //message.props.plane == "zy"
+                    new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0),
+      );
+
+      // When rotations are identity: plane is XY, while grid is XZ.
+      const planeQuaternion = new THREE.Quaternion()
+        .setFromEuler(new THREE.Euler(-Math.PI / 2, 0.0, 0.0))
+        .premultiply(gridQuaternion);
+
+      let shadowPlane;
+      if (message.props.shadow_opacity > 0.0) {
+        shadowPlane = (
+          <mesh
+            receiveShadow
+            position={[0.0, 0.0, -0.01]}
+            quaternion={planeQuaternion}
+          >
+            <planeGeometry args={[message.props.width, message.props.height]} />
+            <shadowMaterial
+              opacity={message.props.shadow_opacity}
+              color={0x000000}
+              depthWrite={false}
+            />
+          </mesh>
+        );
+      } else {
+        // when opacity = 0.0, no shadowPlane for performance
+        shadowPlane = <></>;
+      }
       return {
         makeObject: (ref) => (
           <group ref={ref}>
@@ -209,37 +262,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
               sectionColor={rgbToInt(message.props.section_color)}
               sectionThickness={message.props.section_thickness}
               sectionSize={message.props.section_size}
-              rotation={
-                // There's redundancy here when we set the side to
-                // THREE.DoubleSide, where xy and yx should be the same.
-                //
-                // But it makes sense to keep this parameterization because
-                // specifying planes by xy seems more natural than the normal
-                // direction (z, +z, or -z), and it opens the possibility of
-                // rendering only FrontSide or BackSide grids in the future.
-                //
-                // If we add support for FrontSide or BackSide, we should
-                // double-check that the normal directions from each of these
-                // rotations match the right-hand rule!
-                message.props.plane == "xz"
-                  ? new THREE.Euler(0.0, 0.0, 0.0)
-                  : message.props.plane == "xy"
-                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                    : message.props.plane == "yx"
-                      ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                      : message.props.plane == "yz"
-                        ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                        : message.props.plane == "zx"
-                          ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                          : message.props.plane == "zy"
-                            ? new THREE.Euler(
-                                -Math.PI / 2.0,
-                                0.0,
-                                -Math.PI / 2.0,
-                              )
-                            : undefined
-              }
+              quaternion={gridQuaternion}
             />
+            {shadowPlane}
           </group>
         ),
       };
@@ -509,16 +534,19 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     case "DirectionalLightMessage": {
       return {
         makeObject: (ref) => (
-          <directionalLight
+          <AutoShadowDirectionalLight
             ref={ref}
             intensity={message.props.intensity}
             color={rgbToInt(message.props.color)}
+            castShadow={message.props.cast_shadow}
+            {...shadowArgs}
           />
         ),
       };
     }
 
     // Add an ambient light
+    // Cannot cast shadows
     case "AmbientLightMessage": {
       return {
         makeObject: (ref) => (
@@ -532,6 +560,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     }
 
     // Add a hemisphere light
+    // Cannot cast shadows
     case "HemisphereLightMessage": {
       return {
         makeObject: (ref) => (
@@ -555,11 +584,14 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             color={rgbToInt(message.props.color)}
             distance={message.props.distance}
             decay={message.props.decay}
+            castShadow={message.props.cast_shadow}
+            {...shadowArgs}
           />
         ),
       };
     }
     // Add a rectangular area light
+    // Cannot cast shadows
     case "RectAreaLightMessage": {
       return {
         makeObject: (ref) => (
@@ -586,6 +618,8 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             angle={message.props.angle}
             penumbra={message.props.penumbra}
             decay={message.props.decay}
+            castShadow={message.props.cast_shadow}
+            {...shadowArgs}
           />
         ),
       };

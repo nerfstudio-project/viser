@@ -15,6 +15,7 @@ type SceneTreeState = {
   nodeFromName: { [name: string]: SceneNode | undefined };
   labelVisibleFromName: { [name: string]: boolean };
   enableDefaultLights: boolean;
+  enableDefaultLightsShadows: boolean;
   environmentMap: EnvironmentMapMessage;
 };
 
@@ -75,6 +76,7 @@ export function useSceneTreeState(
         },
         labelVisibleFromName: {},
         enableDefaultLights: true,
+        enableDefaultLightsShadows: false,
         environmentMap: {
           type: "EnvironmentMapMessage",
           hdri: "city",
