@@ -695,7 +695,7 @@ export function Root() {
   const searchParams = new URLSearchParams(window.location.search);
   const dummyWindowParam = searchParams.get("dummyWindowDimensions");
 
-  let content = (
+  const content = (
     <div
       style={{
         width: "100%",
