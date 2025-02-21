@@ -45,6 +45,7 @@ import { PlaybackFromFile } from "./FilePlayback";
 import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
 import { AutoShadowDirectionalLight } from "./ThreeAssets";
+import { MacWindowWrapper } from "./MacWindowWrapper";
 
 THREE.ColorManagement.enabled = true;
 
@@ -690,7 +691,11 @@ function SceneContextSetter() {
 }
 
 export function Root() {
-  return (
+  // Parse dummy window dimensions from URL if present
+  const searchParams = new URLSearchParams(window.location.search);
+  const dummyWindowParam = searchParams.get("dummyWindowDimensions");
+
+  let content = (
     <div
       style={{
         width: "100%",
@@ -703,6 +708,19 @@ export function Root() {
       <ViewerRoot />
     </div>
   );
+
+  // If dummy window dimensions are specified, wrap content in MacWindowWrapper
+  if (dummyWindowParam) {
+    const [width, height] = dummyWindowParam.split("x").map(Number);
+    if (!isNaN(width) && !isNaN(height)) {
+      return (
+        <MacWindowWrapper width={width} height={height}>
+          {content}
+        </MacWindowWrapper>
+      );
+    }
+  }
+  return content;
 }
 
 /** Logo. When clicked, opens an info modal. */
