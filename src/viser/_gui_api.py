@@ -59,8 +59,8 @@ from ._gui_handles import (
     GuiVector3Handle,
     SupportsRemoveProtocol,
     UploadedFile,
+    _GuiHandle,
     _GuiHandleState,
-    _GuiInputHandle,
     _make_uuid,
 )
 from ._icons import svg_from_icon
@@ -204,7 +204,7 @@ class GuiApi:
         )
         """Interface for sending and listening to messages."""
 
-        self._gui_input_handle_from_uuid: dict[str, _GuiInputHandle[Any]] = {}
+        self._gui_handle_from_uuid: dict[str, _GuiHandle[Any]] = {}
         self._container_handle_from_uuid: dict[str, GuiContainerProtocol] = {
             "root": _RootGuiContainer({})
         }
@@ -229,7 +229,7 @@ class GuiApi:
         self, client_id: ClientId, message: _messages.GuiUpdateMessage
     ) -> None:
         """Callback for handling GUI messages."""
-        handle = self._gui_input_handle_from_uuid.get(message.uuid, None)
+        handle = self._gui_handle_from_uuid.get(message.uuid, None)
         if handle is None:
             return
         handle_state = handle._impl
@@ -294,7 +294,7 @@ class GuiApi:
     def _handle_file_transfer_start(
         self, client_id: ClientId, message: _messages.FileTransferStartUpload
     ) -> None:
-        if message.source_component_uuid not in self._gui_input_handle_from_uuid:
+        if message.source_component_uuid not in self._gui_handle_from_uuid:
             return
         self._current_file_upload_states[message.transfer_uuid] = {
             "filename": message.filename,
@@ -311,7 +311,7 @@ class GuiApi:
     ) -> None:
         if message.transfer_uuid not in self._current_file_upload_states:
             return
-        assert message.source_component_uuid in self._gui_input_handle_from_uuid
+        assert message.source_component_uuid in self._gui_handle_from_uuid
 
         state = self._current_file_upload_states[message.transfer_uuid]
         state["parts"][message.part] = message.content
@@ -337,9 +337,7 @@ class GuiApi:
         assert state["transferred_bytes"] == total_bytes
         state = self._current_file_upload_states.pop(message.transfer_uuid)
 
-        handle = self._gui_input_handle_from_uuid.get(
-            message.source_component_uuid, None
-        )
+        handle = self._gui_handle_from_uuid.get(message.source_component_uuid, None)
         if handle is None:
             return
 
@@ -688,6 +686,7 @@ class GuiApi:
                 media_type="image/png" if format == "png" else "image/jpeg",
                 order=_apply_default_order(order),
                 visible=visible,
+                _clickable=False,
             ),
         )
         self._websock_interface.queue_message(message)
@@ -696,9 +695,10 @@ class GuiApi:
             _GuiHandleState(
                 message.uuid,
                 self,
-                None,
+                [0.0, 0.0],
                 props=message.props,
                 parent_container_id=message.container_uuid,
+                is_button=True,
             ),
             _image=image,
             _jpeg_quality=jpeg_quality,
