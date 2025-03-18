@@ -14,12 +14,14 @@
     "@msgpack/msgpack": "^3.0.0-beta2",
     "@react-three/drei": "^9.64.0",
     "@react-three/fiber": "^8.12.0",
+    "@react-three/xr": "^6.6.9",
     "@tabler/icons-react": "^3.1.0",
     "@types/node": "^20.11.30",
     "@types/react": "^18.0.33",
     "@types/react-dom": "^18.0.11",
     "@types/three": "0.170.0",
     "@vanilla-extract/css": "^1.14.1",
+    "@vitejs/plugin-basic-ssl": "^2.0.0",
     "@vitejs/plugin-react": "^4.0.1",
     "await-lock": "^2.2.2",
     "clsx": "^2.1.0",
@@ -87,5 +89,6 @@
     "postcss-preset-mantine": "^1.13.0",
     "typescript": "^5.0.4",
     "vite-plugin-eslint": "^1.8.1"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
