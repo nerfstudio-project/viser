@@ -23,6 +23,7 @@ from typing_extensions import Literal
 
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
+from ._certificates import create_self_signed_cert
 from ._gui_api import Color, GuiApi, _make_uuid
 from ._notification_handle import NotificationHandle, _NotificationHandleState
 from ._scene_api import SceneApi, cast_vector
@@ -588,6 +589,8 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         host: Host to bind server to.
         port: Port to bind server to.
         label: Label shown at the top of the GUI panel.
+        https: Whether to use HTTPS with self-signed certificates. If True,
+               server will use HTTPS and WSS protocols.
     """
 
     # Hide deprecated arguments from docstring and type checkers.
@@ -597,8 +600,20 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         port: int = 8080,
         label: str | None = None,
         verbose: bool = True,
+        https: bool = False,
         **_deprecated_kwargs,
     ):
+        ssl_context = None
+        if https:
+            # Create Self Signed Certificates
+            cert_path, key_path = create_self_signed_cert()
+
+            # Create SSL Context
+            import ssl
+
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            ssl_context.load_cert_chain(cert_path, key_path)
+
         # Create server.
         server = infra.WebsockServer(
             host=host,
@@ -607,6 +622,7 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
             http_server_root=Path(__file__).absolute().parent / "client" / "build",
             verbose=verbose,
             client_api_version=1,
+            ssl_context=ssl_context,
         )
         self._websock_server = server
 
@@ -728,19 +744,23 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
             # 0.0.0.0 is not a real IP and people are often confused by it;
             # we'll just print localhost. This is questionable from a security
             # perspective, but probably fine for our use cases.
-            http_url = f"http://localhost:{port}"
-            ws_url = f"ws://localhost:{port}"
+            http_protocol = "https" if https else "http"
+            ws_protocol = "wss" if https else "ws"
+            http_url = f"{http_protocol}://localhost:{port}"
+            ws_url = f"{ws_protocol}://localhost:{port}"
         else:
-            http_url = f"http://{host}:{port}"
-            ws_url = f"ws://{host}:{port}"
+            http_protocol = "https" if https else "http"
+            ws_protocol = "wss" if https else "ws"
+            http_url = f"{http_protocol}://{host}:{port}"
+            ws_url = f"{ws_protocol}://{host}:{port}"
         table = Table(
             title=None,
             show_header=False,
             box=box.MINIMAL,
             title_style=style.Style(bold=True),
         )
-        table.add_row("HTTP", http_url)
-        table.add_row("Websocket", ws_url)
+        table.add_row(http_protocol.upper(), http_url)
+        table.add_row(ws_protocol.upper(), ws_url)
         rich.print(
             Panel(
                 table,

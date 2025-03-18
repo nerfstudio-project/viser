@@ -65,9 +65,9 @@ class StateSerializer:
     def insert_sleep(self, duration: float) -> None:
         """Insert a sleep into the recorded file. This can be useful for
         dynamic 3D data."""
-        assert self._handler._record_handle is not None, (
-            "serialize() was already called!"
-        )
+        assert (
+            self._handler._record_handle is not None
+        ), "serialize() was already called!"
         self._time += duration
 
     def serialize(self) -> bytes:
@@ -78,9 +78,9 @@ class StateSerializer:
         Returns:
             The recording as bytes.
         """
-        assert self._handler._record_handle is not None, (
-            "serialize() was already called!"
-        )
+        assert (
+            self._handler._record_handle is not None
+        ), "serialize() was already called!"
         import viser
 
         packed_bytes = msgspec.msgpack.encode(
@@ -133,9 +133,9 @@ class WebsockMessageHandler:
         callback: Callable[[ClientId, TMessage], None | Coroutine] | None = None,
     ):
         """Unregister a handler for a particular message type."""
-        assert message_cls in self._incoming_handlers, (
-            "Tried to unregister a handler that hasn't been registered."
-        )
+        assert (
+            message_cls in self._incoming_handlers
+        ), "Tried to unregister a handler that hasn't been registered."
         if callback is None:
             self._incoming_handlers.pop(message_cls)
         else:
@@ -228,6 +228,7 @@ class WebsockServer(WebsockMessageHandler):
         http_server_root: Path | None = None,
         verbose: bool = True,
         client_api_version: Literal[0, 1] = 0,
+        ssl_context=None,
     ):
         super().__init__()
 
@@ -246,6 +247,7 @@ class WebsockServer(WebsockMessageHandler):
         self._verbose = verbose
         self._client_api_version: Literal[0, 1] = client_api_version
         self._background_event_loop: asyncio.AbstractEventLoop | None = None
+        self._ssl_context = ssl_context
 
         self._stop_event: asyncio.Event | None = None
 
@@ -511,6 +513,7 @@ class WebsockServer(WebsockMessageHandler):
                         port_attempt,
                         # Compression can be too slow for our use cases.
                         compression=None,
+                        ssl=self._ssl_context,
                         process_request=(
                             viser_http_server if http_server_root is not None else None
                         ),
