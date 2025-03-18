@@ -47,7 +47,8 @@ dependencies = [
     "nodeenv>=1.8.0",
     "psutil>=5.9.5",
     "yourdfpy>=0.0.53",
-    "plyfile>=1.0.2"
+    "plyfile>=1.0.2",
+    "cryptography>=44.0.2",
 ]
 
 [project.optional-dependencies]
