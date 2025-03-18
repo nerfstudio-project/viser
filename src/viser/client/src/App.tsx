@@ -48,6 +48,14 @@ import { AutoShadowDirectionalLight } from "./ThreeAssets";
 
 THREE.ColorManagement.enabled = true;
 
+// VR related imports
+import { Canvas } from "@react-three/fiber";
+import { XR, createXRStore } from "@react-three/xr";
+import { useState } from "react";
+
+const store = createXRStore();
+// End VR related imports
+
 function ViewerRoot() {
   // What websocket server should we connect to?
   function getDefaultServerFromUrl() {
@@ -242,6 +250,8 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         height: "100%",
       }}
     >
+      <button onClick={() => store.enterVR()}>Enter VR</button>
+      <button onClick={() => store.enterAR()}>Enter AR</button>
       <Canvas
         camera={{ position: [-3.0, 3.0, -3.0], near: 0.01, far: 1000.0 }}
         gl={{ preserveDrawingBuffer: true }}
@@ -399,16 +409,18 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         }}
         shadows
       >
-        {inView ? null : <DisableRender />}
-        <BackgroundImage />
-        <SceneContextSetter />
-        {memoizedCameraControls}
-        <SplatRenderContext>
-          <AdaptiveDpr />
-          {children}
-          <SceneNodeThreeObject name="" parent={null} />
-        </SplatRenderContext>
-        <DefaultLights />
+        <XR store={store}>
+          {inView ? null : <DisableRender />}
+          <BackgroundImage />
+          <SceneContextSetter />
+          {memoizedCameraControls}
+          <SplatRenderContext>
+            <AdaptiveDpr />
+            {children}
+            <SceneNodeThreeObject name="" parent={null} />
+          </SplatRenderContext>
+          <DefaultLights />
+        </XR>
       </Canvas>
     </div>
   );
