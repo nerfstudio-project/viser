@@ -23,10 +23,7 @@ export type LineProps = {
   segments?: boolean;
 } & Omit<LineMaterialParameters, "vertexColors" | "color"> &
   Omit<ThreeElement<typeof Line2>, "args"> &
-  Omit<
-    ThreeElement<typeof LineMaterial>,
-    "color" | "vertexColors" | "args"
-  > & {
+  Omit<ThreeElement<typeof LineMaterial>, "color" | "vertexColors" | "args"> & {
     color?: ColorRepresentation;
   };
 
