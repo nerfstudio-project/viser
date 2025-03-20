@@ -7,7 +7,7 @@ interface CascadedShadowMapProps
   extends Omit<CSMParameters, "lightDirection" | "camera" | "parent"> {
   fade?: boolean;
   lightDirection?: Vector3Tuple;
-  color?: Color;
+  color?: number;
 }
 
 class CSMProxy {
@@ -89,7 +89,7 @@ export function CascadedShadowMap({
   useEffect(() => {
     if (color === undefined) return;
     proxyInstance.instance!.lights.forEach((light) => {
-      light.color = color;
+      light.color = new Color(color);
     });
   }, []);
 

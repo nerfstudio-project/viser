@@ -497,6 +497,7 @@ function DefaultLights() {
       />
     );
   }
+  // TODO: need to figure out lights
   if (enableDefaultLights)
     return (
       <>
