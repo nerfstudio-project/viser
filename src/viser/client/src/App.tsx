@@ -45,6 +45,7 @@ import { PlaybackFromFile } from "./FilePlayback";
 import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
 import { AutoShadowDirectionalLight } from "./ThreeAssets";
+import { CascadedShadowMap } from "./CascadedShadowMaps";
 
 function ViewerRoot() {
   // What websocket server should we connect to?
@@ -417,9 +418,9 @@ function DefaultLights() {
   const enableDefaultLights = viewer.useSceneTree(
     (state) => state.enableDefaultLights,
   );
-  const enableDefaultLightsShadows = viewer.useSceneTree(
-    (state) => state.enableDefaultLightsShadows,
-  );
+  // const enableDefaultLightsShadows = viewer.useSceneTree(
+  //   (state) => state.enableDefaultLightsShadows,
+  // );
   const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
 
   // Environment map frames:
@@ -499,11 +500,21 @@ function DefaultLights() {
   if (enableDefaultLights)
     return (
       <>
-        <AutoShadowDirectionalLight
+        {/*<AutoShadowDirectionalLight
           color={0xffffff}
           intensity={2.0}
           position={[-0.2, 1, -0.2]}
           castShadow={enableDefaultLightsShadows}
+        />*/}
+        <CascadedShadowMap
+          fade={true}
+          lightIntensity={3.0}
+          lightDirection={[-0.2, -1.0, -0.2]}
+          cascades={3}
+          color={new THREE.Color(0xff0000)}
+          maxFar={20}
+          mode="practical"
+          shadowBias={-0.0001}
         />
         <AutoShadowDirectionalLight
           color={0xffffff}

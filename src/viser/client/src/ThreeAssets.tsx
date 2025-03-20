@@ -171,7 +171,7 @@ export const GlbAsset = React.forwardRef<
     glb_data: Uint8Array<ArrayBuffer>;
     scale: number;
   }
->(function GlbAsset({ glb_data, scale }, ref) {
+>(function GlbAsset_({ glb_data, scale }, ref) {
   // We track both the GLTF asset itself and all meshes within it. Meshes are
   // used for hover effects.
 
@@ -270,9 +270,11 @@ export const GlbAsset = React.forwardRef<
       {gltf === undefined ? null : (
         <>
           <primitive object={gltf.scene} scale={scale} />
-          {meshes.map((mesh) =>
-            createPortal(<OutlinesIfHovered alwaysMounted />, mesh),
-          )}
+          {meshes.map((mesh, i) => (
+            <React.Fragment key={i}>
+              {createPortal(<OutlinesIfHovered alwaysMounted />, mesh)}
+            </React.Fragment>
+          ))}
         </>
       )}
     </group>
