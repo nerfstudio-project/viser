@@ -270,9 +270,11 @@ export const GlbAsset = React.forwardRef<
       {gltf === undefined ? null : (
         <>
           <primitive object={gltf.scene} scale={scale} />
-          {meshes.map((mesh) =>
-            createPortal(<OutlinesIfHovered alwaysMounted />, mesh),
-          )}
+          {meshes.map((mesh, i) => (
+            <React.Fragment key={i}>
+              {createPortal(<OutlinesIfHovered alwaysMounted />, mesh)}
+            </React.Fragment>
+          ))}
         </>
       )}
     </group>
