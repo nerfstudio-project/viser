@@ -46,8 +46,6 @@ import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
 import { AutoShadowDirectionalLight } from "./ThreeAssets";
 
-THREE.ColorManagement.enabled = true;
-
 function ViewerRoot() {
   // What websocket server should we connect to?
   function getDefaultServerFromUrl() {
