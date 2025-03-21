@@ -503,7 +503,7 @@ function DefaultLights() {
         <CsmDirectionalLight
           fade={true}
           lightIntensity={3.0}
-          position={[0.2, 10.0, 0.2]} // Coming from above, slightly off-center
+          position={[-0.2, 1.0, -0.2]} // Coming from above, slightly off-center
           cascades={3}
           color={0xffffff}
           maxFar={20}
@@ -514,7 +514,7 @@ function DefaultLights() {
         <CsmDirectionalLight
           color={0xffffff}
           lightIntensity={0.4}
-          position={[0, -10, 0]} // Light from below
+          position={[0, -1, 0]} // Light from below
           castShadow={false /* Let's only cast a shadow from above. */}
         />
         {envMapNode}
