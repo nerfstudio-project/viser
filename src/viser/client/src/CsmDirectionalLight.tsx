@@ -137,7 +137,7 @@ function ShadowCsmLight({
   lightIntensity,
   cascades,
   fade,
-  position,
+  position = [0, -1, 0],
   shadowBias,
   lightFar,
   lightMargin,

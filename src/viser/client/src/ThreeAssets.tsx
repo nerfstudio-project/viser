@@ -849,7 +849,7 @@ export const CameraFrustum = React.forwardRef<
         >
           <planeGeometry
             attach="geometry"
-            args={[props.aspect * y * 2, y * 2]}
+            args={[message.props.aspect * y * 2, y * 2]}
           />
           <meshBasicMaterial
             attach="material"
