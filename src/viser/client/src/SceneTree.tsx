@@ -17,7 +17,6 @@ import {
 } from "./WebsocketFunctions";
 import { Html } from "@react-three/drei";
 import { useSceneTreeState } from "./SceneTreeState";
-import { ErrorBoundary } from "react-error-boundary";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { HoverableContext } from "./HoverContext";
 import {
