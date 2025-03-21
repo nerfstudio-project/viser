@@ -106,9 +106,9 @@ TVector = TypeVar("TVector", bound=tuple)
 
 def cast_vector(vector: TVector | np.ndarray, length: int) -> TVector:
     if not isinstance(vector, tuple):
-        assert cast(np.ndarray, vector).shape == (length,), (
-            f"Expected vector of shape {(length,)}, but got {vector.shape} instead"
-        )
+        assert cast(np.ndarray, vector).shape == (
+            length,
+        ), f"Expected vector of shape {(length,)}, but got {vector.shape} instead"
     return cast(TVector, tuple(map(float, vector)))
 
 
@@ -541,25 +541,32 @@ class SceneApi:
             )
         )
 
-    def enable_default_lights(
+    def configure_default_lights(
         self,
         enabled: bool = True,
-        cast_shadow: bool = False,
+        cast_shadow: bool = True,
     ) -> None:
-        """Enable/disable the default lights in the scene. If not otherwise
-        specified, default lighting will be enabled.
+        """Configure the default lights in the scene.
 
         This does not affect lighting from the environment map. To turn these off,
         see :meth:`SceneApi.set_environment_map()`.
 
         Args:
-            enabled: True if user wants default lighting. False if user does
-                not want default lighting.
-            cast_shadow:  If set to True light will cast dynamic shadows
+            enabled: Whether or not the lights are enabled.
+            cast_shadow: Whether to cast shadows. Disabling can improve performance.
         """
         self._websock_interface.queue_message(
             _messages.EnableLightsMessage(enabled, cast_shadow)
         )
+
+    if not TYPE_CHECKING:
+
+        def enable_default_lights(self, *args, **kwargs) -> None:
+            warnings.warn(
+                "The 'enable_default_lights' method has been renamed to 'configure_default_lights'.",
+                DeprecationWarning,
+            )
+            return self.configure_default_lights(*args, **kwargs)
 
     def add_glb(
         self,
@@ -569,6 +576,8 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
     ) -> GlbHandle:
         """Add a general 3D asset via binary glTF (GLB).
 
@@ -586,11 +595,15 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
+            cast_shadow: Whether this node should cast shadows.
+            receive_shadow: Whether this node should receive shadows.
 
         Returns:
             Handle for manipulating scene node.
         """
-        message = _messages.GlbMessage(name, _messages.GlbProps(glb_data, scale))
+        message = _messages.GlbMessage(
+            name, _messages.GlbProps(glb_data, scale, cast_shadow, receive_shadow)
+        )
         return GlbHandle._make(self, message, name, wxyz, position, visible)
 
     def add_line_segments(
@@ -661,8 +674,10 @@ class SceneApi:
         This method creates a spline based on a set of positions and interpolates
         them using the Catmull-Rom algorithm. This can be used to create smooth curves.
 
-        If many splines are needed, it'll be more efficient to batch them in
-        :meth:`add_line_segments()`.
+        .. note::
+
+            If many splines are needed, :meth:`add_line_segments()` supports
+            batching and will be more efficient.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
@@ -720,8 +735,10 @@ class SceneApi:
         positions and control points. It is useful for creating complex, smooth,
         curving shapes.
 
-        If many splines are needed, it'll be more efficient to batch them in
-        :meth:`add_line_segments()`.
+        .. note::
+
+            If many splines are needed, :meth:`add_line_segments()` supports
+            batching and will be more efficient.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
@@ -777,6 +794,8 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
         *_removed_kwargs,
     ) -> CameraFrustumHandle:
         """Add a camera frustum to the scene for visualization.
@@ -802,6 +821,8 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
+            cast_shadow: Whether this frustum should cast shadows.
+            receive_shadow: Whether this frustum should receive shadows.
 
         Returns:
             Handle for manipulating scene node.
@@ -831,6 +852,8 @@ class SceneApi:
                 color=_encode_rgb(color),
                 image_media_type=media_type,
                 _image_data=binary,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
             ),
         )
         handle = CameraFrustumHandle._make(self, message, name, wxyz, position, visible)
@@ -960,7 +983,7 @@ class SceneApi:
         section_color: RgbTupleOrArray = (140, 140, 140),
         section_thickness: float = 1.0,
         section_size: float = 1.0,
-        shadow_opacity: float = 0.15,
+        shadow_opacity: float = 0.125,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1064,9 +1087,9 @@ class SceneApi:
             Handle for manipulating scene node.
         """
         colors_cast = colors_to_uint8(np.asarray(colors))
-        assert len(points.shape) == 2 and points.shape[-1] == 3, (
-            "Shape of points should be (N, 3)."
-        )
+        assert (
+            len(points.shape) == 2 and points.shape[-1] == 3
+        ), "Shape of points should be (N, 3)."
         assert colors_cast.shape in {
             points.shape,
             (3,),
@@ -1109,6 +1132,8 @@ class SceneApi:
         wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
     ) -> MeshSkinnedHandle:
         """Add a skinned mesh to the scene, which we can deform using a set of
         bone transformations.
@@ -1135,6 +1160,8 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this mesh is initially visible.
+            cast_shadow: Whether this skinned mesh should cast shadows.
+            receive_shadow: Whether this skinned mesh should receive shadows.
 
         Returns:
             Handle for manipulating scene node.
@@ -1182,6 +1209,8 @@ class SceneApi:
                 bone_positions=bone_positions.astype(np.float32),
                 skin_indices=top4_skin_indices.astype(np.uint16),
                 skin_weights=top4_skin_weights.astype(np.float32),
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
             ),
         )
         handle = MeshHandle._make(self, message, name, wxyz, position, visible)
@@ -1215,6 +1244,8 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
     ) -> MeshHandle:
         """Add a mesh to the scene.
 
@@ -1235,6 +1266,8 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this mesh is initially visible.
+            cast_shadow: Whether this mesh should cast shadows.
+            receive_shadow: Whether this mesh should receive shadows.
 
         Returns:
             Handle for manipulating scene node.
@@ -1260,6 +1293,8 @@ class SceneApi:
                 flat_shading=flat_shading,
                 side=side,
                 material=material,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
             ),
         )
         return MeshHandle._make(self, message, name, wxyz, position, visible)
@@ -1511,6 +1546,8 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
     ) -> ImageHandle:
         """Add a 2D image to the scene.
 
@@ -1525,6 +1562,8 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this image is initially visible.
+            cast_shadow: Whether this image should cast shadows.
+            receive_shadow: Whether this image should receive shadows.
 
         Returns:
             Handle for manipulating scene node.
@@ -1539,6 +1578,8 @@ class SceneApi:
                 _data=binary,
                 render_width=render_width,
                 render_height=render_height,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
             ),
         )
         handle = ImageHandle._make(self, message, name, wxyz, position, visible)

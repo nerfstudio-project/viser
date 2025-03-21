@@ -26,6 +26,7 @@ import {
 } from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import {
+  CameraFrustumMessage,
   ImageMessage,
   MeshMessage,
   PointCloudMessage,
@@ -167,10 +168,12 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
 export const GlbAsset = React.forwardRef<
   THREE.Group,
   {
-    glb_data: Uint8Array<ArrayBuffer>;
+    glbData: Uint8Array<ArrayBuffer>;
     scale: number;
+    castShadow: boolean;
+    receiveShadow: boolean;
   }
->(function GlbAsset_({ glb_data, scale }, ref) {
+>(function GlbAsset_(props, ref) {
   // We track both the GLTF asset itself and all meshes within it. Meshes are
   // used for hover effects.
 
@@ -188,7 +191,7 @@ export const GlbAsset = React.forwardRef<
     loader.setDRACOLoader(dracoLoader);
 
     loader.parse(
-      glb_data.buffer,
+      props.glbData.buffer,
       "",
       (gltf) => {
         if (gltf.animations && gltf.animations.length) {
@@ -202,8 +205,8 @@ export const GlbAsset = React.forwardRef<
           if (obj instanceof THREE.Mesh) {
             obj.geometry.computeVertexNormals();
             obj.geometry.computeBoundingSphere();
-            obj.castShadow = true;
-            obj.receiveShadow = true;
+            obj.castShadow = props.castShadow;
+            obj.receiveShadow = props.receiveShadow;
             meshes.push(obj);
           }
         });
@@ -256,7 +259,7 @@ export const GlbAsset = React.forwardRef<
       // Attempt to free resources.
       gltf?.scene.traverse(disposeNode);
     };
-  }, [glb_data]);
+  }, [props.glbData, props.castShadow, props.receiveShadow]);
 
   useFrame((_, delta) => {
     if (mixerRef.current) {
@@ -268,7 +271,7 @@ export const GlbAsset = React.forwardRef<
     <group ref={ref}>
       {gltf === undefined ? null : (
         <>
-          <primitive object={gltf.scene} scale={scale} />
+          <primitive object={gltf.scene} scale={props.scale} />
           {meshes.map((mesh, i) => (
             <React.Fragment key={i}>
               {createPortal(<OutlinesIfHovered alwaysMounted />, mesh)}
@@ -689,8 +692,8 @@ export const ViserMesh = React.forwardRef<
         geometry={geometry}
         material={material}
         skeleton={skeleton}
-        castShadow
-        receiveShadow
+        castShadow={message.props.cast_shadow}
+        receiveShadow={message.props.receive_shadow}
         // TODO: leaving culling on (default) sometimes causes the
         // mesh to randomly disappear, as of r3f==8.16.2.
         //
@@ -708,8 +711,8 @@ export const ViserMesh = React.forwardRef<
         ref={ref as React.ForwardedRef<THREE.Mesh>}
         geometry={geometry}
         material={material}
-        castShadow
-        receiveShadow
+        castShadow={message.props.cast_shadow}
+        receiveShadow={message.props.receive_shadow}
       >
         <OutlinesIfHovered alwaysMounted />
       </mesh>
@@ -732,7 +735,11 @@ export const ViserImage = React.forwardRef<THREE.Group, ImageMessage>(
     }, [message.props.media_type, message.props._data]);
     return (
       <group ref={ref}>
-        <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)} castShadow>
+        <mesh
+          rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
+          castShadow={message.props.cast_shadow}
+          receiveShadow={message.props.receive_shadow}
+        >
           <OutlinesIfHovered />
           <planeGeometry
             attach="geometry"
@@ -754,21 +761,18 @@ export const ViserImage = React.forwardRef<THREE.Group, ImageMessage>(
 /** Helper for visualizing camera frustums. */
 export const CameraFrustum = React.forwardRef<
   THREE.Group,
-  {
-    fov: number;
-    aspect: number;
-    scale: number;
-    lineWidth: number;
-    color: number;
-    imageBinary: Uint8Array | null;
-    imageMediaType: string | null;
-  }
->(function CameraFrustum(props, ref) {
+  CameraFrustumMessage
+>(function CameraFrustum(message, ref) {
   const [imageTexture, setImageTexture] = React.useState<THREE.Texture>();
 
   React.useEffect(() => {
-    if (props.imageMediaType !== null && props.imageBinary !== null) {
-      const image_url = URL.createObjectURL(new Blob([props.imageBinary]));
+    if (
+      message.props.image_media_type !== null &&
+      message.props._image_data !== null
+    ) {
+      const image_url = URL.createObjectURL(
+        new Blob([message.props._image_data]),
+      );
       new THREE.TextureLoader().load(image_url, (texture) => {
         setImageTexture(texture);
         URL.revokeObjectURL(image_url);
@@ -776,19 +780,19 @@ export const CameraFrustum = React.forwardRef<
     } else {
       setImageTexture(undefined);
     }
-  }, [props.imageMediaType, props.imageBinary]);
+  }, [message.props.image_media_type, message.props._image_data]);
 
-  let y = Math.tan(props.fov / 2.0);
-  let x = y * props.aspect;
+  let y = Math.tan(message.props.fov / 2.0);
+  let x = y * message.props.aspect;
   let z = 1.0;
 
   const volumeScale = Math.cbrt((x * y * z) / 3.0);
   x /= volumeScale;
   y /= volumeScale;
   z /= volumeScale;
-  x *= props.scale;
-  y *= props.scale;
-  z *= props.scale;
+  x *= message.props.scale;
+  y *= message.props.scale;
+  z *= message.props.scale;
 
   const hoveredRef = React.useContext(HoverableContext);
   const [isHovered, setIsHovered] = React.useState(false);
@@ -829,8 +833,10 @@ export const CameraFrustum = React.forwardRef<
     <group ref={ref}>
       <Line
         points={frustumPoints}
-        color={isHovered ? 0xfbff00 : props.color}
-        lineWidth={isHovered ? 1.5 * props.lineWidth : props.lineWidth}
+        color={isHovered ? 0xfbff00 : rgbToInt(message.props.color)}
+        lineWidth={
+          isHovered ? 1.5 * message.props.line_width : message.props.line_width
+        }
         segments
       />
       {imageTexture && (
@@ -838,7 +844,8 @@ export const CameraFrustum = React.forwardRef<
           // 0.999999 is to avoid z-fighting with the frustum lines.
           position={[0.0, 0.0, z * 0.999999]}
           rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
-          castShadow
+          castShadow={message.props.cast_shadow}
+          receiveShadow={message.props.receive_shadow}
         >
           <planeGeometry
             attach="geometry"

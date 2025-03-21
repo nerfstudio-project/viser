@@ -17,6 +17,8 @@ export interface CameraFrustumMessage {
     color: [number, number, number];
     image_media_type: "image/jpeg" | "image/png" | null;
     _image_data: Uint8Array | null;
+    cast_shadow: boolean;
+    receive_shadow: boolean;
   };
 }
 /** GlTF message.
@@ -26,7 +28,12 @@ export interface CameraFrustumMessage {
 export interface GlbMessage {
   type: "GlbMessage";
   name: string;
-  props: { glb_data: Uint8Array; scale: number };
+  props: {
+    glb_data: Uint8Array;
+    scale: number;
+    cast_shadow: boolean;
+    receive_shadow: boolean;
+  };
 }
 /** Coordinate frame message.
  *
@@ -218,6 +225,8 @@ export interface MeshMessage {
     flat_shading: boolean;
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
+    cast_shadow: boolean;
+    receive_shadow: boolean;
   };
 }
 /** Skinned mesh message.
@@ -236,6 +245,8 @@ export interface SkinnedMeshMessage {
     flat_shading: boolean;
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
+    cast_shadow: boolean;
+    receive_shadow: boolean;
     bone_wxyzs: Uint8Array;
     bone_positions: Uint8Array;
     skin_indices: Uint8Array;
@@ -276,6 +287,8 @@ export interface ImageMessage {
     _data: Uint8Array;
     render_width: number;
     render_height: number;
+    cast_shadow: boolean;
+    receive_shadow: boolean;
   };
 }
 /** Message from server->client carrying line segments information.
