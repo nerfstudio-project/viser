@@ -44,8 +44,7 @@ import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
 import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
-import { AutoShadowDirectionalLight } from "./ThreeAssets";
-import { CascadedShadowMap } from "./CascadedShadowMaps";
+import { CsmDirectionalLight } from "./CsmDirectionalLight";
 
 function ViewerRoot() {
   // What websocket server should we connect to?
@@ -418,9 +417,9 @@ function DefaultLights() {
   const enableDefaultLights = viewer.useSceneTree(
     (state) => state.enableDefaultLights,
   );
-  // const enableDefaultLightsShadows = viewer.useSceneTree(
-  //   (state) => state.enableDefaultLightsShadows,
-  // );
+  const enableDefaultLightsShadows = viewer.useSceneTree(
+    (state) => state.enableDefaultLightsShadows,
+  );
   const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
 
   // Environment map frames:
@@ -501,26 +500,21 @@ function DefaultLights() {
   if (enableDefaultLights)
     return (
       <>
-        {/*<AutoShadowDirectionalLight
-          color={0xffffff}
-          intensity={2.0}
-          position={[-0.2, 1, -0.2]}
-          castShadow={enableDefaultLightsShadows}
-        />*/}
-        <CascadedShadowMap
+        <CsmDirectionalLight
           fade={true}
           lightIntensity={3.0}
-          lightDirection={[-0.2, -1.0, -0.2]}
+          position={[0.2, 10.0, 0.2]} // Coming from above, slightly off-center
           cascades={3}
-          color={new THREE.Color(0xff0000)}
+          color={0xff0000}
           maxFar={20}
           mode="practical"
           shadowBias={-0.0001}
+          castShadow={enableDefaultLightsShadows}
         />
-        <AutoShadowDirectionalLight
+        <CsmDirectionalLight
           color={0xffffff}
-          intensity={0.4}
-          position={[0, -1, 0]}
+          lightIntensity={0.4}
+          position={[0, -10, 0]} // Light from below
           castShadow={false /* Let's only cast a shadow from above. */}
         />
         {envMapNode}
