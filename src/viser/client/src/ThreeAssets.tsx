@@ -32,7 +32,6 @@ import {
   SkinnedMeshMessage,
 } from "./WebsocketMessages";
 import { ViewerContext } from "./ViewerContext";
-import { shadowArgs } from "./ShadowArgs";
 
 type AllPossibleThreeJSMaterials =
   | MeshBasicMaterial
