@@ -286,18 +286,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Add a camera frustum.
     case "CameraFrustumMessage": {
       return {
-        makeObject: (ref) => (
-          <CameraFrustum
-            ref={ref}
-            fov={message.props.fov}
-            aspect={message.props.aspect}
-            scale={message.props.scale}
-            lineWidth={message.props.line_width}
-            color={rgbToInt(message.props.color)}
-            imageBinary={message.props._image_data}
-            imageMediaType={message.props.image_media_type}
-          />
-        ),
+        makeObject: (ref) => <CameraFrustum ref={ref} {...message} />,
       };
     }
     case "TransformControlsMessage": {
@@ -425,8 +414,10 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
         makeObject: (ref) => (
           <GlbAsset
             ref={ref}
-            glb_data={new Uint8Array(message.props.glb_data)}
+            glbData={new Uint8Array(message.props.glb_data)}
             scale={message.props.scale}
+            castShadow={message.props.cast_shadow}
+            receiveShadow={message.props.receive_shadow}
           />
         ),
       };

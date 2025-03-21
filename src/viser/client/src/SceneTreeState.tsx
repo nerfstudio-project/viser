@@ -76,7 +76,7 @@ export function useSceneTreeState(
         },
         labelVisibleFromName: {},
         enableDefaultLights: true,
-        enableDefaultLightsShadows: false,
+        enableDefaultLightsShadows: true,
         environmentMap: {
           type: "EnvironmentMapMessage",
           hdri: "city",

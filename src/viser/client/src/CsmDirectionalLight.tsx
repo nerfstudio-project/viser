@@ -84,18 +84,18 @@ function updateMaterialsInScene(scene: Object3D): void {
 
 // Modified approach that uses conditional rendering with proper mount/unmount.
 export function CsmDirectionalLight({
-  maxFar = 50,
+  maxFar = 10,
   shadowMapSize = 1024,
   lightIntensity = 0.25,
   cascades = 3,
-  fade,
-  position = [1, 1, 1], // Default position in space
-  shadowBias = 0.000001,
-  lightFar,
-  lightMargin,
-  lightNear,
-  mode,
-  color,
+  fade = true,
+  position = [1, 1, 1],
+  shadowBias = -0.00001,
+  lightFar = 2000,
+  lightMargin = 200,
+  lightNear = 0.0001,
+  mode = "practical",
+  color = 0xffffff,
   castShadow = true,
 }: CsmDirectionalLightProps) {
   // Standard directional light for the non-shadow case.
@@ -132,13 +132,13 @@ export function CsmDirectionalLight({
 
 // Separate component for the shadow-casting implementation to avoid hook conditionals.
 function ShadowCsmLight({
-  maxFar = 50,
-  shadowMapSize = 1024,
-  lightIntensity = 0.25,
-  cascades = 2,
+  maxFar,
+  shadowMapSize,
+  lightIntensity,
+  cascades,
   fade,
-  position = [0.0, 0.0, 0.0],
-  shadowBias = 0.000001,
+  position = [0, -1, 0],
+  shadowBias,
   lightFar,
   lightMargin,
   lightNear,

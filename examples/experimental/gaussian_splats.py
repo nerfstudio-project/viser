@@ -146,7 +146,7 @@ def main(splat_paths: tuple[Path, ...]) -> None:
             remove_button.remove()
 
     while True:
-        time.sleep(3.0)
+        time.sleep(10.0)
 
 
 if __name__ == "__main__":
