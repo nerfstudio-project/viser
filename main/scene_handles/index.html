@@ -590,6 +590,18 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dd><p>Format of the provided image (‘image/jpeg’ or ‘image/png’). Synchronized automatically when assigned.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.CameraFrustumHandle.cast_shadow">
+<span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.CameraFrustumHandle.cast_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.CameraFrustumHandle.receive_shadow">
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.CameraFrustumHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -896,6 +908,18 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dd><p>A scale for resizing the GLB asset. Synchronized automatically when assigned.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.GlbHandle.cast_shadow">
+<span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.GlbHandle.cast_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.GlbHandle.receive_shadow">
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.GlbHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1170,6 +1194,18 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dd><p>Height at which the image should be rendered in the scene. Synchronized automatically when assigned.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.ImageHandle.cast_shadow">
+<span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.ImageHandle.cast_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.ImageHandle.receive_shadow">
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.ImageHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1347,6 +1383,18 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dd><p>Material type of the mesh. Synchronized automatically when assigned.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.MeshHandle.cast_shadow">
+<span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.MeshHandle.cast_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.MeshHandle.receive_shadow">
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.MeshHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1449,6 +1497,18 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.skin_weights">
 <span class="sig-name descname"><span class="pre">skin_weights</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.skin_weights" title="Link to this definition">¶</a></dt>
 <dd><p>Array of skin weights. Should have shape (V, 4). Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.MeshSkinnedHandle.cast_shadow">
+<span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.cast_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.MeshSkinnedHandle.receive_shadow">
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2526,6 +2586,8 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.line_width"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.line_width</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.color"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.color</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.image_media_type"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.image_media_type</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraFrustumHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.cast_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraFrustumHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.receive_shadow</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.FrameHandle"><code class="docutils literal notranslate"><span class="pre">FrameHandle</span></code></a><ul>
@@ -2567,6 +2629,8 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.GlbHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">GlbHandle.wxyz</span></code></a></li>
 <li><a class="reference internal" href="#viser.GlbHandle.glb_data"><code class="docutils literal notranslate"><span class="pre">GlbHandle.glb_data</span></code></a></li>
 <li><a class="reference internal" href="#viser.GlbHandle.scale"><code class="docutils literal notranslate"><span class="pre">GlbHandle.scale</span></code></a></li>
+<li><a class="reference internal" href="#viser.GlbHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">GlbHandle.cast_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.GlbHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">GlbHandle.receive_shadow</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GridHandle"><code class="docutils literal notranslate"><span class="pre">GridHandle</span></code></a><ul>
@@ -2611,6 +2675,8 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.ImageHandle.media_type"><code class="docutils literal notranslate"><span class="pre">ImageHandle.media_type</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.render_width"><code class="docutils literal notranslate"><span class="pre">ImageHandle.render_width</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.render_height"><code class="docutils literal notranslate"><span class="pre">ImageHandle.render_height</span></code></a></li>
+<li><a class="reference internal" href="#viser.ImageHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">ImageHandle.cast_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.ImageHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">ImageHandle.receive_shadow</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.LabelHandle"><code class="docutils literal notranslate"><span class="pre">LabelHandle</span></code></a><ul>
@@ -2638,6 +2704,8 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.MeshHandle.flat_shading"><code class="docutils literal notranslate"><span class="pre">MeshHandle.flat_shading</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshHandle.side"><code class="docutils literal notranslate"><span class="pre">MeshHandle.side</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshHandle.material"><code class="docutils literal notranslate"><span class="pre">MeshHandle.material</span></code></a></li>
+<li><a class="reference internal" href="#viser.MeshHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">MeshHandle.cast_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.MeshHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">MeshHandle.receive_shadow</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle</span></code></a><ul>
@@ -2652,6 +2720,8 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle.bone_positions"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.bone_positions</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle.skin_indices"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.skin_indices</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle.skin_weights"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.skin_weights</span></code></a></li>
+<li><a class="reference internal" href="#viser.MeshSkinnedHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.cast_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.MeshSkinnedHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.receive_shadow</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle.vertices"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.vertices</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle.faces"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.faces</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle.color"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.color</span></code></a></li>

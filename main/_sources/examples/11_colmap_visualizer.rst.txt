@@ -48,8 +48,6 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
             server = viser.ViserServer()
             server.gui.configure_theme(titlebar_content=None, control_layout="collapsible")
 
-            server.scene.enable_default_lights(cast_shadow=True)
-
             # Load the colmap info.
             cameras = read_cameras_binary(colmap_path / "cameras.bin")
             images = read_images_binary(colmap_path / "images.bin")

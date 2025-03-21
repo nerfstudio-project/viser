@@ -25,7 +25,6 @@ See here for download instructions:
 
         import numpy as np
         import tyro
-
         import viser
         import viser.transforms as tf
 
@@ -106,6 +105,7 @@ See here for download instructions:
                 wireframe=gui_elements.gui_wireframe.value,
                 color=gui_elements.gui_rgb.value,
             )
+            server.scene.add_grid("/grid", position=(0.0, -1.3, 0.0), plane="xz")
 
             while True:
                 # Do nothing if no change.

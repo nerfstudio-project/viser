@@ -99,12 +99,12 @@ Example adding lights and enabling shadow rendering.
             )
 
             gui_default_lights.on_update(
-                lambda _: server.scene.enable_default_lights(
+                lambda _: server.scene.configure_default_lights(
                     gui_default_lights.value, gui_default_shadows.value
                 )
             )
             gui_default_shadows.on_update(
-                lambda _: server.scene.enable_default_lights(
+                lambda _: server.scene.configure_default_lights(
                     gui_default_lights.value, gui_default_shadows.value
                 )
             )
