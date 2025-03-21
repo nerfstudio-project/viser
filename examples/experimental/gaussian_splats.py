@@ -121,6 +121,7 @@ def main(splat_paths: tuple[Path, ...]) -> None:
             [0.0, -1.0, 0.0]
         )
 
+    handles = []
     for i, splat_path in enumerate(splat_paths):
         if splat_path.suffix == ".splat":
             splat_data = load_splat_file(splat_path, center=True)
@@ -137,6 +138,7 @@ def main(splat_paths: tuple[Path, ...]) -> None:
             opacities=splat_data["opacities"],
             covariances=splat_data["covariances"],
         )
+        handles.append(gs_handle)
 
         remove_button = server.gui.add_button(f"Remove splat object {i}")
 
@@ -146,7 +148,9 @@ def main(splat_paths: tuple[Path, ...]) -> None:
             remove_button.remove()
 
     while True:
-        time.sleep(10.0)
+        time.sleep(3.0)
+        for h in handles[1:]:
+            h.buffer = handles[0].buffer
 
 
 if __name__ == "__main__":

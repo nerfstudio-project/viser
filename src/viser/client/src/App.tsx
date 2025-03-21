@@ -44,7 +44,7 @@ import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
 import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
-import { AutoShadowDirectionalLight } from "./ThreeAssets";
+import { CsmDirectionalLight } from "./CsmDirectionalLight";
 
 function ViewerRoot() {
   // What websocket server should we connect to?
@@ -496,19 +496,25 @@ function DefaultLights() {
       />
     );
   }
+  // TODO: need to figure out lights
   if (enableDefaultLights)
     return (
       <>
-        <AutoShadowDirectionalLight
+        <CsmDirectionalLight
+          fade={true}
+          lightIntensity={3.0}
+          position={[-0.2, 1.0, -0.2]} // Coming from above, slightly off-center
+          cascades={3}
           color={0xffffff}
-          intensity={2.0}
-          position={[-0.2, 1, -0.2]}
+          maxFar={20}
+          mode="practical"
+          shadowBias={-0.0001}
           castShadow={enableDefaultLightsShadows}
         />
-        <AutoShadowDirectionalLight
+        <CsmDirectionalLight
           color={0xffffff}
-          intensity={0.4}
-          position={[0, -1, 0]}
+          lightIntensity={0.4}
+          position={[0, -1, 0]} // Light from below
           castShadow={false /* Let's only cast a shadow from above. */}
         />
         {envMapNode}

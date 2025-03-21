@@ -21,7 +21,6 @@ import { ErrorBoundary } from "react-error-boundary";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { HoverableContext } from "./HoverContext";
 import {
-  AutoShadowDirectionalLight,
   CameraFrustum,
   CoordinateFrame,
   GlbAsset,
@@ -37,6 +36,7 @@ import { Paper } from "@mantine/core";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Line } from "./Line";
 import { shadowArgs } from "./ShadowArgs";
+import { CsmDirectionalLight } from "./CsmDirectionalLight";
 
 function rgbToInt(rgb: [number, number, number]): number {
   return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
@@ -525,13 +525,13 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     case "DirectionalLightMessage": {
       return {
         makeObject: (ref) => (
-          <AutoShadowDirectionalLight
-            ref={ref}
-            intensity={message.props.intensity}
-            color={rgbToInt(message.props.color)}
-            castShadow={message.props.cast_shadow}
-            {...shadowArgs}
-          />
+          <group ref={ref}>
+            <CsmDirectionalLight
+              lightIntensity={message.props.intensity}
+              color={rgbToInt(message.props.color)}
+              castShadow={message.props.cast_shadow}
+            />
+          </group>
         ),
       };
     }
