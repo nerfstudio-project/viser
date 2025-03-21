@@ -505,7 +505,7 @@ function DefaultLights() {
           lightIntensity={3.0}
           position={[0.2, 10.0, 0.2]} // Coming from above, slightly off-center
           cascades={3}
-          color={0xff0000}
+          color={0xffffff}
           maxFar={20}
           mode="practical"
           shadowBias={-0.0001}

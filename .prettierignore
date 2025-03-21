@@ -1,2 +1,3 @@
 *.mjs
 build/
+./src/viser/client/src/csm/
