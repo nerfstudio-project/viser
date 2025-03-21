@@ -17,7 +17,6 @@ import {
 } from "./WebsocketFunctions";
 import { Html } from "@react-three/drei";
 import { useSceneTreeState } from "./SceneTreeState";
-import { ErrorBoundary } from "react-error-boundary";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { HoverableContext } from "./HoverContext";
 import {
@@ -75,9 +74,11 @@ function SceneNodeThreeChildren(props: {
       setTimeout(
         () => {
           updateQueued = false;
-          const newChildren =
-            viewer.useSceneTree.getState().nodeFromName[props.name]!.children!;
-          setChildren(newChildren);
+          const node = viewer.useSceneTree.getState().nodeFromName[props.name];
+          if (node !== undefined) {
+            const newChildren = node.children!;
+            setChildren(newChildren);
+          }
         },
         // Throttle more when we have a lot of children...
         newChildren.length <= 16 ? 10 : newChildren.length <= 128 ? 50 : 200,
@@ -766,99 +767,85 @@ export function SceneNodeThreeObject(props: {
   } else if (clickable) {
     return (
       <>
-        <ErrorBoundary
-          fallbackRender={() => {
-            // This sometimes (but very rarely) catches a race condition when
-            // we remove scene nodes. I would guess it's related to portaling,
-            // but the issue is unnoticeable with ErrorBoundary in-place so not
-            // debugging further for now...
-            console.error(
-              "There was an error rendering a scene node object:",
-              objNode,
-            );
-            return null;
+        <group
+          // Instead of using onClick, we use onPointerDown/Move/Up to check mouse drag,
+          // and only send a click if the mouse hasn't moved between the down and up events.
+          //  - onPointerDown resets the click state (dragged = false)
+          //  - onPointerMove, if triggered, sets dragged = true
+          //  - onPointerUp, if triggered, sends a click if dragged = false.
+          // Note: It would be cool to have dragged actions too...
+          onPointerDown={(e) => {
+            if (!isDisplayed()) return;
+            e.stopPropagation();
+            const state = dragInfo.current;
+            const canvasBbox =
+              viewer.canvasRef.current!.getBoundingClientRect();
+            state.startClientX = e.clientX - canvasBbox.left;
+            state.startClientY = e.clientY - canvasBbox.top;
+            state.dragging = false;
+          }}
+          onPointerMove={(e) => {
+            if (!isDisplayed()) return;
+            e.stopPropagation();
+            const state = dragInfo.current;
+            const canvasBbox =
+              viewer.canvasRef.current!.getBoundingClientRect();
+            const deltaX = e.clientX - canvasBbox.left - state.startClientX;
+            const deltaY = e.clientY - canvasBbox.top - state.startClientY;
+            // Minimum motion.
+            if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
+            state.dragging = true;
+          }}
+          onPointerUp={(e) => {
+            if (!isDisplayed()) return;
+            e.stopPropagation();
+            const state = dragInfo.current;
+            if (state.dragging) return;
+            // Convert ray to viser coordinates.
+            const ray = rayToViserCoords(viewer, e.ray);
+
+            // Send OpenCV image coordinates to the server (normalized).
+            const canvasBbox =
+              viewer.canvasRef.current!.getBoundingClientRect();
+            const mouseVectorOpenCV = opencvXyFromPointerXy(viewer, [
+              e.clientX - canvasBbox.left,
+              e.clientY - canvasBbox.top,
+            ]);
+
+            sendClicksThrottled({
+              type: "SceneNodeClickMessage",
+              name: props.name,
+              instance_index:
+                computeClickInstanceIndexFromInstanceId === undefined
+                  ? null
+                  : computeClickInstanceIndexFromInstanceId(e.instanceId),
+              // Note that the threejs up is +Y, but we expose a +Z up.
+              ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
+              ray_direction: [
+                ray.direction.x,
+                ray.direction.y,
+                ray.direction.z,
+              ],
+              screen_pos: [mouseVectorOpenCV.x, mouseVectorOpenCV.y],
+            });
+          }}
+          onPointerOver={(e) => {
+            if (!isDisplayed()) return;
+            e.stopPropagation();
+            setHovered(true);
+            hoveredRef.current = true;
+          }}
+          onPointerOut={() => {
+            if (!isDisplayed()) return;
+            setHovered(false);
+            hoveredRef.current = false;
           }}
         >
-          <group
-            // Instead of using onClick, we use onPointerDown/Move/Up to check mouse drag,
-            // and only send a click if the mouse hasn't moved between the down and up events.
-            //  - onPointerDown resets the click state (dragged = false)
-            //  - onPointerMove, if triggered, sets dragged = true
-            //  - onPointerUp, if triggered, sends a click if dragged = false.
-            // Note: It would be cool to have dragged actions too...
-            onPointerDown={(e) => {
-              if (!isDisplayed()) return;
-              e.stopPropagation();
-              const state = dragInfo.current;
-              const canvasBbox =
-                viewer.canvasRef.current!.getBoundingClientRect();
-              state.startClientX = e.clientX - canvasBbox.left;
-              state.startClientY = e.clientY - canvasBbox.top;
-              state.dragging = false;
-            }}
-            onPointerMove={(e) => {
-              if (!isDisplayed()) return;
-              e.stopPropagation();
-              const state = dragInfo.current;
-              const canvasBbox =
-                viewer.canvasRef.current!.getBoundingClientRect();
-              const deltaX = e.clientX - canvasBbox.left - state.startClientX;
-              const deltaY = e.clientY - canvasBbox.top - state.startClientY;
-              // Minimum motion.
-              if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
-              state.dragging = true;
-            }}
-            onPointerUp={(e) => {
-              if (!isDisplayed()) return;
-              e.stopPropagation();
-              const state = dragInfo.current;
-              if (state.dragging) return;
-              // Convert ray to viser coordinates.
-              const ray = rayToViserCoords(viewer, e.ray);
-
-              // Send OpenCV image coordinates to the server (normalized).
-              const canvasBbox =
-                viewer.canvasRef.current!.getBoundingClientRect();
-              const mouseVectorOpenCV = opencvXyFromPointerXy(viewer, [
-                e.clientX - canvasBbox.left,
-                e.clientY - canvasBbox.top,
-              ]);
-
-              sendClicksThrottled({
-                type: "SceneNodeClickMessage",
-                name: props.name,
-                instance_index:
-                  computeClickInstanceIndexFromInstanceId === undefined
-                    ? null
-                    : computeClickInstanceIndexFromInstanceId(e.instanceId),
-                // Note that the threejs up is +Y, but we expose a +Z up.
-                ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
-                ray_direction: [
-                  ray.direction.x,
-                  ray.direction.y,
-                  ray.direction.z,
-                ],
-                screen_pos: [mouseVectorOpenCV.x, mouseVectorOpenCV.y],
-              });
-            }}
-            onPointerOver={(e) => {
-              if (!isDisplayed()) return;
-              e.stopPropagation();
-              setHovered(true);
-              hoveredRef.current = true;
-            }}
-            onPointerOut={() => {
-              if (!isDisplayed()) return;
-              setHovered(false);
-              hoveredRef.current = false;
-            }}
-          >
-            <HoverableContext.Provider value={hoveredRef}>
-              {objNode}
-            </HoverableContext.Provider>
-          </group>
-          {children}
-        </ErrorBoundary>
+          <HoverableContext.Provider value={hoveredRef}>
+            {objNode}
+          </HoverableContext.Provider>
+        </group>
+        {children}
       </>
     );
   } else {
