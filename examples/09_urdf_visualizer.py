@@ -69,7 +69,6 @@ def main(
 ) -> None:
     # Start viser server.
     server = viser.ViserServer()
-    server.scene.enable_default_lights(cast_shadow=True)
 
     # Load URDF.
     #
