@@ -44,7 +44,6 @@ import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
 import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
-import { AutoShadowDirectionalLight } from "./ThreeAssets";
 import { MacWindowWrapper } from "./MacWindowWrapper";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
 
