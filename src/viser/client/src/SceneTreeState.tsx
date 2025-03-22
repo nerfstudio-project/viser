@@ -76,15 +76,15 @@ export function useSceneTreeState(
         },
         labelVisibleFromName: {},
         enableDefaultLights: true,
-        enableDefaultLightsShadows: false,
+        enableDefaultLightsShadows: true,
         environmentMap: {
           type: "EnvironmentMapMessage",
           hdri: "city",
           background: false,
           background_blurriness: 0,
-          background_intensity: 1,
+          background_intensity: 1.0,
           background_wxyz: [1, 0, 0, 0],
-          environment_intensity: 1,
+          environment_intensity: 1.0,
           environment_wxyz: [1, 0, 0, 0],
         },
         setClickable: (name, clickable) =>

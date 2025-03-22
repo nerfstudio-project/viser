@@ -241,6 +241,10 @@ class CameraFrustumProps:
     """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
     _image_data: Optional[bytes]
     """Optional image to be displayed on the frustum. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -256,6 +260,10 @@ class GlbProps:
     """A binary payload containing the GLB data. Synchronized automatically when assigned."""
     scale: float
     """A scale for resizing the GLB asset. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -577,6 +585,10 @@ class MeshProps:
     """Side of the surface to render. Synchronized automatically when assigned."""
     material: Literal["standard", "toon3", "toon5"]
     """Material type of the mesh. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
 
     def __post_init__(self):
         # Check shapes.
@@ -605,6 +617,10 @@ class SkinnedMeshProps(MeshProps):
     """Array of skin indices. Should have shape (V, 4). Synchronized automatically when assigned."""
     skin_weights: npt.NDArray[np.float32]
     """Array of skin weights. Should have shape (V, 4). Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
 
     def __post_init__(self):
         # Check shapes.
@@ -789,6 +805,10 @@ class ImageProps:
     """Width at which the image should be rendered in the scene. Synchronized automatically when assigned."""
     render_height: float
     """Height at which the image should be rendered in the scene. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
