@@ -26,6 +26,7 @@ class SplatFile(TypedDict):
     """(N, 1). Range [0, 1]."""
     covariances: npt.NDArray[np.floating]
     """(N, 3, 3)."""
+    sh_coeffs: npt.NDArray[np.floating]
 
 
 def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
@@ -69,6 +70,8 @@ def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
         "opacities": splat_uint8[:, 27:28] / 255.0,
         # Covariances should have shape (N, 3, 3).
         "covariances": covariances,
+        # No SH coefficients in the splat file.
+        "sh_coeffs": np.zeros((num_gaussians, 45), dtype=np.float32),
     }
 
 
@@ -85,6 +88,17 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
     wxyzs = np.stack([v["rot_0"], v["rot_1"], v["rot_2"], v["rot_3"]], axis=1)
     colors = 0.5 + SH_C0 * np.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]], axis=1)
     opacities = 1.0 / (1.0 + np.exp(-v["opacity"][:, None]))
+    dc_coeffs = np.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]], axis=1)
+    # Rest coefficients 0-14 belongs to RED channel, 15-29 to GREEN, 30-44 to BLUE
+    # Due to spherical harmonic calculations calculating a triplet at a time
+    # we need to stack them by (0,15,30), (1,16,31), ..., (14,29,44)
+    rest_coeffs = []
+    for i in range(15):
+        rest_coeffs.append(v[f"f_rest_{i}"])
+        rest_coeffs.append(v[f"f_rest_{i + 15}"])
+        rest_coeffs.append(v[f"f_rest_{i + 30}"])
+    rest_coeffs = np.stack(rest_coeffs, axis=1)
+    sh_coeffs = np.concatenate([dc_coeffs, rest_coeffs], axis=1)
 
     Rs = tf.SO3(wxyzs).as_matrix()
     covariances = np.einsum(
@@ -102,6 +116,7 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
         "rgbs": colors,
         "opacities": opacities,
         "covariances": covariances,
+        "sh_coeffs": sh_coeffs,
     }
 
 
@@ -136,6 +151,7 @@ def main(splat_paths: tuple[Path, ...]) -> None:
             rgbs=splat_data["rgbs"],
             opacities=splat_data["opacities"],
             covariances=splat_data["covariances"],
+            sh_coeffs=splat_data["sh_coeffs"],
         )
 
         remove_button = server.gui.add_button(f"Remove splat object {i}")

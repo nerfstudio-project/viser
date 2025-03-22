@@ -508,6 +508,15 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 ),
               )
             }
+            sh_buffer={
+              new Uint32Array(
+                message.props.sh_buffer.buffer.slice(
+                  message.props.sh_buffer.byteOffset,
+                  message.props.sh_buffer.byteOffset +
+                    message.props.sh_buffer.byteLength,
+                ),
+              )
+            }
           />
         ),
       };
