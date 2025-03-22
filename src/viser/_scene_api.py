@@ -958,8 +958,8 @@ class SceneApi:
         assert batched_wxyzs.shape == (num_axes, 4)
         assert batched_positions.shape == (num_axes, 3)
         props = _messages.BatchedAxesProps(
-            wxyzs_batched=batched_wxyzs.astype(np.float32),
-            positions_batched=batched_positions.astype(np.float32),
+            batched_wxyzs=batched_wxyzs.astype(np.float32),
+            batched_positions=batched_positions.astype(np.float32),
             axes_length=axes_length,
             axes_radius=axes_radius,
         )

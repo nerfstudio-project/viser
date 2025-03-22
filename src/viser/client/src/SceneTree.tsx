@@ -165,21 +165,21 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
           // precise.
           <InstancedAxes
             ref={ref}
-            wxyzsBatched={
+            batchedWxyzs={
               new Float32Array(
-                message.props.wxyzs_batched.buffer.slice(
-                  message.props.wxyzs_batched.byteOffset,
-                  message.props.wxyzs_batched.byteOffset +
-                    message.props.wxyzs_batched.byteLength,
+                message.props.batched_wxyzs.buffer.slice(
+                  message.props.batched_wxyzs.byteOffset,
+                  message.props.batched_wxyzs.byteOffset +
+                    message.props.batched_wxyzs.byteLength,
                 ),
               )
             }
-            positionsBatched={
+            batchedPositions={
               new Float32Array(
-                message.props.positions_batched.buffer.slice(
-                  message.props.positions_batched.byteOffset,
-                  message.props.positions_batched.byteOffset +
-                    message.props.positions_batched.byteLength,
+                message.props.batched_positions.buffer.slice(
+                  message.props.batched_positions.byteOffset,
+                  message.props.batched_positions.byteOffset +
+                    message.props.batched_positions.byteLength,
                 ),
               )
             }
