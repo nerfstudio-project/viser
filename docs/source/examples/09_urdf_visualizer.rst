@@ -81,7 +81,6 @@ and viser. It can also take a path to a local URDF file as input.
         ) -> None:
             # Start viser server.
             server = viser.ViserServer()
-            server.scene.enable_default_lights(cast_shadow=True)
 
             # Load URDF.
             #

@@ -26,13 +26,13 @@ import {
 } from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import {
+  CameraFrustumMessage,
   ImageMessage,
   MeshMessage,
   PointCloudMessage,
   SkinnedMeshMessage,
 } from "./WebsocketMessages";
 import { ViewerContext } from "./ViewerContext";
-import { shadowArgs } from "./ShadowArgs";
 
 type AllPossibleThreeJSMaterials =
   | MeshBasicMaterial
@@ -168,10 +168,12 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
 export const GlbAsset = React.forwardRef<
   THREE.Group,
   {
-    glb_data: Uint8Array<ArrayBuffer>;
+    glbData: Uint8Array<ArrayBuffer>;
     scale: number;
+    castShadow: boolean;
+    receiveShadow: boolean;
   }
->(function GlbAsset({ glb_data, scale }, ref) {
+>(function GlbAsset_(props, ref) {
   // We track both the GLTF asset itself and all meshes within it. Meshes are
   // used for hover effects.
 
@@ -189,7 +191,7 @@ export const GlbAsset = React.forwardRef<
     loader.setDRACOLoader(dracoLoader);
 
     loader.parse(
-      glb_data.buffer,
+      props.glbData.buffer,
       "",
       (gltf) => {
         if (gltf.animations && gltf.animations.length) {
@@ -203,8 +205,8 @@ export const GlbAsset = React.forwardRef<
           if (obj instanceof THREE.Mesh) {
             obj.geometry.computeVertexNormals();
             obj.geometry.computeBoundingSphere();
-            obj.castShadow = true;
-            obj.receiveShadow = true;
+            obj.castShadow = props.castShadow;
+            obj.receiveShadow = props.receiveShadow;
             meshes.push(obj);
           }
         });
@@ -257,7 +259,7 @@ export const GlbAsset = React.forwardRef<
       // Attempt to free resources.
       gltf?.scene.traverse(disposeNode);
     };
-  }, [glb_data]);
+  }, [props.glbData, props.castShadow, props.receiveShadow]);
 
   useFrame((_, delta) => {
     if (mixerRef.current) {
@@ -269,10 +271,12 @@ export const GlbAsset = React.forwardRef<
     <group ref={ref}>
       {gltf === undefined ? null : (
         <>
-          <primitive object={gltf.scene} scale={scale} />
-          {meshes.map((mesh) =>
-            createPortal(<OutlinesIfHovered alwaysMounted />, mesh),
-          )}
+          <primitive object={gltf.scene} scale={props.scale} />
+          {meshes.map((mesh, i) => (
+            <React.Fragment key={i}>
+              {createPortal(<OutlinesIfHovered alwaysMounted />, mesh)}
+            </React.Fragment>
+          ))}
         </>
       )}
     </group>
@@ -688,8 +692,8 @@ export const ViserMesh = React.forwardRef<
         geometry={geometry}
         material={material}
         skeleton={skeleton}
-        castShadow
-        receiveShadow
+        castShadow={message.props.cast_shadow}
+        receiveShadow={message.props.receive_shadow}
         // TODO: leaving culling on (default) sometimes causes the
         // mesh to randomly disappear, as of r3f==8.16.2.
         //
@@ -707,8 +711,8 @@ export const ViserMesh = React.forwardRef<
         ref={ref as React.ForwardedRef<THREE.Mesh>}
         geometry={geometry}
         material={material}
-        castShadow
-        receiveShadow
+        castShadow={message.props.cast_shadow}
+        receiveShadow={message.props.receive_shadow}
       >
         <OutlinesIfHovered alwaysMounted />
       </mesh>
@@ -731,7 +735,11 @@ export const ViserImage = React.forwardRef<THREE.Group, ImageMessage>(
     }, [message.props.media_type, message.props._data]);
     return (
       <group ref={ref}>
-        <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)} castShadow>
+        <mesh
+          rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
+          castShadow={message.props.cast_shadow}
+          receiveShadow={message.props.receive_shadow}
+        >
           <OutlinesIfHovered />
           <planeGeometry
             attach="geometry"
@@ -753,21 +761,18 @@ export const ViserImage = React.forwardRef<THREE.Group, ImageMessage>(
 /** Helper for visualizing camera frustums. */
 export const CameraFrustum = React.forwardRef<
   THREE.Group,
-  {
-    fov: number;
-    aspect: number;
-    scale: number;
-    lineWidth: number;
-    color: number;
-    imageBinary: Uint8Array | null;
-    imageMediaType: string | null;
-  }
->(function CameraFrustum(props, ref) {
+  CameraFrustumMessage
+>(function CameraFrustum(message, ref) {
   const [imageTexture, setImageTexture] = React.useState<THREE.Texture>();
 
   React.useEffect(() => {
-    if (props.imageMediaType !== null && props.imageBinary !== null) {
-      const image_url = URL.createObjectURL(new Blob([props.imageBinary]));
+    if (
+      message.props.image_media_type !== null &&
+      message.props._image_data !== null
+    ) {
+      const image_url = URL.createObjectURL(
+        new Blob([message.props._image_data]),
+      );
       new THREE.TextureLoader().load(image_url, (texture) => {
         setImageTexture(texture);
         URL.revokeObjectURL(image_url);
@@ -775,19 +780,19 @@ export const CameraFrustum = React.forwardRef<
     } else {
       setImageTexture(undefined);
     }
-  }, [props.imageMediaType, props.imageBinary]);
+  }, [message.props.image_media_type, message.props._image_data]);
 
-  let y = Math.tan(props.fov / 2.0);
-  let x = y * props.aspect;
+  let y = Math.tan(message.props.fov / 2.0);
+  let x = y * message.props.aspect;
   let z = 1.0;
 
   const volumeScale = Math.cbrt((x * y * z) / 3.0);
   x /= volumeScale;
   y /= volumeScale;
   z /= volumeScale;
-  x *= props.scale;
-  y *= props.scale;
-  z *= props.scale;
+  x *= message.props.scale;
+  y *= message.props.scale;
+  z *= message.props.scale;
 
   const hoveredRef = React.useContext(HoverableContext);
   const [isHovered, setIsHovered] = React.useState(false);
@@ -828,8 +833,10 @@ export const CameraFrustum = React.forwardRef<
     <group ref={ref}>
       <Line
         points={frustumPoints}
-        color={isHovered ? 0xfbff00 : props.color}
-        lineWidth={isHovered ? 1.5 * props.lineWidth : props.lineWidth}
+        color={isHovered ? 0xfbff00 : rgbToInt(message.props.color)}
+        lineWidth={
+          isHovered ? 1.5 * message.props.line_width : message.props.line_width
+        }
         segments
       />
       {imageTexture && (
@@ -837,11 +844,12 @@ export const CameraFrustum = React.forwardRef<
           // 0.999999 is to avoid z-fighting with the frustum lines.
           position={[0.0, 0.0, z * 0.999999]}
           rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
-          castShadow
+          castShadow={message.props.cast_shadow}
+          receiveShadow={message.props.receive_shadow}
         >
           <planeGeometry
             attach="geometry"
-            args={[props.aspect * y * 2, y * 2]}
+            args={[message.props.aspect * y * 2, y * 2]}
           />
           <meshBasicMaterial
             attach="material"
@@ -893,140 +901,3 @@ export function OutlinesIfHovered(
     />
   );
 }
-
-/** Helper for adding a directional light with automatic shadow camera bounds. */
-export const AutoShadowDirectionalLight = React.forwardRef<
-  THREE.DirectionalLight,
-  {
-    intensity?: number;
-    color?: THREE.ColorRepresentation;
-    castShadow?: boolean;
-    position?: [number, number, number];
-    paddingScale?: number;
-    paddingAdd?: number;
-    updateFrequency?: number;
-  }
->(function AutoShadowDirectionalLight(
-  {
-    intensity = 1,
-    color = "white",
-    castShadow = true,
-    position = [0.0, 0.0, 0.0],
-    paddingScale = 1.5,
-    paddingAdd = 0.3,
-    updateFrequency = 30,
-  },
-  ref,
-) {
-  const localRef = React.useRef<THREE.DirectionalLight>();
-  const frameCount = React.useRef(0);
-
-  // Get the scene object from the three fiber context.
-  // This is a hack, see: https://github.com/pmndrs/react-three-fiber/issues/2725
-  const { scene: root } = useThree();
-  const scene = React.useMemo(() => {
-    let object: THREE.Object3D | null = root;
-    while (object) {
-      if (object instanceof THREE.Scene) return object;
-      object = object.parent;
-    }
-    throw new Error("Could not find scene object in r3f context!");
-  }, [root]);
-
-  const updateShadowCameraBounds = React.useCallback(() => {
-    if (!castShadow) return;
-    if (!localRef.current) return;
-    const light = localRef.current;
-
-    // Ensure matrices are updated
-    light.shadow.camera.updateMatrixWorld();
-
-    // Compute the light space matrix by inverting the light's world matrix
-    const lightSpaceMatrix = new THREE.Matrix4()
-      .copy(light.shadow.camera.matrixWorld)
-      .invert();
-
-    // Compute the scene bounding box (only for meshes)
-    const box = new THREE.Box3();
-    scene.traverse((obj) => {
-      const obj_ = obj as THREE.Mesh;
-      if (
-        obj_.castShadow &&
-        obj_.geometry &&
-        obj_.geometry.computeBoundingBox
-      ) {
-        obj_.geometry.computeBoundingBox();
-        box.expandByObject(obj);
-      }
-    });
-    if (box.isEmpty()) return;
-
-    // Transform each corner of the bounding box into light space
-    // TODO: for very large scenes, it could be helpful to factor in the
-    // viewport here. But this would complicate rendering from virtual
-    // cameras.
-    const corners = [
-      new THREE.Vector3(box.min.x, box.min.y, box.min.z),
-      new THREE.Vector3(box.min.x, box.min.y, box.max.z),
-      new THREE.Vector3(box.min.x, box.max.y, box.min.z),
-      new THREE.Vector3(box.min.x, box.max.y, box.max.z),
-      new THREE.Vector3(box.max.x, box.min.y, box.min.z),
-      new THREE.Vector3(box.max.x, box.min.y, box.max.z),
-      new THREE.Vector3(box.max.x, box.max.y, box.min.z),
-      new THREE.Vector3(box.max.x, box.max.y, box.max.z),
-    ];
-    const lightSpacePoints = corners.map((point) =>
-      point.applyMatrix4(lightSpaceMatrix),
-    );
-
-    // Compute bounds in light space
-    const lightSpaceBox = new THREE.Box3().setFromPoints(lightSpacePoints);
-
-    // Apply padding (scale the size)
-    const size = new THREE.Vector3();
-    lightSpaceBox.getSize(size);
-    const center = new THREE.Vector3();
-    lightSpaceBox.getCenter(center);
-
-    const paddedBox = new THREE.Box3(
-      center.clone().sub(size.clone().multiplyScalar(paddingScale * 0.5)),
-      center.clone().add(size.clone().multiplyScalar(paddingScale * 0.5)),
-    );
-
-    // Update the orthographic shadow camera if applicable
-    if (light.shadow.camera instanceof THREE.OrthographicCamera) {
-      const camera = light.shadow.camera;
-
-      camera.left = paddedBox.min.y - paddingAdd;
-      camera.right = paddedBox.max.y + paddingAdd;
-      camera.top = paddedBox.max.x + paddingAdd;
-      camera.bottom = paddedBox.min.x - paddingAdd;
-
-      camera.updateProjectionMatrix();
-    }
-  }, [scene, paddingScale, castShadow]);
-
-  // Optionally update shadow camera on every frame (or at a given frequency)
-  useFrame(() => {
-    if (!castShadow) return;
-    if (updateFrequency === 0 || frameCount.current % updateFrequency === 0) {
-      updateShadowCameraBounds();
-    }
-    frameCount.current += 1;
-  });
-
-  return (
-    <directionalLight
-      ref={(obj) => {
-        localRef.current = obj!;
-        if (typeof ref === "function") ref(obj!);
-        else if (ref) ref.current = obj;
-      }}
-      position={position}
-      intensity={intensity}
-      color={color}
-      castShadow={castShadow}
-      {...shadowArgs}
-    />
-  );
-});
