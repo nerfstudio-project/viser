@@ -26,11 +26,13 @@ def create_random_transforms(num_instances: int) -> tuple[np.ndarray, np.ndarray
             - rotations: (N, 4) float32 array of quaternions (wxyz format)
     """
     # Random positions in a 10x10x10 cube centered at origin
-    positions = (np.random.rand(num_instances, 3) * 10 - 5).astype(np.float32)
+    # positions = (np.random.rand(num_instances, 3) * 10 - 5).astype(np.float32)
+    positions = (np.random.rand(num_instances, 3) * 2 - 1).astype(np.float32)
 
     # All instances rotated 90 degrees around X axis
     rotations = np.array(
         [tf.SO3.from_x_radians(np.pi / 2).wxyz for _ in range(num_instances)],
+        # [tf.SO3.identity().wxyz for _ in range(num_instances)],
         dtype=np.float32,
     )
 
@@ -45,10 +47,17 @@ def main():
 
     mesh = cast(trimesh.Scene, trimesh.load_mesh('source/car_glb.glb'))
     # mesh = list(mesh.geometry.values())[0]
-    mesh.apply_scale(0.01)
+    mesh.apply_scale(0.1)
+    # mesh.apply_scale(0.5)
+    # mesh.apply_scale(1)
     mesh.apply_translation(-mesh.centroid)
 
     server = viser.ViserServer(port=8081)
+
+    server.scene.add_mesh_trimesh(
+        name="foo",
+        mesh=mesh,
+    )
 
     # Add GUI controls.
     wiggle_handle = server.gui.add_checkbox(

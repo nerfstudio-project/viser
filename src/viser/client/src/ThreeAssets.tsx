@@ -311,18 +311,11 @@ export const GlbAsset = React.forwardRef<
           node.material,
           {
             capacity: batched_positions.length / 3,
-            createEntities: true,
           }
         );
 
         // Replace original mesh with instanced version
         if (node.parent) {
-          // scene.add(instancedMesh);
-          scene.children[0].add(instancedMesh);
-          // scene.add(instancedMesh);
-          // node.parent.add(instancedMesh);
-          node.parent.remove(node);
-
           const addLODs = (mesh: THREE.Mesh, ratios: number[], distances: number[]) => {
             ratios.forEach((ratio, index) => {
               const targetCount = Math.floor(mesh.geometry.index!.array.length * ratio / 3) * 3;
@@ -343,31 +336,31 @@ export const GlbAsset = React.forwardRef<
             });
           };
           const ratios = [0.01];
-          const distances = [2];
+          const distances = [1];
           addLODs(node, ratios, distances);
 
           // Initial setup of instances
           instancedMesh.addInstances(batched_positions.length / 3, () => { });
           instancedMeshes.push(instancedMesh);
           
-          // node.getWorldDirection(dir);
           node.getWorldPosition(position);
           node.getWorldScale(scale);
           node.getWorldQuaternion(quat);
           node.getWorldDirection(dir);
 
-          const targetForward = new THREE.Vector3(0, 0, 1);
-          const correctionQuat = new THREE.Quaternion().setFromUnitVectors(dir, targetForward);
-
-          quat.premultiply(correctionQuat);
-
           transforms.push({
-            position: node.position.clone(),
+            position: position.clone(),
             rotation: quat.clone(),
             scale: scale.clone()
           });
+
+          node.visible = false;
         }
       }
+
+      instancedMeshes.forEach((instancedMesh) => {
+        scene.add(instancedMesh);
+      });
       setTransforms(transforms);
 
     });
@@ -393,54 +386,42 @@ export const GlbAsset = React.forwardRef<
       )
     );
 
-    // Pre-allocate matrices to avoid garbage collection
-    const T_world_obj = new THREE.Matrix4();
-    const T_world_mesh = new THREE.Matrix4();
-    const T_obj_mesh = new THREE.Matrix4();
-    const tmpQuat = new THREE.Quaternion();
-    // const tmpEuler = new THREE.Euler();
-
     instancedMeshes.instancedMeshes.forEach((instancedMesh, mesh_index) => {
       instancedMesh.updateInstances((obj, index) => {
-        // obj.position.set(
-        //   batched_positions[index * 3 + 0],
-        //   batched_positions[index * 3 + 1],
-        //   batched_positions[index * 3 + 2]
-        // )
-        // obj.quaternion.set(
-        //   batched_wxyzs[index * 4 + 1],
-        //   batched_wxyzs[index * 4 + 2],
-        //   batched_wxyzs[index * 4 + 3],
-        //   batched_wxyzs[index * 4 + 0]
-        // )
 
-        // Set object-to-world transform
-        T_world_obj.makeRotationFromQuaternion(
-          tmpQuat.set(
-            batched_wxyzs[index * 4 + 1],
-            batched_wxyzs[index * 4 + 2],
-            batched_wxyzs[index * 4 + 3],
-            batched_wxyzs[index * 4 + 0]
-          )
-        ).setPosition(
-          batched_positions[index * 3 + 0],
-          batched_positions[index * 3 + 1],
-          batched_positions[index * 3 + 2]
-        );
+        // Create instance world transform
+        const instanceWorldMatrix = new THREE.Matrix4()
+          .compose(
+            new THREE.Vector3(
+              batched_positions[index * 3 + 0],
+              batched_positions[index * 3 + 1],
+              batched_positions[index * 3 + 2]
+            ),
+            new THREE.Quaternion(
+              batched_wxyzs[index * 4 + 1],
+              batched_wxyzs[index * 4 + 2],
+              batched_wxyzs[index * 4 + 3],
+              batched_wxyzs[index * 4 + 0]
+            ),
+            new THREE.Vector3(1, 1, 1)
+          );
 
-        T_obj_mesh.makeRotationFromQuaternion(transforms[mesh_index].rotation)
-          .setPosition(
-            transforms[mesh_index].position.x * transforms[mesh_index].scale.x,
-            transforms[mesh_index].position.y * transforms[mesh_index].scale.y,
-            transforms[mesh_index].position.z * transforms[mesh_index].scale.z,
-          )
+        // Apply mesh's original transform relative to the instance
+        const meshTransform = transforms[mesh_index];
+        const meshMatrix = new THREE.Matrix4()
+          .compose(
+            meshTransform.position,
+            meshTransform.rotation,
+            new THREE.Vector3(1, 1, 1)
+          );
 
-        // Combine transforms: T_world_mesh = T_world_obj * T_obj_mesh
-        T_world_mesh.copy(T_world_obj).multiply(T_obj_mesh);
-
-        // Extract position and rotation from final transform
-        obj.position.setFromMatrixPosition(T_world_mesh);
-        obj.quaternion.setFromRotationMatrix(T_world_mesh);
+        // Combine transforms: final = instance * mesh
+        const finalMatrix = instanceWorldMatrix.multiply(meshMatrix);
+        
+        // Apply to instance
+        obj.position.setFromMatrixPosition(finalMatrix);
+        obj.quaternion.setFromRotationMatrix(finalMatrix);
+        obj.scale.set(meshTransform.scale.x, meshTransform.scale.y, meshTransform.scale.z);
       });
     });
   }, [
