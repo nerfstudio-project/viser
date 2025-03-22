@@ -9,6 +9,7 @@ import {
   applyProps,
   ReactThreeFiber,
   useThree,
+  ThreeElement,
 } from "@react-three/fiber";
 import { toCreasedNormals } from "three-stdlib";
 import { version } from "@react-three/drei/helpers/constants";
@@ -66,7 +67,7 @@ const OutlinesMaterial = /* @__PURE__ */ shaderMaterial(
    }`,
 );
 
-type OutlinesProps = JSX.IntrinsicElements["group"] & {
+type OutlinesProps = ThreeElement<typeof THREE.Group> & {
   /** Outline color, default: black */
   color?: ReactThreeFiber.Color;
   /** Line thickness is independent of zoom, default: false */

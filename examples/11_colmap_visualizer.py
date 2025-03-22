@@ -38,8 +38,6 @@ def main(
     server = viser.ViserServer()
     server.gui.configure_theme(titlebar_content=None, control_layout="collapsible")
 
-    server.scene.enable_default_lights(cast_shadow=True)
-
     # Load the colmap info.
     cameras = read_cameras_binary(colmap_path / "cameras.bin")
     images = read_images_binary(colmap_path / "images.bin")
@@ -60,21 +58,10 @@ def main(
             @ np.array([0.0, -1.0, 0.0])  # -y is up in the local frame!
         ).mean(axis=0)
         average_up /= np.linalg.norm(average_up)
-
-        rotate_axis = np.cross(average_up, np.array([0.0, 0.0, 1.0]))
-        rotate_axis /= np.linalg.norm(rotate_axis)
-        rotate_angle = np.arccos(np.dot(average_up, np.array([0.0, 0.0, 1.0])))
-        R_scene_colmap = vtf.SO3.exp(rotate_axis * rotate_angle)
-        server.scene.add_frame(
-            "/colmap",
-            show_axes=False,
-            wxyz=R_scene_colmap.wxyz,
-        )
-    else:
-        R_scene_colmap = vtf.SO3.identity()
+        server.scene.set_up_direction((average_up[0], average_up[1], average_up[2]))
 
     # Get transformed z-coordinates and place grid at 5th percentile height.
-    transformed_z = (R_scene_colmap @ points)[..., 2]
+    transformed_z = points[..., 2]
     grid_height = float(np.percentile(transformed_z, 5))
     server.scene.add_grid(name="/grid", position=(0.0, 0.0, grid_height))
 
@@ -127,15 +114,6 @@ def main(
         random.shuffle(img_ids)
         img_ids = sorted(img_ids[: gui_frames.value])
 
-        def attach_callback(
-            frustum: viser.CameraFrustumHandle, frame: viser.FrameHandle
-        ) -> None:
-            @frustum.on_click
-            def _(_) -> None:
-                for client in server.get_clients().values():
-                    client.camera.wxyz = frame.wxyz
-                    client.camera.position = frame.position
-
         for img_id in tqdm(img_ids):
             img = images[img_id]
             cam = cameras[img.camera_id]
@@ -172,7 +150,12 @@ def main(
                 scale=0.15,
                 image=image,
             )
-            attach_callback(frustum, frame)
+
+            @frustum.on_click
+            def _(_, frame=frame) -> None:
+                for client in server.get_clients().values():
+                    client.camera.wxyz = frame.wxyz
+                    client.camera.position = frame.position
 
     need_update = True
 

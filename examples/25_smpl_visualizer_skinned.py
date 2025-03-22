@@ -101,6 +101,7 @@ def main(model_path: Path) -> None:
         wireframe=gui_elements.gui_wireframe.value,
         color=gui_elements.gui_rgb.value,
     )
+    server.scene.add_grid("/grid", position=(0.0, -1.3, 0.0), plane="xz")
 
     while True:
         # Do nothing if no change.
