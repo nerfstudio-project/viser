@@ -61,8 +61,8 @@ export interface BatchedAxesMessage {
   type: "BatchedAxesMessage";
   name: string;
   props: {
-    wxyzs_batched: Uint8Array;
-    positions_batched: Uint8Array;
+    batched_wxyzs: Uint8Array;
+    batched_positions: Uint8Array;
     axes_length: number;
     axes_radius: number;
   };

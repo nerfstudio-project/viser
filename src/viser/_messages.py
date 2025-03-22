@@ -299,9 +299,9 @@ class BatchedAxesMessage(_CreateSceneNodeMessage):
 
 @dataclasses.dataclass
 class BatchedAxesProps:
-    wxyzs_batched: npt.NDArray[np.float32]
+    batched_wxyzs: npt.NDArray[np.float32]
     """Float array of shape (N,4) representing quaternion rotations. Synchronized automatically when assigned."""
-    positions_batched: npt.NDArray[np.float32]
+    batched_positions: npt.NDArray[np.float32]
     """Float array of shape (N,3) representing positions. Synchronized automatically when assigned."""
     axes_length: float
     """Length of each axis. Synchronized automatically when assigned."""

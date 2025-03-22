@@ -346,18 +346,13 @@ export const CoordinateFrame = React.forwardRef<
 export const InstancedAxes = React.forwardRef<
   THREE.Group,
   {
-    wxyzsBatched: Float32Array;
-    positionsBatched: Float32Array;
+    batched_wxyzs: Float32Array;
+    batched_positions: Float32Array;
     axes_length?: number;
     axes_radius?: number;
   }
 >(function InstancedAxes(
-  {
-    wxyzsBatched: instance_wxyzs,
-    positionsBatched: instance_positions,
-    axes_length = 0.5,
-    axes_radius = 0.0125,
-  },
+  { batched_wxyzs, batched_positions, axes_length = 0.5, axes_radius = 0.0125 },
   ref,
 ) {
   const axesRef = React.useRef<THREE.InstancedMesh>(null);
@@ -402,18 +397,18 @@ export const InstancedAxes = React.forwardRef<
     const green = new THREE.Color(0x00cc00);
     const blue = new THREE.Color(0x0000cc);
 
-    for (let i = 0; i < instance_wxyzs.length / 4; i++) {
+    for (let i = 0; i < batched_wxyzs.length / 4; i++) {
       T_world_frame.makeRotationFromQuaternion(
         tmpQuat.set(
-          instance_wxyzs[i * 4 + 1],
-          instance_wxyzs[i * 4 + 2],
-          instance_wxyzs[i * 4 + 3],
-          instance_wxyzs[i * 4 + 0],
+          batched_wxyzs[i * 4 + 1],
+          batched_wxyzs[i * 4 + 2],
+          batched_wxyzs[i * 4 + 3],
+          batched_wxyzs[i * 4 + 0],
         ),
       ).setPosition(
-        instance_positions[i * 3 + 0],
-        instance_positions[i * 3 + 1],
-        instance_positions[i * 3 + 2],
+        batched_positions[i * 3 + 0],
+        batched_positions[i * 3 + 1],
+        batched_positions[i * 3 + 2],
       );
       T_world_framex.copy(T_world_frame).multiply(T_frame_framex);
       T_world_framey.copy(T_world_frame).multiply(T_frame_framey);
@@ -429,13 +424,13 @@ export const InstancedAxes = React.forwardRef<
     }
     axesRef.current!.instanceMatrix.needsUpdate = true;
     axesRef.current!.instanceColor!.needsUpdate = true;
-  }, [instance_wxyzs, instance_positions]);
+  }, [batched_wxyzs, batched_positions]);
 
   return (
     <group ref={ref}>
       <instancedMesh
         ref={axesRef}
-        args={[cylinderGeom, material, (instance_wxyzs.length / 4) * 3]}
+        args={[cylinderGeom, material, (batched_wxyzs.length / 4) * 3]}
       >
         <OutlinesIfHovered />
       </instancedMesh>
