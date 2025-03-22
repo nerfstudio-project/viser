@@ -694,6 +694,7 @@ export function Root() {
   // Parse dummy window dimensions from URL if present
   const searchParams = new URLSearchParams(window.location.search);
   const dummyWindowParam = searchParams.get("dummyWindowDimensions");
+  const dummyWindowTitle = searchParams.get("dummyWindowTitle", "localhost:8080");
 
   const content = (
     <div
@@ -714,7 +715,7 @@ export function Root() {
     const [width, height] = dummyWindowParam.split("x").map(Number);
     if (!isNaN(width) && !isNaN(height)) {
       return (
-        <MacWindowWrapper width={width} height={height}>
+        <MacWindowWrapper title={dummyWindowTitle} width={width} height={height}>
           {content}
         </MacWindowWrapper>
       );

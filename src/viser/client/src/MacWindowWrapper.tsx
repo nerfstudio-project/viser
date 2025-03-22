@@ -1,9 +1,11 @@
 export function MacWindowWrapper({
   children,
+  title,
   width,
   height,
 }: {
   children: React.ReactNode;
+  title: string;
   width: number;
   height: number;
 }) {
@@ -75,7 +77,7 @@ export function MacWindowWrapper({
             fontWeight: 500,
           }}
         >
-          localhost:8080
+          {title}
         </div>
       </div>
       {/* Content */}
