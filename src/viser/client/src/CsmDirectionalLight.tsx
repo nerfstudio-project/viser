@@ -89,7 +89,7 @@ export function CsmDirectionalLight({
   lightIntensity = 0.25,
   cascades = 3,
   fade = true,
-  position = [1, 1, 1],
+  position = [0, 0, 0],
   shadowBias = -0.00001,
   lightFar = 2000,
   lightMargin = 200,
