@@ -272,6 +272,8 @@ export interface BatchedMeshesMessage {
     flat_shading: boolean;
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
+    cast_shadow: boolean;
+    receive_shadow: boolean;
   };
 }
 /** Message from server->client carrying batched GLB information.
@@ -287,6 +289,8 @@ export interface BatchedGlbMessage {
     lod: "auto" | "off" | [number, number][];
     glb_data: Uint8Array;
     scale: number;
+    cast_shadow: boolean;
+    receive_shadow: boolean;
   };
 }
 /** Message for transform gizmos.

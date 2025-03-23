@@ -259,7 +259,7 @@ export const GlbAsset = React.forwardRef<
   React.useEffect(() => {
     const glb_data = new Uint8Array(message.props.glb_data);
     loader.parse(
-      props.glbData.buffer,
+      glb_data.buffer,
       "",
       (gltf) => {
         // Handle animations if present
@@ -276,8 +276,8 @@ export const GlbAsset = React.forwardRef<
           if (obj instanceof THREE.Mesh) {
             obj.geometry.computeVertexNormals();
             obj.geometry.computeBoundingSphere();
-            obj.castShadow = props.castShadow;
-            obj.receiveShadow = props.receiveShadow;
+            obj.castShadow = message.props.cast_shadow;
+            obj.receiveShadow = message.props.receive_shadow;
             meshes.push(obj);
           }
         });
@@ -335,7 +335,7 @@ export const GlbAsset = React.forwardRef<
         gltf.scene.traverse(disposeNode);
       }
     };
-  }, [props.glbData, props.castShadow, props.receiveShadow]);
+  }, [message.props.glb_data, message.props.cast_shadow, message.props.receive_shadow]);
 
   // Handle animation updates
   useFrame((_, delta) => {
@@ -421,7 +421,6 @@ export const GlbAsset = React.forwardRef<
       )
     );
     const newNumInstances = batched_positions.length / 3;
-    console.log("newNumInstances", newNumInstances, numInstances);
     if (newNumInstances !== numInstances) {
       instancedMeshes.instancedMeshes.forEach((instancedMesh) => {
         instancedMesh.clearInstances();
@@ -510,7 +509,7 @@ export const GlbAsset = React.forwardRef<
         )
       ) : (
         <>
-          <primitive object={gltf.scene} scale={props.scale} />
+          <primitive object={gltf.scene} scale={message.props.scale} />
           {meshes.map((mesh, i) => (
             <React.Fragment key={i}>
               {createPortal(<OutlinesIfHovered alwaysMounted />, mesh)}

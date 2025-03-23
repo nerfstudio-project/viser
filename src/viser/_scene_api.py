@@ -1354,6 +1354,8 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
     ) -> BatchedMeshHandle:
         """Add batched meshes to the scene.
 
@@ -1412,6 +1414,8 @@ class SceneApi:
                 side=side,
                 material=material,
                 lod=lod,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
             ),
         )
         return BatchedMeshHandle._make(self, message, name, wxyz, position, visible)
@@ -1427,6 +1431,8 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
     ) -> BatchedGlbHandle:
         """Add batched trimesh meshes to the scene.
         
@@ -1460,6 +1466,8 @@ class SceneApi:
                     batched_wxyzs=batched_wxyzs.astype(np.float32),
                     batched_positions=batched_positions.astype(np.float32),
                     lod=lod,
+                    cast_shadow=cast_shadow,
+                    receive_shadow=receive_shadow,
                 ),
             )
             return BatchedGlbHandle._make(self, message, name, wxyz, position, visible)
