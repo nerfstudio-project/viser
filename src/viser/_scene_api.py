@@ -1094,10 +1094,6 @@ class SceneApi:
             points.shape,
             (3,),
         }, "Shape of colors should be (N, 3) or (3,)."
-
-        if colors_cast.shape == (3,):
-            colors_cast = np.tile(colors_cast[None, :], reps=(points.shape[0], 1))
-
         message = _messages.PointCloudMessage(
             name=name,
             props=_messages.PointCloudProps(
