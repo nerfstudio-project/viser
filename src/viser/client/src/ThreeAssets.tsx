@@ -71,38 +71,42 @@ function rgbToInt(rgb: [number, number, number]): number {
 }
 const originGeom = new THREE.SphereGeometry(1.0);
 
-// Define quality settings and their corresponding LOD configurations
-type QualitySettings = "performance" | "balanced" | "quality";
+function getAutoLODSettings(
+  mesh: THREE.Mesh,
+  scale: number = 1
+): { ratios: number[]; distances: number[] } {
+  const geometry = mesh.geometry;
+  const boundingRadius = geometry.boundingSphere!.radius * scale;
+  const vertexCount = geometry.attributes.position.count;
 
-interface LODConfig {
-  ratios: number[];
-  distances: number[];
-}
-
-const LOD_SETTINGS: Record<QualitySettings, LODConfig> = {
-  performance: {
-    ratios: [0.05, 0.005],   // Very aggressive LOD reduction
-    distances: [0.2, 0.5]
-  },
-  balanced: {
-    ratios: [0.15, 0.05],    // Moderate LOD reduction
-    distances: [1, 2]
-  },
-  quality: {
-    ratios: [0.15, 0.05],    // Minimal LOD reduction
-    distances: [2, 4]
+  // 1. Compute LOD ratios, based on vertex count.
+  let ratios: number[];
+  if (vertexCount > 10_000) {
+    ratios = [0.2, 0.05, 0.01]; // very complex
+  } else if (vertexCount > 2_000) {
+    ratios = [0.4, 0.1, 0.03]; // medium complex
+  } else if (vertexCount > 500) {
+    ratios = [0.6, 0.2, 0.05]; // light
+  } else {
+    ratios = [0.85, 0.4, 0.1]; // already simple
   }
-};
+
+  // 2. Compute LOD distances, based on bounding radius.
+  const sizeFactor = Math.sqrt(boundingRadius + 1e-5);
+  const baseMultipliers = [1, 2, 3]; // distance "steps" for LOD switching
+  const distances = baseMultipliers.map((m) => m * sizeFactor);
+
+  return { ratios, distances };
+}
 
 /** Helper function to add LODs to a mesh */
 function addLODs(
   mesh: THREE.Mesh, 
   instancedMesh: InstancedMesh2,
-  quality: QualitySettings
+  ratios: number[],
+  distances: number[],
 ) {
-  const config = LOD_SETTINGS[quality];
-  
-  config.ratios.forEach((ratio, index) => {
+  ratios.forEach((ratio, index) => {
     const targetCount = Math.floor(mesh.geometry.index!.array.length * ratio / 3) * 3;
     const lodGeometry = mesh.geometry.clone();
 
@@ -111,13 +115,13 @@ function addLODs(
       new Float32Array(lodGeometry.attributes.position.array),
       3,
       targetCount,
-      0.1,  // Error tolerance - could also be configurable based on quality
+      0.1,  // Error tolerance.
     )[0];
 
     lodGeometry.index!.array.set(dstIndexArray);
     lodGeometry.index!.needsUpdate = true;
     lodGeometry.setDrawRange(0, dstIndexArray.length);
-    instancedMesh.addLOD(lodGeometry, mesh.material, config.distances[index]);
+    instancedMesh.addLOD(lodGeometry, mesh.material, distances[index]);
   });
 }
 
@@ -333,19 +337,25 @@ export const GlbAsset = React.forwardRef<
   });
 
   // Create the instanced meshes for batched GLBs
-  const instancedMeshes = React.useMemo(() => {
-    if (message.type !== "BatchedGlbMessage" || !gltf) return null;
-    
-    // Clone the GLTF scene for instancing
-    const scene = gltf.scene.clone();
-    const instancedMeshes: InstancedMesh2[] = [];
+  const [numInstances, setNumInstances] = React.useState(0);
 
+  React.useEffect(() => {
+    if (message.type !== "BatchedGlbMessage") return;
     const batched_positions = new Float32Array(
       message.props.batched_positions.buffer.slice(
         message.props.batched_positions.byteOffset,
         message.props.batched_positions.byteOffset + message.props.batched_positions.byteLength
       )
     );
+    setNumInstances(batched_positions.length / 3);
+  }, [message.type, ...(message.type === "BatchedGlbMessage" ? [message.props.batched_positions] : [])]);
+
+  const instancedMeshes = React.useMemo(() => {
+    if (message.type !== "BatchedGlbMessage" || !gltf) return null;
+    
+    // Clone the GLTF scene for instancing
+    const scene = gltf.scene.clone();
+    const instancedMeshes: InstancedMesh2[] = [];
 
     // Setup instancing for each mesh in the scene
     const transforms: {position: THREE.Vector3, rotation: THREE.Quaternion, scale: THREE.Vector3}[] = [];
@@ -360,18 +370,15 @@ export const GlbAsset = React.forwardRef<
           node.geometry.clone(),
           node.material,
           {
-            capacity: batched_positions.length / 3,
+            capacity: numInstances,
           }
         );
 
         if (node.parent) {
-          // Add LODs using the shared function with quality setting
-          addLODs(node, instancedMesh, message.props.lod_quality);
+          // Initial setup of instances.
+          instancedMesh.addInstances(numInstances, () => { });
 
-          // Initial setup of instances
-          instancedMesh.addInstances(batched_positions.length / 3, () => { });
-          instancedMeshes.push(instancedMesh);
-          
+          // Save the original node information, in the world frame.
           node.getWorldPosition(position);
           node.getWorldScale(scale);
           node.getWorldQuaternion(quat);
@@ -383,7 +390,25 @@ export const GlbAsset = React.forwardRef<
             scale: scale.clone()
           });
 
+          // Add LODs using the shared function with quality setting
+          if (message.props.lod === "off") {
+            // No LODs
+          } else if (message.props.lod === "auto") {
+            const dummyMesh = new THREE.Mesh(node.geometry, node.material);
+            const {ratios, distances} = getAutoLODSettings(dummyMesh, Math.max(scale.x, scale.y, scale.z));
+            addLODs(node, instancedMesh, ratios, distances);
+          } else {
+            // Custom LODs
+            const ratios = message.props.lod.map((pair) => pair[1]);
+            const distances = message.props.lod.map((pair) => pair[0]);
+            addLODs(node, instancedMesh, ratios, distances);
+          }
+          
+          // Hide the original mesh.
           node.visible = false;
+
+          // Add the instanced mesh to the list.
+          instancedMeshes.push(instancedMesh);
         }
       }
 
@@ -394,7 +419,7 @@ export const GlbAsset = React.forwardRef<
 
     });
     return { scene, instancedMeshes };
-  }, [message.type, gltf, ...(message.type === "BatchedGlbMessage" ? [message.props.batched_wxyzs, message.props.lod_quality] : [])]);
+  }, [message.type, gltf, ...(message.type === "BatchedGlbMessage" ? [numInstances, message.props.lod] : [])]);
 
   // Handle updates to instance positions/orientations
   React.useEffect(() => {
@@ -883,7 +908,17 @@ export const ViserMesh = React.forwardRef<
 
     // Add LODs using the shared function with quality setting
     const dummyMesh = new THREE.Mesh(geometry, material);
-    addLODs(dummyMesh, mesh, message.props.lod_quality);
+    if (message.props.lod === "off") {
+      // No LODs
+    } else if (message.props.lod === "auto") {
+      const {ratios, distances} = getAutoLODSettings(dummyMesh);
+      addLODs(dummyMesh, mesh, ratios, distances);
+    } else {
+      // Custom LODs
+      const ratios = message.props.lod.map((pair) => pair[1]);
+      const distances = message.props.lod.map((pair) => pair[0]);
+      addLODs(dummyMesh, mesh, ratios, distances);
+    }
 
     // Initial setup of instances
     mesh.addInstances(num_insts, () => {});
@@ -895,7 +930,7 @@ export const ViserMesh = React.forwardRef<
     geometry,
     ...(message.type === "BatchedMeshesMessage" ? [
       message.props.batched_wxyzs.length,
-      message.props.lod_quality,
+      message.props.lod,
     ] : [])
   ]);
 

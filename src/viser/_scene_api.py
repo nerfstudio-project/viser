@@ -1292,7 +1292,7 @@ class SceneApi:
         faces: np.ndarray,
         batched_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
         batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
-        lod_quality: Literal["performance", "balanced", "quality"] = "balanced",
+        lod: Literal["auto", "off"] | tuple[tuple[float, float], ...] = "off",
         color: RgbTupleOrArray = (90, 200, 255),
         wireframe: bool = False,
         opacity: float | None = None,
@@ -1313,7 +1313,7 @@ class SceneApi:
                 vertices. Should have shape (F, 3).
             batched_wxyzs: Float array of shape (N, 4) for orientations.
             batched_positions: Float array of shape (N, 3) for positions.
-            lod_quality: Quality of the LODs to use.
+            lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
             color: Color of the meshes as an RGB tuple.
             wireframe: Boolean indicating if the meshes should be rendered as wireframes.
             opacity: Opacity of the meshes. None means opaque.
@@ -1359,7 +1359,7 @@ class SceneApi:
                 flat_shading=flat_shading,
                 side=side,
                 material=material,
-                lod_quality=lod_quality,
+                lod=lod,
             ),
         )
         return BatchedMeshHandle._make(self, message, name, wxyz, position, visible)
@@ -1370,7 +1370,7 @@ class SceneApi:
         mesh: trimesh.Trimesh,
         batched_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
         batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
-        lod_quality: Literal["performance", "balanced", "quality"] = "balanced",
+        lod: Literal["auto", "off"] | tuple[tuple[float, float], ...] = "off",
         scale: float = 1.0,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
@@ -1385,7 +1385,7 @@ class SceneApi:
             batched_wxyzs: Float array of shape (N, 4) for orientations.
             batched_positions: Float array of shape (N, 3) for positions.
             scale: A scale for resizing the mesh.
-            lod_quality: Quality of the LODs to use.
+            lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -1407,7 +1407,7 @@ class SceneApi:
                     scale=scale,
                     batched_wxyzs=batched_wxyzs.astype(np.float32),
                     batched_positions=batched_positions.astype(np.float32),
-                    lod_quality=lod_quality,
+                    lod=lod,
                 ),
             )
             return BatchedGlbHandle._make(self, message, name, wxyz, position, visible)

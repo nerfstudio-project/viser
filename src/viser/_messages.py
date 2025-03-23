@@ -620,22 +620,24 @@ class BatchedMeshesMessage(_CreateSceneNodeMessage):
 
 
 @dataclasses.dataclass
-class BatchedMeshesProps(MeshProps):
-    """Batched meshes message."""
-
+class BatchedPoseProps:
     batched_wxyzs: npt.NDArray[np.float32]
     """Float array of shape (N, 4) representing quaternion rotations. Synchronized automatically when assigned."""
     batched_positions: npt.NDArray[np.float32]
     """Float array of shape (N, 3) representing positions. Synchronized automatically when assigned."""
-    lod_quality: Literal["performance", "balanced", "quality"]
-    """Quality of the LODs to use. Synchronized automatically when assigned."""
+    lod: Literal["auto", "off"] | tuple[tuple[float, float], ...]
+    """LOD settings. Either "auto", "off", or a tuple of (distance, ratio) pairs. Synchronized automatically when assigned."""
 
     def __post_init__(self):
-        super().__post_init__()
         # Check shapes.
         assert self.batched_wxyzs.shape[-1] == 4
         assert self.batched_positions.shape[-1] == 3
         assert self.batched_wxyzs.shape[0] == self.batched_positions.shape[0]
+
+
+@dataclasses.dataclass
+class BatchedMeshesProps(MeshProps, BatchedPoseProps):
+    """Batched meshes message."""
 
 
 @dataclasses.dataclass
@@ -646,20 +648,8 @@ class BatchedGlbMessage(_CreateSceneNodeMessage):
 
 
 @dataclasses.dataclass
-class BatchedGlbProps(GlbProps):
+class BatchedGlbProps(GlbProps, BatchedPoseProps):
     """Batched GLB message."""
-
-    batched_wxyzs: npt.NDArray[np.float32]
-    """Float array of shape (N, 4) representing quaternion rotations. Synchronized automatically when assigned."""
-    batched_positions: npt.NDArray[np.float32]
-    """Float array of shape (N, 3) representing positions. Synchronized automatically when assigned."""
-    lod_quality: Literal["performance", "balanced", "quality"]
-    """Quality of the LODs to use. Synchronized automatically when assigned."""
-
-    def __post_init__(self):
-        assert self.batched_wxyzs.shape[-1] == 4
-        assert self.batched_positions.shape[-1] == 3
-        assert self.batched_wxyzs.shape[0] == self.batched_positions.shape[0]
 
 
 @dataclasses.dataclass

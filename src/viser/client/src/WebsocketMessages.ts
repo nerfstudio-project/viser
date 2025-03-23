@@ -243,6 +243,9 @@ export interface BatchedMeshesMessage {
   type: "BatchedMeshesMessage";
   name: string;
   props: {
+    batched_wxyzs: Uint8Array;
+    batched_positions: Uint8Array;
+    lod: "auto" | "off" | [number, number][];
     vertices: Uint8Array;
     faces: Uint8Array;
     color: [number, number, number] | null;
@@ -251,9 +254,6 @@ export interface BatchedMeshesMessage {
     flat_shading: boolean;
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
-    batched_wxyzs: Uint8Array;
-    batched_positions: Uint8Array;
-    lod_quality: "performance" | "balanced" | "quality";
   };
 }
 /** Message from server->client carrying batched GLB information.
@@ -264,11 +264,11 @@ export interface BatchedGlbMessage {
   type: "BatchedGlbMessage";
   name: string;
   props: {
-    glb_data: Uint8Array;
-    scale: number;
     batched_wxyzs: Uint8Array;
     batched_positions: Uint8Array;
-    lod_quality: "performance" | "balanced" | "quality";
+    lod: "auto" | "off" | [number, number][];
+    glb_data: Uint8Array;
+    scale: number;
   };
 }
 /** Message for transform gizmos.

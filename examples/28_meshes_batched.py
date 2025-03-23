@@ -40,6 +40,10 @@ def main():
     assert isinstance(mesh, trimesh.Trimesh)
     mesh.apply_scale(0.002)
 
+    mesh = trimesh.load_mesh("source/car_glb.glb")
+    assert isinstance(mesh, trimesh.Scene)
+    mesh.apply_scale(0.1)
+
     mesh.apply_transform(trimesh.transformations.rotation_matrix(np.pi / 2, [1, 0, 0]))
     mesh.apply_translation(-mesh.centroid)
 
@@ -50,13 +54,6 @@ def main():
     num_insts_handle = server.gui.add_slider(
         "num_insts", min=1, max=1000, step=1, initial_value=100
     )
-    lod_quality_handle = server.gui.add_dropdown(
-        "lod_quality", options=("performance", "balanced", "quality"), initial_value="balanced"
-    )
-
-    @lod_quality_handle.on_update
-    def _(_):
-        mesh_handle.lod_quality = lod_quality_handle.value
 
     # Initialize transforms.
     positions, rotations = create_random_transforms(num_insts_handle.value)
@@ -67,7 +64,7 @@ def main():
         mesh=mesh,
         batched_positions=positions,
         batched_wxyzs=rotations,
-        lod_quality=lod_quality_handle.value,
+        lod="auto",
     )
 
     # Animation loop.
