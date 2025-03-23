@@ -509,11 +509,10 @@ export const ViserMesh = React.forwardRef<
   ]);
 
   // Create persistent geometry. Set attributes when we receive updates.
-  const [geometry] = React.useState<THREE.BufferGeometry>(
-    () => new THREE.BufferGeometry(),
-  );
+  const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
   const [skeleton, setSkeleton] = React.useState<THREE.Skeleton>();
   React.useEffect(() => {
+    const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
       new THREE.BufferAttribute(
@@ -621,6 +620,7 @@ export const ViserMesh = React.forwardRef<
       );
     }
     skeleton?.init();
+    setGeometry(geometry);
     setSkeleton(skeleton);
     return () => {
       if (message.type === "SkinnedMeshMessage") {
@@ -649,7 +649,7 @@ export const ViserMesh = React.forwardRef<
   // Dispose geometry when done.
   React.useEffect(() => {
     return () => {
-      geometry.dispose();
+      geometry !== undefined && geometry.dispose();
     };
   }, [geometry]);
 
