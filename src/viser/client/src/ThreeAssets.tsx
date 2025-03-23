@@ -345,8 +345,6 @@ export const GlbAsset = React.forwardRef<
   });
 
   // Create the instanced meshes for batched GLBs
-  const [numInstances, setNumInstances] = React.useState(0);
-
   const instancedMeshes = React.useMemo(() => {
     if (message.type !== "BatchedGlbMessage" || !gltf) return null;
     
@@ -421,13 +419,10 @@ export const GlbAsset = React.forwardRef<
       )
     );
     const newNumInstances = batched_positions.length / 3;
-    if (newNumInstances !== numInstances) {
-      instancedMeshes.instancedMeshes.forEach((instancedMesh) => {
-        instancedMesh.clearInstances();
-        instancedMesh.addInstances(newNumInstances, () => { });
-      });
-      setNumInstances(newNumInstances);
-    }
+    instancedMeshes.instancedMeshes.forEach((instancedMesh) => {
+      instancedMesh.clearInstances();
+      instancedMesh.addInstances(newNumInstances, () => { });
+    });
   }, [message.type, ...(message.type === "BatchedGlbMessage" ? [instancedMeshes, message.props.batched_positions.byteLength] : [])]);
 
   // Handle updates to instance positions/orientations
