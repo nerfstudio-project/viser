@@ -1,10 +1,7 @@
-# Camera Handles
-
-<!-- prettier-ignore-start -->
+Camera Handles
+==============
 
 .. autoclass:: viser.CameraHandle
    :members:
    :undoc-members:
    :inherited-members:
-
-<!-- prettier-ignore-end -->

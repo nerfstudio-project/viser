@@ -1,10 +1,7 @@
-# GUI API
-
-<!-- prettier-ignore-start -->
+GUI API
+=======
 
 .. autoclass:: viser.GuiApi
    :members:
    :undoc-members:
    :inherited-members:
-
-<!-- prettier-ignore-end -->

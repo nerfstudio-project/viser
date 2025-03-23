@@ -1,6 +1,5 @@
-# Client Handles
-
-<!-- prettier-ignore-start -->
+Client Handles
+==============
 
 .. autoclass:: viser.ClientHandle
    :members:
@@ -11,5 +10,3 @@
    :members:
    :undoc-members:
    :inherited-members:
-
-<!-- prettier-ignore-end -->

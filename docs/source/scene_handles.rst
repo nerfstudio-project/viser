@@ -1,4 +1,5 @@
-# Scene Handles
+Scene Handles
+=============
 
 A handle is created for each object that is added to the scene. These can be
 used to read and set state, as well as detect clicks.
@@ -14,8 +15,6 @@ Each node type also has type-specific attributes that we can read and write.
 Many of these are lower-level than their equivalent arguments in factory
 methods like :func:`viser.ViserServer.add_frame()` or
 :func:`viser.ViserServer.add_image()`.
-
-<!-- prettier-ignore-start -->
 
 .. autoclass:: viser.SceneNodeHandle
 
@@ -62,5 +61,3 @@ methods like :func:`viser.ViserServer.add_frame()` or
 .. autoclass:: viser.RectAreaLightHandle
 
 .. autoclass:: viser.SpotLightHandle
-
-<!-- prettier-ignore-end -->
