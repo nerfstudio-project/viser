@@ -5,7 +5,6 @@ Visualize batched meshes. To get the demo data, see `./assets/download_dragon_me
 
 import time
 from pathlib import Path
-from typing import cast
 
 import numpy as np
 import trimesh
@@ -36,50 +35,54 @@ def create_random_transforms(num_instances: int) -> tuple[np.ndarray, np.ndarray
 
 def main():
     # Load and prepare mesh data.
-    mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
-    assert isinstance(mesh, trimesh.Trimesh)
-    mesh.apply_scale(0.002)
+    dragon_mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
+    assert isinstance(dragon_mesh, trimesh.Trimesh)
+    dragon_mesh.apply_scale(0.002)
 
-    mesh = trimesh.load_mesh("source/car_glb.glb")
-    assert isinstance(mesh, trimesh.Scene)
-    mesh.apply_scale(0.1)
-
-    mesh.apply_transform(trimesh.transformations.rotation_matrix(np.pi / 2, [1, 0, 0]))
-    mesh.apply_translation(-mesh.centroid)
+    dragon_mesh.apply_transform(trimesh.transformations.rotation_matrix(np.pi / 2, [1, 0, 0]))
+    dragon_mesh.apply_translation(-dragon_mesh.centroid)
 
     server = viser.ViserServer()
 
     # Add GUI controls.
-    wiggle_handle = server.gui.add_checkbox("wiggle", initial_value=False)
-    num_insts_handle = server.gui.add_slider(
-        "num_insts", min=1, max=1000, step=1, initial_value=100
+    instance_count_slider = server.gui.add_slider(
+        "# of instances", min=1, max=1000, step=1, initial_value=100
     )
 
+    # Wiggle mesh, to test pose update latency.
+    wiggle_checkbox = server.gui.add_checkbox("Wiggle", initial_value=False)
+
+    # Allow user to toggle LOD.
+    lod_checkbox = server.gui.add_checkbox("Enable LoD", initial_value=True)
+    @lod_checkbox.on_update
+    def update_lod(_):
+        mesh_handle.lod = "auto" if lod_checkbox.value else "off"
+
     # Initialize transforms.
-    positions, rotations = create_random_transforms(num_insts_handle.value)
+    positions, rotations = create_random_transforms(instance_count_slider.value)
 
     # Create batched mesh visualization.
     mesh_handle = server.scene.add_batched_meshes_trimesh(
         name="dragon",
-        mesh=mesh,
+        mesh=dragon_mesh,
         batched_positions=positions,
         batched_wxyzs=rotations,
-        lod="auto",
+        lod="auto" if lod_checkbox.value else "off",
     )
 
     # Animation loop.
     while True:
-        current_num_instances = num_insts_handle.value
+        current_instance_count = instance_count_slider.value
         update_visualization = False
 
         # Recreate transforms if instance count changed.
-        if positions.shape[0] != current_num_instances:
-            positions, rotations = create_random_transforms(current_num_instances)
+        if positions.shape[0] != current_instance_count:
+            positions, rotations = create_random_transforms(current_instance_count)
             update_visualization = True
 
         # Add small random perturbations, to test the update latency.
-        if wiggle_handle.value:
-            delta = np.random.rand(current_num_instances, 3) * 0.02 - 0.01
+        if wiggle_checkbox.value:
+            delta = np.random.rand(current_instance_count, 3) * 0.02 - 0.01
             positions = (positions + delta).astype(np.float32)
             update_visualization = True
 
