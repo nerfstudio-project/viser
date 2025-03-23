@@ -44,8 +44,8 @@ import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
 import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
-
-THREE.ColorManagement.enabled = true;
+import { MacWindowWrapper } from "./MacWindowWrapper";
+import { CsmDirectionalLight } from "./CsmDirectionalLight";
 
 function ViewerRoot() {
   // What websocket server should we connect to?
@@ -396,6 +396,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           // Release drag lock.
           pointerInfo.isDragging = false;
         }}
+        shadows
       >
         {inView ? null : <DisableRender />}
         <BackgroundImage />
@@ -416,6 +417,9 @@ function DefaultLights() {
   const viewer = React.useContext(ViewerContext)!;
   const enableDefaultLights = viewer.useSceneTree(
     (state) => state.enableDefaultLights,
+  );
+  const enableDefaultLightsShadows = viewer.useSceneTree(
+    (state) => state.enableDefaultLightsShadows,
   );
   const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
 
@@ -493,18 +497,26 @@ function DefaultLights() {
       />
     );
   }
+  // TODO: need to figure out lights
   if (enableDefaultLights)
     return (
       <>
-        <directionalLight
+        <CsmDirectionalLight
+          fade={true}
+          lightIntensity={3.0}
+          position={[-0.2, 1.0, -0.2]} // Coming from above, slightly off-center
+          cascades={3}
           color={0xffffff}
-          intensity={2.0}
-          position={[0, 1, 0]}
+          maxFar={20}
+          mode="practical"
+          shadowBias={-0.0001}
+          castShadow={enableDefaultLightsShadows}
         />
-        <directionalLight
+        <CsmDirectionalLight
           color={0xffffff}
-          intensity={0.4}
-          position={[0, -1, 0]}
+          lightIntensity={0.4}
+          position={[0, -1, 0]} // Light from below
+          castShadow={false /* Let's only cast a shadow from above. */}
         />
         {envMapNode}
       </>
@@ -683,7 +695,12 @@ function SceneContextSetter() {
 }
 
 export function Root() {
-  return (
+  // Parse dummy window dimensions from URL if present
+  const searchParams = new URLSearchParams(window.location.search);
+  const dummyWindowParam = searchParams.get("dummyWindowDimensions");
+  const dummyWindowTitle =
+    searchParams.get("dummyWindowTitle") ?? "localhost:8080";
+  const content = (
     <div
       style={{
         width: "100%",
@@ -696,6 +713,23 @@ export function Root() {
       <ViewerRoot />
     </div>
   );
+
+  // If dummy window dimensions are specified, wrap content in MacWindowWrapper
+  if (dummyWindowParam) {
+    const [width, height] = dummyWindowParam.split("x").map(Number);
+    if (!isNaN(width) && !isNaN(height)) {
+      return (
+        <MacWindowWrapper
+          title={dummyWindowTitle}
+          width={width}
+          height={height}
+        >
+          {content}
+        </MacWindowWrapper>
+      );
+    }
+  }
+  return content;
 }
 
 /** Logo. When clicked, opens an info modal. */

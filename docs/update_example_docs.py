@@ -28,8 +28,8 @@ class ExampleMetadata:
         index_with_zero = index
         index = str(int(index))
 
+        print("Parsing", path)
         source = path.read_text().strip()
-
         docstring = source.split('"""')[1].strip()
 
         title, _, description = docstring.partition("\n")

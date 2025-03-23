@@ -17,7 +17,6 @@ import {
 } from "./WebsocketFunctions";
 import { Html } from "@react-three/drei";
 import { useSceneTreeState } from "./SceneTreeState";
-import { ErrorBoundary } from "react-error-boundary";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { HoverableContext } from "./HoverContext";
 import {
@@ -35,6 +34,8 @@ import { SplatObject } from "./Splatting/GaussianSplats";
 import { Paper } from "@mantine/core";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Line } from "./Line";
+import { shadowArgs } from "./ShadowArgs";
+import { CsmDirectionalLight } from "./CsmDirectionalLight";
 
 function rgbToInt(rgb: [number, number, number]): number {
   return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
@@ -73,9 +74,11 @@ function SceneNodeThreeChildren(props: {
       setTimeout(
         () => {
           updateQueued = false;
-          const newChildren =
-            viewer.useSceneTree.getState().nodeFromName[props.name]!.children!;
-          setChildren(newChildren);
+          const node = viewer.useSceneTree.getState().nodeFromName[props.name];
+          if (node !== undefined) {
+            const newChildren = node.children!;
+            setChildren(newChildren);
+          }
         },
         // Throttle more when we have a lot of children...
         newChildren.length <= 16 ? 10 : newChildren.length <= 128 ? 50 : 200,
@@ -162,21 +165,21 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
           // precise.
           <InstancedAxes
             ref={ref}
-            wxyzsBatched={
+            batched_wxyzs={
               new Float32Array(
-                message.props.wxyzs_batched.buffer.slice(
-                  message.props.wxyzs_batched.byteOffset,
-                  message.props.wxyzs_batched.byteOffset +
-                    message.props.wxyzs_batched.byteLength,
+                message.props.batched_wxyzs.buffer.slice(
+                  message.props.batched_wxyzs.byteOffset,
+                  message.props.batched_wxyzs.byteOffset +
+                    message.props.batched_wxyzs.byteLength,
                 ),
               )
             }
-            positionsBatched={
+            batched_positions={
               new Float32Array(
-                message.props.positions_batched.buffer.slice(
-                  message.props.positions_batched.byteOffset,
-                  message.props.positions_batched.byteOffset +
-                    message.props.positions_batched.byteLength,
+                message.props.batched_positions.buffer.slice(
+                  message.props.batched_positions.byteOffset,
+                  message.props.batched_positions.byteOffset +
+                    message.props.batched_positions.byteLength,
                 ),
               )
             }
@@ -192,6 +195,57 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     }
 
     case "GridMessage": {
+      const gridQuaternion = new THREE.Quaternion().setFromEuler(
+        // There's redundancy here when we set the side to
+        // THREE.DoubleSide, where xy and yx should be the same.
+        //
+        // But it makes sense to keep this parameterization because
+        // specifying planes by xy seems more natural than the normal
+        // direction (z, +z, or -z), and it opens the possibility of
+        // rendering only FrontSide or BackSide grids in the future.
+        //
+        // If we add support for FrontSide or BackSide, we should
+        // double-check that the normal directions from each of these
+        // rotations match the right-hand rule!
+        message.props.plane == "xz"
+          ? new THREE.Euler(0.0, 0.0, 0.0)
+          : message.props.plane == "xy"
+            ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+            : message.props.plane == "yx"
+              ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+              : message.props.plane == "yz"
+                ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                : message.props.plane == "zx"
+                  ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                  : //message.props.plane == "zy"
+                    new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0),
+      );
+
+      // When rotations are identity: plane is XY, while grid is XZ.
+      const planeQuaternion = new THREE.Quaternion()
+        .setFromEuler(new THREE.Euler(-Math.PI / 2, 0.0, 0.0))
+        .premultiply(gridQuaternion);
+
+      let shadowPlane;
+      if (message.props.shadow_opacity > 0.0) {
+        shadowPlane = (
+          <mesh
+            receiveShadow
+            position={[0.0, 0.0, -0.01]}
+            quaternion={planeQuaternion}
+          >
+            <planeGeometry args={[message.props.width, message.props.height]} />
+            <shadowMaterial
+              opacity={message.props.shadow_opacity}
+              color={0x000000}
+              depthWrite={false}
+            />
+          </mesh>
+        );
+      } else {
+        // when opacity = 0.0, no shadowPlane for performance
+        shadowPlane = <></>;
+      }
       return {
         makeObject: (ref) => (
           <group ref={ref}>
@@ -209,37 +263,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
               sectionColor={rgbToInt(message.props.section_color)}
               sectionThickness={message.props.section_thickness}
               sectionSize={message.props.section_size}
-              rotation={
-                // There's redundancy here when we set the side to
-                // THREE.DoubleSide, where xy and yx should be the same.
-                //
-                // But it makes sense to keep this parameterization because
-                // specifying planes by xy seems more natural than the normal
-                // direction (z, +z, or -z), and it opens the possibility of
-                // rendering only FrontSide or BackSide grids in the future.
-                //
-                // If we add support for FrontSide or BackSide, we should
-                // double-check that the normal directions from each of these
-                // rotations match the right-hand rule!
-                message.props.plane == "xz"
-                  ? new THREE.Euler(0.0, 0.0, 0.0)
-                  : message.props.plane == "xy"
-                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                    : message.props.plane == "yx"
-                      ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                      : message.props.plane == "yz"
-                        ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                        : message.props.plane == "zx"
-                          ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                          : message.props.plane == "zy"
-                            ? new THREE.Euler(
-                                -Math.PI / 2.0,
-                                0.0,
-                                -Math.PI / 2.0,
-                              )
-                            : undefined
-              }
+              quaternion={gridQuaternion}
             />
+            {shadowPlane}
           </group>
         ),
       };
@@ -261,18 +287,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Add a camera frustum.
     case "CameraFrustumMessage": {
       return {
-        makeObject: (ref) => (
-          <CameraFrustum
-            ref={ref}
-            fov={message.props.fov}
-            aspect={message.props.aspect}
-            scale={message.props.scale}
-            lineWidth={message.props.line_width}
-            color={rgbToInt(message.props.color)}
-            imageBinary={message.props._image_data}
-            imageMediaType={message.props.image_media_type}
-          />
-        ),
+        makeObject: (ref) => <CameraFrustum ref={ref} {...message} />,
       };
     }
     case "TransformControlsMessage": {
@@ -496,16 +511,19 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     case "DirectionalLightMessage": {
       return {
         makeObject: (ref) => (
-          <directionalLight
-            ref={ref}
-            intensity={message.props.intensity}
-            color={rgbToInt(message.props.color)}
-          />
+          <group ref={ref}>
+            <CsmDirectionalLight
+              lightIntensity={message.props.intensity}
+              color={rgbToInt(message.props.color)}
+              castShadow={message.props.cast_shadow}
+            />
+          </group>
         ),
       };
     }
 
     // Add an ambient light
+    // Cannot cast shadows
     case "AmbientLightMessage": {
       return {
         makeObject: (ref) => (
@@ -519,6 +537,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     }
 
     // Add a hemisphere light
+    // Cannot cast shadows
     case "HemisphereLightMessage": {
       return {
         makeObject: (ref) => (
@@ -542,11 +561,14 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             color={rgbToInt(message.props.color)}
             distance={message.props.distance}
             decay={message.props.decay}
+            castShadow={message.props.cast_shadow}
+            {...shadowArgs}
           />
         ),
       };
     }
     // Add a rectangular area light
+    // Cannot cast shadows
     case "RectAreaLightMessage": {
       return {
         makeObject: (ref) => (
@@ -573,6 +595,8 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             angle={message.props.angle}
             penumbra={message.props.penumbra}
             decay={message.props.decay}
+            castShadow={message.props.cast_shadow}
+            {...shadowArgs}
           />
         ),
       };
@@ -737,99 +761,85 @@ export function SceneNodeThreeObject(props: {
   } else if (clickable) {
     return (
       <>
-        <ErrorBoundary
-          fallbackRender={() => {
-            // This sometimes (but very rarely) catches a race condition when
-            // we remove scene nodes. I would guess it's related to portaling,
-            // but the issue is unnoticeable with ErrorBoundary in-place so not
-            // debugging further for now...
-            console.error(
-              "There was an error rendering a scene node object:",
-              objNode,
-            );
-            return null;
+        <group
+          // Instead of using onClick, we use onPointerDown/Move/Up to check mouse drag,
+          // and only send a click if the mouse hasn't moved between the down and up events.
+          //  - onPointerDown resets the click state (dragged = false)
+          //  - onPointerMove, if triggered, sets dragged = true
+          //  - onPointerUp, if triggered, sends a click if dragged = false.
+          // Note: It would be cool to have dragged actions too...
+          onPointerDown={(e) => {
+            if (!isDisplayed()) return;
+            e.stopPropagation();
+            const state = dragInfo.current;
+            const canvasBbox =
+              viewer.canvasRef.current!.getBoundingClientRect();
+            state.startClientX = e.clientX - canvasBbox.left;
+            state.startClientY = e.clientY - canvasBbox.top;
+            state.dragging = false;
+          }}
+          onPointerMove={(e) => {
+            if (!isDisplayed()) return;
+            e.stopPropagation();
+            const state = dragInfo.current;
+            const canvasBbox =
+              viewer.canvasRef.current!.getBoundingClientRect();
+            const deltaX = e.clientX - canvasBbox.left - state.startClientX;
+            const deltaY = e.clientY - canvasBbox.top - state.startClientY;
+            // Minimum motion.
+            if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
+            state.dragging = true;
+          }}
+          onPointerUp={(e) => {
+            if (!isDisplayed()) return;
+            e.stopPropagation();
+            const state = dragInfo.current;
+            if (state.dragging) return;
+            // Convert ray to viser coordinates.
+            const ray = rayToViserCoords(viewer, e.ray);
+
+            // Send OpenCV image coordinates to the server (normalized).
+            const canvasBbox =
+              viewer.canvasRef.current!.getBoundingClientRect();
+            const mouseVectorOpenCV = opencvXyFromPointerXy(viewer, [
+              e.clientX - canvasBbox.left,
+              e.clientY - canvasBbox.top,
+            ]);
+
+            sendClicksThrottled({
+              type: "SceneNodeClickMessage",
+              name: props.name,
+              instance_index:
+                computeClickInstanceIndexFromInstanceId === undefined
+                  ? null
+                  : computeClickInstanceIndexFromInstanceId(e.instanceId),
+              // Note that the threejs up is +Y, but we expose a +Z up.
+              ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
+              ray_direction: [
+                ray.direction.x,
+                ray.direction.y,
+                ray.direction.z,
+              ],
+              screen_pos: [mouseVectorOpenCV.x, mouseVectorOpenCV.y],
+            });
+          }}
+          onPointerOver={(e) => {
+            if (!isDisplayed()) return;
+            e.stopPropagation();
+            setHovered(true);
+            hoveredRef.current = true;
+          }}
+          onPointerOut={() => {
+            if (!isDisplayed()) return;
+            setHovered(false);
+            hoveredRef.current = false;
           }}
         >
-          <group
-            // Instead of using onClick, we use onPointerDown/Move/Up to check mouse drag,
-            // and only send a click if the mouse hasn't moved between the down and up events.
-            //  - onPointerDown resets the click state (dragged = false)
-            //  - onPointerMove, if triggered, sets dragged = true
-            //  - onPointerUp, if triggered, sends a click if dragged = false.
-            // Note: It would be cool to have dragged actions too...
-            onPointerDown={(e) => {
-              if (!isDisplayed()) return;
-              e.stopPropagation();
-              const state = dragInfo.current;
-              const canvasBbox =
-                viewer.canvasRef.current!.getBoundingClientRect();
-              state.startClientX = e.clientX - canvasBbox.left;
-              state.startClientY = e.clientY - canvasBbox.top;
-              state.dragging = false;
-            }}
-            onPointerMove={(e) => {
-              if (!isDisplayed()) return;
-              e.stopPropagation();
-              const state = dragInfo.current;
-              const canvasBbox =
-                viewer.canvasRef.current!.getBoundingClientRect();
-              const deltaX = e.clientX - canvasBbox.left - state.startClientX;
-              const deltaY = e.clientY - canvasBbox.top - state.startClientY;
-              // Minimum motion.
-              if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
-              state.dragging = true;
-            }}
-            onPointerUp={(e) => {
-              if (!isDisplayed()) return;
-              e.stopPropagation();
-              const state = dragInfo.current;
-              if (state.dragging) return;
-              // Convert ray to viser coordinates.
-              const ray = rayToViserCoords(viewer, e.ray);
-
-              // Send OpenCV image coordinates to the server (normalized).
-              const canvasBbox =
-                viewer.canvasRef.current!.getBoundingClientRect();
-              const mouseVectorOpenCV = opencvXyFromPointerXy(viewer, [
-                e.clientX - canvasBbox.left,
-                e.clientY - canvasBbox.top,
-              ]);
-
-              sendClicksThrottled({
-                type: "SceneNodeClickMessage",
-                name: props.name,
-                instance_index:
-                  computeClickInstanceIndexFromInstanceId === undefined
-                    ? null
-                    : computeClickInstanceIndexFromInstanceId(e.instanceId),
-                // Note that the threejs up is +Y, but we expose a +Z up.
-                ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
-                ray_direction: [
-                  ray.direction.x,
-                  ray.direction.y,
-                  ray.direction.z,
-                ],
-                screen_pos: [mouseVectorOpenCV.x, mouseVectorOpenCV.y],
-              });
-            }}
-            onPointerOver={(e) => {
-              if (!isDisplayed()) return;
-              e.stopPropagation();
-              setHovered(true);
-              hoveredRef.current = true;
-            }}
-            onPointerOut={() => {
-              if (!isDisplayed()) return;
-              setHovered(false);
-              hoveredRef.current = false;
-            }}
-          >
-            <HoverableContext.Provider value={hoveredRef}>
-              {objNode}
-            </HoverableContext.Provider>
-          </group>
-          {children}
-        </ErrorBoundary>
+          <HoverableContext.Provider value={hoveredRef}>
+            {objNode}
+          </HoverableContext.Provider>
+        </group>
+        {children}
       </>
     );
   } else {

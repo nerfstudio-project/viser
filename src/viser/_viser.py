@@ -760,6 +760,7 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
             self.request_share_url()
 
         self.scene.reset()
+        self.scene.set_up_direction("+z")
         self.gui.reset()
         self.gui.set_panel_label(label)
 

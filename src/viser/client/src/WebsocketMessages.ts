@@ -17,6 +17,8 @@ export interface CameraFrustumMessage {
     color: [number, number, number];
     image_media_type: "image/jpeg" | "image/png" | null;
     _image_data: Uint8Array | null;
+    cast_shadow: boolean;
+    receive_shadow: boolean;
   };
 }
 /** GlTF message.
@@ -26,7 +28,12 @@ export interface CameraFrustumMessage {
 export interface GlbMessage {
   type: "GlbMessage";
   name: string;
-  props: { glb_data: Uint8Array; scale: number };
+  props: {
+    glb_data: Uint8Array;
+    scale: number;
+    cast_shadow: boolean;
+    receive_shadow: boolean;
+  };
 }
 /** Coordinate frame message.
  *
@@ -54,8 +61,8 @@ export interface BatchedAxesMessage {
   type: "BatchedAxesMessage";
   name: string;
   props: {
-    wxyzs_batched: Uint8Array;
-    positions_batched: Uint8Array;
+    batched_wxyzs: Uint8Array;
+    batched_positions: Uint8Array;
     axes_length: number;
     axes_radius: number;
   };
@@ -79,6 +86,7 @@ export interface GridMessage {
     section_color: [number, number, number];
     section_thickness: number;
     section_size: number;
+    shadow_opacity: number;
   };
 }
 /** Add a 2D label to the scene.
@@ -125,7 +133,11 @@ export interface PointCloudMessage {
 export interface DirectionalLightMessage {
   type: "DirectionalLightMessage";
   name: string;
-  props: { color: [number, number, number]; intensity: number };
+  props: {
+    color: [number, number, number];
+    intensity: number;
+    cast_shadow: boolean;
+  };
 }
 /** Ambient light message.
  *
@@ -161,6 +173,7 @@ export interface PointLightMessage {
     intensity: number;
     distance: number;
     decay: number;
+    cast_shadow: boolean;
   };
 }
 /** Rectangular Area light message.
@@ -191,6 +204,7 @@ export interface SpotLightMessage {
     angle: number;
     penumbra: number;
     decay: number;
+    cast_shadow: boolean;
   };
 }
 /** Mesh message.
@@ -211,6 +225,8 @@ export interface MeshMessage {
     flat_shading: boolean;
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
+    cast_shadow: boolean;
+    receive_shadow: boolean;
   };
 }
 /** Skinned mesh message.
@@ -229,6 +245,8 @@ export interface SkinnedMeshMessage {
     flat_shading: boolean;
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
+    cast_shadow: boolean;
+    receive_shadow: boolean;
     bone_wxyzs: Uint8Array;
     bone_positions: Uint8Array;
     skin_indices: Uint8Array;
@@ -305,6 +323,8 @@ export interface ImageMessage {
     _data: Uint8Array;
     render_width: number;
     render_height: number;
+    cast_shadow: boolean;
+    receive_shadow: boolean;
   };
 }
 /** Message from server->client carrying line segments information.
@@ -881,13 +901,14 @@ export interface EnvironmentMapMessage {
   environment_intensity: number;
   environment_wxyz: [number, number, number, number];
 }
-/** Spot light message.
+/** Default light message.
  *
  * (automatically generated)
  */
 export interface EnableLightsMessage {
   type: "EnableLightsMessage";
   enabled: boolean;
+  cast_shadow: boolean;
 }
 /** Server -> client message to set a skinned mesh bone's orientation.
  *

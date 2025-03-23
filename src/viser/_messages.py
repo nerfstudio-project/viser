@@ -241,6 +241,10 @@ class CameraFrustumProps:
     """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
     _image_data: Optional[bytes]
     """Optional image to be displayed on the frustum. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -256,6 +260,10 @@ class GlbProps:
     """A binary payload containing the GLB data. Synchronized automatically when assigned."""
     scale: float
     """A scale for resizing the GLB asset. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -291,9 +299,9 @@ class BatchedAxesMessage(_CreateSceneNodeMessage):
 
 @dataclasses.dataclass
 class BatchedAxesProps:
-    wxyzs_batched: npt.NDArray[np.float32]
+    batched_wxyzs: npt.NDArray[np.float32]
     """Float array of shape (N,4) representing quaternion rotations. Synchronized automatically when assigned."""
-    positions_batched: npt.NDArray[np.float32]
+    batched_positions: npt.NDArray[np.float32]
     """Float array of shape (N,3) representing positions. Synchronized automatically when assigned."""
     axes_length: float
     """Length of each axis. Synchronized automatically when assigned."""
@@ -332,6 +340,8 @@ class GridProps:
     """Thickness of the section lines. Synchronized automatically when assigned."""
     section_size: float
     """Size of each section in the grid. Synchronized automatically when assigned."""
+    shadow_opacity: float
+    """If true, shadows are casted onto the grid plane. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -396,7 +406,6 @@ class PointCloudProps:
 
 
 @dataclasses.dataclass
-@dataclasses.dataclass
 class DirectionalLightMessage(_CreateSceneNodeMessage):
     """Directional light message."""
 
@@ -409,6 +418,8 @@ class DirectionalLightProps:
     """Color of the directional light. Synchronized automatically when assigned."""
     intensity: float
     """Intensity of the directional light. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -460,6 +471,8 @@ class PointLightProps:
     """Distance of the point light. Synchronized automatically when assigned."""
     decay: float
     """Decay of the point light. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -502,6 +515,8 @@ class SpotLightProps:
     """Penumbra of the spot light. Synchronized automatically when assigned."""
     decay: float
     """Decay of the spot light. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
 
     def __post_init__(self):
         assert self.angle <= np.pi / 2
@@ -537,9 +552,10 @@ class EnvironmentMapMessage(Message):
 
 @dataclasses.dataclass
 class EnableLightsMessage(Message):
-    """Spot light message."""
+    """Default light message."""
 
     enabled: bool
+    cast_shadow: bool
 
 
 @dataclasses.dataclass
@@ -569,6 +585,10 @@ class MeshProps:
     """Side of the surface to render. Synchronized automatically when assigned."""
     material: Literal["standard", "toon3", "toon5"]
     """Material type of the mesh. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
 
     def __post_init__(self):
         # Check shapes.
@@ -597,6 +617,10 @@ class SkinnedMeshProps(MeshProps):
     """Array of skin indices. Should have shape (V, 4). Synchronized automatically when assigned."""
     skin_weights: npt.NDArray[np.float32]
     """Array of skin weights. Should have shape (V, 4). Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
 
     def __post_init__(self):
         # Check shapes.
@@ -820,6 +844,10 @@ class ImageProps:
     """Width at which the image should be rendered in the scene. Synchronized automatically when assigned."""
     render_height: float
     """Height at which the image should be rendered in the scene. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -1020,7 +1048,7 @@ class GuiCloseModalMessage(Message):
 
 @dataclasses.dataclass
 class GuiButtonProps(GuiBaseProps):
-    color: Color | None
+    color: Optional[Color]
     """Color of the button. Synchronized automatically when assigned."""
     _icon_html: Optional[str]
     """(Private) HTML string for the icon to be displayed on the button. Synchronized automatically when assigned."""
@@ -1035,9 +1063,9 @@ class GuiButtonMessage(_CreateGuiComponentMessage):
 
 @dataclasses.dataclass
 class GuiUploadButtonProps(GuiBaseProps):
-    color: Color | None
+    color: Optional[Color]
     """Color of the upload button. Synchronized automatically when assigned."""
-    _icon_html: str | None
+    _icon_html: Optional[str]
     """(Private) HTML string for the icon to be displayed on the upload button. Synchronized automatically when assigned."""
     mime_type: str
     """MIME type of the files that can be uploaded. Synchronized automatically when assigned."""
@@ -1084,7 +1112,7 @@ class GuiMultiSliderProps(GuiBaseProps):
     """Number of decimal places to display for the multi-slider values. Synchronized automatically when assigned."""
     fixed_endpoints: bool
     """If True, the first and last handles cannot be moved. Synchronized automatically when assigned."""
-    _marks: Tuple[GuiSliderMark, ...] | None
+    _marks: Optional[Tuple[GuiSliderMark, ...]]
     """(Private) Optional tuple of GuiSliderMark objects to display custom marks on the multi-slider. Synchronized automatically when assigned."""
 
 
@@ -1340,7 +1368,7 @@ class CubicBezierSplineProps:
     """Width of the spline line. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
     """Color of the spline as RGB integers. Synchronized automatically when assigned."""
-    segments: int | None
+    segments: Optional[int]
     """Number of segments to divide the spline into. Synchronized automatically when assigned."""
 
 

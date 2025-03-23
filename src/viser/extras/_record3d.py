@@ -15,7 +15,7 @@ from scipy.spatial.transform import Rotation
 try:
     import liblzfse
 except ImportError:
-    print("liblzfse is missing. Please install with `pip install liblzfse`.")
+    print("liblzfse is missing. Please install with `pip install pyliblzfse`.")
     sys.exit(1)
 
 

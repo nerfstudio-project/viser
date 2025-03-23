@@ -27,6 +27,7 @@ import {
 } from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import {
+  CameraFrustumMessage,
   ImageMessage,
   MeshMessage,
   PointCloudMessage,
@@ -258,7 +259,7 @@ export const GlbAsset = React.forwardRef<
   React.useEffect(() => {
     const glb_data = new Uint8Array(message.props.glb_data);
     loader.parse(
-      glb_data.buffer,
+      props.glbData.buffer,
       "",
       (gltf) => {
         // Handle animations if present
@@ -271,8 +272,14 @@ export const GlbAsset = React.forwardRef<
 
         // Collect all meshes for hover effects
         const meshes: THREE.Mesh[] = [];
-        gltf.scene.traverse((obj) => {
-          if (obj instanceof THREE.Mesh) meshes.push(obj);
+        gltf?.scene.traverse((obj) => {
+          if (obj instanceof THREE.Mesh) {
+            obj.geometry.computeVertexNormals();
+            obj.geometry.computeBoundingSphere();
+            obj.castShadow = props.castShadow;
+            obj.receiveShadow = props.receiveShadow;
+            meshes.push(obj);
+          }
         });
 
         setMeshes(meshes);
@@ -328,7 +335,7 @@ export const GlbAsset = React.forwardRef<
         gltf.scene.traverse(disposeNode);
       }
     };
-  }, [loader, message.props.glb_data]);
+  }, [props.glbData, props.castShadow, props.receiveShadow]);
 
   // Handle animation updates
   useFrame((_, delta) => {
@@ -503,10 +510,12 @@ export const GlbAsset = React.forwardRef<
         )
       ) : (
         <>
-          <primitive object={gltf.scene} scale={message.props.scale} />
-          {meshes.map((mesh) =>
-            createPortal(<OutlinesIfHovered alwaysMounted />, mesh)
-          )}
+          <primitive object={gltf.scene} scale={props.scale} />
+          {meshes.map((mesh, i) => (
+            <React.Fragment key={i}>
+              {createPortal(<OutlinesIfHovered alwaysMounted />, mesh)}
+            </React.Fragment>
+          ))}
         </>
       )}
     </group>
@@ -576,18 +585,13 @@ export const CoordinateFrame = React.forwardRef<
 export const InstancedAxes = React.forwardRef<
   THREE.Group,
   {
-    wxyzsBatched: Float32Array;
-    positionsBatched: Float32Array;
+    batched_wxyzs: Float32Array;
+    batched_positions: Float32Array;
     axes_length?: number;
     axes_radius?: number;
   }
 >(function InstancedAxes(
-  {
-    wxyzsBatched: instance_wxyzs,
-    positionsBatched: instance_positions,
-    axes_length = 0.5,
-    axes_radius = 0.0125,
-  },
+  { batched_wxyzs, batched_positions, axes_length = 0.5, axes_radius = 0.0125 },
   ref,
 ) {
   const axesRef = React.useRef<THREE.InstancedMesh>(null);
@@ -632,18 +636,18 @@ export const InstancedAxes = React.forwardRef<
     const green = new THREE.Color(0x00cc00);
     const blue = new THREE.Color(0x0000cc);
 
-    for (let i = 0; i < instance_wxyzs.length / 4; i++) {
+    for (let i = 0; i < batched_wxyzs.length / 4; i++) {
       T_world_frame.makeRotationFromQuaternion(
         tmpQuat.set(
-          instance_wxyzs[i * 4 + 1],
-          instance_wxyzs[i * 4 + 2],
-          instance_wxyzs[i * 4 + 3],
-          instance_wxyzs[i * 4 + 0],
+          batched_wxyzs[i * 4 + 1],
+          batched_wxyzs[i * 4 + 2],
+          batched_wxyzs[i * 4 + 3],
+          batched_wxyzs[i * 4 + 0],
         ),
       ).setPosition(
-        instance_positions[i * 3 + 0],
-        instance_positions[i * 3 + 1],
-        instance_positions[i * 3 + 2],
+        batched_positions[i * 3 + 0],
+        batched_positions[i * 3 + 1],
+        batched_positions[i * 3 + 2],
       );
       T_world_framex.copy(T_world_frame).multiply(T_frame_framex);
       T_world_framey.copy(T_world_frame).multiply(T_frame_framey);
@@ -659,13 +663,13 @@ export const InstancedAxes = React.forwardRef<
     }
     axesRef.current!.instanceMatrix.needsUpdate = true;
     axesRef.current!.instanceColor!.needsUpdate = true;
-  }, [instance_wxyzs, instance_positions]);
+  }, [batched_wxyzs, batched_positions]);
 
   return (
     <group ref={ref}>
       <instancedMesh
         ref={axesRef}
-        args={[cylinderGeom, material, (instance_wxyzs.length / 4) * 3]}
+        args={[cylinderGeom, material, (batched_wxyzs.length / 4) * 3]}
       >
         <OutlinesIfHovered />
       </instancedMesh>
@@ -691,6 +695,7 @@ export const ViserMesh = React.forwardRef<
     texture.needsUpdate = true;
     return texture;
   };
+
   const assertUnreachable = (x: never): never => {
     throw new Error(`Should never get here! ${x}`);
   };
@@ -1004,6 +1009,13 @@ export const ViserMesh = React.forwardRef<
         geometry={geometry}
         material={material}
         skeleton={skeleton}
+        castShadow={message.props.cast_shadow}
+        receiveShadow={message.props.receive_shadow}
+        // TODO: leaving culling on (default) sometimes causes the
+        // mesh to randomly disappear, as of r3f==8.16.2.
+        //
+        // Probably this is because we don't update the bounding
+        // sphere after the bone transforms change.
         frustumCulled={false}
       >
         <OutlinesIfHovered alwaysMounted />
@@ -1015,6 +1027,8 @@ export const ViserMesh = React.forwardRef<
         ref={ref as React.ForwardedRef<THREE.Mesh>}
         geometry={geometry}
         material={material}
+        castShadow={message.props.cast_shadow}
+        receiveShadow={message.props.receive_shadow}
       >
         <OutlinesIfHovered alwaysMounted />
       </mesh>
@@ -1037,7 +1051,11 @@ export const ViserImage = React.forwardRef<THREE.Group, ImageMessage>(
     }, [message.props.media_type, message.props._data]);
     return (
       <group ref={ref}>
-        <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}>
+        <mesh
+          rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
+          castShadow={message.props.cast_shadow}
+          receiveShadow={message.props.receive_shadow}
+        >
           <OutlinesIfHovered />
           <planeGeometry
             attach="geometry"
@@ -1059,21 +1077,18 @@ export const ViserImage = React.forwardRef<THREE.Group, ImageMessage>(
 /** Helper for visualizing camera frustums. */
 export const CameraFrustum = React.forwardRef<
   THREE.Group,
-  {
-    fov: number;
-    aspect: number;
-    scale: number;
-    lineWidth: number;
-    color: number;
-    imageBinary: Uint8Array | null;
-    imageMediaType: string | null;
-  }
->(function CameraFrustum(props, ref) {
+  CameraFrustumMessage
+>(function CameraFrustum(message, ref) {
   const [imageTexture, setImageTexture] = React.useState<THREE.Texture>();
 
   React.useEffect(() => {
-    if (props.imageMediaType !== null && props.imageBinary !== null) {
-      const image_url = URL.createObjectURL(new Blob([props.imageBinary]));
+    if (
+      message.props.image_media_type !== null &&
+      message.props._image_data !== null
+    ) {
+      const image_url = URL.createObjectURL(
+        new Blob([message.props._image_data]),
+      );
       new THREE.TextureLoader().load(image_url, (texture) => {
         setImageTexture(texture);
         URL.revokeObjectURL(image_url);
@@ -1081,19 +1096,19 @@ export const CameraFrustum = React.forwardRef<
     } else {
       setImageTexture(undefined);
     }
-  }, [props.imageMediaType, props.imageBinary]);
+  }, [message.props.image_media_type, message.props._image_data]);
 
-  let y = Math.tan(props.fov / 2.0);
-  let x = y * props.aspect;
+  let y = Math.tan(message.props.fov / 2.0);
+  let x = y * message.props.aspect;
   let z = 1.0;
 
   const volumeScale = Math.cbrt((x * y * z) / 3.0);
   x /= volumeScale;
   y /= volumeScale;
   z /= volumeScale;
-  x *= props.scale;
-  y *= props.scale;
-  z *= props.scale;
+  x *= message.props.scale;
+  y *= message.props.scale;
+  z *= message.props.scale;
 
   const hoveredRef = React.useContext(HoverableContext);
   const [isHovered, setIsHovered] = React.useState(false);
@@ -1134,8 +1149,10 @@ export const CameraFrustum = React.forwardRef<
     <group ref={ref}>
       <Line
         points={frustumPoints}
-        color={isHovered ? 0xfbff00 : props.color}
-        lineWidth={isHovered ? 1.5 * props.lineWidth : props.lineWidth}
+        color={isHovered ? 0xfbff00 : rgbToInt(message.props.color)}
+        lineWidth={
+          isHovered ? 1.5 * message.props.line_width : message.props.line_width
+        }
         segments
       />
       {imageTexture && (
@@ -1143,10 +1160,12 @@ export const CameraFrustum = React.forwardRef<
           // 0.999999 is to avoid z-fighting with the frustum lines.
           position={[0.0, 0.0, z * 0.999999]}
           rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
+          castShadow={message.props.cast_shadow}
+          receiveShadow={message.props.receive_shadow}
         >
           <planeGeometry
             attach="geometry"
-            args={[props.aspect * y * 2, y * 2]}
+            args={[message.props.aspect * y * 2, y * 2]}
           />
           <meshBasicMaterial
             attach="material"

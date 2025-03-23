@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import { ColorRepresentation } from "three";
-import { ReactThreeFiber, useThree } from "@react-three/fiber";
+import { ThreeElement, useThree } from "@react-three/fiber";
 import {
   LineGeometry,
   LineSegmentsGeometry,
@@ -22,11 +22,8 @@ export type LineProps = {
   lineWidth?: number;
   segments?: boolean;
 } & Omit<LineMaterialParameters, "vertexColors" | "color"> &
-  Omit<ReactThreeFiber.Object3DNode<Line2, typeof Line2>, "args"> &
-  Omit<
-    ReactThreeFiber.Object3DNode<LineMaterial, [LineMaterialParameters]>,
-    "color" | "vertexColors" | "args"
-  > & {
+  Omit<ThreeElement<typeof Line2>, "args"> &
+  Omit<ThreeElement<typeof LineMaterial>, "color" | "vertexColors" | "args"> & {
     color?: ColorRepresentation;
   };
 
