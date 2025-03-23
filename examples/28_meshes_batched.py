@@ -25,14 +25,9 @@ def create_random_transforms(num_instances: int) -> tuple[np.ndarray, np.ndarray
             - positions: (N, 3) float32 array of random positions
             - rotations: (N, 4) float32 array of quaternions (wxyz format)
     """
-    # Random positions in a 10x10x10 cube centered at origin
-    # positions = (np.random.rand(num_instances, 3) * 10 - 5).astype(np.float32)
     positions = (np.random.rand(num_instances, 3) * 2 - 1).astype(np.float32)
-
-    # All instances rotated 90 degrees around X axis
     rotations = np.array(
-        [tf.SO3.from_x_radians(np.pi / 2).wxyz for _ in range(num_instances)],
-        # [tf.SO3.identity().wxyz for _ in range(num_instances)],
+        [tf.SO3.identity().wxyz for _ in range(num_instances)],
         dtype=np.float32,
     )
 
@@ -43,34 +38,25 @@ def main():
     # Load and prepare mesh data.
     mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
     assert isinstance(mesh, trimesh.Trimesh)
-    mesh.apply_scale(0.01)
+    mesh.apply_scale(0.002)
 
-    mesh = cast(trimesh.Scene, trimesh.load_mesh('source/car_glb.glb'))
-    # mesh = list(mesh.geometry.values())[0]
-    mesh.apply_scale(0.1)
-    # mesh.apply_scale(0.5)
-    # mesh.apply_scale(1)
+    mesh.apply_transform(trimesh.transformations.rotation_matrix(np.pi / 2, [1, 0, 0]))
     mesh.apply_translation(-mesh.centroid)
 
-    server = viser.ViserServer(port=8081)
-
-    server.scene.add_mesh_trimesh(
-        name="foo",
-        mesh=mesh,
-    )
+    server = viser.ViserServer()
 
     # Add GUI controls.
-    wiggle_handle = server.gui.add_checkbox(
-        "wiggle",
-        initial_value=True,
-    )
+    wiggle_handle = server.gui.add_checkbox("wiggle", initial_value=False)
     num_insts_handle = server.gui.add_slider(
-        "num_insts",
-        min=1,
-        max=1000,
-        step=1,
-        initial_value=100,
+        "num_insts", min=1, max=1000, step=1, initial_value=100
     )
+    lod_quality_handle = server.gui.add_dropdown(
+        "lod_quality", options=("performance", "balanced", "quality"), initial_value="balanced"
+    )
+
+    @lod_quality_handle.on_update
+    def _(_):
+        mesh_handle.lod_quality = lod_quality_handle.value
 
     # Initialize transforms.
     positions, rotations = create_random_transforms(num_insts_handle.value)
@@ -81,6 +67,7 @@ def main():
         mesh=mesh,
         batched_positions=positions,
         batched_wxyzs=rotations,
+        lod_quality=lod_quality_handle.value,
     )
 
     # Animation loop.

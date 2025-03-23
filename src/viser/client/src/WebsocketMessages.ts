@@ -253,6 +253,7 @@ export interface BatchedMeshesMessage {
     material: "standard" | "toon3" | "toon5";
     batched_wxyzs: Uint8Array;
     batched_positions: Uint8Array;
+    lod_quality: "performance" | "balanced" | "quality";
   };
 }
 /** Message from server->client carrying batched GLB information.
@@ -267,6 +268,7 @@ export interface BatchedGlbMessage {
     scale: number;
     batched_wxyzs: Uint8Array;
     batched_positions: Uint8Array;
+    lod_quality: "performance" | "balanced" | "quality";
   };
 }
 /** Message for transform gizmos.

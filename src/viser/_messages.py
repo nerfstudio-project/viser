@@ -627,6 +627,8 @@ class BatchedMeshesProps(MeshProps):
     """Float array of shape (N, 4) representing quaternion rotations. Synchronized automatically when assigned."""
     batched_positions: npt.NDArray[np.float32]
     """Float array of shape (N, 3) representing positions. Synchronized automatically when assigned."""
+    lod_quality: Literal["performance", "balanced", "quality"]
+    """Quality of the LODs to use. Synchronized automatically when assigned."""
 
     def __post_init__(self):
         super().__post_init__()
@@ -651,6 +653,8 @@ class BatchedGlbProps(GlbProps):
     """Float array of shape (N, 4) representing quaternion rotations. Synchronized automatically when assigned."""
     batched_positions: npt.NDArray[np.float32]
     """Float array of shape (N, 3) representing positions. Synchronized automatically when assigned."""
+    lod_quality: Literal["performance", "balanced", "quality"]
+    """Quality of the LODs to use. Synchronized automatically when assigned."""
 
     def __post_init__(self):
         assert self.batched_wxyzs.shape[-1] == 4
