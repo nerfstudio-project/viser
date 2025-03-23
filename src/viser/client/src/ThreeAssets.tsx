@@ -115,7 +115,8 @@ function addLODs(
       new Float32Array(lodGeometry.attributes.position.array),
       3,
       targetCount,
-      0.1,  // Error tolerance.
+      0.01,  // Error tolerance.
+      ["LockBorder"]
     )[0];
 
     lodGeometry.index!.array.set(dstIndexArray);
@@ -339,17 +340,6 @@ export const GlbAsset = React.forwardRef<
   // Create the instanced meshes for batched GLBs
   const [numInstances, setNumInstances] = React.useState(0);
 
-  React.useEffect(() => {
-    if (message.type !== "BatchedGlbMessage") return;
-    const batched_positions = new Float32Array(
-      message.props.batched_positions.buffer.slice(
-        message.props.batched_positions.byteOffset,
-        message.props.batched_positions.byteOffset + message.props.batched_positions.byteLength
-      )
-    );
-    setNumInstances(batched_positions.length / 3);
-  }, [message.type, ...(message.type === "BatchedGlbMessage" ? [message.props.batched_positions] : [])]);
-
   const instancedMeshes = React.useMemo(() => {
     if (message.type !== "BatchedGlbMessage" || !gltf) return null;
     
@@ -369,15 +359,9 @@ export const GlbAsset = React.forwardRef<
         const instancedMesh = new InstancedMesh2(
           node.geometry.clone(),
           node.material,
-          {
-            capacity: numInstances,
-          }
         );
 
         if (node.parent) {
-          // Initial setup of instances.
-          instancedMesh.addInstances(numInstances, () => { });
-
           // Save the original node information, in the world frame.
           node.getWorldPosition(position);
           node.getWorldScale(scale);
@@ -419,12 +403,30 @@ export const GlbAsset = React.forwardRef<
 
     });
     return { scene, instancedMeshes };
-  }, [message.type, gltf, ...(message.type === "BatchedGlbMessage" ? [numInstances, message.props.lod] : [])]);
+  }, [message.type, gltf, ...(message.type === "BatchedGlbMessage" ? [message.props.lod] : [])]);
+
+  React.useEffect(() => {
+    if (message.type !== "BatchedGlbMessage" || !instancedMeshes) return;
+    const batched_positions = new Float32Array(
+      message.props.batched_positions.buffer.slice(
+        message.props.batched_positions.byteOffset,
+        message.props.batched_positions.byteOffset + message.props.batched_positions.byteLength
+      )
+    );
+    const newNumInstances = batched_positions.length / 3;
+    console.log("newNumInstances", newNumInstances, numInstances);
+    if (newNumInstances !== numInstances) {
+      instancedMeshes.instancedMeshes.forEach((instancedMesh) => {
+        instancedMesh.clearInstances();
+        instancedMesh.addInstances(newNumInstances, () => { });
+      });
+      setNumInstances(newNumInstances);
+    }
+  }, [message.type, ...(message.type === "BatchedGlbMessage" ? [instancedMeshes, message.props.batched_positions.byteLength] : [])]);
 
   // Handle updates to instance positions/orientations
   React.useEffect(() => {
     if (message.type !== "BatchedGlbMessage" || !instancedMeshes) return;
-    // if (instancedMeshes.instancedMeshes.length !== meshes.length) return;
 
     const batched_positions = new Float32Array(
       message.props.batched_positions.buffer.slice(
