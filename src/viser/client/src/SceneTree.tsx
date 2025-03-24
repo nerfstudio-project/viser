@@ -410,7 +410,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
       };
     }
     // Add a glTF/GLB asset.
-    case "GlbMessage": 
+    case "GlbMessage":
     case "BatchedGlbMessage": {
       return {
         makeObject: (ref) => <GlbAsset ref={ref} {...message} />,
