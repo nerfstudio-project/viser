@@ -812,7 +812,6 @@ export function SceneNodeThreeObject(props: {
               e.clientX - canvasBbox.left,
               e.clientY - canvasBbox.top,
             ]);
-            console.log(computeClickInstanceIndexFromInstanceId!(e.instanceId));
 
             sendClicksThrottled({
               type: "SceneNodeClickMessage",
