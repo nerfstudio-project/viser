@@ -119,6 +119,87 @@ function addLODs(
   });
 }
 
+/** Helper function to handle batched mesh instance updates */
+function updateBatchedInstances(
+  instancedMesh: InstancedMesh2,
+  batched_positions: Float32Array,
+  batched_wxyzs: Float32Array,
+  meshTransform?: {
+    position: THREE.Vector3;
+    rotation: THREE.Quaternion;
+    scale: THREE.Vector3;
+  }
+) {
+  instancedMesh.updateInstances((obj, index) => {
+    // Create instance world transform
+    const instanceWorldMatrix = new THREE.Matrix4().compose(
+      new THREE.Vector3(
+        batched_positions[index * 3 + 0],
+        batched_positions[index * 3 + 1],
+        batched_positions[index * 3 + 2]
+      ),
+      new THREE.Quaternion(
+        batched_wxyzs[index * 4 + 1],
+        batched_wxyzs[index * 4 + 2],
+        batched_wxyzs[index * 4 + 3],
+        batched_wxyzs[index * 4 + 0]
+      ),
+      new THREE.Vector3(1, 1, 1)
+    );
+
+    if (meshTransform) {
+      // Apply mesh's original transform relative to the instance
+      const meshMatrix = new THREE.Matrix4().compose(
+        meshTransform.position,
+        meshTransform.rotation,
+        new THREE.Vector3(1, 1, 1)
+      );
+
+      // Combine transforms and apply
+      const finalMatrix = instanceWorldMatrix.multiply(meshMatrix);
+      obj.position.setFromMatrixPosition(finalMatrix);
+      obj.quaternion.setFromRotationMatrix(finalMatrix);
+      obj.scale.copy(meshTransform.scale);
+    } else {
+      // Direct instance transform without mesh offset
+      obj.position.setFromMatrixPosition(instanceWorldMatrix);
+      obj.quaternion.setFromRotationMatrix(instanceWorldMatrix);
+    }
+  });
+}
+
+/** Helper function to setup batched mesh instances */
+function setupBatchedMesh(
+  geometry: THREE.BufferGeometry,
+  material: THREE.Material,
+  numInstances: number,
+  lodSetting: "off" | "auto" | [number, number][],
+  scale?: number
+): InstancedMesh2 {
+  const instancedMesh = new InstancedMesh2(geometry, material);
+
+  // Handle LOD setup
+  if (lodSetting === "off") {
+    // No LODs
+  } else if (lodSetting === "auto") {
+    const dummyMesh = new THREE.Mesh(geometry, material);
+    const {ratios, distances} = getAutoLODSettings(dummyMesh, scale);
+    addLODs(dummyMesh, instancedMesh, ratios, distances);
+  } else {
+    addLODs(
+      new THREE.Mesh(geometry, material),
+      instancedMesh,
+      lodSetting.map(pair => pair[1]),
+      lodSetting.map(pair => pair[0])
+    );
+  }
+
+  // Setup instances
+  instancedMesh.addInstances(numInstances, () => {});
+  
+  return instancedMesh;
+}
+
 const PointCloudMaterial = /* @__PURE__ */ shaderMaterial(
   { scale: 1.0, point_ball_norm: 0.0 },
   `
@@ -342,8 +423,7 @@ export const GlbAsset = React.forwardRef<
 
     scene.traverse((node) => {
       if (node instanceof THREE.Mesh && node.parent) {
-        const instancedMesh = new InstancedMesh2(node.geometry.clone(), node.material);
-        
+
         // Store transform info.
         const position = new THREE.Vector3();
         const scale = new THREE.Vector3();
@@ -352,21 +432,22 @@ export const GlbAsset = React.forwardRef<
         node.getWorldScale(scale);
         node.getWorldQuaternion(quat);
 
-        transforms.push({
+        const transform = {
           position: position.clone(),
           rotation: quat.clone(),
           scale: scale.clone()
-        });
+        };
+        transforms.push(transform);
 
-        // Handle LOD setup.
-        if (message.props.lod === "off") {
-          // No LODs.
-        } else if (message.props.lod === "auto") {
-          const {ratios, distances} = getAutoLODSettings(node, Math.max(scale.x, scale.y, scale.z));
-          addLODs(node, instancedMesh, ratios, distances);
-        } else {
-          addLODs(node, instancedMesh, message.props.lod.map(pair => pair[1]), message.props.lod.map(pair => pair[0]));
-        }
+        // Create instanced mesh with LOD
+        const numInstances = message.props.batched_positions.byteLength / (3 * Float32Array.BYTES_PER_ELEMENT);
+        const instancedMesh = setupBatchedMesh(
+          node.geometry.clone(),
+          node.material,
+          numInstances,
+          message.props.lod,
+          Math.max(scale.x, scale.y, scale.z)
+        );
 
         // Hide the original node.
         node.visible = false;
@@ -381,23 +462,7 @@ export const GlbAsset = React.forwardRef<
     return { scene, instancedMeshes };
   }, [message.type, gltf, ...(message.type === "BatchedGlbMessage" ? [message.props.lod] : [])]);
 
-  // Handle updates to the total number of instances, which are determined by the shape of `batched_positions`.
-  React.useEffect(() => {
-    if (message.type !== "BatchedGlbMessage" || !instancedMeshes) return;
-    const batched_positions = new Float32Array(
-      message.props.batched_positions.buffer.slice(
-        message.props.batched_positions.byteOffset,
-        message.props.batched_positions.byteOffset + message.props.batched_positions.byteLength
-      )
-    );
-    const newNumInstances = batched_positions.length / 3;
-    instancedMeshes.instancedMeshes.forEach((instancedMesh) => {
-      instancedMesh.clearInstances();
-      instancedMesh.addInstances(newNumInstances, () => { });
-    });
-  }, [message.type, ...(message.type === "BatchedGlbMessage" ? [instancedMeshes, message.props.batched_positions.byteLength] : [])]);
-
-  // Handle updates to the instance positions and orientations.
+  // Handle updates to instance positions/orientations.
   React.useEffect(() => {
     if (message.type !== "BatchedGlbMessage" || !instancedMeshes) return;
 
@@ -415,38 +480,16 @@ export const GlbAsset = React.forwardRef<
       )
     );
 
+    // Update instance count if needed.
+    const newNumInstances = message.props.batched_positions.byteLength / (3 * Float32Array.BYTES_PER_ELEMENT);
+    instancedMeshes.instancedMeshes.forEach((instancedMesh) => {
+      instancedMesh.clearInstances();
+      instancedMesh.addInstances(newNumInstances, () => {});
+    });
+
+    // Update instance transforms
     instancedMeshes.instancedMeshes.forEach((instancedMesh, mesh_index) => {
-      instancedMesh.updateInstances((obj, index) => {
-        // Create instance world transform.
-        const instanceWorldMatrix = new THREE.Matrix4().compose(
-          new THREE.Vector3(
-            batched_positions[index * 3 + 0],
-            batched_positions[index * 3 + 1],
-            batched_positions[index * 3 + 2]
-          ),
-          new THREE.Quaternion(
-            batched_wxyzs[index * 4 + 1],
-            batched_wxyzs[index * 4 + 2],
-            batched_wxyzs[index * 4 + 3],
-            batched_wxyzs[index * 4 + 0]
-          ),
-          new THREE.Vector3(1, 1, 1)
-        );
-
-        // Apply mesh's original transform relative to the instance.
-        const meshTransform = transforms[mesh_index];
-        const meshMatrix = new THREE.Matrix4().compose(
-          meshTransform.position,
-          meshTransform.rotation,
-          new THREE.Vector3(1, 1, 1)
-        );
-
-        // Combine transforms, then apply to the instance.
-        const finalMatrix = instanceWorldMatrix.multiply(meshMatrix);
-        obj.position.setFromMatrixPosition(finalMatrix);
-        obj.quaternion.setFromRotationMatrix(finalMatrix);
-        obj.scale.copy(meshTransform.scale);
-      });
+      updateBatchedInstances(instancedMesh, batched_positions, batched_wxyzs, transforms[mesh_index]);
     });
   }, [
     message.type,
@@ -645,7 +688,7 @@ export const InstancedAxes = React.forwardRef<
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 export const ViserMesh = React.forwardRef<
-  THREE.Mesh | THREE.SkinnedMesh | THREE.Group,
+  THREE.Mesh | THREE.SkinnedMesh | InstancedMesh2,
   MeshMessage | SkinnedMeshMessage | BatchedMeshesMessage
 >(function ViserMesh(message, ref) {
   const viewer = React.useContext(ViewerContext)!;
@@ -890,44 +933,18 @@ export const ViserMesh = React.forwardRef<
   const instancedMesh = React.useMemo(() => {
     if (message.type !== "BatchedMeshesMessage" || !material) return null;
     
-    const num_insts = new Float32Array(
-      message.props.batched_wxyzs.buffer.slice(
-        message.props.batched_wxyzs.byteOffset,
-        message.props.batched_wxyzs.byteOffset +
-          message.props.batched_wxyzs.byteLength,
-      ),
-    ).length / 4;
-    const mesh = new InstancedMesh2(geometry, material,
-      {
-        capacity: num_insts,
-        createEntities: true,
-      }
+    const numInstances = message.props.batched_positions.byteLength / (3 * Float32Array.BYTES_PER_ELEMENT);
+    return setupBatchedMesh(
+      geometry,
+      material,
+      numInstances,
+      message.props.lod
     );
-
-    // Add LODs using the shared function with quality setting
-    const dummyMesh = new THREE.Mesh(geometry, material);
-    if (message.props.lod === "off") {
-      // No LODs
-    } else if (message.props.lod === "auto") {
-      const {ratios, distances} = getAutoLODSettings(dummyMesh);
-      addLODs(dummyMesh, mesh, ratios, distances);
-    } else {
-      // Custom LODs
-      const ratios = message.props.lod.map((pair) => pair[1]);
-      const distances = message.props.lod.map((pair) => pair[0]);
-      addLODs(dummyMesh, mesh, ratios, distances);
-    }
-
-    // Initial setup of instances
-    mesh.addInstances(num_insts, () => {});
-
-    return mesh;
   }, [
     message.type,
     material,
     geometry,
     ...(message.type === "BatchedMeshesMessage" ? [
-      message.props.batched_wxyzs.length,
       message.props.lod,
     ] : [])
   ]);
@@ -939,42 +956,31 @@ export const ViserMesh = React.forwardRef<
     const batched_positions = new Float32Array(
       message.props.batched_positions.buffer.slice(
         message.props.batched_positions.byteOffset,
-        message.props.batched_positions.byteOffset +
-          message.props.batched_positions.byteLength,
-      ),
+        message.props.batched_positions.byteOffset + message.props.batched_positions.byteLength
+      )
     );
 
     const batched_wxyzs = new Float32Array(
       message.props.batched_wxyzs.buffer.slice(
         message.props.batched_wxyzs.byteOffset,
-        message.props.batched_wxyzs.byteOffset +
-          message.props.batched_wxyzs.byteLength,
-      ),
+        message.props.batched_wxyzs.byteOffset + message.props.batched_wxyzs.byteLength
+      )
     );
 
-    console.log("updating instances");
-    instancedMesh.updateInstances((obj, index) => {
-      obj.position.set(
-        batched_positions[index * 3 + 0],
-        batched_positions[index * 3 + 1],
-        batched_positions[index * 3 + 2],
-      );
-      obj.quaternion.set(
-        batched_wxyzs[index * 4 + 1],
-        batched_wxyzs[index * 4 + 2],
-        batched_wxyzs[index * 4 + 3],
-        batched_wxyzs[index * 4 + 0],
-      );
-    });
+    // Update instance count if needed
+    const newNumInstances = message.props.batched_positions.byteLength / (3 * Float32Array.BYTES_PER_ELEMENT);
+    instancedMesh.clearInstances();
+    instancedMesh.addInstances(newNumInstances, () => {});
+
+    // Update instance transforms
+    updateBatchedInstances(instancedMesh, batched_positions, batched_wxyzs);
   }, [
     message.type,
     instancedMesh,
-    ...(message.type === "BatchedMeshesMessage"
-      ? [
-          message.props.batched_positions.buffer,
-          message.props.batched_wxyzs.buffer,
-        ]
-      : []),
+    ...(message.type === "BatchedMeshesMessage" ? [
+      message.props.batched_positions.buffer,
+      message.props.batched_wxyzs.buffer,
+    ] : [])
   ]);
 
   if (geometry === undefined || material === undefined) {
@@ -984,14 +990,14 @@ export const ViserMesh = React.forwardRef<
   // Render the appropriate mesh type
   if (message.type === "BatchedMeshesMessage") {
     return (
-      <group ref={ref as React.ForwardedRef<THREE.Group>}>
+      <>
         {instancedMesh && (
           <>
             <primitive object={instancedMesh} />
             <OutlinesIfHovered alwaysMounted />
           </>
         )}
-      </group>
+      </>
     );
   } else if (message.type === "SkinnedMeshMessage") {
     return (

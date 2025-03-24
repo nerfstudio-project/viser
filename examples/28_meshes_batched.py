@@ -55,7 +55,7 @@ def main():
     # Allow user to toggle LOD.
     lod_checkbox = server.gui.add_checkbox("Enable LoD", initial_value=True)
     @lod_checkbox.on_update
-    def update_lod(_):
+    def _(_):
         mesh_handle.lod = "auto" if lod_checkbox.value else "off"
 
     # Initialize transforms.
