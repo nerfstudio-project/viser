@@ -958,8 +958,8 @@ class SceneApi:
         assert batched_wxyzs.shape == (num_axes, 4)
         assert batched_positions.shape == (num_axes, 3)
         props = _messages.BatchedAxesProps(
-            wxyzs_batched=batched_wxyzs.astype(np.float32),
-            positions_batched=batched_positions.astype(np.float32),
+            batched_wxyzs=batched_wxyzs.astype(np.float32),
+            batched_positions=batched_positions.astype(np.float32),
             axes_length=axes_length,
             axes_radius=axes_radius,
         )
@@ -1094,10 +1094,6 @@ class SceneApi:
             points.shape,
             (3,),
         }, "Shape of colors should be (N, 3) or (3,)."
-
-        if colors_cast.shape == (3,):
-            colors_cast = np.tile(colors_cast[None, :], reps=(points.shape[0], 1))
-
         message = _messages.PointCloudMessage(
             name=name,
             props=_messages.PointCloudProps(

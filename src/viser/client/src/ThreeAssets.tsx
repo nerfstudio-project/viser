@@ -59,17 +59,26 @@ function rgbToInt(rgb: [number, number, number]): number {
 const originGeom = new THREE.SphereGeometry(1.0);
 
 const PointCloudMaterial = /* @__PURE__ */ shaderMaterial(
-  { scale: 1.0, point_ball_norm: 0.0 },
+  {
+    scale: 1.0,
+    point_ball_norm: 0.0,
+    uniformColor: new THREE.Color(1, 1, 1),
+  },
   `
   precision mediump float;
 
   varying vec3 vPosition;
   varying vec3 vColor; // in the vertex shader
   uniform float scale;
+  uniform vec3 uniformColor;
 
   void main() {
       vPosition = position;
+      #ifdef USE_COLOR
       vColor = color;
+      #else
+      vColor = uniformColor;
+      #endif
       vec4 world_pos = modelViewMatrix * vec4(position, 1.0);
       gl_Position = projectionMatrix * world_pos;
       gl_PointSize = (scale / -world_pos.z);
@@ -78,6 +87,7 @@ const PointCloudMaterial = /* @__PURE__ */ shaderMaterial(
   `varying vec3 vPosition;
   varying vec3 vColor;
   uniform float point_ball_norm;
+  uniform vec3 uniformColor;
 
   void main() {
       if (point_ball_norm < 1000.0) {
@@ -98,10 +108,12 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
 
     const props = message.props;
 
-    // Create geometry and update it whenever the points or colors change.
-    const [geometry] = React.useState(() => new THREE.BufferGeometry());
+    const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
+    const [material, setMaterial] = React.useState<ShaderMaterial>();
 
     React.useEffect(() => {
+      const geometry = new THREE.BufferGeometry();
+
       geometry.setAttribute(
         "position",
         new THREE.Float16BufferAttribute(
@@ -114,34 +126,50 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
           3,
         ),
       );
-      // geometry.computeBoundingSphere();
-    }, [props.points]);
 
-    React.useEffect(() => {
-      geometry.setAttribute(
-        "color",
-        new THREE.BufferAttribute(new Uint8Array(props.colors), 3, true),
-      );
-    }, [props.colors]);
+      const material = new PointCloudMaterial();
+      if (props.colors.length > 3) {
+        material.vertexColors = true;
+        geometry.setAttribute(
+          "color",
+          new THREE.BufferAttribute(new Uint8Array(props.colors), 3, true),
+        );
+      } else {
+        if (props.colors.length < 3) {
+          console.error(
+            `Invalid color buffer length, got ${props.colors.length}`,
+          );
+        }
+        material.vertexColors = false;
+        material.uniforms.uniformColor.value = new THREE.Color(
+          props.colors[0],
+          props.colors[1],
+          props.colors[2],
+        );
+      }
+      setGeometry(geometry);
+      setMaterial(material);
+    }, [props.points, props.colors]);
 
     React.useEffect(() => {
       return () => {
+        if (geometry === undefined) return;
         geometry.dispose();
       };
     }, [geometry]);
 
-    // Create persistent material and update it whenever the point size changes.
-    const [material] = React.useState(
-      () => new PointCloudMaterial({ vertexColors: true }),
-    );
-    material.uniforms.scale.value = 10.0;
-    material.uniforms.point_ball_norm.value = props.point_ball_norm;
-
     React.useEffect(() => {
       return () => {
+        if (material === undefined) return;
         material.dispose();
       };
     }, [material]);
+
+    React.useEffect(() => {
+      if (material === undefined) return;
+      material.uniforms.scale.value = 10.0;
+      material.uniforms.point_ball_norm.value = props.point_ball_norm;
+    }, [props.point_ball_norm, material]);
 
     const rendererSize = new THREE.Vector2();
     useFrame(() => {
@@ -346,18 +374,13 @@ export const CoordinateFrame = React.forwardRef<
 export const InstancedAxes = React.forwardRef<
   THREE.Group,
   {
-    wxyzsBatched: Float32Array;
-    positionsBatched: Float32Array;
+    batched_wxyzs: Float32Array;
+    batched_positions: Float32Array;
     axes_length?: number;
     axes_radius?: number;
   }
 >(function InstancedAxes(
-  {
-    wxyzsBatched: instance_wxyzs,
-    positionsBatched: instance_positions,
-    axes_length = 0.5,
-    axes_radius = 0.0125,
-  },
+  { batched_wxyzs, batched_positions, axes_length = 0.5, axes_radius = 0.0125 },
   ref,
 ) {
   const axesRef = React.useRef<THREE.InstancedMesh>(null);
@@ -402,18 +425,18 @@ export const InstancedAxes = React.forwardRef<
     const green = new THREE.Color(0x00cc00);
     const blue = new THREE.Color(0x0000cc);
 
-    for (let i = 0; i < instance_wxyzs.length / 4; i++) {
+    for (let i = 0; i < batched_wxyzs.length / 4; i++) {
       T_world_frame.makeRotationFromQuaternion(
         tmpQuat.set(
-          instance_wxyzs[i * 4 + 1],
-          instance_wxyzs[i * 4 + 2],
-          instance_wxyzs[i * 4 + 3],
-          instance_wxyzs[i * 4 + 0],
+          batched_wxyzs[i * 4 + 1],
+          batched_wxyzs[i * 4 + 2],
+          batched_wxyzs[i * 4 + 3],
+          batched_wxyzs[i * 4 + 0],
         ),
       ).setPosition(
-        instance_positions[i * 3 + 0],
-        instance_positions[i * 3 + 1],
-        instance_positions[i * 3 + 2],
+        batched_positions[i * 3 + 0],
+        batched_positions[i * 3 + 1],
+        batched_positions[i * 3 + 2],
       );
       T_world_framex.copy(T_world_frame).multiply(T_frame_framex);
       T_world_framey.copy(T_world_frame).multiply(T_frame_framey);
@@ -429,13 +452,13 @@ export const InstancedAxes = React.forwardRef<
     }
     axesRef.current!.instanceMatrix.needsUpdate = true;
     axesRef.current!.instanceColor!.needsUpdate = true;
-  }, [instance_wxyzs, instance_positions]);
+  }, [batched_wxyzs, batched_positions]);
 
   return (
     <group ref={ref}>
       <instancedMesh
         ref={axesRef}
-        args={[cylinderGeom, material, (instance_wxyzs.length / 4) * 3]}
+        args={[cylinderGeom, material, (batched_wxyzs.length / 4) * 3]}
       >
         <OutlinesIfHovered />
       </instancedMesh>
@@ -514,11 +537,10 @@ export const ViserMesh = React.forwardRef<
   ]);
 
   // Create persistent geometry. Set attributes when we receive updates.
-  const [geometry] = React.useState<THREE.BufferGeometry>(
-    () => new THREE.BufferGeometry(),
-  );
+  const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
   const [skeleton, setSkeleton] = React.useState<THREE.Skeleton>();
   React.useEffect(() => {
+    const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
       new THREE.BufferAttribute(
@@ -626,6 +648,7 @@ export const ViserMesh = React.forwardRef<
       );
     }
     skeleton?.init();
+    setGeometry(geometry);
     setSkeleton(skeleton);
     return () => {
       if (message.type === "SkinnedMeshMessage") {
@@ -654,7 +677,7 @@ export const ViserMesh = React.forwardRef<
   // Dispose geometry when done.
   React.useEffect(() => {
     return () => {
-      geometry.dispose();
+      geometry !== undefined && geometry.dispose();
     };
   }, [geometry]);
 
