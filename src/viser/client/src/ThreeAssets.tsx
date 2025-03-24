@@ -92,85 +92,162 @@ function getAutoLODSettings(
   return { ratios, distances };
 }
 
-/** Helper function to add LODs to a mesh */
-function addLODs(
-  mesh: THREE.Mesh,
-  instancedMesh: InstancedMesh2,
-  ratios: number[],
-  distances: number[],
-  castShadow: boolean,
-) {
-  ratios.forEach((ratio, index) => {
-    const targetCount =
-      Math.floor((mesh.geometry.index!.array.length * ratio) / 3) * 3;
-    const lodGeometry = mesh.geometry.clone();
+// The LOD functionality has been moved into the BatchedMeshManager class
 
-    const dstIndexArray = MeshoptSimplifier.simplify(
-      new Uint32Array(lodGeometry.index!.array),
-      new Float32Array(lodGeometry.attributes.position.array),
-      3,
-      targetCount,
-      0.01, // Error tolerance.
-      ["LockBorder"], // Important to avoid triangle flipping artifacts.
-    )[0];
+// The helper function has been moved into the BatchedMeshManager class
 
-    lodGeometry.index!.array.set(dstIndexArray);
-    lodGeometry.index!.needsUpdate = true;
-    lodGeometry.setDrawRange(0, dstIndexArray.length);
-    instancedMesh.addLOD(lodGeometry, mesh.material, distances[index]);
-    if (castShadow) {
-      instancedMesh.addShadowLOD(lodGeometry, distances[index]);
+/**
+ * Helper class to manage batched mesh instances and ensure proper resource disposal
+ * This class ensures that all resources (geometries, LODs) are properly cleaned up
+ */
+class BatchedMeshManager {
+  private instancedMesh: InstancedMesh2;
+  private lodGeometries: THREE.BufferGeometry[] = [];
+
+  constructor(
+    geometry: THREE.BufferGeometry,
+    material: THREE.Material,
+    numInstances: number,
+    lodSetting: "off" | "auto" | [number, number][],
+    castShadow: boolean,
+    scale?: number,
+  ) {
+    this.instancedMesh = new InstancedMesh2(geometry, material);
+
+    // Setup LODs if needed
+    if (lodSetting !== "off") {
+      this.setupLODs(geometry, material, lodSetting, castShadow, scale);
     }
-  });
-}
 
-/** Helper function to handle batched mesh instance updates */
-function updateBatchedInstances(
-  instancedMesh: InstancedMesh2,
-  batched_positions: Float32Array,
-  batched_wxyzs: Float32Array,
-  meshTransform?: {
-    position: THREE.Vector3;
-    rotation: THREE.Quaternion;
-    scale: THREE.Vector3;
-  },
-) {
-  instancedMesh.updateInstances((obj, index) => {
-    // Create instance world transform
-    const instanceWorldMatrix = new THREE.Matrix4().compose(
-      new THREE.Vector3(
-        batched_positions[index * 3 + 0],
-        batched_positions[index * 3 + 1],
-        batched_positions[index * 3 + 2],
-      ),
-      new THREE.Quaternion(
-        batched_wxyzs[index * 4 + 1],
-        batched_wxyzs[index * 4 + 2],
-        batched_wxyzs[index * 4 + 3],
-        batched_wxyzs[index * 4 + 0],
-      ),
-      new THREE.Vector3(1, 1, 1),
-    );
+    // Setup instances
+    this.instancedMesh.addInstances(numInstances, () => {});
+  }
 
-    if (meshTransform) {
-      // Apply mesh's original transform relative to the instance
-      const meshMatrix = new THREE.Matrix4().compose(
-        meshTransform.position,
-        meshTransform.rotation,
+  private setupLODs(
+    geometry: THREE.BufferGeometry,
+    material: THREE.Material,
+    lodSetting: "auto" | [number, number][],
+    castShadow: boolean,
+    scale?: number,
+  ) {
+    const dummyMesh = new THREE.Mesh(geometry, material);
+
+    if (lodSetting === "auto") {
+      const { ratios, distances } = getAutoLODSettings(dummyMesh, scale);
+      this.addLODs(dummyMesh, ratios, distances, castShadow);
+    } else {
+      this.addLODs(
+        dummyMesh,
+        lodSetting.map((pair) => pair[1]),
+        lodSetting.map((pair) => pair[0]),
+        castShadow,
+      );
+    }
+  }
+
+  private addLODs(
+    mesh: THREE.Mesh,
+    ratios: number[],
+    distances: number[],
+    castShadow: boolean,
+  ) {
+    ratios.forEach((ratio, index) => {
+      const targetCount =
+        Math.floor((mesh.geometry.index!.array.length * ratio) / 3) * 3;
+      const lodGeometry = mesh.geometry.clone();
+
+      const dstIndexArray = MeshoptSimplifier.simplify(
+        new Uint32Array(lodGeometry.index!.array),
+        new Float32Array(lodGeometry.attributes.position.array),
+        3,
+        targetCount,
+        0.01, // Error tolerance.
+        ["LockBorder"], // Important to avoid triangle flipping artifacts.
+      )[0];
+
+      lodGeometry.index!.array.set(dstIndexArray);
+      lodGeometry.index!.needsUpdate = true;
+      lodGeometry.setDrawRange(0, dstIndexArray.length);
+      this.instancedMesh.addLOD(lodGeometry, mesh.material, distances[index]);
+
+      if (castShadow) {
+        this.instancedMesh.addShadowLOD(lodGeometry, distances[index]);
+      }
+
+      // Store the geometry for proper disposal later
+      this.lodGeometries.push(lodGeometry);
+    });
+  }
+
+  /** Update instance transforms */
+  updateInstances(
+    batched_positions: Float32Array,
+    batched_wxyzs: Float32Array,
+    meshTransform?: {
+      position: THREE.Vector3;
+      rotation: THREE.Quaternion;
+      scale: THREE.Vector3;
+    },
+  ) {
+    this.instancedMesh.updateInstances((obj, index) => {
+      // Create instance world transform
+      const instanceWorldMatrix = new THREE.Matrix4().compose(
+        new THREE.Vector3(
+          batched_positions[index * 3 + 0],
+          batched_positions[index * 3 + 1],
+          batched_positions[index * 3 + 2],
+        ),
+        new THREE.Quaternion(
+          batched_wxyzs[index * 4 + 1],
+          batched_wxyzs[index * 4 + 2],
+          batched_wxyzs[index * 4 + 3],
+          batched_wxyzs[index * 4 + 0],
+        ),
         new THREE.Vector3(1, 1, 1),
       );
 
-      // Combine transforms and apply
-      const finalMatrix = instanceWorldMatrix.multiply(meshMatrix);
-      obj.position.setFromMatrixPosition(finalMatrix);
-      obj.quaternion.setFromRotationMatrix(finalMatrix);
-      obj.scale.copy(meshTransform.scale);
-    } else {
-      // Direct instance transform without mesh offset
-      obj.position.setFromMatrixPosition(instanceWorldMatrix);
-      obj.quaternion.setFromRotationMatrix(instanceWorldMatrix);
+      if (meshTransform) {
+        // Apply mesh's original transform relative to the instance
+        const meshMatrix = new THREE.Matrix4().compose(
+          meshTransform.position,
+          meshTransform.rotation,
+          new THREE.Vector3(1, 1, 1),
+        );
+
+        // Combine transforms and apply
+        const finalMatrix = instanceWorldMatrix.multiply(meshMatrix);
+        obj.position.setFromMatrixPosition(finalMatrix);
+        obj.quaternion.setFromRotationMatrix(finalMatrix);
+        obj.scale.copy(meshTransform.scale);
+      } else {
+        // Direct instance transform without mesh offset
+        obj.position.setFromMatrixPosition(instanceWorldMatrix);
+        obj.quaternion.setFromRotationMatrix(instanceWorldMatrix);
+      }
+    });
+  }
+
+  /** Update the number of instances */
+  setInstanceCount(numInstances: number) {
+    this.instancedMesh.clearInstances();
+    this.instancedMesh.addInstances(numInstances, () => {});
+  }
+
+  /** Get the instanced mesh object */
+  getMesh() {
+    return this.instancedMesh;
+  }
+
+  /** Dispose all resources */
+  dispose() {
+    // Dispose all LOD geometries
+    for (const geometry of this.lodGeometries) {
+      geometry.dispose();
     }
-  });
+
+    // The instancedMesh will dispose its main geometry and material
+    this.instancedMesh.dispose();
+  }
 }
 
 /** Helper function to setup batched mesh instances */
@@ -181,30 +258,15 @@ function setupBatchedMesh(
   lodSetting: "off" | "auto" | [number, number][],
   castShadow: boolean,
   scale?: number,
-): InstancedMesh2 {
-  const instancedMesh = new InstancedMesh2(geometry, material);
-
-  // Handle LOD setup
-  if (lodSetting === "off") {
-    // No LODs
-  } else if (lodSetting === "auto") {
-    const dummyMesh = new THREE.Mesh(geometry, material);
-    const { ratios, distances } = getAutoLODSettings(dummyMesh, scale);
-    addLODs(dummyMesh, instancedMesh, ratios, distances, castShadow);
-  } else {
-    addLODs(
-      new THREE.Mesh(geometry, material),
-      instancedMesh,
-      lodSetting.map((pair) => pair[1]),
-      lodSetting.map((pair) => pair[0]),
-      castShadow,
-    );
-  }
-
-  // Setup instances
-  instancedMesh.addInstances(numInstances, () => {});
-
-  return instancedMesh;
+): BatchedMeshManager {
+  return new BatchedMeshManager(
+    geometry,
+    material,
+    numInstances,
+    lodSetting,
+    castShadow,
+    scale,
+  );
 }
 
 const PointCloudMaterial = /* @__PURE__ */ shaderMaterial(
@@ -451,11 +513,26 @@ export const GlbAsset = React.forwardRef<
       scale: THREE.Vector3;
     }[]
   >([]);
-  const instancedMeshes = React.useMemo(() => {
-    if (message.type !== "BatchedGlbMessage" || !gltf) return null;
+
+  // Use a ref to store mesh managers for proper disposal
+  const meshManagersRef = React.useRef<{
+    gltfScene: THREE.Group;
+    managers: BatchedMeshManager[];
+  } | null>(null);
+
+  // Initialize mesh managers
+  React.useEffect(() => {
+    if (message.type !== "BatchedGlbMessage" || !gltf) return;
+
+    // Clean up previous managers if they exist
+    if (meshManagersRef.current) {
+      meshManagersRef.current.managers.forEach((manager) => {
+        manager.dispose();
+      });
+    }
 
     const scene = gltf.scene.clone();
-    const instancedMeshes: InstancedMesh2[] = [];
+    const managers: BatchedMeshManager[] = [];
     const transforms: {
       position: THREE.Vector3;
       rotation: THREE.Quaternion;
@@ -483,7 +560,7 @@ export const GlbAsset = React.forwardRef<
         const numInstances =
           message.props.batched_positions.byteLength /
           (3 * Float32Array.BYTES_PER_ELEMENT);
-        const instancedMesh = setupBatchedMesh(
+        const manager = setupBatchedMesh(
           node.geometry.clone(),
           node.material,
           numInstances,
@@ -496,13 +573,23 @@ export const GlbAsset = React.forwardRef<
         node.visible = false;
 
         // Add the instanced mesh to the scene.
-        instancedMeshes.push(instancedMesh);
-        scene.add(instancedMesh);
+        managers.push(manager);
+        scene.add(manager.getMesh());
       }
     });
 
     setTransforms(transforms);
-    return { scene, instancedMeshes };
+    meshManagersRef.current = { gltfScene: scene, managers };
+
+    // Clean up when component unmounts or dependencies change
+    return () => {
+      if (meshManagersRef.current) {
+        meshManagersRef.current.managers.forEach((manager) => {
+          manager.dispose();
+        });
+        meshManagersRef.current = null;
+      }
+    };
   }, [
     message.type,
     gltf,
@@ -513,7 +600,8 @@ export const GlbAsset = React.forwardRef<
 
   // Handle updates to instance positions/orientations.
   React.useEffect(() => {
-    if (message.type !== "BatchedGlbMessage" || !instancedMeshes) return;
+    if (message.type !== "BatchedGlbMessage" || !meshManagersRef.current)
+      return;
 
     const batched_positions = new Float32Array(
       message.props.batched_positions.buffer.slice(
@@ -535,15 +623,11 @@ export const GlbAsset = React.forwardRef<
     const newNumInstances =
       message.props.batched_positions.byteLength /
       (3 * Float32Array.BYTES_PER_ELEMENT);
-    instancedMeshes.instancedMeshes.forEach((instancedMesh) => {
-      instancedMesh.clearInstances();
-      instancedMesh.addInstances(newNumInstances, () => {});
-    });
 
-    // Update instance transforms
-    instancedMeshes.instancedMeshes.forEach((instancedMesh, mesh_index) => {
-      updateBatchedInstances(
-        instancedMesh,
+    // Update all mesh managers
+    meshManagersRef.current.managers.forEach((manager, mesh_index) => {
+      manager.setInstanceCount(newNumInstances);
+      manager.updateInstances(
         batched_positions,
         batched_wxyzs,
         transforms[mesh_index],
@@ -551,7 +635,6 @@ export const GlbAsset = React.forwardRef<
     });
   }, [
     message.type,
-    instancedMeshes,
     transforms,
     ...(message.type === "BatchedGlbMessage"
       ? [message.props.batched_positions, message.props.batched_wxyzs]
@@ -563,10 +646,10 @@ export const GlbAsset = React.forwardRef<
   return (
     <group ref={ref}>
       {message.type === "BatchedGlbMessage" ? (
-        instancedMeshes && (
+        meshManagersRef.current && (
           <>
             <primitive
-              object={instancedMeshes.scene}
+              object={meshManagersRef.current.gltfScene}
               scale={message.props.scale}
             />
             <OutlinesIfHovered alwaysMounted={false} />
@@ -989,25 +1072,38 @@ export const ViserMesh = React.forwardRef<
     }
   });
 
-  // Create the instanced mesh once.
-  const instancedMesh = React.useMemo(() => {
+  // Create the batched mesh manager once
+  const meshManagerRef = React.useRef<BatchedMeshManager | null>(null);
+
+  // Create the instanced mesh once
+  React.useEffect(() => {
     if (
       message.type !== "BatchedMeshesMessage" ||
       material === undefined ||
       geometry === undefined
     )
-      return null;
+      return;
 
     const numInstances =
       message.props.batched_positions.byteLength /
       (3 * Float32Array.BYTES_PER_ELEMENT);
-    return setupBatchedMesh(
+
+    // Create new manager
+    meshManagerRef.current = setupBatchedMesh(
       geometry,
       material,
       numInstances,
       message.props.lod,
       message.props.cast_shadow,
     );
+
+    // Cleanup function to ensure proper disposal
+    return () => {
+      if (meshManagerRef.current) {
+        meshManagerRef.current.dispose();
+        meshManagerRef.current = null;
+      }
+    };
   }, [
     message.type,
     material,
@@ -1019,7 +1115,8 @@ export const ViserMesh = React.forwardRef<
 
   // Handle updates to instance positions/orientations
   React.useEffect(() => {
-    if (message.type !== "BatchedMeshesMessage" || !instancedMesh) return;
+    if (message.type !== "BatchedMeshesMessage" || !meshManagerRef.current)
+      return;
 
     const batched_positions = new Float32Array(
       message.props.batched_positions.buffer.slice(
@@ -1041,14 +1138,12 @@ export const ViserMesh = React.forwardRef<
     const newNumInstances =
       message.props.batched_positions.byteLength /
       (3 * Float32Array.BYTES_PER_ELEMENT);
-    instancedMesh.clearInstances();
-    instancedMesh.addInstances(newNumInstances, () => {});
+    meshManagerRef.current.setInstanceCount(newNumInstances);
 
     // Update instance transforms
-    updateBatchedInstances(instancedMesh, batched_positions, batched_wxyzs);
+    meshManagerRef.current.updateInstances(batched_positions, batched_wxyzs);
   }, [
     message.type,
-    instancedMesh,
     ...(message.type === "BatchedMeshesMessage"
       ? [
           message.props.batched_positions.buffer,
@@ -1065,9 +1160,9 @@ export const ViserMesh = React.forwardRef<
   if (message.type === "BatchedMeshesMessage") {
     return (
       <>
-        {instancedMesh && (
+        {meshManagerRef.current && (
           <>
-            <primitive object={instancedMesh} />
+            <primitive object={meshManagerRef.current.getMesh()} />
             <OutlinesIfHovered alwaysMounted />
           </>
         )}
