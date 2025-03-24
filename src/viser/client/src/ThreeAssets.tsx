@@ -230,46 +230,40 @@ export const GlbAsset = React.forwardRef<
   THREE.Group,
   GlbMessage | BatchedGlbMessage
 >(function GlbAsset(message, ref) {
+  const props = message.props;
+
   // Create persistent geometry and material. Set attributes when we receive updates.
   const [gltf, setGltf] = React.useState<GLTF>();
   const [meshes, setMeshes] = React.useState<THREE.Mesh[]>([]);
-  const [transforms, setTransforms] = React.useState<{position: THREE.Vector3, rotation: THREE.Quaternion, scale: THREE.Vector3}[]>([]);
-  
-  // Create mixer ref for animations
-  const mixerRef = React.useRef<THREE.AnimationMixer | null>(null);
 
-  // Setup GLB loader once
-  const loader = React.useMemo(() => {
+  // glTF/GLB files support animations.
+  const mixerRef = React.useRef<THREE.AnimationMixer | null>(null);
+  React.useEffect(() => {
     const loader = new GLTFLoader();
+
+    // We use a CDN for Draco. We could move this locally if we want to use Viser offline.
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
     loader.setDRACOLoader(dracoLoader);
-    return loader;
-  }, []);
 
-  // Handle loading and cleanup of GLB data
-  React.useEffect(() => {
-    const glb_data = new Uint8Array(message.props.glb_data);
+    const glb_data = new Uint8Array(props.glb_data);
     loader.parse(
       glb_data.buffer,
       "",
       (gltf) => {
-        // Handle animations if present
         if (gltf.animations && gltf.animations.length) {
           mixerRef.current = new THREE.AnimationMixer(gltf.scene);
           gltf.animations.forEach((clip) => {
             mixerRef.current!.clipAction(clip).play();
           });
         }
-
-        // Collect all meshes for hover effects
         const meshes: THREE.Mesh[] = [];
         gltf?.scene.traverse((obj) => {
           if (obj instanceof THREE.Mesh) {
             obj.geometry.computeVertexNormals();
             obj.geometry.computeBoundingSphere();
-            obj.castShadow = message.props.cast_shadow;
-            obj.receiveShadow = message.props.receive_shadow;
+            obj.castShadow = props.cast_shadow;
+            obj.receiveShadow = props.receive_shadow;
             meshes.push(obj);
           }
         });
@@ -278,130 +272,116 @@ export const GlbAsset = React.forwardRef<
         setGltf(gltf);
       },
       (error) => {
-        console.error("Error loading GLB:", error);
-      }
+        console.log("Error loading GLB!");
+        console.log(error);
+      },
     );
 
-    // Cleanup function
     return () => {
-      // Stop any running animations
-      if (mixerRef.current) {
-        mixerRef.current.stopAllAction();
-        mixerRef.current = null;
-      }
+      if (mixerRef.current) mixerRef.current.stopAllAction();
 
-      // Dispose of resources
-      if (gltf) {
-        const disposeNode = (node: any) => {
-          if (node instanceof THREE.Mesh) {
-            if (node.geometry) {
-              node.geometry.dispose();
-            }
-            if (node.material) {
-              if (Array.isArray(node.material)) {
-                node.material.forEach(disposeMaterial);
-              } else {
-                disposeMaterial(node.material);
-              }
+      function disposeNode(node: any) {
+        if (node instanceof THREE.Mesh) {
+          if (node.geometry) {
+            node.geometry.dispose();
+          }
+          if (node.material) {
+            if (Array.isArray(node.material)) {
+              node.material.forEach((material) => {
+                disposeMaterial(material);
+              });
+            } else {
+              disposeMaterial(node.material);
             }
           }
-        };
-
-        const disposeMaterial = (material: AllPossibleThreeJSMaterials) => {
-          if ("map" in material) material.map?.dispose();
-          if ("lightMap" in material) material.lightMap?.dispose();
-          if ("bumpMap" in material) material.bumpMap?.dispose();
-          if ("normalMap" in material) material.normalMap?.dispose();
-          if ("specularMap" in material) material.specularMap?.dispose();
-          if ("envMap" in material) material.envMap?.dispose();
-          if ("alphaMap" in material) material.alphaMap?.dispose();
-          if ("aoMap" in material) material.aoMap?.dispose();
-          if ("displacementMap" in material) material.displacementMap?.dispose();
-          if ("emissiveMap" in material) material.emissiveMap?.dispose();
-          if ("gradientMap" in material) material.gradientMap?.dispose();
-          if ("metalnessMap" in material) material.metalnessMap?.dispose();
-          if ("roughnessMap" in material) material.roughnessMap?.dispose();
-          material.dispose();
-        };
-
-        gltf.scene.traverse(disposeNode);
+        }
       }
-    };
-  }, [message.props.glb_data, message.props.cast_shadow, message.props.receive_shadow]);
+      function disposeMaterial(material: AllPossibleThreeJSMaterials) {
+        if ("map" in material) material.map?.dispose();
+        if ("lightMap" in material) material.lightMap?.dispose();
+        if ("bumpMap" in material) material.bumpMap?.dispose();
+        if ("normalMap" in material) material.normalMap?.dispose();
+        if ("specularMap" in material) material.specularMap?.dispose();
+        if ("envMap" in material) material.envMap?.dispose();
+        if ("alphaMap" in material) material.alphaMap?.dispose();
+        if ("aoMap" in material) material.aoMap?.dispose();
+        if ("displacementMap" in material) material.displacementMap?.dispose();
+        if ("emissiveMap" in material) material.emissiveMap?.dispose();
+        if ("gradientMap" in material) material.gradientMap?.dispose();
+        if ("metalnessMap" in material) material.metalnessMap?.dispose();
+        if ("roughnessMap" in material) material.roughnessMap?.dispose();
+        material.dispose(); // disposes any programs associated with the material
+      }
 
-  // Handle animation updates
+      // Attempt to free resources.
+      gltf?.scene.traverse(disposeNode);
+    };
+  }, [props.glb_data, props.cast_shadow, props.receive_shadow]);
+
   useFrame((_, delta) => {
     if (mixerRef.current) {
       mixerRef.current.update(delta);
     }
   });
 
-  // Create the instanced meshes for batched GLBs
+  // Create the instanced meshes for batched GLBs:
+  // - Flattening the hierarchy to store root-to-node transformations, then
+  // - Applying both the root-to-world and node-to-root transformations.
+  // We additionally generate LODs for each mesh, if requested.
+  const [transforms, setTransforms] = React.useState<{
+    position: THREE.Vector3;
+    rotation: THREE.Quaternion;
+    scale: THREE.Vector3;
+  }[]>([]);
   const instancedMeshes = React.useMemo(() => {
     if (message.type !== "BatchedGlbMessage" || !gltf) return null;
     
-    // Clone the GLTF scene for instancing
     const scene = gltf.scene.clone();
     const instancedMeshes: InstancedMesh2[] = [];
-
-    // Setup instancing for each mesh in the scene
     const transforms: {position: THREE.Vector3, rotation: THREE.Quaternion, scale: THREE.Vector3}[] = [];
-    const position = new THREE.Vector3();
-    const scale = new THREE.Vector3();
-    const quat = new THREE.Quaternion();
-    const dir = new THREE.Vector3();
 
     scene.traverse((node) => {
-      if (node instanceof THREE.Mesh) {
-        const instancedMesh = new InstancedMesh2(
-          node.geometry.clone(),
-          node.material,
-        );
+      if (node instanceof THREE.Mesh && node.parent) {
+        const instancedMesh = new InstancedMesh2(node.geometry.clone(), node.material);
+        
+        // Store transform info.
+        const position = new THREE.Vector3();
+        const scale = new THREE.Vector3();
+        const quat = new THREE.Quaternion();
+        node.getWorldPosition(position);
+        node.getWorldScale(scale);
+        node.getWorldQuaternion(quat);
 
-        if (node.parent) {
-          // Save the original node information, in the world frame.
-          node.getWorldPosition(position);
-          node.getWorldScale(scale);
-          node.getWorldQuaternion(quat);
-          node.getWorldDirection(dir);
+        transforms.push({
+          position: position.clone(),
+          rotation: quat.clone(),
+          scale: scale.clone()
+        });
 
-          transforms.push({
-            position: position.clone(),
-            rotation: quat.clone(),
-            scale: scale.clone()
-          });
-
-          // Add LODs using the shared function with quality setting
-          if (message.props.lod === "off") {
-            // No LODs
-          } else if (message.props.lod === "auto") {
-            const dummyMesh = new THREE.Mesh(node.geometry, node.material);
-            const {ratios, distances} = getAutoLODSettings(dummyMesh, Math.max(scale.x, scale.y, scale.z));
-            addLODs(node, instancedMesh, ratios, distances);
-          } else {
-            // Custom LODs
-            const ratios = message.props.lod.map((pair) => pair[1]);
-            const distances = message.props.lod.map((pair) => pair[0]);
-            addLODs(node, instancedMesh, ratios, distances);
-          }
-          
-          // Hide the original mesh.
-          node.visible = false;
-
-          // Add the instanced mesh to the list.
-          instancedMeshes.push(instancedMesh);
+        // Handle LOD setup.
+        if (message.props.lod === "off") {
+          // No LODs.
+        } else if (message.props.lod === "auto") {
+          const {ratios, distances} = getAutoLODSettings(node, Math.max(scale.x, scale.y, scale.z));
+          addLODs(node, instancedMesh, ratios, distances);
+        } else {
+          addLODs(node, instancedMesh, message.props.lod.map(pair => pair[1]), message.props.lod.map(pair => pair[0]));
         }
-      }
 
-      instancedMeshes.forEach((instancedMesh) => {
+        // Hide the original node.
+        node.visible = false;
+
+        // Add the instanced mesh to the scene.
+        instancedMeshes.push(instancedMesh);
         scene.add(instancedMesh);
-      });
-      setTransforms(transforms);
-
+      }
     });
+
+    setTransforms(transforms);
     return { scene, instancedMeshes };
   }, [message.type, gltf, ...(message.type === "BatchedGlbMessage" ? [message.props.lod] : [])]);
 
+  // Handle updates to the total number of instances, which are determined by the shape of `batched_positions`.
   React.useEffect(() => {
     if (message.type !== "BatchedGlbMessage" || !instancedMeshes) return;
     const batched_positions = new Float32Array(
@@ -417,7 +397,7 @@ export const GlbAsset = React.forwardRef<
     });
   }, [message.type, ...(message.type === "BatchedGlbMessage" ? [instancedMeshes, message.props.batched_positions.byteLength] : [])]);
 
-  // Handle updates to instance positions/orientations
+  // Handle updates to the instance positions and orientations.
   React.useEffect(() => {
     if (message.type !== "BatchedGlbMessage" || !instancedMeshes) return;
 
@@ -437,40 +417,35 @@ export const GlbAsset = React.forwardRef<
 
     instancedMeshes.instancedMeshes.forEach((instancedMesh, mesh_index) => {
       instancedMesh.updateInstances((obj, index) => {
+        // Create instance world transform.
+        const instanceWorldMatrix = new THREE.Matrix4().compose(
+          new THREE.Vector3(
+            batched_positions[index * 3 + 0],
+            batched_positions[index * 3 + 1],
+            batched_positions[index * 3 + 2]
+          ),
+          new THREE.Quaternion(
+            batched_wxyzs[index * 4 + 1],
+            batched_wxyzs[index * 4 + 2],
+            batched_wxyzs[index * 4 + 3],
+            batched_wxyzs[index * 4 + 0]
+          ),
+          new THREE.Vector3(1, 1, 1)
+        );
 
-        // Create instance world transform
-        const instanceWorldMatrix = new THREE.Matrix4()
-          .compose(
-            new THREE.Vector3(
-              batched_positions[index * 3 + 0],
-              batched_positions[index * 3 + 1],
-              batched_positions[index * 3 + 2]
-            ),
-            new THREE.Quaternion(
-              batched_wxyzs[index * 4 + 1],
-              batched_wxyzs[index * 4 + 2],
-              batched_wxyzs[index * 4 + 3],
-              batched_wxyzs[index * 4 + 0]
-            ),
-            new THREE.Vector3(1, 1, 1)
-          );
-
-        // Apply mesh's original transform relative to the instance
+        // Apply mesh's original transform relative to the instance.
         const meshTransform = transforms[mesh_index];
-        const meshMatrix = new THREE.Matrix4()
-          .compose(
-            meshTransform.position,
-            meshTransform.rotation,
-            new THREE.Vector3(1, 1, 1)
-          );
+        const meshMatrix = new THREE.Matrix4().compose(
+          meshTransform.position,
+          meshTransform.rotation,
+          new THREE.Vector3(1, 1, 1)
+        );
 
-        // Combine transforms: final = instance * mesh
+        // Combine transforms, then apply to the instance.
         const finalMatrix = instanceWorldMatrix.multiply(meshMatrix);
-        
-        // Apply to instance
         obj.position.setFromMatrixPosition(finalMatrix);
         obj.quaternion.setFromRotationMatrix(finalMatrix);
-        obj.scale.set(meshTransform.scale.x, meshTransform.scale.y, meshTransform.scale.z);
+        obj.scale.copy(meshTransform.scale);
       });
     });
   }, [
@@ -496,7 +471,12 @@ export const GlbAsset = React.forwardRef<
         )
       ) : (
         <>
-          <primitive object={gltf.scene} scale={message.props.scale} />
+          <primitive 
+            object={gltf.scene}
+            scale={message.props.scale} 
+            castShadow={message.props.cast_shadow} 
+            receiveShadow={message.props.receive_shadow}
+          />
           {meshes.map((mesh, i) => (
             <React.Fragment key={i}>
               {createPortal(<OutlinesIfHovered alwaysMounted />, mesh)}
@@ -880,6 +860,31 @@ export const ViserMesh = React.forwardRef<
       geometry.dispose();
     };
   }, [geometry]);
+
+  // Update bone transforms for skinned meshes.
+  useFrame(() => {
+    if (message.type !== "SkinnedMeshMessage") return;
+
+    const parentNode = viewer.nodeRefFromName.current[message.name];
+    if (parentNode === undefined) return;
+
+    const state = viewer.skinnedMeshState.current[message.name];
+    const bones = bonesRef.current;
+    if (skeleton !== undefined && bones !== undefined) {
+      if (!state.initialized) {
+        bones.forEach((bone) => {
+          parentNode.add(bone);
+        });
+        state.initialized = true;
+      }
+      bones.forEach((bone, i) => {
+        const wxyz = state.poses[i].wxyz;
+        const position = state.poses[i].position;
+        bone.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+        bone.position.set(position[0], position[1], position[2]);
+      });
+    }
+  });
 
   // Create the instanced mesh once.
   const instancedMesh = React.useMemo(() => {
