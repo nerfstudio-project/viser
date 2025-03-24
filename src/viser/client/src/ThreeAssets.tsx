@@ -991,7 +991,12 @@ export const ViserMesh = React.forwardRef<
 
   // Create the instanced mesh once.
   const instancedMesh = React.useMemo(() => {
-    if (message.type !== "BatchedMeshesMessage" || !material) return null;
+    if (
+      message.type !== "BatchedMeshesMessage" ||
+      material === undefined ||
+      geometry === undefined
+    )
+      return null;
 
     const numInstances =
       message.props.batched_positions.byteLength /
