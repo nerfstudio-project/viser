@@ -17,6 +17,8 @@ from . import transforms as tf
 from ._scene_handles import (
     AmbientLightHandle,
     BatchedAxesHandle,
+    BatchedGlbHandle,
+    BatchedMeshHandle,
     BoneState,
     CameraFrustumHandle,
     DirectionalLightHandle,
@@ -31,8 +33,6 @@ from ._scene_handles import (
     LineSegmentsHandle,
     MeshHandle,
     MeshSkinnedBoneHandle,
-    BatchedMeshHandle,
-    BatchedGlbHandle,
     MeshSkinnedHandle,
     PointCloudHandle,
     PointLightHandle,

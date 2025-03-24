@@ -98,6 +98,7 @@ function addLODs(
   instancedMesh: InstancedMesh2,
   ratios: number[],
   distances: number[],
+  castShadow: boolean,
 ) {
   ratios.forEach((ratio, index) => {
     const targetCount = Math.floor(mesh.geometry.index!.array.length * ratio / 3) * 3;
@@ -116,6 +117,9 @@ function addLODs(
     lodGeometry.index!.needsUpdate = true;
     lodGeometry.setDrawRange(0, dstIndexArray.length);
     instancedMesh.addLOD(lodGeometry, mesh.material, distances[index]);
+    if (castShadow) {
+      instancedMesh.addShadowLOD(lodGeometry, distances[index]);
+    }
   });
 }
 
@@ -174,7 +178,8 @@ function setupBatchedMesh(
   material: THREE.Material,
   numInstances: number,
   lodSetting: "off" | "auto" | [number, number][],
-  scale?: number
+  castShadow: boolean,
+  scale?: number,
 ): InstancedMesh2 {
   const instancedMesh = new InstancedMesh2(geometry, material);
 
@@ -184,13 +189,14 @@ function setupBatchedMesh(
   } else if (lodSetting === "auto") {
     const dummyMesh = new THREE.Mesh(geometry, material);
     const {ratios, distances} = getAutoLODSettings(dummyMesh, scale);
-    addLODs(dummyMesh, instancedMesh, ratios, distances);
+    addLODs(dummyMesh, instancedMesh, ratios, distances, castShadow);
   } else {
     addLODs(
       new THREE.Mesh(geometry, material),
       instancedMesh,
       lodSetting.map(pair => pair[1]),
-      lodSetting.map(pair => pair[0])
+      lodSetting.map(pair => pair[0]),
+      castShadow
     );
   }
 
@@ -446,7 +452,8 @@ export const GlbAsset = React.forwardRef<
           node.material,
           numInstances,
           message.props.lod,
-          Math.max(scale.x, scale.y, scale.z)
+          message.props.cast_shadow,
+          Math.max(scale.x, scale.y, scale.z),
         );
 
         // Hide the original node.
@@ -460,7 +467,7 @@ export const GlbAsset = React.forwardRef<
 
     setTransforms(transforms);
     return { scene, instancedMeshes };
-  }, [message.type, gltf, ...(message.type === "BatchedGlbMessage" ? [message.props.lod] : [])]);
+  }, [message.type, gltf, ...(message.type === "BatchedGlbMessage" ? [message.props.lod, message.props.cast_shadow] : [])]);
 
   // Handle updates to instance positions/orientations.
   React.useEffect(() => {
@@ -938,7 +945,8 @@ export const ViserMesh = React.forwardRef<
       geometry,
       material,
       numInstances,
-      message.props.lod
+      message.props.lod,
+      message.props.cast_shadow,
     );
   }, [
     message.type,
@@ -946,6 +954,7 @@ export const ViserMesh = React.forwardRef<
     geometry,
     ...(message.type === "BatchedMeshesMessage" ? [
       message.props.lod,
+      message.props.cast_shadow,
     ] : [])
   ]);
 
