@@ -282,7 +282,13 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     case "SkinnedMeshMessage":
     case "MeshMessage":
     case "BatchedMeshesMessage": {
-      return { makeObject: (ref) => <ViserMesh ref={ref} {...message} /> };
+      return {
+        makeObject: (ref) => <ViserMesh ref={ref} {...message} />,
+        computeClickInstanceIndexFromInstanceId:
+          message.type === "BatchedMeshesMessage"
+            ? (instanceId) => instanceId!
+            : undefined,
+      };
     }
     // Add a camera frustum.
     case "CameraFrustumMessage": {
@@ -414,6 +420,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     case "BatchedGlbMessage": {
       return {
         makeObject: (ref) => <GlbAsset ref={ref} {...message} />,
+        computeClickInstanceIndexFromInstanceId: (instanceId) => instanceId!,
       };
     }
     case "LineSegmentsMessage": {
@@ -805,6 +812,7 @@ export function SceneNodeThreeObject(props: {
               e.clientX - canvasBbox.left,
               e.clientY - canvasBbox.top,
             ]);
+            console.log(computeClickInstanceIndexFromInstanceId!(e.instanceId));
 
             sendClicksThrottled({
               type: "SceneNodeClickMessage",

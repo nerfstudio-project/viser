@@ -25,8 +25,8 @@ def create_grid_transforms(num_instances: int) -> tuple[np.ndarray, np.ndarray]:
             - rotations: (N, 4) float32 array of quaternions (wxyz format)
     """
     grid_size = int(np.ceil(np.sqrt(num_instances)))
-    x = (np.arange(grid_size) - 0.5 * (grid_size - 1))
-    y = (np.arange(grid_size) - 0.5 * (grid_size - 1))
+    x = np.arange(grid_size) - 0.5 * (grid_size - 1)
+    y = np.arange(grid_size) - 0.5 * (grid_size - 1)
     positions = np.stack(np.meshgrid(x, y, 1.0), axis=-1).reshape(-1, 3)
     positions = positions[:num_instances]
     rotations = np.array(
@@ -44,7 +44,9 @@ def main():
     dragon_mesh.apply_scale(0.005)
     dragon_mesh.vertices -= dragon_mesh.centroid
 
-    dragon_mesh.apply_transform(trimesh.transformations.rotation_matrix(np.pi / 2, [1, 0, 0]))
+    dragon_mesh.apply_transform(
+        trimesh.transformations.rotation_matrix(np.pi / 2, [1, 0, 0])
+    )
     dragon_mesh.apply_translation(-dragon_mesh.centroid)
 
     server = viser.ViserServer()
@@ -67,12 +69,14 @@ def main():
 
     # Allow user to toggle LOD.
     lod_checkbox = server.gui.add_checkbox("Enable LoD", initial_value=True)
+
     @lod_checkbox.on_update
     def _(_):
         mesh_handle.lod = "auto" if lod_checkbox.value else "off"
 
     # Allow user to toggle cast shadow.
     cast_shadow_checkbox = server.gui.add_checkbox("Cast shadow", initial_value=True)
+
     @cast_shadow_checkbox.on_update
     def _(_):
         mesh_handle.cast_shadow = cast_shadow_checkbox.value
@@ -88,6 +92,11 @@ def main():
         batched_wxyzs=rotations,
         lod="auto" if lod_checkbox.value else "off",
     )
+
+    @mesh_handle.on_click
+    def _(event: viser.SceneNodePointerEvent):
+        print(event.instance_index)
+        # print(_.
 
     # Animation loop.
     while True:

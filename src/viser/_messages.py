@@ -636,6 +636,7 @@ class SkinnedMeshProps(MeshProps):
             == (self.vertices.shape[0], 4)
         )
 
+
 @dataclasses.dataclass
 class BatchedMeshesMessage(_CreateSceneNodeMessage):
     """Message from server->client carrying batched meshes information."""

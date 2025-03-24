@@ -1415,7 +1415,7 @@ class SceneApi:
             ),
         )
         return BatchedMeshHandle._make(self, message, name, wxyz, position, visible)
-    
+
     def add_batched_meshes_trimesh(
         self,
         name: str,
@@ -1431,7 +1431,7 @@ class SceneApi:
         receive_shadow: bool = True,
     ) -> BatchedGlbHandle:
         """Add batched trimesh meshes to the scene.
-        
+
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
               define a kinematic tree.
@@ -1467,7 +1467,6 @@ class SceneApi:
                 ),
             )
             return BatchedGlbHandle._make(self, message, name, wxyz, position, visible)
-
 
     def _add_gaussian_splats(self, *args, **kwargs) -> GaussianSplatHandle:
         """Backwards compatibility shim. Use `add_gaussian_splats()` instead."""
