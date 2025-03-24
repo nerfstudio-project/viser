@@ -1,6 +1,6 @@
 import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 import { Instance, Instances, Line, shaderMaterial } from "@react-three/drei";
-import { extend, createPortal, useFrame, useThree } from "@react-three/fiber";
+import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { Outlines } from "./Outlines";
 import React from "react";
 import { HoverableContext } from "./HoverContext";
@@ -36,17 +36,8 @@ import {
   GlbMessage,
   BatchedGlbMessage,
 } from "./WebsocketMessages";
-import { Object3DNode } from "@react-three/fiber";
 import { ViewerContext } from "./ViewerContext";
 import { MeshoptSimplifier } from "meshoptimizer";
-
-declare module "@react-three/fiber" {
-  interface ThreeElements {
-    instancedMesh2: Object3DNode<InstancedMesh2, typeof InstancedMesh2>;
-  }
-}
-
-extend({ InstancedMesh2 });
 
 type AllPossibleThreeJSMaterials =
   | MeshBasicMaterial
@@ -76,6 +67,7 @@ function getAutoLODSettings(
   mesh: THREE.Mesh,
   scale: number = 1
 ): { ratios: number[]; distances: number[] } {
+  // Heuristics for automatic LOD parameters.
   const geometry = mesh.geometry;
   const boundingRadius = geometry.boundingSphere!.radius * scale;
   const vertexCount = geometry.attributes.position.count;
@@ -117,7 +109,7 @@ function addLODs(
       3,
       targetCount,
       0.01,  // Error tolerance.
-      ["LockBorder"]
+      ["LockBorder"]  // Important to avoid triangle flipping artifacts.
     )[0];
 
     lodGeometry.index!.array.set(dstIndexArray);
