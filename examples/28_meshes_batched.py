@@ -84,9 +84,11 @@ def main():
     positions, rotations = create_grid_transforms(instance_count_slider.value)
 
     # Create batched mesh visualization.
-    mesh_handle = server.scene.add_batched_meshes_trimesh(
+    mesh_handle = server.scene.add_batched_meshes_simple(
         name="dragon",
-        mesh=dragon_mesh,
+        # mesh=dragon_mesh,
+        vertices=dragon_mesh.vertices,
+        faces=dragon_mesh.faces,
         batched_positions=positions,
         batched_wxyzs=rotations,
         lod="auto" if lod_checkbox.value else "off",

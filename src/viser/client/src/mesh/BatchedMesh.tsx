@@ -4,7 +4,6 @@ import { createStandardMaterial } from "./MeshUtils";
 import { BatchedMeshesMessage } from "../WebsocketMessages";
 import { BatchedMeshManager, setupBatchedMesh } from "./BatchedMeshManager";
 import { InstancedMesh2 } from "@three.ez/instanced-mesh";
-import { useFrame } from "@react-three/fiber";
 import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
 
 /**
@@ -18,7 +17,7 @@ export const BatchedMesh = React.forwardRef<
   const [material, setMaterial] = React.useState<THREE.Material>();
   const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
   // Ref to store mesh manager for proper disposal
-  const meshManagerRef = React.useRef<BatchedMeshManager | null>(null);
+  const [meshManager, setMeshManager] = React.useState<BatchedMeshManager>();
 
   // Setup material
   React.useEffect(() => {
@@ -84,20 +83,17 @@ export const BatchedMesh = React.forwardRef<
       (3 * Float32Array.BYTES_PER_ELEMENT);
 
     // Create new manager
-    meshManagerRef.current = setupBatchedMesh(
+    setMeshManager(setupBatchedMesh(
       geometry,
       material,
       numInstances,
       message.props.lod,
       message.props.cast_shadow,
-    );
+    ));
 
     // Cleanup function to ensure proper disposal
     return () => {
-      if (meshManagerRef.current) {
-        meshManagerRef.current.dispose();
-        meshManagerRef.current = null;
-      }
+      meshManager?.dispose();
     };
   }, [material, geometry, message.props.lod, message.props.cast_shadow]);
 
@@ -128,24 +124,23 @@ export const BatchedMesh = React.forwardRef<
 
   // Handle updates to instance positions/orientations
   React.useEffect(() => {
-    if (!meshManagerRef.current) return;
+    if (meshManager === undefined) return;
 
     // Update instance count if needed
     const newNumInstances = batched_positions.length / 3;
-    meshManagerRef.current.setInstanceCount(newNumInstances);
+    meshManager.setInstanceCount(newNumInstances);
 
     // Update instance transforms - use the arrays we already created
-    meshManagerRef.current.updateInstances(batched_positions, batched_wxyzs);
-  }, [batched_positions, batched_wxyzs]);
+    meshManager.updateInstances(batched_positions, batched_wxyzs);
+  }, [batched_positions, batched_wxyzs, meshManager]);
 
-  if (!meshManagerRef.current) {
+  if (!meshManager) {
     return null;
   }
 
   return (
     <>
-      <primitive ref={ref} object={meshManagerRef.current.getMesh()} />
-
+      <primitive ref={ref} object={meshManager.getMesh()} />
       {/* Add hover outline component for highlighting hovered instances */}
       {geometry && (
         <BatchedMeshHoverOutlines

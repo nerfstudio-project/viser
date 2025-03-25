@@ -93,11 +93,9 @@ export const BatchedMeshHoverOutlines: React.FC<
     // Hide by default
     outlineRef.current.visible = false;
 
-    // Check if we're hovering, it's clickable, and have a valid instanceId
+    // Check if we're hovering and have a valid instanceId
     if (
       hoveredRef.current.isHovered &&
-      hoveredRef.current.clickable &&
-      hoveredRef.current.instanceId !== undefined &&
       hoveredRef.current.instanceId !== null
     ) {
       // Get the instance ID from the hover state
@@ -179,7 +177,7 @@ export const BatchedMeshHoverOutlines: React.FC<
   // but we could add toCreasedNormals from three-stdlib if needed for complex meshes
 
   // Only render the outline if we have a hover state, it's clickable, and we have a geometry
-  if (!hoveredRef || !hoveredRef.current.clickable || !outlineGeometry) {
+  if (!hoveredRef || !outlineGeometry) {
     return null;
   }
 
