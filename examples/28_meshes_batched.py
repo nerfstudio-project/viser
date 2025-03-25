@@ -3,6 +3,8 @@
 Visualize batched meshes. To get the demo data, see `./assets/download_dragon_mesh.sh`.
 """
 
+from __future__ import annotations
+
 import time
 from pathlib import Path
 
@@ -114,6 +116,7 @@ def main():
         batched_wxyzs=rotations,
         lod="auto" if lod_checkbox.value else "off",
     )
+
     @mesh_handle.on_click
     def _(event: viser.SceneNodePointerEvent):
         event.client.add_notification(

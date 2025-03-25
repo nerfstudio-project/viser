@@ -46,10 +46,13 @@ export class BatchedMeshManager {
     numInstances: number,
     lodSetting: "off" | "auto" | [number, number][],
     castShadow: boolean,
+    receiveShadow: boolean,
     scale?: number,
   ) {
     this.geometry = geometry.clone();
     this.instancedMesh = new InstancedMesh2(this.geometry, material);
+    this.instancedMesh.castShadow = castShadow;
+    this.instancedMesh.receiveShadow = receiveShadow;
 
     // Setup LODs if needed
     if (lodSetting !== "off") {

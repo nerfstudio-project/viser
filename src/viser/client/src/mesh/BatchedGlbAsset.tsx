@@ -95,6 +95,7 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
             numInstances,
             message.props.lod,
             message.props.cast_shadow,
+            message.props.receive_shadow,
             Math.max(scale.x, scale.y, scale.z),
           );
 
@@ -112,6 +113,7 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       gltf,
       message.props.lod,
       message.props.cast_shadow,
+      message.props.receive_shadow,
       message.props.batched_positions.byteLength,
       batched_positions,
       batched_wxyzs,

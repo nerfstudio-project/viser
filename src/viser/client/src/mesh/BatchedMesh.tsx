@@ -102,6 +102,7 @@ export const BatchedMesh = React.forwardRef<
       numInstances,
       message.props.lod,
       message.props.cast_shadow,
+      message.props.receive_shadow,
     );
 
     // Update instance transforms right away.
@@ -113,9 +114,9 @@ export const BatchedMesh = React.forwardRef<
     material,
     message.props.lod,
     message.props.cast_shadow,
+    message.props.receive_shadow,
     batched_positions,
     batched_wxyzs,
-    message.props.batched_positions.byteLength,
   ]);
 
   // Handle cleanup when dependencies change or component unmounts.
