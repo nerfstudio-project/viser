@@ -707,17 +707,6 @@ export function SceneNodeThreeObject(props: {
   React.useEffect(() => {
     const attrs = viewer.nodeAttributesFromName.current[props.name];
     if (attrs !== undefined) attrs.poseUpdateState = "needsUpdate";
-
-    // Return cleanup function to handle unmounting while hovered
-    return () => {
-      // Only decrement if this component was hovered when unmounting
-      if (hoveredRef.current.isHovered) {
-        viewer.hoveredElementsCount.current--;
-        if (viewer.hoveredElementsCount.current === 0) {
-          document.body.style.cursor = "auto";
-        }
-      }
-    };
   });
 
   // Update attributes on a per-frame basis. Currently does redundant work,

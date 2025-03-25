@@ -11,7 +11,7 @@ import {
 } from "./WebsocketMessages";
 import { BatchedMeshHoverOutlines } from "./mesh/BatchedMeshHoverOutlines";
 import { rgbToInt } from "./mesh/MeshUtils";
-import { ShaderMaterial, MeshBasicMaterial } from "three";
+import { MeshBasicMaterial } from "three";
 
 const originGeom = new THREE.SphereGeometry(1.0);
 
@@ -65,10 +65,8 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
 
     const props = message.props;
 
-    const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
-    const [material, setMaterial] = React.useState<ShaderMaterial>();
-
-    React.useEffect(() => {
+    // Create geometry using useMemo for better performance.
+    const geometry = React.useMemo(() => {
       const geometry = new THREE.BufferGeometry();
 
       geometry.setAttribute(
@@ -84,19 +82,28 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
         ),
       );
 
-      const material = new PointCloudMaterial();
+      // Add color attribute if needed.
       if (props.colors.length > 3) {
-        material.vertexColors = true;
         geometry.setAttribute(
           "color",
           new THREE.BufferAttribute(new Uint8Array(props.colors), 3, true),
         );
+      } else if (props.colors.length < 3) {
+        console.error(
+          `Invalid color buffer length, got ${props.colors.length}`,
+        );
+      }
+
+      return geometry;
+    }, [props.points, props.colors]);
+
+    // Create material using useMemo for better performance.
+    const material = React.useMemo(() => {
+      const material = new PointCloudMaterial();
+
+      if (props.colors.length > 3) {
+        material.vertexColors = true;
       } else {
-        if (props.colors.length < 3) {
-          console.error(
-            `Invalid color buffer length, got ${props.colors.length}`,
-          );
-        }
         material.vertexColors = false;
         material.uniforms.uniformColor.value = new THREE.Color(
           props.colors[0],
@@ -104,26 +111,20 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
           props.colors[2],
         );
       }
-      setGeometry(geometry);
-      setMaterial(material);
-    }, [props.points, props.colors]);
 
+      return material;
+    }, [props.colors]);
+
+    // Clean up resources when component unmounts.
     React.useEffect(() => {
       return () => {
-        if (geometry === undefined) return;
         geometry.dispose();
-      };
-    }, [geometry]);
-
-    React.useEffect(() => {
-      return () => {
-        if (material === undefined) return;
         material.dispose();
       };
-    }, [material]);
+    }, [geometry, material]);
 
+    // Update material properties with point_ball_norm
     React.useEffect(() => {
-      if (material === undefined) return;
       material.uniforms.scale.value = 10.0;
       material.uniforms.point_ball_norm.value = props.point_ball_norm;
     }, [props.point_ball_norm, material]);
@@ -131,7 +132,6 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
     const rendererSize = new THREE.Vector2();
     useFrame(() => {
       // Match point scale to behavior of THREE.PointsMaterial().
-      if (material === undefined) return;
       // point px height / actual height = point meters height / frustum meters height
       // frustum meters height = math.tan(fov / 2.0) * z
       // point px height = (point meters height / math.tan(fov / 2.0) * actual height)  / z
@@ -223,45 +223,53 @@ export const InstancedAxes = React.forwardRef<
 ) {
   const axesRef = React.useRef<THREE.InstancedMesh>(null);
 
-  const cylinderGeom = new THREE.CylinderGeometry(
-    axes_radius,
-    axes_radius,
-    axes_length,
-    16,
+  // Create geometry and material using useMemo.
+  const cylinderGeom = React.useMemo(
+    () => new THREE.CylinderGeometry(axes_radius, axes_radius, axes_length, 16),
+    [axes_radius, axes_length],
   );
-  const material = new MeshBasicMaterial();
 
-  // Dispose when done.
+  const material = React.useMemo(() => new MeshBasicMaterial(), []);
+
+  // Dispose resources when component unmounts.
   React.useEffect(() => {
     return () => {
       cylinderGeom.dispose();
       material.dispose();
     };
-  });
+  }, [cylinderGeom, material]);
+
+  // Pre-compute transformation matrices for axes using useMemo.
+  const axesTransformations = React.useMemo(() => {
+    return {
+      T_frame_framex: new THREE.Matrix4()
+        .makeRotationFromEuler(new THREE.Euler(0.0, 0.0, (3.0 * Math.PI) / 2.0))
+        .setPosition(0.5 * axes_length, 0.0, 0.0),
+      T_frame_framey: new THREE.Matrix4()
+        .makeRotationFromEuler(new THREE.Euler(0.0, 0.0, 0.0))
+        .setPosition(0.0, 0.5 * axes_length, 0.0),
+      T_frame_framez: new THREE.Matrix4()
+        .makeRotationFromEuler(new THREE.Euler(Math.PI / 2.0, 0.0, 0.0))
+        .setPosition(0.0, 0.0, 0.5 * axes_length),
+      red: new THREE.Color(0xcc0000),
+      green: new THREE.Color(0x00cc00),
+      blue: new THREE.Color(0x0000cc),
+    };
+  }, [axes_length]);
 
   // Update instance matrices and colors.
   React.useEffect(() => {
+    if (!axesRef.current) return;
+
     // Pre-allocate to avoid garbage collector from running during loop.
     const T_world_frame = new THREE.Matrix4();
     const T_world_framex = new THREE.Matrix4();
     const T_world_framey = new THREE.Matrix4();
     const T_world_framez = new THREE.Matrix4();
-
-    const T_frame_framex = new THREE.Matrix4()
-      .makeRotationFromEuler(new THREE.Euler(0.0, 0.0, (3.0 * Math.PI) / 2.0))
-      .setPosition(0.5 * axes_length, 0.0, 0.0);
-    const T_frame_framey = new THREE.Matrix4()
-      .makeRotationFromEuler(new THREE.Euler(0.0, 0.0, 0.0))
-      .setPosition(0.0, 0.5 * axes_length, 0.0);
-    const T_frame_framez = new THREE.Matrix4()
-      .makeRotationFromEuler(new THREE.Euler(Math.PI / 2.0, 0.0, 0.0))
-      .setPosition(0.0, 0.0, 0.5 * axes_length);
-
     const tmpQuat = new THREE.Quaternion();
 
-    const red = new THREE.Color(0xcc0000);
-    const green = new THREE.Color(0x00cc00);
-    const blue = new THREE.Color(0x0000cc);
+    const { T_frame_framex, T_frame_framey, T_frame_framez, red, green, blue } =
+      axesTransformations;
 
     for (let i = 0; i < batched_wxyzs.length / 4; i++) {
       T_world_frame.makeRotationFromQuaternion(
@@ -280,25 +288,25 @@ export const InstancedAxes = React.forwardRef<
       T_world_framey.copy(T_world_frame).multiply(T_frame_framey);
       T_world_framez.copy(T_world_frame).multiply(T_frame_framez);
 
-      axesRef.current!.setMatrixAt(i * 3 + 0, T_world_framex);
-      axesRef.current!.setMatrixAt(i * 3 + 1, T_world_framey);
-      axesRef.current!.setMatrixAt(i * 3 + 2, T_world_framez);
+      axesRef.current.setMatrixAt(i * 3 + 0, T_world_framex);
+      axesRef.current.setMatrixAt(i * 3 + 1, T_world_framey);
+      axesRef.current.setMatrixAt(i * 3 + 2, T_world_framez);
 
-      axesRef.current!.setColorAt(i * 3 + 0, red);
-      axesRef.current!.setColorAt(i * 3 + 1, green);
-      axesRef.current!.setColorAt(i * 3 + 2, blue);
+      axesRef.current.setColorAt(i * 3 + 0, red);
+      axesRef.current.setColorAt(i * 3 + 1, green);
+      axesRef.current.setColorAt(i * 3 + 2, blue);
     }
-    axesRef.current!.instanceMatrix.needsUpdate = true;
-    axesRef.current!.instanceColor!.needsUpdate = true;
-  }, [batched_wxyzs, batched_positions]);
+    axesRef.current.instanceMatrix.needsUpdate = true;
+    axesRef.current.instanceColor!.needsUpdate = true;
+  }, [batched_wxyzs, batched_positions, axesTransformations]);
 
-  // Create cylinder geometries for outlines - one for each axis
+  // Create cylinder geometries for outlines - one for each axis.
   const outlineCylinderGeom = React.useMemo(
     () => new THREE.CylinderGeometry(axes_radius, axes_radius, axes_length, 16),
     [axes_radius, axes_length],
   );
 
-  // Compute transform matrices for each axis
+  // Compute transform matrices for each axis.
   const xAxisTransform = React.useMemo(
     () => ({
       position: new THREE.Vector3(0.5 * axes_length, 0, 0),
@@ -373,6 +381,8 @@ export const InstancedAxes = React.forwardRef<
 
 export const ViserImage = React.forwardRef<THREE.Group, ImageMessage>(
   function ViserImage(message, ref) {
+    // We can't use useMemo here because TextureLoader.load is asynchronous.
+    // And we need to use setState to update the texture after loading.
     const [imageTexture, setImageTexture] = React.useState<THREE.Texture>();
 
     React.useEffect(() => {
@@ -414,6 +424,8 @@ export const CameraFrustum = React.forwardRef<
   THREE.Group,
   CameraFrustumMessage
 >(function CameraFrustum(message, ref) {
+  // We can't use useMemo here because TextureLoader.load is asynchronous.
+  // And we need to use setState to update the texture after loading.
   const [imageTexture, setImageTexture] = React.useState<THREE.Texture>();
 
   React.useEffect(() => {
