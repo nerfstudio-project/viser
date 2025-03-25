@@ -129,11 +129,6 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
         }
       };
     }, [meshState]);
-
-    // This effect is now redundant since we update instance transforms
-    // when creating the manager and when any dependency changes.
-    // The meshState is recreated with the new data when any dependency changes.
-
     if (!gltf || !meshState) return null;
 
     return (

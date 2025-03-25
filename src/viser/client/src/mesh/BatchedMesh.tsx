@@ -125,14 +125,6 @@ export const BatchedMesh = React.forwardRef<
     };
   }, [meshManager]);
 
-  // This effect is now redundant since we update instance transforms
-  // when creating the manager and when any dependency changes.
-  // The manager is recreated with the new data when any dependency changes.
-
-  if (!meshManager) {
-    return null;
-  }
-
   return (
     <>
       <primitive ref={ref} object={meshManager.getMesh()} />

@@ -61,8 +61,6 @@ export const BasicMesh = React.forwardRef<THREE.Mesh, MeshMessage>(
       };
     }, [material, geometry]);
 
-    // This check is no longer needed with useMemo since it always returns a value
-
     return (
       <mesh
         ref={ref}
