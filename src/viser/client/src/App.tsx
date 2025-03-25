@@ -6,7 +6,7 @@ import { useInView } from "react-intersection-observer";
 
 import { Notifications } from "@mantine/notifications";
 
-import { Environment, PerformanceMonitor, Stats } from "@react-three/drei";
+import { Environment, PerformanceMonitor, Stats, Bvh } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 
@@ -400,16 +400,18 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         }}
         shadows
       >
-        {inView ? null : <DisableRender />}
-        <BackgroundImage />
-        <SceneContextSetter />
-        {memoizedCameraControls}
-        <SplatRenderContext>
-          <AdaptiveDpr />
-          {children}
-          <SceneNodeThreeObject name="" parent={null} />
-        </SplatRenderContext>
-        <DefaultLights />
+        <Bvh firstHitOnly>
+          {inView ? null : <DisableRender />}
+          <BackgroundImage />
+          <SceneContextSetter />
+          {memoizedCameraControls}
+          <SplatRenderContext>
+            <AdaptiveDpr />
+            {children}
+            <SceneNodeThreeObject name="" parent={null} />
+          </SplatRenderContext>
+          <DefaultLights />
+        </Bvh>
       </Canvas>
     </div>
   );

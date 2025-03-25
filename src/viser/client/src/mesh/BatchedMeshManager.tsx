@@ -58,6 +58,7 @@ export class BatchedMeshManager {
 
     // Setup instances
     this.instancedMesh.addInstances(numInstances, () => {});
+    this.instancedMesh.computeBVH();
   }
 
   private setupLODs(
@@ -183,6 +184,7 @@ export class BatchedMeshManager {
     }
 
     // The instancedMesh will dispose its main geometry and material
+    this.instancedMesh.disposeBVH();
     this.instancedMesh.dispose();
     this.geometry.dispose();
   }
