@@ -15,9 +15,9 @@ import { toCreasedNormals } from "three-stdlib";
 import { version } from "@react-three/drei/helpers/constants";
 import { shaderMaterial } from "@react-three/drei";
 
-const OutlinesMaterial = /* @__PURE__ */ shaderMaterial(
+export const OutlinesMaterial = /* @__PURE__ */ shaderMaterial(
   {
-    screenspace: false,
+    screenspace: false as boolean,
     color: /* @__PURE__ */ new THREE.Color("black"),
     opacity: 1,
     thickness: 0.05,

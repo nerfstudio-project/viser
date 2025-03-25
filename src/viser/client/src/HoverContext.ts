@@ -1,9 +1,10 @@
 import React from "react";
 
-// Extended hover context to include instanceId for instanced meshes
+// Extended hover context to include instanceId for instanced meshes and clickable state
 export interface HoverState {
   isHovered: boolean;
   instanceId: number | null;
+  clickable: boolean;
 }
 
 export const HoverableContext =

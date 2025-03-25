@@ -3,8 +3,8 @@ import * as THREE from "three";
 import { BatchedGlbMessage } from "../WebsocketMessages";
 import { useGlbLoader } from "./GlbLoaderUtils";
 import { BatchedMeshManager, setupBatchedMesh } from "./BatchedMeshManager";
-import { OutlinesIfHovered } from "../OutlinesIfHovered"
 import { useFrame } from "@react-three/fiber";
+import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
 
 /**
  * Component for rendering batched/instanced GLB models
@@ -33,8 +33,8 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       }[]
     >([]);
 
-    // Use a ref to store mesh managers for proper disposal
-    const meshManagersRef = React.useRef<{
+    // Use state to store mesh managers and scene
+    const [meshState, setMeshState] = React.useState<{
       gltfScene: THREE.Group;
       managers: BatchedMeshManager[];
     } | null>(null);
@@ -44,8 +44,8 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       if (!gltf) return;
 
       // Clean up previous managers if they exist
-      if (meshManagersRef.current) {
-        meshManagersRef.current.managers.forEach((manager) => {
+      if (meshState) {
+        meshState.managers.forEach((manager) => {
           manager.dispose();
         });
       }
@@ -98,15 +98,14 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       });
 
       setTransforms(transforms);
-      meshManagersRef.current = { gltfScene: scene, managers };
+      setMeshState({ gltfScene: scene, managers });
 
       // Clean up when component unmounts or dependencies change
       return () => {
-        if (meshManagersRef.current) {
-          meshManagersRef.current.managers.forEach((manager) => {
+        if (meshState) {
+          meshState.managers.forEach((manager) => {
             manager.dispose();
           });
-          meshManagersRef.current = null;
         }
       };
     }, [
@@ -116,33 +115,40 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       message.props.batched_positions.byteLength,
     ]);
 
+    // Create Float32Arrays once for positions and orientations
+    const batched_positions = React.useMemo(
+      () =>
+        new Float32Array(
+          message.props.batched_positions.buffer.slice(
+            message.props.batched_positions.byteOffset,
+            message.props.batched_positions.byteOffset +
+              message.props.batched_positions.byteLength,
+          ),
+        ),
+      [message.props.batched_positions],
+    );
+
+    const batched_wxyzs = React.useMemo(
+      () =>
+        new Float32Array(
+          message.props.batched_wxyzs.buffer.slice(
+            message.props.batched_wxyzs.byteOffset,
+            message.props.batched_wxyzs.byteOffset +
+              message.props.batched_wxyzs.byteLength,
+          ),
+        ),
+      [message.props.batched_wxyzs],
+    );
+
     // Handle updates to instance positions/orientations
     React.useEffect(() => {
-      if (!meshManagersRef.current) return;
-
-      const batched_positions = new Float32Array(
-        message.props.batched_positions.buffer.slice(
-          message.props.batched_positions.byteOffset,
-          message.props.batched_positions.byteOffset +
-            message.props.batched_positions.byteLength,
-        ),
-      );
-
-      const batched_wxyzs = new Float32Array(
-        message.props.batched_wxyzs.buffer.slice(
-          message.props.batched_wxyzs.byteOffset,
-          message.props.batched_wxyzs.byteOffset +
-            message.props.batched_wxyzs.byteLength,
-        ),
-      );
+      if (!meshState) return;
 
       // Update instance count if needed
-      const newNumInstances =
-        message.props.batched_positions.byteLength /
-        (3 * Float32Array.BYTES_PER_ELEMENT);
+      const newNumInstances = batched_positions.length / 3;
 
-      // Update all mesh managers
-      meshManagersRef.current.managers.forEach((manager, mesh_index) => {
+      // Update all mesh managers - use the arrays we already created
+      meshState.managers.forEach((manager, mesh_index) => {
         manager.setInstanceCount(newNumInstances);
         manager.updateInstances(
           batched_positions,
@@ -150,21 +156,33 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
           transforms[mesh_index],
         );
       });
-    }, [
-      transforms,
-      message.props.batched_positions.buffer,
-      message.props.batched_wxyzs.buffer,
-    ]);
+    }, [meshState, transforms, batched_positions, batched_wxyzs]);
 
-    if (!gltf || !meshManagersRef.current) return null;
+    if (!gltf || !meshState) return null;
 
     return (
       <group ref={ref}>
-        <primitive
-          object={meshManagersRef.current.gltfScene}
-          scale={message.props.scale}
-        />
-        <OutlinesIfHovered alwaysMounted={false} />
+        <primitive object={meshState.gltfScene} scale={message.props.scale} />
+
+        {/* Add outlines for each mesh in the GLB asset */}
+        {transforms.map((transform, index) => {
+          // Get the mesh's geometry from the manager
+          const manager = meshState.managers[index];
+          if (!manager) return null;
+
+          const mesh = manager.getMesh();
+          if (!mesh || !mesh.geometry) return null;
+
+          return (
+            <BatchedMeshHoverOutlines
+              key={index}
+              geometry={mesh.geometry}
+              batched_positions={batched_positions}
+              batched_wxyzs={batched_wxyzs}
+              meshTransform={transform}
+            />
+          );
+        })}
       </group>
     );
   },

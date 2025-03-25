@@ -659,10 +659,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@react-three/drei@10.0.2":
-  version "10.0.2"
-  resolved "https://registry.yarnpkg.com/@react-three/drei/-/drei-10.0.2.tgz#204006247278a65eb25f7e99514342fb077ed899"
-  integrity sha512-QIC+H63fXmuNDOjfXSZess/1rYo1NxYNBCnVNfJgbLxPovG/jGbXqeHxJycMj1ipSuws8CuEz/6/MUClEX9gWQ==
+"@react-three/drei@10.0.5":
+  version "10.0.5"
+  resolved "https://registry.yarnpkg.com/@react-three/drei/-/drei-10.0.5.tgz#55991173d4d212726a001fe51cc827ff7aa48c3e"
+  integrity sha512-zK1QOm5g46RANYUKlf6qZQg+n+qyBWT1sOUfHNwXf6L2Cn4cgxMpJV4Lue7IyytAZXUCzhGAgPiG13D0hKH1Gg==
   dependencies:
     "@babel/runtime" "^7.26.0"
     "@mediapipe/tasks-vision" "0.10.17"

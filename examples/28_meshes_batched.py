@@ -8,7 +8,6 @@ from pathlib import Path
 
 import numpy as np
 import trimesh
-
 import viser
 import viser.transforms as tf
 
@@ -92,11 +91,29 @@ def main():
         batched_wxyzs=rotations,
         lod="auto" if lod_checkbox.value else "off",
     )
+    axes_handle = server.scene.add_batched_axes(
+        name="axes",
+        batched_positions=positions,
+        batched_wxyzs=rotations,
+    )
+
+    @axes_handle.on_click
+    def _(event: viser.SceneNodePointerEvent):
+        event.client.add_notification(
+            title="Clicked axis",
+            body=f"id={event.instance_index}",
+            auto_close=1000,
+        )
 
     @mesh_handle.on_click
     def _(event: viser.SceneNodePointerEvent):
-        print(event.instance_index)
-        # print(_.
+        event.client.add_notification(
+            title="Clicked mesh",
+            body=f"id={event.instance_index}",
+            auto_close=1000,
+        )
+
+    # print(_.
 
     # Animation loop.
     while True:
@@ -119,6 +136,8 @@ def main():
             with server.atomic():
                 mesh_handle.batched_positions = positions
                 mesh_handle.batched_wxyzs = rotations
+                axes_handle.batched_positions = positions
+                axes_handle.batched_wxyzs = rotations
 
                 grid_size = int(np.ceil(np.sqrt(current_instance_count)))
                 grid_handle.width = grid_size + 2

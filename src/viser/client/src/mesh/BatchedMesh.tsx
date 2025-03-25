@@ -2,10 +2,10 @@ import React from "react";
 import * as THREE from "three";
 import { createStandardMaterial } from "./MeshUtils";
 import { BatchedMeshesMessage } from "../WebsocketMessages";
-import { OutlinesIfHovered } from "../OutlinesIfHovered";
 import { BatchedMeshManager, setupBatchedMesh } from "./BatchedMeshManager";
 import { InstancedMesh2 } from "@three.ez/instanced-mesh";
-import { useThree, useFrame } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
+import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
 
 /**
  * Component for rendering batched/instanced meshes
@@ -101,47 +101,59 @@ export const BatchedMesh = React.forwardRef<
     };
   }, [material, geometry, message.props.lod, message.props.cast_shadow]);
 
+  // Create Float32Arrays once for positions and orientations
+  const batched_positions = React.useMemo(
+    () =>
+      new Float32Array(
+        message.props.batched_positions.buffer.slice(
+          message.props.batched_positions.byteOffset,
+          message.props.batched_positions.byteOffset +
+            message.props.batched_positions.byteLength,
+        ),
+      ),
+    [message.props.batched_positions],
+  );
+
+  const batched_wxyzs = React.useMemo(
+    () =>
+      new Float32Array(
+        message.props.batched_wxyzs.buffer.slice(
+          message.props.batched_wxyzs.byteOffset,
+          message.props.batched_wxyzs.byteOffset +
+            message.props.batched_wxyzs.byteLength,
+        ),
+      ),
+    [message.props.batched_wxyzs],
+  );
+
   // Handle updates to instance positions/orientations
   React.useEffect(() => {
     if (!meshManagerRef.current) return;
 
-    const batched_positions = new Float32Array(
-      message.props.batched_positions.buffer.slice(
-        message.props.batched_positions.byteOffset,
-        message.props.batched_positions.byteOffset +
-          message.props.batched_positions.byteLength,
-      ),
-    );
-
-    const batched_wxyzs = new Float32Array(
-      message.props.batched_wxyzs.buffer.slice(
-        message.props.batched_wxyzs.byteOffset,
-        message.props.batched_wxyzs.byteOffset +
-          message.props.batched_wxyzs.byteLength,
-      ),
-    );
-
     // Update instance count if needed
-    const newNumInstances =
-      message.props.batched_positions.byteLength /
-      (3 * Float32Array.BYTES_PER_ELEMENT);
+    const newNumInstances = batched_positions.length / 3;
     meshManagerRef.current.setInstanceCount(newNumInstances);
 
-    // Update instance transforms
+    // Update instance transforms - use the arrays we already created
     meshManagerRef.current.updateInstances(batched_positions, batched_wxyzs);
-  }, [
-    message.props.batched_positions.buffer,
-    message.props.batched_wxyzs.buffer,
-  ]);
+  }, [batched_positions, batched_wxyzs]);
 
   if (!meshManagerRef.current) {
     return null;
   }
 
-  // OutlinesIfHovered needs to be a child of the mesh to apply properly
   return (
-    <primitive ref={ref} object={meshManagerRef.current.getMesh()}>
-      <OutlinesIfHovered alwaysMounted={false} />
-    </primitive>
+    <>
+      <primitive ref={ref} object={meshManagerRef.current.getMesh()} />
+
+      {/* Add hover outline component for highlighting hovered instances */}
+      {geometry && (
+        <BatchedMeshHoverOutlines
+          geometry={geometry}
+          batched_positions={batched_positions}
+          batched_wxyzs={batched_wxyzs}
+        />
+      )}
+    </>
   );
 });

@@ -9,6 +9,7 @@ import {
   ImageMessage,
   PointCloudMessage,
 } from "./WebsocketMessages";
+import { BatchedMeshHoverOutlines } from "./mesh/BatchedMeshHoverOutlines";
 import { rgbToInt } from "./mesh/MeshUtils";
 import { ShaderMaterial, MeshBasicMaterial } from "three";
 
@@ -291,83 +292,43 @@ export const InstancedAxes = React.forwardRef<
     axesRef.current!.instanceColor!.needsUpdate = true;
   }, [batched_wxyzs, batched_positions]);
 
-  // Reference to outline group that will be positioned at the hovered instance
-  const outlineGroupRef = React.useRef<THREE.Group>(null);
-
-  // Create outline geometry (slightly larger than the cylinders)
+  // Create cylinder geometries for outlines - one for each axis
   const outlineCylinderGeom = React.useMemo(
-    () =>
-      new THREE.CylinderGeometry(
-        axes_radius + 0.025,
-        axes_radius + 0.025,
-        axes_length + 0.025,
-        16,
-      ),
+    () => new THREE.CylinderGeometry(axes_radius, axes_radius, axes_length, 16),
     [axes_radius, axes_length],
   );
 
-  // Create outline material
-  const outlineMaterial = React.useMemo(
-    () =>
-      new THREE.MeshBasicMaterial({
-        color: 0xfbff00,
-        side: THREE.BackSide,
-        transparent: true,
-        opacity: 0.8,
-      }),
-    [],
+  // Compute transform matrices for each axis
+  const xAxisTransform = React.useMemo(
+    () => ({
+      position: new THREE.Vector3(0.5 * axes_length, 0, 0),
+      rotation: new THREE.Quaternion().setFromEuler(
+        new THREE.Euler(0, 0, (3 * Math.PI) / 2),
+      ),
+      scale: new THREE.Vector3(1, 1, 1),
+    }),
+    [axes_length],
   );
 
-  // Get hover state from context
-  const hoveredRef = React.useContext(HoverableContext);
+  const yAxisTransform = React.useMemo(
+    () => ({
+      position: new THREE.Vector3(0, 0.5 * axes_length, 0),
+      rotation: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0)),
+      scale: new THREE.Vector3(1, 1, 1),
+    }),
+    [axes_length],
+  );
 
-  // Update outline position based on hover state
-  useFrame(() => {
-    if (!outlineGroupRef.current || !hoveredRef) return;
-
-    // Check if we're hovering and have a valid instanceId
-    if (
-      hoveredRef.current.isHovered &&
-      hoveredRef.current.instanceId !== undefined &&
-      hoveredRef.current.instanceId !== null
-    ) {
-      // Each coordinate frame consists of 3 cylinders (x,y,z), so divide by 3
-      const instanceId = Math.floor(hoveredRef.current.instanceId / 3);
-
-      // Only show outline if the instance ID is valid
-      if (instanceId >= 0 && instanceId < batched_wxyzs.length / 4) {
-        // Position the outline group at the hovered instance
-        outlineGroupRef.current.position.set(
-          batched_positions[instanceId * 3 + 0],
-          batched_positions[instanceId * 3 + 1],
-          batched_positions[instanceId * 3 + 2],
-        );
-
-        // Set rotation to match the hovered instance
-        outlineGroupRef.current.quaternion.set(
-          batched_wxyzs[instanceId * 4 + 1],
-          batched_wxyzs[instanceId * 4 + 2],
-          batched_wxyzs[instanceId * 4 + 3],
-          batched_wxyzs[instanceId * 4 + 0],
-        );
-
-        // Show the outline
-        outlineGroupRef.current.visible = true;
-      }
-    } else {
-      // Hide outline.
-      outlineGroupRef.current.position.set(1e6, 1e6, 1e6);
-      outlineGroupRef.current.visible = false;
-    }
-  });
-
-  // Clean up
-  React.useEffect(() => {
-    return () => {
-      outlineCylinderGeom.dispose();
-      outlineMaterial.dispose();
-    };
-  }, [outlineCylinderGeom, outlineMaterial]);
+  const zAxisTransform = React.useMemo(
+    () => ({
+      position: new THREE.Vector3(0, 0, 0.5 * axes_length),
+      rotation: new THREE.Quaternion().setFromEuler(
+        new THREE.Euler(Math.PI / 2, 0, 0),
+      ),
+      scale: new THREE.Vector3(1, 1, 1),
+    }),
+    [axes_length],
+  );
 
   return (
     <group ref={ref}>
@@ -376,31 +337,36 @@ export const InstancedAxes = React.forwardRef<
         args={[cylinderGeom, material, (batched_wxyzs.length / 4) * 3]}
       />
 
-      {/* Outline group that follows hovered instance */}
-      <group ref={outlineGroupRef} visible={false}>
-        {/* X axis outline */}
-        <mesh
-          geometry={outlineCylinderGeom}
-          material={outlineMaterial}
-          position={[0.5 * axes_length, 0, 0]}
-          rotation={[0, 0, (3 * Math.PI) / 2]}
-        />
+      {/* Create hover outlines for each axis */}
+      <BatchedMeshHoverOutlines
+        geometry={outlineCylinderGeom}
+        batched_positions={batched_positions}
+        batched_wxyzs={batched_wxyzs}
+        meshTransform={xAxisTransform}
+        computeBatchIndexFromInstanceIndex={(instanceId) =>
+          Math.floor(instanceId / 3)
+        }
+      />
 
-        {/* Y axis outline */}
-        <mesh
-          geometry={outlineCylinderGeom}
-          material={outlineMaterial}
-          position={[0, 0.5 * axes_length, 0]}
-        />
+      <BatchedMeshHoverOutlines
+        geometry={outlineCylinderGeom}
+        batched_positions={batched_positions}
+        batched_wxyzs={batched_wxyzs}
+        meshTransform={yAxisTransform}
+        computeBatchIndexFromInstanceIndex={(instanceId) =>
+          Math.floor(instanceId / 3)
+        }
+      />
 
-        {/* Z axis outline */}
-        <mesh
-          geometry={outlineCylinderGeom}
-          material={outlineMaterial}
-          position={[0, 0, 0.5 * axes_length]}
-          rotation={[Math.PI / 2, 0, 0]}
-        />
-      </group>
+      <BatchedMeshHoverOutlines
+        geometry={outlineCylinderGeom}
+        batched_positions={batched_positions}
+        batched_wxyzs={batched_wxyzs}
+        meshTransform={zAxisTransform}
+        computeBatchIndexFromInstanceIndex={(instanceId) =>
+          Math.floor(instanceId / 3)
+        }
+      />
     </group>
   );
 });

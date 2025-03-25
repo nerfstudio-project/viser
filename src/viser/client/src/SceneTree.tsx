@@ -783,7 +783,9 @@ export function SceneNodeThreeObject(props: {
   const hoveredRef = React.useRef<HoverState>({
     isHovered: false,
     instanceId: null,
+    clickable: false,
   });
+  hoveredRef.current.clickable = clickable;
 
   const dragInfo = React.useRef({
     dragging: false,
