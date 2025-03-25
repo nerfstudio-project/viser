@@ -55,11 +55,11 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
     );
 
     // Use memoization to create mesh managers and transforms when GLB loads.
-    // Return type includes transforms, gltfScene, and managers
     const meshState = React.useMemo(() => {
       if (!gltf) return null;
 
-      const scene = gltf.scene.clone();
+      // Create a new group to hold our instanced meshes.
+      const instancedGroup = new THREE.Group();
       const managers: BatchedMeshManager[] = [];
       const transforms: {
         position: THREE.Vector3;
@@ -67,7 +67,8 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
         scale: THREE.Vector3;
       }[] = [];
 
-      scene.traverse((node) => {
+      // Collect meshes and their transforms from the original scene.
+      gltf.scene.traverse((node) => {
         if (node instanceof THREE.Mesh && node.parent) {
           // Store transform info.
           const position = new THREE.Vector3();
@@ -84,7 +85,7 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
           };
           transforms.push(transform);
 
-          // Create instanced mesh with LOD
+          // Create instanced mesh with LOD.
           const numInstances =
             message.props.batched_positions.byteLength /
             (3 * Float32Array.BYTES_PER_ELEMENT);
@@ -97,19 +98,16 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
             Math.max(scale.x, scale.y, scale.z),
           );
 
-          // Update instance transforms right away
+          // Update instance transforms right away.
           manager.updateInstances(batched_positions, batched_wxyzs, transform);
 
-          // Hide the original node.
-          node.visible = false;
-
-          // Add the instanced mesh to the scene.
+          // Add the instanced mesh to our group.
           managers.push(manager);
-          scene.add(manager.getMesh());
+          instancedGroup.add(manager.getMesh());
         }
       });
 
-      return { gltfScene: scene, managers, transforms };
+      return { instancedGroup, managers, transforms };
     }, [
       gltf,
       message.props.lod,
@@ -123,9 +121,15 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
     React.useEffect(() => {
       return () => {
         if (meshState) {
+          // Dispose all batch managers.
           meshState.managers.forEach((manager) => {
             manager.dispose();
           });
+
+          // Clear the instanced group.
+          if (meshState.instancedGroup) {
+            meshState.instancedGroup.clear();
+          }
         }
       };
     }, [meshState]);
@@ -133,7 +137,10 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
 
     return (
       <group ref={ref}>
-        <primitive object={meshState.gltfScene} scale={message.props.scale} />
+        <primitive
+          object={meshState.instancedGroup}
+          scale={message.props.scale}
+        />
 
         {/* Add outlines for each mesh in the GLB asset */}
         {clickable &&

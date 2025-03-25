@@ -767,13 +767,22 @@ export function SceneNodeThreeObject(props: {
   // Clicking logic.
   const sendClicksThrottled = useThrottledMessageSender(50);
 
-  // Create a ref with HoverState type to handle both hover state and instanceId
+  // Track hover state.
   const hoveredRef = React.useRef<HoverState>({
     isHovered: false,
     instanceId: null,
     clickable: false,
   });
   hoveredRef.current.clickable = clickable;
+
+  // Handle case where clickable is toggled to false while still hovered.
+  if (!clickable && hoveredRef.current.isHovered) {
+    hoveredRef.current.isHovered = false;
+    viewer.hoveredElementsCount.current--;
+    if (viewer.hoveredElementsCount.current === 0) {
+      document.body.style.cursor = "auto";
+    }
+  }
 
   const dragInfo = React.useRef({
     dragging: false,
@@ -783,7 +792,7 @@ export function SceneNodeThreeObject(props: {
 
   if (objNode === undefined || unmount) {
     return <>{children}</>;
-  } else if (clickable) {
+  } else {
     return (
       <>
         <group
@@ -793,104 +802,117 @@ export function SceneNodeThreeObject(props: {
           //  - onPointerMove, if triggered, sets dragged = true
           //  - onPointerUp, if triggered, sends a click if dragged = false.
           // Note: It would be cool to have dragged actions too...
-          onPointerDown={(e) => {
-            if (!isDisplayed()) return;
-            e.stopPropagation();
-            const state = dragInfo.current;
-            const canvasBbox =
-              viewer.canvasRef.current!.getBoundingClientRect();
-            state.startClientX = e.clientX - canvasBbox.left;
-            state.startClientY = e.clientY - canvasBbox.top;
-            state.dragging = false;
-          }}
-          onPointerMove={(e) => {
-            if (!isDisplayed()) return;
-            e.stopPropagation();
-            const state = dragInfo.current;
-            const canvasBbox =
-              viewer.canvasRef.current!.getBoundingClientRect();
-            const deltaX = e.clientX - canvasBbox.left - state.startClientX;
-            const deltaY = e.clientY - canvasBbox.top - state.startClientY;
-            // Minimum motion.
-            if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
-            state.dragging = true;
-          }}
-          onPointerUp={(e) => {
-            if (!isDisplayed()) return;
-            e.stopPropagation();
-            const state = dragInfo.current;
-            if (state.dragging) return;
-            // Convert ray to viser coordinates.
-            const ray = rayToViserCoords(viewer, e.ray);
+          onPointerDown={
+            !clickable
+              ? undefined
+              : (e) => {
+                  if (!isDisplayed()) return;
+                  e.stopPropagation();
+                  const state = dragInfo.current;
+                  const canvasBbox =
+                    viewer.canvasRef.current!.getBoundingClientRect();
+                  state.startClientX = e.clientX - canvasBbox.left;
+                  state.startClientY = e.clientY - canvasBbox.top;
+                  state.dragging = false;
+                }
+          }
+          onPointerMove={
+            !clickable
+              ? undefined
+              : (e) => {
+                  if (!isDisplayed()) return;
+                  e.stopPropagation();
+                  const state = dragInfo.current;
+                  const canvasBbox =
+                    viewer.canvasRef.current!.getBoundingClientRect();
+                  const deltaX =
+                    e.clientX - canvasBbox.left - state.startClientX;
+                  const deltaY =
+                    e.clientY - canvasBbox.top - state.startClientY;
+                  // Minimum motion.
+                  if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
+                  state.dragging = true;
+                }
+          }
+          onPointerUp={
+            !clickable
+              ? undefined
+              : (e) => {
+                  if (!isDisplayed()) return;
+                  e.stopPropagation();
+                  const state = dragInfo.current;
+                  if (state.dragging) return;
+                  // Convert ray to viser coordinates.
+                  const ray = rayToViserCoords(viewer, e.ray);
 
-            // Send OpenCV image coordinates to the server (normalized).
-            const canvasBbox =
-              viewer.canvasRef.current!.getBoundingClientRect();
-            const mouseVectorOpenCV = opencvXyFromPointerXy(viewer, [
-              e.clientX - canvasBbox.left,
-              e.clientY - canvasBbox.top,
-            ]);
+                  // Send OpenCV image coordinates to the server (normalized).
+                  const canvasBbox =
+                    viewer.canvasRef.current!.getBoundingClientRect();
+                  const mouseVectorOpenCV = opencvXyFromPointerXy(viewer, [
+                    e.clientX - canvasBbox.left,
+                    e.clientY - canvasBbox.top,
+                  ]);
 
-            sendClicksThrottled({
-              type: "SceneNodeClickMessage",
-              name: props.name,
-              instance_index:
-                computeClickInstanceIndexFromInstanceId === undefined
-                  ? null
-                  : computeClickInstanceIndexFromInstanceId(e.instanceId),
-              // Note that the threejs up is +Y, but we expose a +Z up.
-              ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
-              ray_direction: [
-                ray.direction.x,
-                ray.direction.y,
-                ray.direction.z,
-              ],
-              screen_pos: [mouseVectorOpenCV.x, mouseVectorOpenCV.y],
-            });
-          }}
-          onPointerOver={(e) => {
-            if (!isDisplayed()) return;
-            e.stopPropagation();
+                  sendClicksThrottled({
+                    type: "SceneNodeClickMessage",
+                    name: props.name,
+                    instance_index:
+                      computeClickInstanceIndexFromInstanceId === undefined
+                        ? null
+                        : computeClickInstanceIndexFromInstanceId(e.instanceId),
+                    // Note that the threejs up is +Y, but we expose a +Z up.
+                    ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
+                    ray_direction: [
+                      ray.direction.x,
+                      ray.direction.y,
+                      ray.direction.z,
+                    ],
+                    screen_pos: [mouseVectorOpenCV.x, mouseVectorOpenCV.y],
+                  });
+                }
+          }
+          onPointerOver={
+            !clickable
+              ? undefined
+              : (e) => {
+                  if (!isDisplayed()) return;
+                  e.stopPropagation();
 
-            // Update hover state
-            hoveredRef.current.isHovered = true;
-            // Store the instanceId in the hover ref
-            hoveredRef.current.instanceId = e.instanceId ?? null;
+                  // Update hover state
+                  hoveredRef.current.isHovered = true;
+                  // Store the instanceId in the hover ref
+                  hoveredRef.current.instanceId = e.instanceId ?? null;
 
-            // Increment global hover count and update cursor
-            viewer.hoveredElementsCount.current++;
-            if (viewer.hoveredElementsCount.current === 1) {
-              document.body.style.cursor = "pointer";
-            }
-          }}
-          onPointerOut={() => {
-            if (!isDisplayed()) return;
+                  // Increment global hover count and update cursor
+                  viewer.hoveredElementsCount.current++;
+                  if (viewer.hoveredElementsCount.current === 1) {
+                    document.body.style.cursor = "pointer";
+                  }
+                }
+          }
+          onPointerOut={
+            !clickable
+              ? undefined
+              : () => {
+                  if (!isDisplayed()) return;
 
-            // Update hover state
-            hoveredRef.current.isHovered = false;
-            // Clear the instanceId when no longer hovering
-            hoveredRef.current.instanceId = null;
+                  // Update hover state
+                  hoveredRef.current.isHovered = false;
+                  // Clear the instanceId when no longer hovering
+                  hoveredRef.current.instanceId = null;
 
-            // Decrement global hover count and update cursor if needed
-            viewer.hoveredElementsCount.current--;
-            if (viewer.hoveredElementsCount.current === 0) {
-              document.body.style.cursor = "auto";
-            }
-          }}
+                  // Decrement global hover count and update cursor if needed
+                  viewer.hoveredElementsCount.current--;
+                  if (viewer.hoveredElementsCount.current === 0) {
+                    document.body.style.cursor = "auto";
+                  }
+                }
+          }
         >
           <HoverableContext.Provider value={hoveredRef}>
             {objNode}
           </HoverableContext.Provider>
         </group>
-        {children}
-      </>
-    );
-  } else {
-    return (
-      <>
-        {/* This <group /> does nothing, but switching between clickable vs not
-        causes strange transform behavior without it. */}
-        <group>{objNode}</group>
         {children}
       </>
     );
