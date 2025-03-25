@@ -117,6 +117,8 @@ function ViewerRoot() {
     }),
     canvas2dRef: React.useRef(null),
     skinnedMeshState: React.useRef({}),
+    // Global hover state tracking for cursor management
+    hoveredElementsCount: React.useRef(0),
   };
 
   // Set dark default if specified in URL.

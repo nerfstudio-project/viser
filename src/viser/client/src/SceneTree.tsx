@@ -18,7 +18,7 @@ import {
 import { Html } from "@react-three/drei";
 import { useSceneTreeState } from "./SceneTreeState";
 import { rayToViserCoords } from "./WorldTransformUtils";
-import { HoverableContext } from "./HoverContext";
+import { HoverableContext, HoverState } from "./HoverContext";
 import {
   CameraFrustum,
   CoordinateFrame,
@@ -708,6 +708,17 @@ export function SceneNodeThreeObject(props: {
   React.useEffect(() => {
     const attrs = viewer.nodeAttributesFromName.current[props.name];
     if (attrs !== undefined) attrs.poseUpdateState = "needsUpdate";
+
+    // Return cleanup function to handle unmounting while hovered
+    return () => {
+      // Only decrement if this component was hovered when unmounting
+      if (hoveredRef.current.isHovered) {
+        viewer.hoveredElementsCount.current--;
+        if (viewer.hoveredElementsCount.current === 0) {
+          document.body.style.cursor = "auto";
+        }
+      }
+    };
   });
 
   // Update attributes on a per-frame basis. Currently does redundant work,
@@ -767,10 +778,12 @@ export function SceneNodeThreeObject(props: {
 
   // Clicking logic.
   const sendClicksThrottled = useThrottledMessageSender(50);
-  const [hovered, setHovered] = React.useState(false);
-  useCursor(hovered);
-  const hoveredRef = React.useRef(false);
-  if (!clickable && hovered) setHovered(false);
+
+  // Create a ref with HoverState type to handle both hover state and instanceId
+  const hoveredRef = React.useRef<HoverState>({
+    isHovered: false,
+    instanceId: null,
+  });
 
   const dragInfo = React.useRef({
     dragging: false,
@@ -848,13 +861,31 @@ export function SceneNodeThreeObject(props: {
           onPointerOver={(e) => {
             if (!isDisplayed()) return;
             e.stopPropagation();
-            setHovered(true);
-            hoveredRef.current = true;
+
+            // Update hover state
+            hoveredRef.current.isHovered = true;
+            // Store the instanceId in the hover ref
+            hoveredRef.current.instanceId = e.instanceId ?? null;
+
+            // Increment global hover count and update cursor
+            viewer.hoveredElementsCount.current++;
+            if (viewer.hoveredElementsCount.current === 1) {
+              document.body.style.cursor = "pointer";
+            }
           }}
           onPointerOut={() => {
             if (!isDisplayed()) return;
-            setHovered(false);
-            hoveredRef.current = false;
+
+            // Update hover state
+            hoveredRef.current.isHovered = false;
+            // Clear the instanceId when no longer hovering
+            hoveredRef.current.instanceId = null;
+
+            // Decrement global hover count and update cursor if needed
+            viewer.hoveredElementsCount.current--;
+            if (viewer.hoveredElementsCount.current === 0) {
+              document.body.style.cursor = "auto";
+            }
           }}
         >
           <HoverableContext.Provider value={hoveredRef}>

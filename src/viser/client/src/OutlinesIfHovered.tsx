@@ -24,9 +24,9 @@ export function OutlinesIfHovered(
     if (hoveredRef === null) return;
     if (props.alwaysMounted) {
       if (groupRef.current === null) return;
-      groupRef.current.visible = hoveredRef.current;
-    } else if (hoveredRef.current != mounted) {
-      setMounted(hoveredRef.current);
+      groupRef.current.visible = hoveredRef.current.isHovered;
+    } else if (hoveredRef.current.isHovered != mounted) {
+      setMounted(hoveredRef.current.isHovered);
     }
   });
   return hoveredRef === null || !mounted ? null : (

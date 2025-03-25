@@ -291,14 +291,116 @@ export const InstancedAxes = React.forwardRef<
     axesRef.current!.instanceColor!.needsUpdate = true;
   }, [batched_wxyzs, batched_positions]);
 
+  // Reference to outline group that will be positioned at the hovered instance
+  const outlineGroupRef = React.useRef<THREE.Group>(null);
+
+  // Create outline geometry (slightly larger than the cylinders)
+  const outlineCylinderGeom = React.useMemo(
+    () =>
+      new THREE.CylinderGeometry(
+        axes_radius + 0.025,
+        axes_radius + 0.025,
+        axes_length + 0.025,
+        16,
+      ),
+    [axes_radius, axes_length],
+  );
+
+  // Create outline material
+  const outlineMaterial = React.useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: 0xfbff00,
+        side: THREE.BackSide,
+        transparent: true,
+        opacity: 0.8,
+      }),
+    [],
+  );
+
+  // Get hover state from context
+  const hoveredRef = React.useContext(HoverableContext);
+
+  // Update outline position based on hover state
+  useFrame(() => {
+    if (!outlineGroupRef.current || !hoveredRef) return;
+
+    // Check if we're hovering and have a valid instanceId
+    if (
+      hoveredRef.current.isHovered &&
+      hoveredRef.current.instanceId !== undefined &&
+      hoveredRef.current.instanceId !== null
+    ) {
+      // Each coordinate frame consists of 3 cylinders (x,y,z), so divide by 3
+      const instanceId = Math.floor(hoveredRef.current.instanceId / 3);
+
+      // Only show outline if the instance ID is valid
+      if (instanceId >= 0 && instanceId < batched_wxyzs.length / 4) {
+        // Position the outline group at the hovered instance
+        outlineGroupRef.current.position.set(
+          batched_positions[instanceId * 3 + 0],
+          batched_positions[instanceId * 3 + 1],
+          batched_positions[instanceId * 3 + 2],
+        );
+
+        // Set rotation to match the hovered instance
+        outlineGroupRef.current.quaternion.set(
+          batched_wxyzs[instanceId * 4 + 1],
+          batched_wxyzs[instanceId * 4 + 2],
+          batched_wxyzs[instanceId * 4 + 3],
+          batched_wxyzs[instanceId * 4 + 0],
+        );
+
+        // Show the outline
+        outlineGroupRef.current.visible = true;
+      }
+    } else {
+      // Hide outline.
+      outlineGroupRef.current.position.set(1e6, 1e6, 1e6);
+      outlineGroupRef.current.visible = false;
+    }
+  });
+
+  // Clean up
+  React.useEffect(() => {
+    return () => {
+      outlineCylinderGeom.dispose();
+      outlineMaterial.dispose();
+    };
+  }, [outlineCylinderGeom, outlineMaterial]);
+
   return (
     <group ref={ref}>
       <instancedMesh
         ref={axesRef}
         args={[cylinderGeom, material, (batched_wxyzs.length / 4) * 3]}
-      >
-        <OutlinesIfHovered />
-      </instancedMesh>
+      />
+
+      {/* Outline group that follows hovered instance */}
+      <group ref={outlineGroupRef} visible={false}>
+        {/* X axis outline */}
+        <mesh
+          geometry={outlineCylinderGeom}
+          material={outlineMaterial}
+          position={[0.5 * axes_length, 0, 0]}
+          rotation={[0, 0, (3 * Math.PI) / 2]}
+        />
+
+        {/* Y axis outline */}
+        <mesh
+          geometry={outlineCylinderGeom}
+          material={outlineMaterial}
+          position={[0, 0.5 * axes_length, 0]}
+        />
+
+        {/* Z axis outline */}
+        <mesh
+          geometry={outlineCylinderGeom}
+          material={outlineMaterial}
+          position={[0, 0, 0.5 * axes_length]}
+          rotation={[Math.PI / 2, 0, 0]}
+        />
+      </group>
     </group>
   );
 });
@@ -381,8 +483,8 @@ export const CameraFrustum = React.forwardRef<
   const [isHovered, setIsHovered] = React.useState(false);
 
   useFrame(() => {
-    if (hoveredRef !== null && hoveredRef.current !== isHovered) {
-      setIsHovered(hoveredRef.current);
+    if (hoveredRef !== null && hoveredRef.current.isHovered !== isHovered) {
+      setIsHovered(hoveredRef.current.isHovered);
     }
   });
 

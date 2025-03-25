@@ -5,6 +5,7 @@ import { BatchedMeshesMessage } from "../WebsocketMessages";
 import { OutlinesIfHovered } from "../OutlinesIfHovered";
 import { BatchedMeshManager, setupBatchedMesh } from "./BatchedMeshManager";
 import { InstancedMesh2 } from "@three.ez/instanced-mesh";
+import { useThree, useFrame } from "@react-three/fiber";
 
 /**
  * Component for rendering batched/instanced meshes
@@ -137,10 +138,10 @@ export const BatchedMesh = React.forwardRef<
     return null;
   }
 
+  // OutlinesIfHovered needs to be a child of the mesh to apply properly
   return (
-    <>
-      <primitive ref={ref} object={meshManagerRef.current.getMesh()} />
-      <OutlinesIfHovered alwaysMounted />
-    </>
+    <primitive ref={ref} object={meshManagerRef.current.getMesh()}>
+      <OutlinesIfHovered alwaysMounted={false} />
+    </primitive>
   );
 });
