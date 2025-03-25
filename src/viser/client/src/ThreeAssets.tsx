@@ -116,8 +116,8 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
 
       geometry.setAttribute(
         "position",
-        new THREE.Float16BufferAttribute(
-          new Uint16Array(
+        new THREE.Float32BufferAttribute(
+          new Float32Array(
             props.points.buffer.slice(
               props.points.byteOffset,
               props.points.byteOffset + props.points.byteLength,
@@ -188,7 +188,7 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
         getThreeState().gl.getSize(rendererSize).height *
         getThreeState().gl.getPixelRatio();
     });
-    return <points ref={ref} geometry={geometry} material={material} />;
+    return <points frustumCulled={false} ref={ref} geometry={geometry} material={material} />;
   },
 );
 
