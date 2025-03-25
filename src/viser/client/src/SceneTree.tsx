@@ -22,11 +22,9 @@ import { HoverableContext } from "./HoverContext";
 import {
   CameraFrustum,
   CoordinateFrame,
-  GlbAsset,
   InstancedAxes,
   PointCloud,
   ViserImage,
-  ViserMesh,
 } from "./ThreeAssets";
 import { opencvXyFromPointerXy } from "./ClickUtils";
 import { SceneNodeMessage } from "./WebsocketMessages";
@@ -36,6 +34,11 @@ import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Line } from "./Line";
 import { shadowArgs } from "./ShadowArgs";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
+import { BasicMesh } from "./mesh/BasicMesh";
+import { SkinnedMesh } from "./mesh/SkinnedMesh";
+import { BatchedMesh } from "./mesh/BatchedMesh";
+import { SingleGlbAsset } from "./mesh/SingleGlbAsset";
+import { BatchedGlbAsset } from "./mesh/BatchedGlbAsset";
 
 function rgbToInt(rgb: [number, number, number]): number {
   return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
@@ -279,11 +282,19 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     }
 
     // Add mesh
-    case "SkinnedMeshMessage":
-    case "MeshMessage":
+    case "SkinnedMeshMessage": {
+      return {
+        makeObject: (ref) => <SkinnedMesh ref={ref} {...message} />,
+      };
+    }
+    case "MeshMessage": {
+      return {
+        makeObject: (ref) => <BasicMesh ref={ref} {...message} />,
+      };
+    }
     case "BatchedMeshesMessage": {
       return {
-        makeObject: (ref) => <ViserMesh ref={ref} {...message} />,
+        makeObject: (ref) => <BatchedMesh ref={ref} {...message} />,
         computeClickInstanceIndexFromInstanceId:
           message.type === "BatchedMeshesMessage"
             ? (instanceId) => instanceId!
@@ -416,10 +427,14 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
       };
     }
     // Add a glTF/GLB asset.
-    case "GlbMessage":
+    case "GlbMessage": {
+      return {
+        makeObject: (ref) => <SingleGlbAsset ref={ref} {...message} />,
+      };
+    }
     case "BatchedGlbMessage": {
       return {
-        makeObject: (ref) => <GlbAsset ref={ref} {...message} />,
+        makeObject: (ref) => <BatchedGlbAsset ref={ref} {...message} />,
         computeClickInstanceIndexFromInstanceId: (instanceId) => instanceId!,
       };
     }

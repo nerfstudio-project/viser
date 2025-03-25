@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 import { MeshoptSimplifier } from "meshoptimizer";
 
-function getAutoLODSettings(
+function getAutoLodSettings(
   mesh: THREE.Mesh,
   scale: number = 1,
 ): { ratios: number[]; distances: number[] } {
@@ -68,10 +68,10 @@ export class BatchedMeshManager {
     const dummyMesh = new THREE.Mesh(geometry, material);
 
     if (lodSetting === "auto") {
-      const { ratios, distances } = getAutoLODSettings(dummyMesh, scale);
-      this.addLODs(dummyMesh, ratios, distances, castShadow);
+      const { ratios, distances } = getAutoLodSettings(dummyMesh, scale);
+      this.addLods(dummyMesh, ratios, distances, castShadow);
     } else {
-      this.addLODs(
+      this.addLods(
         dummyMesh,
         lodSetting.map((pair) => pair[1]),
         lodSetting.map((pair) => pair[0]),
@@ -80,7 +80,7 @@ export class BatchedMeshManager {
     }
   }
 
-  private addLODs(
+  private addLods(
     mesh: THREE.Mesh,
     ratios: number[],
     distances: number[],
