@@ -4,14 +4,15 @@ import { createStandardMaterial } from "./MeshUtils";
 import { BatchedMeshesMessage } from "../WebsocketMessages";
 import { OutlinesIfHovered } from "../OutlinesIfHovered";
 import { BatchedMeshManager, setupBatchedMesh } from "./BatchedMeshManager";
+import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 
 /**
  * Component for rendering batched/instanced meshes
  */
 export const BatchedMesh = React.forwardRef<
-  THREE.InstancedMesh,
+  InstancedMesh2,
   BatchedMeshesMessage
->(function BatchedMesh(message) {
+>(function BatchedMesh(message, ref) {
   // Create persistent geometry and material
   const [material, setMaterial] = React.useState<THREE.Material>();
   const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
@@ -138,7 +139,7 @@ export const BatchedMesh = React.forwardRef<
 
   return (
     <>
-      <primitive object={meshManagerRef.current.getMesh()} />
+      <primitive ref={ref} object={meshManagerRef.current.getMesh()} />
       <OutlinesIfHovered alwaysMounted />
     </>
   );
