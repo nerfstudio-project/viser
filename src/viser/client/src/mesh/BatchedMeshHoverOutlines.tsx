@@ -3,7 +3,6 @@ import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { HoverableContext } from "../HoverContext";
 import { OutlinesMaterial } from "../Outlines";
-import { extend } from "@react-three/fiber";
 
 /**
  * Props for BatchedMeshHoverOutlines component
@@ -51,9 +50,6 @@ export const BatchedMeshHoverOutlines: React.FC<
     () => gl.getDrawingBufferSize(new THREE.Vector2()),
     [gl],
   );
-
-  // Register the material with React Three Fiber
-  React.useMemo(() => extend({ OutlinesMaterial }), []);
 
   // Create outline material with fixed properties
   const outlineMaterial = React.useMemo(() => {
@@ -172,11 +168,6 @@ export const BatchedMeshHoverOutlines: React.FC<
     };
   }, [outlineMaterial, outlineGeometry]);
 
-  // Apply crease angle matching OutlinesIfHovered (Math.PI)
-  // Note: For simplicity, we're using the cloned geometry without additional creasing,
-  // but we could add toCreasedNormals from three-stdlib if needed for complex meshes
-
-  // Only render the outline if we have a hover state, it's clickable, and we have a geometry
   if (!hoveredRef || !outlineGeometry) {
     return null;
   }

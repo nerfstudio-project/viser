@@ -3,7 +3,6 @@ import {
   CubicBezierLine,
   Grid,
   PivotControls,
-  useCursor,
 } from "@react-three/drei";
 import { useContextBridge } from "its-fine";
 import { createPortal, useFrame } from "@react-three/fiber";

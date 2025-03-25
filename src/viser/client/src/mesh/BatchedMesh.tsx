@@ -5,6 +5,7 @@ import { BatchedMeshesMessage } from "../WebsocketMessages";
 import { BatchedMeshManager, setupBatchedMesh } from "./BatchedMeshManager";
 import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
+import { ViewerContext } from "../ViewerContext";
 
 /**
  * Component for rendering batched/instanced meshes
@@ -13,6 +14,12 @@ export const BatchedMesh = React.forwardRef<
   InstancedMesh2,
   BatchedMeshesMessage
 >(function BatchedMesh(message, ref) {
+  const viewer = React.useContext(ViewerContext)!;
+  const clickable =
+    viewer.useSceneTree(
+      (state) => state.nodeFromName[message.name]?.clickable,
+    ) ?? false;
+
   // Create persistent geometry and material
   const [material, setMaterial] = React.useState<THREE.Material>();
   const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
@@ -83,13 +90,15 @@ export const BatchedMesh = React.forwardRef<
       (3 * Float32Array.BYTES_PER_ELEMENT);
 
     // Create new manager
-    setMeshManager(setupBatchedMesh(
-      geometry,
-      material,
-      numInstances,
-      message.props.lod,
-      message.props.cast_shadow,
-    ));
+    setMeshManager(
+      setupBatchedMesh(
+        geometry,
+        material,
+        numInstances,
+        message.props.lod,
+        message.props.cast_shadow,
+      ),
+    );
 
     // Cleanup function to ensure proper disposal
     return () => {
@@ -142,7 +151,7 @@ export const BatchedMesh = React.forwardRef<
     <>
       <primitive ref={ref} object={meshManager.getMesh()} />
       {/* Add hover outline component for highlighting hovered instances */}
-      {geometry && (
+      {clickable && geometry && (
         <BatchedMeshHoverOutlines
           geometry={geometry}
           batched_positions={batched_positions}

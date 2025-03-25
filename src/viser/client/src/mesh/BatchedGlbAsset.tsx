@@ -5,12 +5,19 @@ import { useGlbLoader } from "./GlbLoaderUtils";
 import { BatchedMeshManager, setupBatchedMesh } from "./BatchedMeshManager";
 import { useFrame } from "@react-three/fiber";
 import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
+import { ViewerContext } from "../ViewerContext";
 
 /**
  * Component for rendering batched/instanced GLB models
  */
 export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
   function BatchedGlbAsset(message, ref) {
+    const viewer = React.useContext(ViewerContext)!;
+    const clickable =
+      viewer.useSceneTree(
+        (state) => state.nodeFromName[message.name]?.clickable,
+      ) ?? false;
+
     const { gltf, mixerRef } = useGlbLoader(
       message.props.glb_data,
       message.props.cast_shadow,
@@ -165,24 +172,25 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
         <primitive object={meshState.gltfScene} scale={message.props.scale} />
 
         {/* Add outlines for each mesh in the GLB asset */}
-        {transforms.map((transform, index) => {
-          // Get the mesh's geometry from the manager
-          const manager = meshState.managers[index];
-          if (!manager) return null;
+        {clickable &&
+          transforms.map((transform, index) => {
+            // Get the mesh's geometry from the manager
+            const manager = meshState.managers[index];
+            if (!manager) return null;
 
-          const mesh = manager.getMesh();
-          if (!mesh || !mesh.geometry) return null;
+            const mesh = manager.getMesh();
+            if (!mesh || !mesh.geometry) return null;
 
-          return (
-            <BatchedMeshHoverOutlines
-              key={index}
-              geometry={mesh.geometry}
-              batched_positions={batched_positions}
-              batched_wxyzs={batched_wxyzs}
-              meshTransform={transform}
-            />
-          );
-        })}
+            return (
+              <BatchedMeshHoverOutlines
+                key={index}
+                geometry={mesh.geometry}
+                batched_positions={batched_positions}
+                batched_wxyzs={batched_wxyzs}
+                meshTransform={transform}
+              />
+            );
+          })}
       </group>
     );
   },
