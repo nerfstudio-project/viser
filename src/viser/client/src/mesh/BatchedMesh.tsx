@@ -2,7 +2,7 @@ import React from "react";
 import * as THREE from "three";
 import { createStandardMaterial } from "./MeshUtils";
 import { BatchedMeshesMessage } from "../WebsocketMessages";
-import { setupBatchedMesh } from "./BatchedMeshManager";
+import { BatchedMeshManager } from "./BatchedMeshManager";
 import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
 import { ViewerContext } from "../ViewerContext";
@@ -96,7 +96,7 @@ export const BatchedMesh = React.forwardRef<
       (3 * Float32Array.BYTES_PER_ELEMENT);
 
     // Create new manager.
-    const manager = setupBatchedMesh(
+    const manager = new BatchedMeshManager(
       geometry,
       material,
       numInstances,

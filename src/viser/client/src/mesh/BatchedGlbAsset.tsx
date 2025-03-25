@@ -2,7 +2,7 @@ import React from "react";
 import * as THREE from "three";
 import { BatchedGlbMessage } from "../WebsocketMessages";
 import { useGlbLoader } from "./GlbLoaderUtils";
-import { BatchedMeshManager, setupBatchedMesh } from "./BatchedMeshManager";
+import { BatchedMeshManager } from "./BatchedMeshManager";
 import { useFrame } from "@react-three/fiber";
 import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
 import { ViewerContext } from "../ViewerContext";
@@ -88,8 +88,8 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
           const numInstances =
             message.props.batched_positions.byteLength /
             (3 * Float32Array.BYTES_PER_ELEMENT);
-          const manager = setupBatchedMesh(
-            node.geometry.clone(),
+          const manager = new BatchedMeshManager(
+            node.geometry,
             node.material,
             numInstances,
             message.props.lod,

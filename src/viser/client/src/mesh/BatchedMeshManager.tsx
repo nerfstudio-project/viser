@@ -38,6 +38,7 @@ function getAutoLodSettings(
 export class BatchedMeshManager {
   private instancedMesh: InstancedMesh2;
   private lodGeometries: THREE.BufferGeometry[] = [];
+  private geometry: THREE.BufferGeometry;
 
   constructor(
     geometry: THREE.BufferGeometry,
@@ -47,11 +48,12 @@ export class BatchedMeshManager {
     castShadow: boolean,
     scale?: number,
   ) {
-    this.instancedMesh = new InstancedMesh2(geometry, material);
+    this.geometry = geometry.clone();
+    this.instancedMesh = new InstancedMesh2(this.geometry, material);
 
     // Setup LODs if needed
     if (lodSetting !== "off") {
-      this.setupLODs(geometry, material, lodSetting, castShadow, scale);
+      this.setupLODs(this.geometry, material, lodSetting, castShadow, scale);
     }
 
     // Setup instances
@@ -182,24 +184,6 @@ export class BatchedMeshManager {
 
     // The instancedMesh will dispose its main geometry and material
     this.instancedMesh.dispose();
+    this.geometry.dispose();
   }
-}
-
-/** Helper function to setup batched mesh instances */
-export function setupBatchedMesh(
-  geometry: THREE.BufferGeometry,
-  material: THREE.Material,
-  numInstances: number,
-  lodSetting: "off" | "auto" | [number, number][],
-  castShadow: boolean,
-  scale?: number,
-): BatchedMeshManager {
-  return new BatchedMeshManager(
-    geometry,
-    material,
-    numInstances,
-    lodSetting,
-    castShadow,
-    scale,
-  );
 }

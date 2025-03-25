@@ -84,15 +84,6 @@ def main():
     positions, rotations = create_grid_transforms(instance_count_slider.value)
 
     # Create batched mesh visualization.
-    mesh_handle = server.scene.add_batched_meshes_simple(
-        name="dragon",
-        # mesh=dragon_mesh,
-        vertices=dragon_mesh.vertices,
-        faces=dragon_mesh.faces,
-        batched_positions=positions,
-        batched_wxyzs=rotations,
-        lod="auto" if lod_checkbox.value else "off",
-    )
     axes_handle = server.scene.add_batched_axes(
         name="axes",
         batched_positions=positions,
@@ -107,6 +98,22 @@ def main():
             auto_close=1000,
         )
 
+    # mesh_handle = server.scene.add_batched_meshes_trimesh(
+    #     name="dragon",
+    #     mesh=dragon_mesh,
+    #     batched_positions=positions,
+    #     batched_wxyzs=rotations,
+    #     lod="auto" if lod_checkbox.value else "off",
+    # )
+    mesh_handle = server.scene.add_batched_meshes_simple(
+        name="dragon",
+        # mesh=dragon_mesh,
+        vertices=dragon_mesh.vertices,
+        faces=dragon_mesh.faces,
+        batched_positions=positions,
+        batched_wxyzs=rotations,
+        lod="auto" if lod_checkbox.value else "off",
+    )
     @mesh_handle.on_click
     def _(event: viser.SceneNodePointerEvent):
         event.client.add_notification(
