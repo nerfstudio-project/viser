@@ -9,19 +9,9 @@ import { OutlinesIfHovered } from "../OutlinesIfHovered";
  */
 export const BasicMesh = React.forwardRef<THREE.Mesh, MeshMessage>(
   function BasicMesh(message, ref) {
-    // Create persistent geometry and material
-    const [material, setMaterial] = React.useState<THREE.Material>();
-    const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
-
-    // Setup material
-    React.useEffect(() => {
-      const material = createStandardMaterial(message.props);
-      setMaterial(material);
-
-      return () => {
-        // Dispose material when done
-        material.dispose();
-      };
+    // Setup material using memoization.
+    const material = React.useMemo(() => {
+      return createStandardMaterial(message.props);
     }, [
       message.props.material,
       message.props.color,
@@ -31,8 +21,8 @@ export const BasicMesh = React.forwardRef<THREE.Mesh, MeshMessage>(
       message.props.side,
     ]);
 
-    // Setup geometry
-    React.useEffect(() => {
+    // Setup geometry using memoization.
+    const geometry = React.useMemo(() => {
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute(
         "position",
@@ -60,17 +50,18 @@ export const BasicMesh = React.forwardRef<THREE.Mesh, MeshMessage>(
       );
       geometry.computeVertexNormals();
       geometry.computeBoundingSphere();
-
-      setGeometry(geometry);
-
-      return () => {
-        geometry.dispose();
-      };
+      return geometry;
     }, [message.props.vertices.buffer, message.props.faces.buffer]);
 
-    if (geometry === undefined || material === undefined) {
-      return null;
-    }
+    // Clean up resources when component unmounts.
+    React.useEffect(() => {
+      return () => {
+        material.dispose();
+        geometry.dispose();
+      };
+    }, [material, geometry]);
+
+    // This check is no longer needed with useMemo since it always returns a value
 
     return (
       <mesh

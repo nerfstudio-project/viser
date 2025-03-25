@@ -53,7 +53,7 @@ export function rgbToInt(rgb: [number, number, number]): number {
  */
 export function generateGradientMap(shades: 3 | 5): THREE.DataTexture {
   const texture = new THREE.DataTexture(
-    Uint8Array.from(shades == 3 ? [0, 128, 255] : [0, 64, 128, 192, 255]),
+    Uint8Array.from(shades === 3 ? [0, 128, 255] : [0, 64, 128, 192, 255]),
     shades,
     1,
     THREE.RedFormat,

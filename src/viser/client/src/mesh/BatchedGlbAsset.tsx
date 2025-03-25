@@ -24,38 +24,40 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       message.props.receive_shadow,
     );
 
-    // Update animations on each frame
-    useFrame((_: any, delta: number) => {
-      if (mixerRef.current) {
-        mixerRef.current.update(delta);
-      }
+    // Update animations on each frame if mixer exists.
+    useFrame((_, delta: number) => {
+      mixerRef.current?.update(delta);
     });
 
-    // Store transforms for mesh to instance mapping
-    const [transforms, setTransforms] = React.useState<
-      {
-        position: THREE.Vector3;
-        rotation: THREE.Quaternion;
-        scale: THREE.Vector3;
-      }[]
-    >([]);
+    // Create Float32Arrays once for positions and orientations.
+    const batched_positions = React.useMemo(
+      () =>
+        new Float32Array(
+          message.props.batched_positions.buffer.slice(
+            message.props.batched_positions.byteOffset,
+            message.props.batched_positions.byteOffset +
+              message.props.batched_positions.byteLength,
+          ),
+        ),
+      [message.props.batched_positions],
+    );
 
-    // Use state to store mesh managers and scene
-    const [meshState, setMeshState] = React.useState<{
-      gltfScene: THREE.Group;
-      managers: BatchedMeshManager[];
-    } | null>(null);
+    const batched_wxyzs = React.useMemo(
+      () =>
+        new Float32Array(
+          message.props.batched_wxyzs.buffer.slice(
+            message.props.batched_wxyzs.byteOffset,
+            message.props.batched_wxyzs.byteOffset +
+              message.props.batched_wxyzs.byteLength,
+          ),
+        ),
+      [message.props.batched_wxyzs],
+    );
 
-    // Initialize mesh managers when the GLB loads
-    React.useEffect(() => {
-      if (!gltf) return;
-
-      // Clean up previous managers if they exist
-      if (meshState) {
-        meshState.managers.forEach((manager) => {
-          manager.dispose();
-        });
-      }
+    // Use memoization to create mesh managers and transforms when GLB loads.
+    // Return type includes transforms, gltfScene, and managers
+    const meshState = React.useMemo(() => {
+      if (!gltf) return null;
 
       const scene = gltf.scene.clone();
       const managers: BatchedMeshManager[] = [];
@@ -67,7 +69,7 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
 
       scene.traverse((node) => {
         if (node instanceof THREE.Mesh && node.parent) {
-          // Store transform info
+          // Store transform info.
           const position = new THREE.Vector3();
           const scale = new THREE.Vector3();
           const quat = new THREE.Quaternion();
@@ -95,19 +97,30 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
             Math.max(scale.x, scale.y, scale.z),
           );
 
-          // Hide the original node
+          // Update instance transforms right away
+          manager.updateInstances(batched_positions, batched_wxyzs, transform);
+
+          // Hide the original node.
           node.visible = false;
 
-          // Add the instanced mesh to the scene
+          // Add the instanced mesh to the scene.
           managers.push(manager);
           scene.add(manager.getMesh());
         }
       });
 
-      setTransforms(transforms);
-      setMeshState({ gltfScene: scene, managers });
+      return { gltfScene: scene, managers, transforms };
+    }, [
+      gltf,
+      message.props.lod,
+      message.props.cast_shadow,
+      message.props.batched_positions.byteLength,
+      batched_positions,
+      batched_wxyzs,
+    ]);
 
-      // Clean up when component unmounts or dependencies change
+    // Clean up resources when dependencies change or component unmounts.
+    React.useEffect(() => {
       return () => {
         if (meshState) {
           meshState.managers.forEach((manager) => {
@@ -115,55 +128,11 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
           });
         }
       };
-    }, [
-      gltf,
-      message.props.lod,
-      message.props.cast_shadow,
-      message.props.batched_positions.byteLength,
-    ]);
+    }, [meshState]);
 
-    // Create Float32Arrays once for positions and orientations
-    const batched_positions = React.useMemo(
-      () =>
-        new Float32Array(
-          message.props.batched_positions.buffer.slice(
-            message.props.batched_positions.byteOffset,
-            message.props.batched_positions.byteOffset +
-              message.props.batched_positions.byteLength,
-          ),
-        ),
-      [message.props.batched_positions],
-    );
-
-    const batched_wxyzs = React.useMemo(
-      () =>
-        new Float32Array(
-          message.props.batched_wxyzs.buffer.slice(
-            message.props.batched_wxyzs.byteOffset,
-            message.props.batched_wxyzs.byteOffset +
-              message.props.batched_wxyzs.byteLength,
-          ),
-        ),
-      [message.props.batched_wxyzs],
-    );
-
-    // Handle updates to instance positions/orientations
-    React.useEffect(() => {
-      if (!meshState) return;
-
-      // Update instance count if needed
-      const newNumInstances = batched_positions.length / 3;
-
-      // Update all mesh managers - use the arrays we already created
-      meshState.managers.forEach((manager, mesh_index) => {
-        manager.setInstanceCount(newNumInstances);
-        manager.updateInstances(
-          batched_positions,
-          batched_wxyzs,
-          transforms[mesh_index],
-        );
-      });
-    }, [meshState, transforms, batched_positions, batched_wxyzs]);
+    // This effect is now redundant since we update instance transforms
+    // when creating the manager and when any dependency changes.
+    // The meshState is recreated with the new data when any dependency changes.
 
     if (!gltf || !meshState) return null;
 
@@ -173,8 +142,8 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
 
         {/* Add outlines for each mesh in the GLB asset */}
         {clickable &&
-          transforms.map((transform, index) => {
-            // Get the mesh's geometry from the manager
+          meshState.transforms.map((transform, index) => {
+            // Get the mesh's geometry from the manager.
             const manager = meshState.managers[index];
             if (!manager) return null;
 

@@ -40,16 +40,19 @@ export const BatchedMeshHoverOutlines: React.FC<
   // Create outline mesh reference
   const outlineRef = React.useRef<THREE.Mesh>(null);
 
-  // Create outline geometry based on the original geometry
-  const [outlineGeometry, setOutlineGeometry] =
-    React.useState<THREE.BufferGeometry | null>(null);
-
   // Get rendering context for screen size
   const gl = useThree((state) => state.gl);
   const contextSize = React.useMemo(
     () => gl.getDrawingBufferSize(new THREE.Vector2()),
     [gl],
   );
+
+  // Create outline geometry based on the original geometry using memoization
+  const outlineGeometry = React.useMemo(() => {
+    if (!geometry) return null;
+    // Clone the geometry to create an independent copy for the outline
+    return geometry.clone();
+  }, [geometry]);
 
   // Create outline material with fixed properties
   const outlineMaterial = React.useMemo(() => {
@@ -69,18 +72,24 @@ export const BatchedMeshHoverOutlines: React.FC<
     return material;
   }, [contextSize]);
 
-  // Setup outline geometry when main geometry is available
+  // Separate cleanup for geometry and material to handle dependency changes correctly
+  // Clean up geometry when it changes or component unmounts
   React.useEffect(() => {
-    if (!geometry) return;
-
-    // Create a clone of the geometry for the outline
-    const outlineGeom = geometry.clone();
-    setOutlineGeometry(outlineGeom);
-
     return () => {
-      outlineGeom.dispose();
+      if (outlineGeometry) {
+        outlineGeometry.dispose();
+      }
     };
-  }, [geometry]);
+  }, [outlineGeometry]);
+
+  // Clean up material when it changes or component unmounts
+  React.useEffect(() => {
+    return () => {
+      if (outlineMaterial) {
+        outlineMaterial.dispose();
+      }
+    };
+  }, [outlineMaterial]);
 
   // Update outline position based on hover state
   useFrame(() => {
@@ -156,17 +165,7 @@ export const BatchedMeshHoverOutlines: React.FC<
     }
   });
 
-  // Clean up
-  React.useEffect(() => {
-    return () => {
-      if (outlineMaterial) {
-        outlineMaterial.dispose();
-      }
-      if (outlineGeometry) {
-        outlineGeometry.dispose();
-      }
-    };
-  }, [outlineMaterial, outlineGeometry]);
+  // This is now handled by the earlier cleanup effect
 
   if (!hoveredRef || !outlineGeometry) {
     return null;

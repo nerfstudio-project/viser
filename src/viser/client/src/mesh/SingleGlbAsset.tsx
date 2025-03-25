@@ -17,11 +17,9 @@ export const SingleGlbAsset = React.forwardRef<THREE.Group, GlbMessage>(
       message.props.receive_shadow,
     );
 
-    // Update animations on each frame
-    useFrame((_: any, delta: number) => {
-      if (mixerRef.current) {
-        mixerRef.current.update(delta);
-      }
+    // Update animations on each frame if mixer exists.
+    useFrame((_, delta: number) => {
+      mixerRef.current?.update(delta);
     });
 
     if (!gltf) return null;

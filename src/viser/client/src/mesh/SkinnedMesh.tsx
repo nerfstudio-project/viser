@@ -15,21 +15,9 @@ export const SkinnedMesh = React.forwardRef<
 >(function SkinnedMesh(message, ref) {
   const viewer = React.useContext(ViewerContext)!;
 
-  // Create persistent geometry and material
-  const [material, setMaterial] = React.useState<THREE.Material>();
-  const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
-  const [skeleton, setSkeleton] = React.useState<THREE.Skeleton>();
-  const bonesRef = React.useRef<THREE.Bone[]>();
-
-  // Setup material
-  React.useEffect(() => {
-    const material = createStandardMaterial(message.props);
-    setMaterial(material);
-
-    return () => {
-      // Dispose material when done
-      material.dispose();
-    };
+  // Create material using memoization
+  const material = React.useMemo(() => {
+    return createStandardMaterial(message.props);
   }, [
     message.props.material,
     message.props.color,
@@ -39,8 +27,12 @@ export const SkinnedMesh = React.forwardRef<
     message.props.side,
   ]);
 
-  // Setup geometry and skeleton
-  React.useEffect(() => {
+  // Reference to bones for animation updates
+  const bonesRef = React.useRef<THREE.Bone[]>();
+
+  // Create geometry and skeleton using memoization
+  const { geometry, skeleton } = React.useMemo(() => {
+    // Setup geometry
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
@@ -147,25 +139,27 @@ export const SkinnedMesh = React.forwardRef<
     );
 
     skeleton.init();
-    setGeometry(geometry);
-    setSkeleton(skeleton);
-
-    return () => {
-      skeleton.dispose();
-      geometry.dispose();
-      const state = viewer.skinnedMeshState.current[message.name];
-      state.initialized = false;
-    };
+    return { geometry, skeleton };
   }, [
-    message.name,
     message.props.vertices.buffer,
     message.props.faces.buffer,
     message.props.skin_indices.buffer,
     message.props.skin_weights?.buffer,
     message.props.bone_wxyzs.buffer,
     message.props.bone_positions.buffer,
-    viewer.skinnedMeshState,
   ]);
+
+  // Handle initialization and cleanup
+  React.useEffect(() => {
+    // Return cleanup function
+    return () => {
+      if (skeleton) skeleton.dispose();
+      if (geometry) geometry.dispose();
+      if (material) material.dispose();
+      const state = viewer.skinnedMeshState.current[message.name];
+      state.initialized = false;
+    };
+  }, [skeleton, geometry, material, message.name, viewer.skinnedMeshState]);
 
   // Update bone transforms for animation
   useFrame(() => {
@@ -190,13 +184,7 @@ export const SkinnedMesh = React.forwardRef<
     }
   });
 
-  if (
-    geometry === undefined ||
-    material === undefined ||
-    skeleton === undefined
-  ) {
-    return null;
-  }
+  // No need for existence checks with useMemo as they always return values
 
   return (
     <skinnedMesh

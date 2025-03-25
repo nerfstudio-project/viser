@@ -104,5 +104,3 @@ export function useGlbLoader(
   // Return the loaded model, meshes, and mixer for animation updates
   return { gltf, meshes, mixerRef };
 }
-
-// We don't need this function anymore since we're using useFrame directly in the components

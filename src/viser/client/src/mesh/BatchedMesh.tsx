@@ -2,7 +2,7 @@ import React from "react";
 import * as THREE from "three";
 import { createStandardMaterial } from "./MeshUtils";
 import { BatchedMeshesMessage } from "../WebsocketMessages";
-import { BatchedMeshManager, setupBatchedMesh } from "./BatchedMeshManager";
+import { setupBatchedMesh } from "./BatchedMeshManager";
 import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
 import { ViewerContext } from "../ViewerContext";
@@ -20,21 +20,9 @@ export const BatchedMesh = React.forwardRef<
       (state) => state.nodeFromName[message.name]?.clickable,
     ) ?? false;
 
-  // Create persistent geometry and material
-  const [material, setMaterial] = React.useState<THREE.Material>();
-  const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
-  // Ref to store mesh manager for proper disposal
-  const [meshManager, setMeshManager] = React.useState<BatchedMeshManager>();
-
-  // Setup material
-  React.useEffect(() => {
-    const material = createStandardMaterial(message.props);
-    setMaterial(material);
-
-    return () => {
-      // Dispose material when done
-      material.dispose();
-    };
+  // Setup material using memoization.
+  const material = React.useMemo(() => {
+    return createStandardMaterial(message.props);
   }, [
     message.props.material,
     message.props.color,
@@ -44,8 +32,8 @@ export const BatchedMesh = React.forwardRef<
     message.props.side,
   ]);
 
-  // Setup geometry
-  React.useEffect(() => {
+  // Setup geometry using memoization.
+  const geometry = React.useMemo(() => {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
@@ -73,40 +61,10 @@ export const BatchedMesh = React.forwardRef<
     );
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
-
-    setGeometry(geometry);
-
-    return () => {
-      geometry.dispose();
-    };
+    return geometry;
   }, [message.props.vertices.buffer, message.props.faces.buffer]);
 
-  // Create the instanced mesh once
-  React.useEffect(() => {
-    if (material === undefined || geometry === undefined) return;
-
-    const numInstances =
-      message.props.batched_positions.byteLength /
-      (3 * Float32Array.BYTES_PER_ELEMENT);
-
-    // Create new manager
-    setMeshManager(
-      setupBatchedMesh(
-        geometry,
-        material,
-        numInstances,
-        message.props.lod,
-        message.props.cast_shadow,
-      ),
-    );
-
-    // Cleanup function to ensure proper disposal
-    return () => {
-      meshManager?.dispose();
-    };
-  }, [material, geometry, message.props.lod, message.props.cast_shadow]);
-
-  // Create Float32Arrays once for positions and orientations
+  // Create Float32Arrays once for positions and orientations.
   const batched_positions = React.useMemo(
     () =>
       new Float32Array(
@@ -131,17 +89,45 @@ export const BatchedMesh = React.forwardRef<
     [message.props.batched_wxyzs],
   );
 
-  // Handle updates to instance positions/orientations
+  // Create mesh manager with useMemo for better performance.
+  const meshManager = React.useMemo(() => {
+    const numInstances =
+      message.props.batched_positions.byteLength /
+      (3 * Float32Array.BYTES_PER_ELEMENT);
+
+    // Create new manager.
+    const manager = setupBatchedMesh(
+      geometry,
+      material,
+      numInstances,
+      message.props.lod,
+      message.props.cast_shadow,
+    );
+
+    // Update instance transforms right away.
+    manager.updateInstances(batched_positions, batched_wxyzs);
+
+    return manager;
+  }, [
+    geometry,
+    material,
+    message.props.lod,
+    message.props.cast_shadow,
+    batched_positions,
+    batched_wxyzs,
+    message.props.batched_positions.byteLength,
+  ]);
+
+  // Handle cleanup when dependencies change or component unmounts.
   React.useEffect(() => {
-    if (meshManager === undefined) return;
+    return () => {
+      meshManager.dispose();
+    };
+  }, [meshManager]);
 
-    // Update instance count if needed
-    const newNumInstances = batched_positions.length / 3;
-    meshManager.setInstanceCount(newNumInstances);
-
-    // Update instance transforms - use the arrays we already created
-    meshManager.updateInstances(batched_positions, batched_wxyzs);
-  }, [batched_positions, batched_wxyzs, meshManager]);
+  // This effect is now redundant since we update instance transforms
+  // when creating the manager and when any dependency changes.
+  // The manager is recreated with the new data when any dependency changes.
 
   if (!meshManager) {
     return null;

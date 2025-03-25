@@ -5,7 +5,6 @@
 import * as THREE from "three";
 import * as React from "react";
 import {
-  extend,
   applyProps,
   ReactThreeFiber,
   useThree,
@@ -110,7 +109,6 @@ export const Outlines = React.forwardRef<THREE.Group, OutlinesProps>(
     );
     const gl = useThree((state) => state.gl);
     const contextSize = gl.getDrawingBufferSize(new THREE.Vector2());
-    React.useMemo(() => extend({ OutlinesMaterial }), []);
 
     const oldAngle = React.useRef(0);
     const oldGeometry = React.useRef<THREE.BufferGeometry>();
