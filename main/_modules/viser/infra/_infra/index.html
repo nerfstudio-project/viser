@@ -923,13 +923,9 @@
             <span class="k">if</span> <span class="n">mime_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">mime_type</span> <span class="o">=</span> <span class="s2">&quot;application/octet-stream&quot;</span>
 
-            <span class="n">response_headers</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="n">mime_type</span><span class="p">,</span>
-            <span class="p">}</span>
             <span class="k">if</span> <span class="n">source_path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">file_cache</span><span class="p">:</span>
                 <span class="n">file_cache</span><span class="p">[</span><span class="n">source_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">source_path</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">use_gzip</span><span class="p">:</span>
-                <span class="n">response_headers</span><span class="p">[</span><span class="s2">&quot;Content-Encoding&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;gzip&quot;</span>
                 <span class="k">if</span> <span class="n">source_path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">file_cache_gzipped</span><span class="p">:</span>
                     <span class="n">file_cache_gzipped</span><span class="p">[</span><span class="n">source_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span>
                         <span class="n">file_cache</span><span class="p">[</span><span class="n">source_path</span><span class="p">]</span>
@@ -937,6 +933,12 @@
                 <span class="n">response_payload</span> <span class="o">=</span> <span class="n">file_cache_gzipped</span><span class="p">[</span><span class="n">source_path</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">response_payload</span> <span class="o">=</span> <span class="n">file_cache</span><span class="p">[</span><span class="n">source_path</span><span class="p">]</span>
+
+            <span class="n">response_headers</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="n">mime_type</span><span class="p">,</span>
+                <span class="s2">&quot;Content-Length&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response_payload</span><span class="p">)),</span>
+                <span class="s2">&quot;Content-Encoding&quot;</span><span class="p">:</span> <span class="s2">&quot;gzip&quot;</span> <span class="k">if</span> <span class="n">use_gzip</span> <span class="k">else</span> <span class="s2">&quot;identity&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
 
             <span class="c1"># Try to read + send over file.</span>
             <span class="k">return</span> <span class="n">Response</span><span class="p">(</span>
