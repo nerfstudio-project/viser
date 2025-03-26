@@ -5,7 +5,6 @@
 import * as THREE from "three";
 import * as React from "react";
 import {
-  extend,
   applyProps,
   ReactThreeFiber,
   useThree,
@@ -15,9 +14,9 @@ import { toCreasedNormals } from "three-stdlib";
 import { version } from "@react-three/drei/helpers/constants";
 import { shaderMaterial } from "@react-three/drei";
 
-const OutlinesMaterial = /* @__PURE__ */ shaderMaterial(
+export const OutlinesMaterial = /* @__PURE__ */ shaderMaterial(
   {
-    screenspace: false,
+    screenspace: false as boolean,
     color: /* @__PURE__ */ new THREE.Color("black"),
     opacity: 1,
     thickness: 0.05,
@@ -110,7 +109,6 @@ export const Outlines = React.forwardRef<THREE.Group, OutlinesProps>(
     );
     const gl = useThree((state) => state.gl);
     const contextSize = gl.getDrawingBufferSize(new THREE.Vector2());
-    React.useMemo(() => extend({ OutlinesMaterial }), []);
 
     const oldAngle = React.useRef(0);
     const oldGeometry = React.useRef<THREE.BufferGeometry>();
