@@ -75,9 +75,9 @@ export class BatchedMeshManager {
 
     if (lodSetting === "auto") {
       const { ratios, distances } = getAutoLodSettings(dummyMesh, scale);
-      this.addLods(dummyMesh, ratios, distances, castShadow);
+      this.addLODs(dummyMesh, ratios, distances, castShadow);
     } else {
-      this.addLods(
+      this.addLODs(
         dummyMesh,
         lodSetting.map((pair) => pair[1]),
         lodSetting.map((pair) => pair[0]),
@@ -86,7 +86,7 @@ export class BatchedMeshManager {
     }
   }
 
-  private addLods(
+  private addLODs(
     mesh: THREE.Mesh,
     ratios: number[],
     distances: number[],
