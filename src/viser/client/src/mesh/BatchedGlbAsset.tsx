@@ -99,9 +99,6 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
             Math.max(scale.x, scale.y, scale.z),
           );
 
-          // Update instance transforms right away.
-          manager.updateInstances(batched_positions, batched_wxyzs, transform);
-
           // Add the instanced mesh to our group.
           managers.push(manager);
           instancedGroup.add(manager.getMesh());
@@ -115,9 +112,20 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       message.props.cast_shadow,
       message.props.receive_shadow,
       message.props.batched_positions.byteLength,
-      batched_positions,
-      batched_wxyzs,
     ]);
+
+    // Add new useEffect to handle position updates
+    React.useEffect(() => {
+      if (meshState && meshState.managers) {
+        meshState.managers.forEach((manager, index) => {
+          manager.updateInstances(
+            batched_positions,
+            batched_wxyzs,
+            meshState.transforms[index]
+          );
+        });
+      }
+    }, [meshState, batched_positions, batched_wxyzs]);
 
     // Clean up resources when dependencies change or component unmounts.
     React.useEffect(() => {

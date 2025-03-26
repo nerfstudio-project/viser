@@ -96,7 +96,7 @@ export const BatchedMesh = React.forwardRef<
       (3 * Float32Array.BYTES_PER_ELEMENT);
 
     // Create new manager.
-    const manager = new BatchedMeshManager(
+    return new BatchedMeshManager(
       geometry,
       material,
       numInstances,
@@ -104,20 +104,19 @@ export const BatchedMesh = React.forwardRef<
       message.props.cast_shadow,
       message.props.receive_shadow,
     );
-
-    // Update instance transforms right away.
-    manager.updateInstances(batched_positions, batched_wxyzs);
-
-    return manager;
   }, [
     geometry,
     material,
     message.props.lod,
     message.props.cast_shadow,
     message.props.receive_shadow,
-    batched_positions,
-    batched_wxyzs,
+    message.props.batched_positions.byteLength, // Keep this to handle instance count changes
   ]);
+
+  // Add new useEffect to handle position updates
+  React.useEffect(() => {
+    meshManager.updateInstances(batched_positions, batched_wxyzs);
+  }, [meshManager, batched_positions, batched_wxyzs]);
 
   // Handle cleanup when dependencies change or component unmounts.
   React.useEffect(() => {
