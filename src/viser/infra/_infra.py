@@ -477,13 +477,9 @@ class WebsockServer(WebsockMessageHandler):
             if mime_type is None:
                 mime_type = "application/octet-stream"
 
-            response_headers = {
-                "Content-Type": mime_type,
-            }
             if source_path not in file_cache:
                 file_cache[source_path] = source_path.read_bytes()
             if use_gzip:
-                response_headers["Content-Encoding"] = "gzip"
                 if source_path not in file_cache_gzipped:
                     file_cache_gzipped[source_path] = gzip.compress(
                         file_cache[source_path]
@@ -491,6 +487,12 @@ class WebsockServer(WebsockMessageHandler):
                 response_payload = file_cache_gzipped[source_path]
             else:
                 response_payload = file_cache[source_path]
+
+            response_headers = {
+                "Content-Type": mime_type,
+                "Content-Length": str(len(response_payload)),
+                "Content-Encoding": "gzip" if use_gzip else "identity",
+            }
 
             # Try to read + send over file.
             return Response(
