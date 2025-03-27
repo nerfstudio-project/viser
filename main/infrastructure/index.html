@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Communication - viser</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../_static/ansi.css" />
@@ -27,8 +27,8 @@
 
 <style>
   body {
-    --color-code-background: #272822;
-  --color-code-foreground: #f8f8f2;
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
   --color-code-background: #f4f4f4;
   --color-code-foreground: #000;
   
@@ -371,7 +371,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/infrastructure.md.txt" title="View this page">
+  <a class="muted-link" href="../_sources/infrastructure.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -391,18 +391,16 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="communication">
-<h1>Communication<a class="headerlink" href="#communication" title="Link to this heading">¶</a></h1>
-<!-- prettier-ignore-start --><p id="module-viser.infra"><a class="reference internal" href="#module-viser.infra" title="viser.infra"><code class="xref py py-mod docutils literal notranslate"><span class="pre">viser.infra</span></code></a> provides WebSocket-based communication infrastructure.</p>
-<p>We implement abstractions for:</p>
-<ul class="simple">
-<li><p>Launching a WebSocket+HTTP server on a shared port.</p></li>
-<li><p>Registering callbacks for connection events and incoming messages.</p></li>
-<li><p>Asynchronous message sending, both broadcasted and to individual clients.</p></li>
-<li><p>Defining dataclass-based message types.</p></li>
-<li><p>Translating Python message types to TypeScript interfaces.</p></li>
-</ul>
-<p>These are what <code class="docutils literal notranslate"><span class="pre">viser</span></code> runs on under-the-hood, and generally won’t be useful unless
+          <section id="module-viser.infra">
+<span id="communication"></span><h1>Communication<a class="headerlink" href="#module-viser.infra" title="Link to this heading">¶</a></h1>
+<p><a class="reference internal" href="#module-viser.infra" title="viser.infra"><code class="xref py py-mod docutils literal notranslate"><span class="pre">viser.infra</span></code></a> provides WebSocket-based communication infrastructure.</p>
+<p>We implement abstractions for:
+- Launching a WebSocket+HTTP server on a shared port.
+- Registering callbacks for connection events and incoming messages.
+- Asynchronous message sending, both broadcasted and to individual clients.
+- Defining dataclass-based message types.
+- Translating Python message types to TypeScript interfaces.</p>
+<p>These are what <cite>viser</cite> runs on under-the-hood, and generally won’t be useful unless
 you’re building a web-based application from scratch.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="viser.infra.StateSerializer">
@@ -642,7 +640,7 @@ happen synchronously.</p>
 <p>Websocket server abstraction. Communicates asynchronously with client
 applications.</p>
 <p>By default, all messages are broadcasted to all connected clients.</p>
-<p>To send messages to an individual client, we can use <code class="docutils literal notranslate"><span class="pre">on_client_connect()</span></code> to
+<p>To send messages to an individual client, we can use <cite>on_client_connect()</cite> to
 retrieve client handles.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -895,7 +893,7 @@ should only keep the latest message.</p>
 <dt class="sig sig-object py" id="viser.infra.TypeScriptAnnotationOverride">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.infra.</span></span><span class="sig-name descname"><span class="pre">TypeScriptAnnotationOverride</span></span><a class="reference internal" href="../_modules/viser/infra/_typescript_interface_gen/#TypeScriptAnnotationOverride"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.TypeScriptAnnotationOverride" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Use with <code class="docutils literal notranslate"><span class="pre">typing.Annotated[]</span></code> to override the automatically-generated
+<p>Use with <cite>typing.Annotated[]</cite> to override the automatically-generated
 TypeScript annotation corresponding to a dataclass field.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.infra.TypeScriptAnnotationOverride.annotation">
@@ -918,7 +916,7 @@ TypeScript annotation corresponding to a dataclass field.</p>
 </dl>
 </dd></dl>
 
-<!-- prettier-ignore-end --></section>
+</section>
 
         </article>
       </div>

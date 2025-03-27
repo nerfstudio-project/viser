@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Events - viser</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../_static/ansi.css" />
@@ -27,8 +27,8 @@
 
 <style>
   body {
-    --color-code-background: #272822;
-  --color-code-foreground: #f8f8f2;
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
   --color-code-background: #f4f4f4;
   --color-code-foreground: #000;
   
@@ -371,7 +371,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/events.md.txt" title="View this page">
+  <a class="muted-link" href="../_sources/events.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -395,7 +395,7 @@
 <h1>Events<a class="headerlink" href="#events" title="Link to this heading">¶</a></h1>
 <p>We define a small set of event types, which are passed to callback functions
 when events like clicks or GUI updates are triggered.</p>
-<!-- prettier-ignore-start --><dl class="py class">
+<dl class="py class">
 <dt class="sig sig-object py" id="viser.ScenePointerEvent">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ScenePointerEvent</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#ScenePointerEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ScenePointerEvent" title="Link to this definition">¶</a></dt>
 <dd><p>Event passed to pointer callbacks for the scene (currently only clicks).</p>
@@ -440,7 +440,7 @@ For a box selection, this includes the min- and max- corners of the box.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.ScenePointerEvent.event">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">event</span></span><a class="headerlink" href="#viser.ScenePointerEvent.event" title="Link to this definition">¶</a></dt>
-<dd><p>Deprecated. Use <code class="docutils literal notranslate"><span class="pre">event_type</span></code> instead.</p>
+<dd><p>Deprecated. Use <cite>event_type</cite> instead.</p>
 </dd></dl>
 
 </dd></dl>
@@ -495,7 +495,7 @@ For a box selection, this includes the min- and max- corners of the box.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SceneNodePointerEvent.instance_index">
 <span class="sig-name descname"><span class="pre">instance_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.SceneNodePointerEvent.instance_index" title="Link to this definition">¶</a></dt>
-<dd><p>Instance ID of the clicked object, if applicable. Currently this is <code class="docutils literal notranslate"><span class="pre">None</span></code> for all objects except for the output of <a class="reference internal" href="../scene_api/#viser.SceneApi.add_batched_axes" title="viser.SceneApi.add_batched_axes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SceneApi.add_batched_axes()</span></code></a>.</p>
+<dd><p>Instance ID of the clicked object, if applicable. Currently this is <cite>None</cite> for all objects except for the output of <a class="reference internal" href="../scene_api/#viser.SceneApi.add_batched_axes" title="viser.SceneApi.add_batched_axes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SceneApi.add_batched_axes()</span></code></a>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -525,7 +525,7 @@ For a box selection, this includes the min- and max- corners of the box.</p>
 
 </dd></dl>
 
-<!-- prettier-ignore-end --></section>
+</section>
 
         </article>
       </div>

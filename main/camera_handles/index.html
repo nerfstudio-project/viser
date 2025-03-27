@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Camera Handles - viser</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../_static/ansi.css" />
@@ -27,8 +27,8 @@
 
 <style>
   body {
-    --color-code-background: #272822;
-  --color-code-foreground: #f8f8f2;
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
   --color-code-background: #f4f4f4;
   --color-code-foreground: #000;
   
@@ -371,7 +371,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/camera_handles.md.txt" title="View this page">
+  <a class="muted-link" href="../_sources/camera_handles.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -393,7 +393,7 @@
         <article role="main" id="furo-main-content">
           <section id="camera-handles">
 <h1>Camera Handles<a class="headerlink" href="#camera-handles" title="Link to this heading">¶</a></h1>
-<!-- prettier-ignore-start --><dl class="py class">
+<dl class="py class">
 <dt class="sig sig-object py" id="viser.CameraHandle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">CameraHandle</span></span><a class="reference internal" href="../_modules/viser/_viser/#CameraHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraHandle" title="Link to this definition">¶</a></dt>
 <dd><p>A handle for reading and writing the camera state of a particular
@@ -407,17 +407,17 @@ client. Typically accessed via <a class="reference internal" href="../client_han
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.CameraHandle.wxyz">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.CameraHandle.wxyz" title="Link to this definition">¶</a></dt>
-<dd><p>Corresponds to the R in <code class="docutils literal notranslate"><span class="pre">P_world</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_camera</span></code>. Synchronized
+<dd><p>Corresponds to the R in <cite>P_world = [R | t] p_camera</cite>. Synchronized
 automatically when assigned.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.CameraHandle.position">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.CameraHandle.position" title="Link to this definition">¶</a></dt>
-<dd><p>Corresponds to the t in <code class="docutils literal notranslate"><span class="pre">P_world</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_camera</span></code>. Synchronized
+<dd><p>Corresponds to the t in <cite>P_world = [R | t] p_camera</cite>. Synchronized
 automatically when assigned.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">look_at</span></code> point and <code class="docutils literal notranslate"><span class="pre">up_direction</span></code> vectors are maintained when updating
-<code class="docutils literal notranslate"><span class="pre">position</span></code>, which means that updates to <code class="docutils literal notranslate"><span class="pre">position</span></code> will often also affect <code class="docutils literal notranslate"><span class="pre">wxyz</span></code>.</p>
+<p>The <cite>look_at</cite> point and <cite>up_direction</cite> vectors are maintained when updating
+<cite>position</cite>, which means that updates to <cite>position</cite> will often also affect <cite>wxyz</cite>.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -468,11 +468,9 @@ assigned.</p>
 <dt class="sig sig-object py" id="viser.CameraHandle.on_update">
 <span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.CameraHandle" title="viser._viser.CameraHandle"><span class="pre">CameraHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.CameraHandle" title="viser._viser.CameraHandle"><span class="pre">CameraHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/_viser/#CameraHandle.on_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraHandle.on_update" title="Link to this definition">¶</a></dt>
 <dd><p>Attach a callback to run when a new camera message is received.</p>
-<p>The callback can be either a standard function or an async function:</p>
-<ul class="simple">
-<li><p>Standard functions (def) will be executed in a threadpool.</p></li>
-<li><p>Async functions (async def) will be executed in the event loop.</p></li>
-</ul>
+<p>The callback can be either a standard function or an async function:
+- Standard functions (def) will be executed in a threadpool.
+- Async functions (async def) will be executed in the event loop.</p>
 <p>Using async functions can be useful for reducing race conditions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -486,7 +484,7 @@ assigned.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.CameraHandle.get_render">
-<span class="sig-name descname"><span class="pre">get_render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘png’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘jpeg’</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'jpeg'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/viser/_viser/#CameraHandle.get_render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraHandle.get_render" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'png'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'jpeg'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'jpeg'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/viser/_viser/#CameraHandle.get_render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraHandle.get_render" title="Link to this definition">¶</a></dt>
 <dd><p>Request a render from a client, block until it’s done and received, then
 return it as a numpy array. This is an alias for <a class="reference internal" href="../client_handles/#viser.ClientHandle.get_render" title="viser.ClientHandle.get_render"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ClientHandle.get_render()</span></code></a>.</p>
 <dl class="field-list simple">
@@ -494,7 +492,7 @@ return it as a numpy array. This is an alias for <a class="reference internal" h
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>height</strong> (<em>int</em>) – Height of rendered image. Should be &lt;= the browser height.</p></li>
 <li><p><strong>width</strong> (<em>int</em>) – Width of rendered image. Should be &lt;= the browser width.</p></li>
-<li><p><strong>transport_format</strong> (<em>Literal</em><em>[</em><em>‘png’</em><em>, </em><em>‘jpeg’</em><em>]</em>) – Image transport format. JPEG will return a lossy (H, W, 3) RGB array. PNG will
+<li><p><strong>transport_format</strong> (<em>Literal</em><em>[</em><em>'png'</em><em>, </em><em>'jpeg'</em><em>]</em>) – Image transport format. JPEG will return a lossy (H, W, 3) RGB array. PNG will
 return a lossless (H, W, 4) RGBA array, but can cause memory issues on the frontend if called
 too quickly for higher-resolution images.</p></li>
 </ul>
@@ -507,7 +505,7 @@ too quickly for higher-resolution images.</p></li>
 
 </dd></dl>
 
-<!-- prettier-ignore-end --></section>
+</section>
 
         </article>
       </div>

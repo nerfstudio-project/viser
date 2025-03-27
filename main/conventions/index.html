@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Frame Conventions - viser</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../_static/ansi.css" />
@@ -27,8 +27,8 @@
 
 <style>
   body {
-    --color-code-background: #272822;
-  --color-code-foreground: #f8f8f2;
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
   --color-code-background: #f4f4f4;
   --color-code-foreground: #000;
   
@@ -371,7 +371,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/conventions.md.txt" title="View this page">
+  <a class="muted-link" href="../_sources/conventions.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -415,11 +415,11 @@ it and its child <code class="docutils literal notranslate"><span class="pre">/b
 </ul>
 <p>These correspond to a transformation from coordinates in the local frame to the
 parent frame:</p>
-<!-- prettier-ignore-start --><div class="math-wrapper docutils container">
+<div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[\begin{split}p_\mathrm{parent} = \begin{bmatrix} R &amp; t \end{bmatrix}\begin{bmatrix}p_\mathrm{local} \\ 1\end{bmatrix}\end{split}\]</div>
 </div>
-<!-- prettier-ignore-end --><p>where <code class="docutils literal notranslate"><span class="pre">wxyz</span></code> is the quaternion form of the <span class="math notranslate nohighlight">\(\mathrm{SO}(3)\)</span> matrix
+<p>where <code class="docutils literal notranslate"><span class="pre">wxyz</span></code> is the quaternion form of the <span class="math notranslate nohighlight">\(\mathrm{SO}(3)\)</span> matrix
 <span class="math notranslate nohighlight">\(R\)</span> and <code class="docutils literal notranslate"><span class="pre">position</span></code> is the <span class="math notranslate nohighlight">\(\mathbb{R}^3\)</span> translation term
 <span class="math notranslate nohighlight">\(t\)</span>.</p>
 </section>

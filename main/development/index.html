@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Development - viser</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../_static/ansi.css" />
@@ -27,8 +27,8 @@
 
 <style>
   body {
-    --color-code-background: #272822;
-  --color-code-foreground: #f8f8f2;
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
   --color-code-background: #f4f4f4;
   --color-code-foreground: #000;
   
@@ -371,7 +371,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/development.md.txt" title="View this page">
+  <a class="muted-link" href="../_sources/development.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -441,8 +441,8 @@ definitions:</p>
 and the TypeScript ones.</p>
 <p>The TypeScript definitions should not be manually modified. Instead, changes
 should be made in Python and synchronized via the <code class="docutils literal notranslate"><span class="pre">sync_message_defs.py</span></code> script:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">viser</span>
-<span class="n">python</span> <span class="n">sync_message_defs</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/viser
+python<span class="w"> </span>sync_message_defs.py
 </pre></div>
 </div>
 </section>
@@ -450,8 +450,8 @@ should be made in Python and synchronized via the <code class="docutils literal 
 <h2>Client development<a class="headerlink" href="#client-development" title="Link to this heading">¶</a></h2>
 <p>For client development, we can start by launching a relevant Python script. The
 examples are a good place to start:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">viser</span><span class="o">/</span><span class="n">examples</span>
-<span class="n">python</span> <span class="mi">05</span><span class="n">_camera_commands</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/viser/examples
+python<span class="w"> </span>05_camera_commands.py
 </pre></div>
 </div>
 <p>When a <code class="docutils literal notranslate"><span class="pre">viser</span></code> script is launched, two URLs will be printed:</p>
@@ -472,16 +472,16 @@ steps.</p>
 <li><p><a class="reference external" href="https://nodejs.dev/en/download/package-manager">Install nodejs.</a></p></li>
 <li><p><a class="reference external" href="https://yarnpkg.com/getting-started/install">Install yarn.</a></p></li>
 <li><p>Install dependencies.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">viser</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">viser</span><span class="o">/</span><span class="n">client</span>
-<span class="n">yarn</span> <span class="n">install</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/viser/src/viser/client
+yarn<span class="w"> </span>install
 </pre></div>
 </div>
 </li>
 </ol>
 <p><strong>Launching client.</strong></p>
 <p>To launch the client, we can run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">viser</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">viser</span><span class="o">/</span><span class="n">client</span>
-<span class="n">yarn</span> <span class="n">start</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/viser/src/viser/client
+yarn<span class="w"> </span>start
 </pre></div>
 </div>
 <p>from the <code class="docutils literal notranslate"><span class="pre">viser/src/viser/client</span></code> directory. After opening the client in a web

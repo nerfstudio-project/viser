@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Viser Server - viser</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../_static/ansi.css" />
@@ -27,8 +27,8 @@
 
 <style>
   body {
-    --color-code-background: #272822;
-  --color-code-foreground: #f8f8f2;
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
   --color-code-background: #f4f4f4;
   --color-code-foreground: #000;
   
@@ -371,7 +371,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/server.md.txt" title="View this page">
+  <a class="muted-link" href="../_sources/server.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -393,7 +393,7 @@
         <article role="main" id="furo-main-content">
           <section id="viser-server">
 <h1>Viser Server<a class="headerlink" href="#viser-server" title="Link to this heading">¶</a></h1>
-<!-- prettier-ignore-start --><dl class="py class">
+<dl class="py class">
 <dt class="sig sig-object py" id="viser.ViserServer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ViserServer</span></span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer" title="Link to this definition">¶</a></dt>
 <dd><p><a class="reference internal" href="#viser.ViserServer" title="viser.ViserServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ViserServer</span></code></a> is the main class for working with viser. On
@@ -521,11 +521,9 @@ handles.</p>
 <dt class="sig sig-object py" id="viser.ViserServer.on_client_connect">
 <span class="sig-name descname"><span class="pre">on_client_connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../client_handles/#viser.ClientHandle" title="viser._viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../client_handles/#viser.ClientHandle" title="viser._viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.on_client_connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.on_client_connect" title="Link to this definition">¶</a></dt>
 <dd><p>Attach a callback to run for newly connected clients.</p>
-<p>The callback can be either a standard function or an async function:</p>
-<ul class="simple">
-<li><p>Standard functions (def) will be executed in a threadpool.</p></li>
-<li><p>Async functions (async def) will be executed in the event loop.</p></li>
-</ul>
+<p>The callback can be either a standard function or an async function:
+- Standard functions (def) will be executed in a threadpool.
+- Async functions (async def) will be executed in the event loop.</p>
 <p>Using async functions can be useful for reducing race conditions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -541,11 +539,9 @@ handles.</p>
 <dt class="sig sig-object py" id="viser.ViserServer.on_client_disconnect">
 <span class="sig-name descname"><span class="pre">on_client_disconnect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../client_handles/#viser.ClientHandle" title="viser._viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../client_handles/#viser.ClientHandle" title="viser._viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.on_client_disconnect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.on_client_disconnect" title="Link to this definition">¶</a></dt>
 <dd><p>Attach a callback to run when clients disconnect.</p>
-<p>The callback can be either a standard function or an async function:</p>
-<ul class="simple">
-<li><p>Standard functions (def) will be executed in a threadpool.</p></li>
-<li><p>Async functions (async def) will be executed in the event loop.</p></li>
-</ul>
+<p>The callback can be either a standard function or an async function:
+- Standard functions (def) will be executed in a threadpool.
+- Async functions (async def) will be executed in the event loop.</p>
 <p>Using async functions can be useful for reducing race conditions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -597,7 +593,7 @@ happen synchronously.</p>
 <li><p><strong>filename</strong> (<em>str</em>) – Name of the file to send. Used to infer MIME type.</p></li>
 <li><p><strong>content</strong> (<em>bytes</em>) – Content of the file.</p></li>
 <li><p><strong>chunk_size</strong> (<em>int</em>) – Number of bytes to send at a time.</p></li>
-<li><p><strong>save_immediately</strong> (<em>bool</em>) – Whether to save the file immediately. If <code class="docutils literal notranslate"><span class="pre">False</span></code>,
+<li><p><strong>save_immediately</strong> (<em>bool</em>) – Whether to save the file immediately. If <cite>False</cite>,
 a link to the file will be shown as a notification. Being able to
 right click the link and choose “Save as…” can be useful.</p></li>
 </ul>
@@ -623,11 +619,13 @@ can be useful for safe concurrent operations.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.sleep_forever">
 <span class="sig-name descname"><span class="pre">sleep_forever</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.sleep_forever"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.sleep_forever" title="Link to this definition">¶</a></dt>
-<dd><p>Equivalent to:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3600</span><span class="p">)</span>
-</pre></div>
-</div>
+<dd><p>Equivalent to:
+<a href="#id1"><span class="problematic" id="id2">``</span></a>`
+while True:</p>
+<blockquote>
+<div><p>time.sleep(3600)</p>
+</div></blockquote>
+<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
@@ -650,7 +648,7 @@ visualization.</p>
 
 </dd></dl>
 
-<!-- prettier-ignore-end --></section>
+</section>
 
         </article>
       </div>
