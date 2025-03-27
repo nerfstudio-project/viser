@@ -37,5 +37,6 @@ while True:
         print(f"\tfov: {client.camera.fov}")
         print(f"\taspect: {client.camera.aspect}")
         print(f"\tlast update: {client.camera.update_timestamp}")
+        print(f"\tcanvas size: {client.camera.image_size}")
 
     time.sleep(2.0)

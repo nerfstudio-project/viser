@@ -813,7 +813,8 @@ export interface ViewerCameraMessage {
   fov: number;
   near: number;
   far: number;
-  aspect: number;
+  image_height: number;
+  image_width: number;
   look_at: [number, number, number];
   up_direction: [number, number, number];
 }
