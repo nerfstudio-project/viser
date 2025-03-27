@@ -1,4 +1,5 @@
-# viser
+viser
+=====
 
 |pyright| |nbsp| |typescript| |nbsp| |versions|
 
@@ -12,24 +13,23 @@ Features include:
 - Programmatic camera control and rendering
 - An entirely web-based client, for easy use over SSH!
 
-## Installation
+Installation
+-----------
 
-You can install `viser` with `pip`:
+You can install ``viser`` with ``pip``:
 
-```bash
-pip install viser
-```
+.. code-block:: bash
+
+   pip install viser
 
 To include example dependencies:
 
-```bash
-pip install viser[examples]
-```
+.. code-block:: bash
+
+   pip install viser[examples]
 
 After an example script is running, you can connect by navigating to the printed
-URL (default: `http://localhost:8080`).
-
-<!-- prettier-ignore-start -->
+URL (default: ``http://localhost:8080``).
 
 .. toctree::
    :caption: Notes
@@ -37,8 +37,8 @@ URL (default: `http://localhost:8080`).
    :maxdepth: 1
    :titlesonly:
 
-   ./conventions.md
-   ./development.md
+   ./conventions.rst
+   ./development.rst
    ./embedded_visualizations.rst
 
 .. toctree::
@@ -47,10 +47,10 @@ URL (default: `http://localhost:8080`).
    :maxdepth: 1
    :titlesonly:
 
-   ./server.md
-   ./scene_api.md
-   ./gui_api.md
-   ./state_serializer.md
+   ./server.rst
+   ./scene_api.rst
+   ./gui_api.rst
+   ./state_serializer.rst
 
 
 .. toctree::
@@ -59,12 +59,12 @@ URL (default: `http://localhost:8080`).
    :maxdepth: 1
    :titlesonly:
 
-   ./client_handles.md
-   ./camera_handles.md
-   ./gui_handles.md
-   ./scene_handles.md
-   ./events.md
-   ./icons.md
+   ./client_handles.rst
+   ./camera_handles.rst
+   ./gui_handles.rst
+   ./scene_handles.rst
+   ./events.rst
+   ./icons.rst
 
 
 .. toctree::
@@ -73,9 +73,9 @@ URL (default: `http://localhost:8080`).
    :maxdepth: 1
    :titlesonly:
 
-   ./transforms.md
-   ./infrastructure.md
-   ./extras.md
+   ./transforms.rst
+   ./infrastructure.rst
+   ./extras.rst
 
 .. toctree::
    :caption: Examples
@@ -98,5 +98,3 @@ URL (default: `http://localhost:8080`).
    :target: https://pypi.org/project/viser/
 .. |nbsp| unicode:: 0xA0
    :trim:
-
-<!-- prettier-ignore-end -->
