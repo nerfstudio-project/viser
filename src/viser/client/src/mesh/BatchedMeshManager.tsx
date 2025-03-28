@@ -75,23 +75,17 @@ export class BatchedMeshManager {
 
     if (lodSetting === "auto") {
       const { ratios, distances } = getAutoLodSettings(dummyMesh, scale);
-      this.addLODs(dummyMesh, ratios, distances, castShadow);
+      this.addLODs(dummyMesh, ratios, distances);
     } else {
       this.addLODs(
         dummyMesh,
         lodSetting.map((pair) => pair[1]),
         lodSetting.map((pair) => pair[0]),
-        castShadow,
       );
     }
   }
 
-  private addLODs(
-    mesh: THREE.Mesh,
-    ratios: number[],
-    distances: number[],
-    castShadow: boolean,
-  ) {
+  private addLODs(mesh: THREE.Mesh, ratios: number[], distances: number[]) {
     ratios.forEach((ratio, index) => {
       const targetCount =
         Math.floor((mesh.geometry.index!.array.length * ratio) / 3) * 3;
@@ -111,12 +105,12 @@ export class BatchedMeshManager {
       lodGeometry.setDrawRange(0, dstIndexArray.length);
       this.instancedMesh.addLOD(lodGeometry, mesh.material, distances[index]);
 
-      if (castShadow) {
-        this.instancedMesh.addShadowLOD(lodGeometry, distances[index]);
-      }
-
       // Store the geometry for proper disposal later
       this.lodGeometries.push(lodGeometry);
+    });
+    this.instancedMesh.LODinfo.objects.forEach((obj) => {
+      obj.castShadow = this.instancedMesh.castShadow;
+      obj.receiveShadow = this.instancedMesh.receiveShadow;
     });
   }
 

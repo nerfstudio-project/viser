@@ -91,22 +91,6 @@ def main():
         batched_positions=positions,
         batched_wxyzs=rotations,
     )
-
-    @axes_handle.on_click
-    def _(event: viser.SceneNodePointerEvent):
-        event.client.add_notification(
-            title="Clicked axis",
-            body=f"id={event.instance_index}",
-            auto_close=1000,
-        )
-
-    # mesh_handle = server.scene.add_batched_meshes_trimesh(
-    #     name="dragon",
-    #     mesh=dragon_mesh,
-    #     batched_positions=positions,
-    #     batched_wxyzs=rotations,
-    #     lod="auto" if lod_checkbox.value else "off",
-    # )
     mesh_handle = server.scene.add_batched_meshes_simple(
         name="dragon",
         # mesh=dragon_mesh,
@@ -116,16 +100,6 @@ def main():
         batched_wxyzs=rotations,
         lod="auto" if lod_checkbox.value else "off",
     )
-
-    @mesh_handle.on_click
-    def _(event: viser.SceneNodePointerEvent):
-        event.client.add_notification(
-            title="Clicked mesh",
-            body=f"id={event.instance_index}",
-            auto_close=1000,
-        )
-
-    # print(_.
 
     # Animation loop.
     while True:
