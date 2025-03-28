@@ -1,10 +1,7 @@
-# Scene API
-
-<!-- prettier-ignore-start -->
+Scene API
+=========
 
 .. autoclass:: viser.SceneApi
    :members:
    :undoc-members:
    :inherited-members:
-
-<!-- prettier-ignore-end -->
