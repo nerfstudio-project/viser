@@ -252,10 +252,16 @@ class CameraHandle:
         return float(self._state.image_width) / self._state.image_height
 
     @property
-    def image_size(self) -> tuple[int, int]:
-        """Image size (H, W in pixel). Not assignable."""
+    def image_height(self) -> int:
+        """Image height in pixels. Not assignable."""
         assert self._state.update_timestamp != 0.0
-        return (self._state.image_height, self._state.image_width)
+        return self._state.image_height
+
+    @property
+    def image_width(self) -> int:
+        """Image width in pixels. Not assignable."""
+        assert self._state.update_timestamp != 0.0
+        return self._state.image_width
 
     @property
     def update_timestamp(self) -> float:
