@@ -2060,17 +2060,14 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="GuiApi.GuiMessage">
-<a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.GuiMessage">[docs]</a>
-    <span class="k">class</span><span class="w"> </span><span class="nc">GuiMessage</span><span class="p">(</span><span class="n">Protocol</span><span class="p">[</span><span class="n">GuiInputPropsType</span><span class="p">]):</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">_GuiMessage</span><span class="p">(</span><span class="n">Protocol</span><span class="p">[</span><span class="n">GuiInputPropsType</span><span class="p">]):</span>
         <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span>
-        <span class="n">props</span><span class="p">:</span> <span class="n">GuiInputPropsType</span></div>
-
+        <span class="n">props</span><span class="p">:</span> <span class="n">GuiInputPropsType</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_create_gui_input</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
-        <span class="n">message</span><span class="p">:</span> <span class="n">GuiMessage</span><span class="p">,</span>
+        <span class="n">message</span><span class="p">:</span> <span class="n">_GuiMessage</span><span class="p">,</span>
         <span class="n">is_button</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_GuiHandleState</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Private helper for adding a simple GUI element.&quot;&quot;&quot;</span>

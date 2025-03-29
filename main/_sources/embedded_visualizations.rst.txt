@@ -1,5 +1,5 @@
 Embedding Visualizations
-===============================================
+========================
 
 This guide describes how to export 3D visualizations from Viser and embed them into static webpages. The process involves three main steps: exporting scene state, creating a client build, and hosting the visualization.
 
@@ -11,16 +11,16 @@ This guide describes how to export 3D visualizations from Viser and embed them i
 
 
 Step 1: Exporting Scene State
-----------------------------
+-----------------------------
 
 You can export static or dynamic 3D data from a Viser scene using the scene
-serializer. :meth:`ViserServer.get_scene_serializer` returns a serializer
+serializer. :func:`viser.ViserServer.get_scene_serializer` returns a serializer
 object that can serialize the current scene state to a binary format.
 
 Static Scene Export
 ~~~~~~~~~~~~~~~~~~~
 
-For static 3D visualizations, :meth:`StateSerializer.serialize` can be used to
+For static 3D visualizations, :func:`viser.infra.StateSerializer.serialize` can be used to
 save the scene state:
 
 .. code-block:: python
@@ -42,7 +42,7 @@ save the scene state:
 
 
 As a suggestion, you can also add a button for exporting the scene state.
-Clicking the button in your web browser wil trigger a download of the
+Clicking the button in your web browser will trigger a download of the
 ``.viser`` file.
 
 .. code-block:: python
@@ -107,7 +107,7 @@ calling :meth:`StateSerializer.insert_sleep` between frames:
    The ``.viser`` file is a binary format containing scene state data and is not meant to be human-readable.
 
 Step 2: Creating a Viser Client Build
------------------------------------
+-------------------------------------
 
 To serve the 3D visualization, you'll need two things:
 
