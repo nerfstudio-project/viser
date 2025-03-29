@@ -395,7 +395,7 @@ class PointCloudProps:
     """Size of each point. Synchronized automatically when assigned."""
     point_ball_norm: float
     """Norm value determining the shape of each point. Synchronized automatically when assigned."""
-    precision: Literal["fp16", "fp32"]
+    precision: Literal["float16", "float32"]
     """Precision of the point cloud. Assignments to `points` are automatically casted
     based on the current precision value. Updates to `points` should therefore happen
     *after* updates to `precision`. Synchronized automatically when assigned."""
@@ -406,7 +406,7 @@ class PointCloudProps:
         assert self.points.shape[-1] == 3
 
         # Check dtypes.
-        if self.precision == "fp16":
+        if self.precision == "float16":
             assert self.points.dtype == np.float16
         else:
             assert self.points.dtype == np.float32

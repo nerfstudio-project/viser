@@ -114,7 +114,7 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
     React.useEffect(() => {
       const geometry = new THREE.BufferGeometry();
 
-      if (message.props.precision === "fp16") {
+      if (message.props.precision === "float16") {
         geometry.setAttribute(
           "position",
           new THREE.Float16BufferAttribute(
