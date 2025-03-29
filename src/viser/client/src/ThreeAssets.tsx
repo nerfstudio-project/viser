@@ -114,18 +114,33 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
     React.useEffect(() => {
       const geometry = new THREE.BufferGeometry();
 
-      geometry.setAttribute(
-        "position",
-        new THREE.Float16BufferAttribute(
-          new Uint16Array(
-            props.points.buffer.slice(
-              props.points.byteOffset,
-              props.points.byteOffset + props.points.byteLength,
+      if (message.props.precision === "float16") {
+        geometry.setAttribute(
+          "position",
+          new THREE.Float16BufferAttribute(
+            new Uint16Array(
+              props.points.buffer.slice(
+                props.points.byteOffset,
+                props.points.byteOffset + props.points.byteLength,
+              ),
             ),
+            3,
           ),
-          3,
-        ),
-      );
+        );
+      } else {
+        geometry.setAttribute(
+          "position",
+          new THREE.Float32BufferAttribute(
+            new Float32Array(
+              props.points.buffer.slice(
+                props.points.byteOffset,
+                props.points.byteOffset + props.points.byteLength,
+              ),
+            ),
+            3,
+          ),
+        );
+      }
 
       const material = new PointCloudMaterial();
       if (props.colors.length > 3) {
@@ -149,7 +164,7 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
       }
       setGeometry(geometry);
       setMaterial(material);
-    }, [props.points, props.colors]);
+    }, [props.points, props.colors, props.precision]);
 
     React.useEffect(() => {
       return () => {
@@ -188,7 +203,14 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
         getThreeState().gl.getSize(rendererSize).height *
         getThreeState().gl.getPixelRatio();
     });
-    return <points ref={ref} geometry={geometry} material={material} />;
+    return (
+      <points
+        frustumCulled={false}
+        ref={ref}
+        geometry={geometry}
+        material={material}
+      />
+    );
   },
 );
 

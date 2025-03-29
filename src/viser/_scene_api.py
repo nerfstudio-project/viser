@@ -1067,6 +1067,7 @@ class SceneApi:
         point_shape: Literal[
             "square", "diamond", "circle", "rounded", "sparkle"
         ] = "square",
+        precision: Literal["float16", "float32"] = "float16",
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1079,6 +1080,8 @@ class SceneApi:
             colors: Colors of points. Should have shape (N, 3) or (3,).
             point_size: Size of each point.
             point_shape: Shape to draw each point.
+            precision: Precision of the point cloud data. The input points array
+                will be cast to this precision.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -1097,7 +1100,12 @@ class SceneApi:
         message = _messages.PointCloudMessage(
             name=name,
             props=_messages.PointCloudProps(
-                points=points.astype(np.float16),
+                points=points.astype(
+                    {
+                        "float16": np.float16,
+                        "float32": np.float32,
+                    }[precision]
+                ),
                 colors=colors_cast,
                 point_size=point_size,
                 point_ball_norm={
@@ -1107,6 +1115,7 @@ class SceneApi:
                     "rounded": 3.0,
                     "sparkle": 0.6,
                 }[point_shape],
+                precision=precision,
             ),
         )
         return PointCloudHandle._make(self, message, name, wxyz, position, visible)
