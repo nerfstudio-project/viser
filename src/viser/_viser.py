@@ -75,7 +75,8 @@ class _CameraHandleState:
     wxyz: npt.NDArray[np.float64]
     position: npt.NDArray[np.float64]
     fov: float
-    aspect: float
+    image_height: int
+    image_width: int
     near: float
     far: float
     look_at: npt.NDArray[np.float64]
@@ -94,7 +95,8 @@ class CameraHandle:
             wxyz=np.zeros(4),
             position=np.zeros(3),
             fov=0.0,
-            aspect=0.0,
+            image_height=0,
+            image_width=0,
             near=0.01,
             far=1000.0,
             look_at=np.zeros(3),
@@ -247,7 +249,19 @@ class CameraHandle:
     def aspect(self) -> float:
         """Canvas width divided by height. Not assignable."""
         assert self._state.update_timestamp != 0.0
-        return self._state.aspect
+        return float(self._state.image_width) / self._state.image_height
+
+    @property
+    def image_height(self) -> int:
+        """Image height in pixels. Not assignable."""
+        assert self._state.update_timestamp != 0.0
+        return self._state.image_height
+
+    @property
+    def image_width(self) -> int:
+        """Image width in pixels. Not assignable."""
+        assert self._state.update_timestamp != 0.0
+        return self._state.image_width
 
     @property
     def update_timestamp(self) -> float:
@@ -646,7 +660,8 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                     np.array(message.wxyz),
                     np.array(message.position),
                     fov=message.fov,
-                    aspect=message.aspect,
+                    image_height=message.image_height,
+                    image_width=message.image_width,
                     near=message.near,
                     far=message.far,
                     look_at=np.array(message.look_at),

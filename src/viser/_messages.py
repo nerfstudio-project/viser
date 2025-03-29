@@ -179,7 +179,8 @@ class ViewerCameraMessage(Message):
     fov: float
     near: float
     far: float
-    aspect: float
+    image_height: int
+    image_width: int
     look_at: Tuple[float, float, float]
     up_direction: Tuple[float, float, float]
 
