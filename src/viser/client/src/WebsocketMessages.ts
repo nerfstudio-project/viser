@@ -124,6 +124,7 @@ export interface PointCloudMessage {
     colors: Uint8Array;
     point_size: number;
     point_ball_norm: number;
+    precision: "fp16" | "fp32";
   };
 }
 /** Directional light message.
