@@ -387,7 +387,7 @@ class PointCloudMessage(_CreateSceneNodeMessage):
 
 @dataclasses.dataclass
 class PointCloudProps:
-    points: npt.NDArray[np.float16] | npt.NDArray[np.float32]
+    points: Union[npt.NDArray[np.float16], npt.NDArray[np.float32]]
     """Location of points. Should have shape (N, 3). Synchronized automatically when assigned."""
     colors: npt.NDArray[np.uint8]
     """Colors of points. Should have shape (N, 3) or (3,). Synchronized automatically when assigned."""
