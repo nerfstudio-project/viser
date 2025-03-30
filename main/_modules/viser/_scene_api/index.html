@@ -899,9 +899,9 @@
         <span class="k">return</span> <span class="n">SpotLightHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SceneApi.set_environment_map">
-<a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.set_environment_map">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_environment_map</span><span class="p">(</span>
+<div class="viewcode-block" id="SceneApi.configure_environment_map">
+<a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.configure_environment_map">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">configure_environment_map</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">hdri</span><span class="p">:</span> <span class="kc">None</span>
         <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span>
@@ -933,7 +933,7 @@
             <span class="mf">0.0</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the environment map for the scene. This will set some lights and background.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure the environment map for the scene. This will set some lights and background.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            hdri: Preset HDRI environment to use.</span>
@@ -967,7 +967,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure the default lights in the scene.</span>
 
 <span class="sd">        This does not affect lighting from the environment map. To turn these off,</span>
-<span class="sd">        see :meth:`SceneApi.set_environment_map()`.</span>
+<span class="sd">        see :meth:`SceneApi.configure_environment_map()`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            enabled: Whether or not the lights are enabled.</span>
@@ -988,6 +988,16 @@
                 <span class="ne">DeprecationWarning</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">configure_default_lights</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SceneApi.set_environment_map">
+<a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.set_environment_map">[docs]</a>
+        <span class="k">def</span><span class="w"> </span><span class="nf">set_environment_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;The &#39;set_environment_map&#39; method has been renamed to &#39;configure_environment_map&#39;.&quot;</span><span class="p">,</span>
+                <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">configure_environment_map</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SceneApi.add_glb">

@@ -582,7 +582,7 @@
 <span class="linenos">186</span>        <span class="p">)</span>
 <span class="linenos">187</span>
 <span class="linenos">188</span>    <span class="k">def</span><span class="w"> </span><span class="nf">update_environment_map</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos">189</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">set_environment_map</span><span class="p">(</span>
+<span class="linenos">189</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">configure_environment_map</span><span class="p">(</span>
 <span class="linenos">190</span>            <span class="n">gui_env_preset</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="n">gui_env_preset</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
 <span class="linenos">191</span>            <span class="n">background</span><span class="o">=</span><span class="n">gui_background</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
 <span class="linenos">192</span>            <span class="n">background_blurriness</span><span class="o">=</span><span class="n">gui_bg_blurriness</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
