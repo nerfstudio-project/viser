@@ -486,7 +486,7 @@ class SceneApi:
         )
         return SpotLightHandle._make(self, message, name, wxyz, position, visible)
 
-    def set_environment_map(
+    def configure_environment_map(
         self,
         hdri: None
         | Literal[
@@ -518,7 +518,7 @@ class SceneApi:
             0.0,
         ),
     ) -> None:
-        """Set the environment map for the scene. This will set some lights and background.
+        """Configure the environment map for the scene. This will set some lights and background.
 
         Args:
             hdri: Preset HDRI environment to use.
@@ -549,7 +549,7 @@ class SceneApi:
         """Configure the default lights in the scene.
 
         This does not affect lighting from the environment map. To turn these off,
-        see :meth:`SceneApi.set_environment_map()`.
+        see :meth:`SceneApi.configure_environment_map()`.
 
         Args:
             enabled: Whether or not the lights are enabled.
@@ -567,6 +567,13 @@ class SceneApi:
                 DeprecationWarning,
             )
             return self.configure_default_lights(*args, **kwargs)
+
+        def set_environment_map(self, *args, **kwargs) -> None:
+            warnings.warn(
+                "The 'set_environment_map' method has been renamed to 'configure_environment_map'.",
+                DeprecationWarning,
+            )
+            return self.configure_environment_map(*args, **kwargs)
 
     def add_glb(
         self,
