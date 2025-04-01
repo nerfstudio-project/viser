@@ -194,6 +194,48 @@ export class BatchedMeshManager {
       });
     }
   }
+  
+  /**
+   * Update material color without recreating the mesh
+   */
+  updateMaterialColor(color: [number, number, number]) {
+    // Helper function to convert RGB array to integer
+    const rgbToInt = (rgb: [number, number, number]): number => {
+      return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+    };
+    
+    // Get all materials from the mesh (main and LODs)
+    const materials: THREE.Material[] = [];
+    
+    // Get main mesh material
+    if (this.instancedMesh.material) {
+      if (Array.isArray(this.instancedMesh.material)) {
+        materials.push(...this.instancedMesh.material);
+      } else {
+        materials.push(this.instancedMesh.material);
+      }
+    }
+    
+    // Get LOD materials
+    if (this.instancedMesh.LODinfo && this.instancedMesh.LODinfo.objects) {
+      this.instancedMesh.LODinfo.objects.forEach((obj) => {
+        if (obj.material) {
+          if (Array.isArray(obj.material)) {
+            materials.push(...obj.material);
+          } else {
+            materials.push(obj.material);
+          }
+        }
+      });
+    }
+    
+    // Update color on all materials
+    materials.forEach((material) => {
+      if ('color' in material && material.color instanceof THREE.Color) {
+        material.color.setHex(rgbToInt(color));
+      }
+    });
+  }
 
   /** Dispose all resources */
   dispose() {

@@ -20,12 +20,17 @@ export const BatchedMesh = React.forwardRef<
       (state) => state.nodeFromName[message.name]?.clickable,
     ) ?? false;
 
-  // Setup material using memoization.
+  // Setup material using memoization, but without color in dependencies
+  // Color will be updated separately with updateMaterialColor
   const material = React.useMemo(() => {
-    return createStandardMaterial(message.props);
+    return createStandardMaterial({
+      ...message.props,
+      // Use a default color, we'll update it separately
+      color: message.props.color || [200, 200, 200]
+    });
   }, [
     message.props.material,
-    message.props.color,
+    // message.props.color, // Removed from dependencies
     message.props.wireframe,
     message.props.opacity,
     message.props.flat_shading,
@@ -121,6 +126,13 @@ export const BatchedMesh = React.forwardRef<
       message.props.receive_shadow
     );
   }, [meshManager, message.props.cast_shadow, message.props.receive_shadow]);
+  
+  // Add useEffect to handle color updates without recreating material
+  React.useEffect(() => {
+    if (message.props.color) {
+      meshManager.updateMaterialColor(message.props.color);
+    }
+  }, [meshManager, message.props.color]);
 
   // Handle cleanup when dependencies change or component unmounts.
   React.useEffect(() => {
