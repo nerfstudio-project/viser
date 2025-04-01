@@ -3,7 +3,6 @@ import * as THREE from "three";
 import { BatchedGlbMessage } from "../WebsocketMessages";
 import { useGlbLoader } from "./GlbLoaderUtils";
 import { BatchedMeshManager } from "./BatchedMeshManager";
-import { useFrame } from "@react-three/fiber";
 import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
 import { ViewerContext } from "../ViewerContext";
 
