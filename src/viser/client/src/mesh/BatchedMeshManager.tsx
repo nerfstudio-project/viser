@@ -56,7 +56,14 @@ export class BatchedMeshManager {
 
     // Setup LODs if needed
     if (lodSetting !== "off") {
-      this.setupLODs(this.geometry, material, lodSetting, castShadow, receiveShadow, scale);
+      this.setupLODs(
+        this.geometry,
+        material,
+        lodSetting,
+        castShadow,
+        receiveShadow,
+        scale,
+      );
     }
 
     // Setup instances
@@ -94,37 +101,49 @@ export class BatchedMeshManager {
     }
   }
 
+  /**
+   * Creates lower level of detail (LOD) versions of the mesh for efficient rendering at different distances
+   * @param mesh Base mesh to create LODs from
+   * @param ratios Array of ratios of vertices to keep for each LOD level
+   * @param distances Array of distances at which to switch to each LOD level
+   */
   private addLODs(mesh: THREE.Mesh, ratios: number[], distances: number[]) {
     ratios.forEach((ratio, index) => {
+      // Calculate target triangle count based on the ratio
       const targetCount =
         Math.floor((mesh.geometry.index!.array.length * ratio) / 3) * 3;
       const lodGeometry = mesh.geometry.clone();
 
+      // Use meshopt to simplify the geometry
       const dstIndexArray = MeshoptSimplifier.simplify(
         new Uint32Array(lodGeometry.index!.array),
         new Float32Array(lodGeometry.attributes.position.array),
         3,
         targetCount,
-        0.01, // Error tolerance.
-        ["LockBorder"], // Important to avoid triangle flipping artifacts.
+        0.01, // Error tolerance
+        ["LockBorder"], // Prevents triangle flipping artifacts
       )[0];
 
+      // Update the geometry with the simplified version
       lodGeometry.index!.array.set(dstIndexArray);
       lodGeometry.index!.needsUpdate = true;
       lodGeometry.setDrawRange(0, dstIndexArray.length);
-      
-      // Ensure we use a cloned material to avoid shared material issues
+
+      // Create a cloned material for this LOD level
       let lodMaterial: THREE.Material;
       if (mesh.material instanceof THREE.MeshToonMaterial) {
-        // For toon materials, create a new one with the same properties
+        // For toon materials, determine if it's toon3 or toon5
         const toonMat = mesh.material as THREE.MeshToonMaterial;
-        // Determine if it's toon3 or toon5 based on the gradient map size
-        const shades = toonMat.gradientMap && toonMat.gradientMap.image && 
-                       toonMat.gradientMap.image.width === 5 ? 5 : 3;
-                       
-        // Create a new instance with the same properties
+        const shades =
+          toonMat.gradientMap &&
+          toonMat.gradientMap.image &&
+          toonMat.gradientMap.image.width === 5
+            ? 5
+            : 3;
+
+        // Create a new toon material with the same properties
         lodMaterial = new THREE.MeshToonMaterial({
-          gradientMap: toonMat.gradientMap,  // We'll use the same texture for now
+          gradientMap: this.getGradientMap(shades),
           color: toonMat.color.clone(),
           wireframe: toonMat.wireframe,
           transparent: toonMat.transparent,
@@ -133,10 +152,11 @@ export class BatchedMeshManager {
           side: toonMat.side,
         });
       } else {
-        // Clone other material types
+        // For other material types, just clone the material
         lodMaterial = mesh.material.clone();
       }
-      
+
+      // Add this LOD level to the instanced mesh
       this.instancedMesh.addLOD(lodGeometry, lodMaterial, distances[index]);
 
       // Store the geometry for proper disposal later
@@ -212,16 +232,49 @@ export class BatchedMeshManager {
     // Update main instance mesh
     this.instancedMesh.castShadow = castShadow;
     this.instancedMesh.receiveShadow = receiveShadow;
-    
+
     // Update all LOD objects
     if (this.instancedMesh.LODinfo?.objects) {
-      this.instancedMesh.LODinfo.objects.forEach(obj => {
+      this.instancedMesh.LODinfo.objects.forEach((obj) => {
         obj.castShadow = castShadow;
         obj.receiveShadow = receiveShadow;
       });
     }
   }
-  
+
+  // Static texture cache to prevent creating new textures on every update
+  private static readonly gradientMapCache: {
+    toon3?: THREE.DataTexture;
+    toon5?: THREE.DataTexture;
+  } = {};
+
+  /**
+   * Creates or retrieves a gradient map texture for toon materials
+   * @param shades Number of shades (3 or 5)
+   * @returns A DataTexture suitable for use as a gradient map
+   */
+  private getGradientMap(shades: 3 | 5): THREE.DataTexture {
+    const key = shades === 3 ? "toon3" : "toon5";
+
+    // Reuse existing texture if available
+    if (BatchedMeshManager.gradientMapCache[key]) {
+      return BatchedMeshManager.gradientMapCache[key]!;
+    }
+
+    // Create a new texture if needed
+    const data =
+      shades === 3
+        ? Uint8Array.from([0, 128, 255])
+        : Uint8Array.from([0, 64, 128, 192, 255]);
+
+    const texture = new THREE.DataTexture(data, shades, 1, THREE.RedFormat);
+    texture.needsUpdate = true;
+
+    // Cache for future use
+    BatchedMeshManager.gradientMapCache[key] = texture;
+    return texture;
+  }
+
   /**
    * Update all material properties without recreating the mesh
    * @param props Object containing material properties to update
@@ -236,175 +289,120 @@ export class BatchedMeshManager {
     materialType: "standard" | "toon3" | "toon5";
   }) {
     // Convert RGB array to integer (using bit shift)
-    const colorHex = (props.color[0] << 16) | (props.color[1] << 8) | props.color[2];
-    
-    // Cache for gradient maps to avoid creating too many textures
-    const gradientMaps = {
-      toon3: undefined as THREE.DataTexture | undefined,
-      toon5: undefined as THREE.DataTexture | undefined
-    };
-    
-    // Helper to generate or retrieve gradient map for toon materials
-    const getGradientMap = (shades: 3 | 5): THREE.DataTexture => {
-      const key = shades === 3 ? 'toon3' : 'toon5';
-      
-      // Reuse existing texture if available
-      if (gradientMaps[key]) {
-        return gradientMaps[key]!;
-      }
-      
-      // Create a new texture if needed
-      const texture = new THREE.DataTexture(
-        Uint8Array.from(shades === 3 ? [0, 128, 255] : [0, 64, 128, 192, 255]),
-        shades,
-        1,
-        THREE.RedFormat,
-      );
-      texture.needsUpdate = true;
-      
-      // Cache for future use
-      gradientMaps[key] = texture;
-      return texture;
-    };
-    
+    const colorHex =
+      (props.color[0] << 16) | (props.color[1] << 8) | props.color[2];
+
     // Update materials with the provided properties
     this.forEachMaterial((material) => {
-      // This function will replace a material on an object (main mesh or LOD)
-      const replaceMaterialOnObject = (obj: THREE.Object3D, oldMaterial: THREE.Material, newMaterial: THREE.Material) => {
-        if (obj instanceof THREE.Mesh) {
-          if (obj.material === oldMaterial) {
-            obj.material = newMaterial;
-          }
-        }
-      };
-      
       // Handle material type conversion if needed
-      if (props.materialType === 'standard' && material instanceof THREE.MeshToonMaterial) {
+      if (
+        props.materialType === "standard" &&
+        material instanceof THREE.MeshToonMaterial
+      ) {
         // Convert toon to standard material
         const stdMaterial = new THREE.MeshStandardMaterial();
         this.copyBasicMaterialProperties(material, stdMaterial);
-        
-        // Replace on main mesh if needed
-        if (this.instancedMesh.material === material) {
-          this.instancedMesh.material = stdMaterial;
-        }
-        
-        // Replace on LOD meshes too
-        if (this.instancedMesh.LODinfo?.objects) {
-          this.instancedMesh.LODinfo.objects.forEach(obj => {
-            replaceMaterialOnObject(obj, material, stdMaterial);
-          });
-        }
-        
-        // Dispose the old material
+
+        // Replace material on all meshes
+        this.replaceMaterialOnAllMeshes(material, stdMaterial);
+
+        // Dispose the old material and use the new one for further updates
         material.dispose();
-        
-        // Use the new material for the rest of the updates
         material = stdMaterial;
-      } 
-      else if ((props.materialType === 'toon3' || props.materialType === 'toon5') && 
-          !(material instanceof THREE.MeshToonMaterial)) {
+      } else if (
+        (props.materialType === "toon3" || props.materialType === "toon5") &&
+        !(material instanceof THREE.MeshToonMaterial)
+      ) {
         // Convert standard to toon material
         const toonMaterial = new THREE.MeshToonMaterial({
-          gradientMap: getGradientMap(props.materialType === 'toon3' ? 3 : 5)
+          gradientMap: this.getGradientMap(
+            props.materialType === "toon3" ? 3 : 5,
+          ),
         });
         this.copyBasicMaterialProperties(material, toonMaterial);
-        
-        // Replace on main mesh if needed
-        if (this.instancedMesh.material === material) {
-          this.instancedMesh.material = toonMaterial;
-        }
-        
-        // Replace on LOD meshes too
-        if (this.instancedMesh.LODinfo?.objects) {
-          this.instancedMesh.LODinfo.objects.forEach(obj => {
-            replaceMaterialOnObject(obj, material, toonMaterial);
-          });
-        }
-        
-        // Dispose the old material
+
+        // Replace material on all meshes
+        this.replaceMaterialOnAllMeshes(material, toonMaterial);
+
+        // Dispose the old material and use the new one for further updates
         material.dispose();
-        
-        // Use the new material for the rest of the updates
         material = toonMaterial;
       }
-      
+
       // Update color - all material types have this
-      if ('color' in material && material.color instanceof THREE.Color) {
+      if ("color" in material && material.color instanceof THREE.Color) {
         material.color.setHex(colorHex);
       }
-      
+
       // Update wireframe - all material types have this
-      if ('wireframe' in material) {
+      if ("wireframe" in material) {
         material.wireframe = props.wireframe;
       }
-      
+
       // Update opacity - all material types have this
-      if ('opacity' in material) {
+      if ("opacity" in material) {
         if (props.opacity !== null) {
           material.opacity = props.opacity;
-          if ('transparent' in material) {
+          if ("transparent" in material) {
             material.transparent = props.opacity < 1;
           }
         } else {
           material.opacity = 1.0;
-          if ('transparent' in material) {
+          if ("transparent" in material) {
             material.transparent = false;
           }
         }
       }
-      
+
       // Update flatShading - needs needsUpdate flag to take effect
-      if ('flatShading' in material) {
+      if ("flatShading" in material) {
         material.flatShading = props.flatShading;
         material.needsUpdate = true;
       }
-      
+
       // Update side
-      if ('side' in material) {
+      if ("side" in material) {
         material.side = props.side;
         material.needsUpdate = true;
       }
-      
+
       // Update transparent flag
-      if ('transparent' in material) {
+      if ("transparent" in material) {
         // If opacity is null, transparent is false, otherwise check if opacity < 1
-        material.transparent = props.opacity !== null ? props.opacity < 1 : props.transparent;
+        material.transparent =
+          props.opacity !== null ? props.opacity < 1 : props.transparent;
       }
-      
+
       // Update gradient map for toon materials
       if (material instanceof THREE.MeshToonMaterial) {
-        if (props.materialType === 'toon3') {
+        if (props.materialType === "toon3") {
           // Use our cached gradient map for better performance
-          material.gradientMap = getGradientMap(3);
+          material.gradientMap = this.getGradientMap(3);
           material.needsUpdate = true;
-        } else if (props.materialType === 'toon5') {
+        } else if (props.materialType === "toon5") {
           // Use our cached gradient map for better performance
-          material.gradientMap = getGradientMap(5);
+          material.gradientMap = this.getGradientMap(5);
           material.needsUpdate = true;
         }
       }
     });
   }
-  
+
   /**
-   * Backward compatible method for color updates
+   * Updates just the material color - provided for backward compatibility
    * @param color RGB color values as a tuple [r, g, b]
    */
   updateMaterialColor(color: [number, number, number]) {
-    // For backward compatibility, we need to include all required parameters
-    // We'll use sensible defaults for the other required parameters
-    this.updateMaterialProperties({
-      color: color,
-      wireframe: false,
-      opacity: null,
-      flatShading: false,
-      side: THREE.FrontSide,
-      transparent: false,
-      materialType: "standard"
+    const colorHex = (color[0] << 16) | (color[1] << 8) | color[2];
+
+    // Simply update the color on all materials for better performance
+    this.forEachMaterial((material) => {
+      if ("color" in material && material.color instanceof THREE.Color) {
+        material.color.setHex(colorHex);
+      }
     });
   }
-  
+
   /**
    * Helper function to iterate over all materials in the instanced mesh and its LODs
    * @param callback Function to call for each unique material
@@ -412,11 +410,11 @@ export class BatchedMeshManager {
   private forEachMaterial(callback: (material: THREE.Material) => void) {
     // Track processed materials to avoid duplicates or repeated processing
     const processedMaterials = new Set<THREE.Material>();
-    
+
     // Process the main material first
     if (this.instancedMesh.material) {
       if (Array.isArray(this.instancedMesh.material)) {
-        this.instancedMesh.material.forEach(mat => {
+        this.instancedMesh.material.forEach((mat) => {
           if (!processedMaterials.has(mat)) {
             processedMaterials.add(mat);
             callback(mat);
@@ -427,13 +425,13 @@ export class BatchedMeshManager {
         callback(this.instancedMesh.material);
       }
     }
-    
+
     // Then process materials from LOD levels
     if (this.instancedMesh.LODinfo?.objects) {
       this.instancedMesh.LODinfo.objects.forEach((obj) => {
         if (obj instanceof THREE.Mesh && obj.material) {
           if (Array.isArray(obj.material)) {
-            obj.material.forEach(mat => {
+            obj.material.forEach((mat) => {
               if (!processedMaterials.has(mat)) {
                 processedMaterials.add(mat);
                 callback(mat);
@@ -447,48 +445,75 @@ export class BatchedMeshManager {
       });
     }
   }
-  
+
+  /**
+   * Replaces material on all meshes (main mesh and LODs)
+   * @param oldMaterial The material to replace
+   * @param newMaterial The material to replace it with
+   */
+  private replaceMaterialOnAllMeshes(
+    oldMaterial: THREE.Material,
+    newMaterial: THREE.Material,
+  ) {
+    // Replace on main mesh if needed
+    if (this.instancedMesh.material === oldMaterial) {
+      this.instancedMesh.material = newMaterial;
+    }
+
+    // Replace on LOD meshes too
+    if (this.instancedMesh.LODinfo?.objects) {
+      this.instancedMesh.LODinfo.objects.forEach((obj) => {
+        if (obj instanceof THREE.Mesh && obj.material === oldMaterial) {
+          obj.material = newMaterial;
+        }
+      });
+    }
+  }
+
   /**
    * Helper to copy basic material properties from one material to another
    * @param source Source material to copy properties from
    * @param target Target material to copy properties to
    */
-  private copyBasicMaterialProperties(source: THREE.Material, target: THREE.Material) {
+  private copyBasicMaterialProperties(
+    source: THREE.Material,
+    target: THREE.Material,
+  ) {
     // Copy common properties that both materials might have
-    if ('color' in source && 'color' in target) {
+    if ("color" in source && "color" in target) {
       (target as any).color.copy((source as any).color);
     }
-    
-    if ('wireframe' in source && 'wireframe' in target) {
+
+    if ("wireframe" in source && "wireframe" in target) {
       (target as any).wireframe = (source as any).wireframe;
     }
-    
-    if ('opacity' in source && 'opacity' in target) {
+
+    if ("opacity" in source && "opacity" in target) {
       (target as any).opacity = (source as any).opacity;
     }
-    
-    if ('transparent' in source && 'transparent' in target) {
+
+    if ("transparent" in source && "transparent" in target) {
       (target as any).transparent = (source as any).transparent;
     }
-    
-    if ('flatShading' in source && 'flatShading' in target) {
+
+    if ("flatShading" in source && "flatShading" in target) {
       (target as any).flatShading = (source as any).flatShading;
       target.needsUpdate = true;
     }
-    
-    if ('side' in source && 'side' in target) {
+
+    if ("side" in source && "side" in target) {
       (target as any).side = (source as any).side;
     }
-    
+
     // Copy material-specific properties if they exist
-    if ('roughness' in source && 'roughness' in target) {
+    if ("roughness" in source && "roughness" in target) {
       (target as any).roughness = (source as any).roughness;
     }
-    
-    if ('metalness' in source && 'metalness' in target) {
+
+    if ("metalness" in source && "metalness" in target) {
       (target as any).metalness = (source as any).metalness;
     }
-    
+
     target.needsUpdate = true;
   }
 
