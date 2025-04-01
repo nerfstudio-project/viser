@@ -488,7 +488,7 @@ class PointCloudHandle(
         """Casts assigned `points` based on the current value of `precision`."""
         if prop_name == "points":
             return value.astype(
-                {"fp16": np.float16, "fp32": np.float32}[self.precision]
+                {"float16": np.float16, "float32": np.float32}[self.precision]
             )
         return super()._cast_array_dtypes(prop_hints, prop_name, value)
 
