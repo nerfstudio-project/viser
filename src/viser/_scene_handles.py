@@ -517,6 +517,22 @@ class MeshHandle(
     """Handle for mesh objects."""
 
 
+class BatchedMeshHandle(
+    _ClickableSceneNodeHandle,
+    _messages.BatchedMeshesProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
+):
+    """Handle for batched mesh objects."""
+
+
+class BatchedGlbHandle(
+    _ClickableSceneNodeHandle,
+    _messages.BatchedGlbProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
+):
+    """Handle for batched GLB objects."""
+
+
 class GaussianSplatHandle(
     _ClickableSceneNodeHandle,
     _messages.GaussianSplatsProps,

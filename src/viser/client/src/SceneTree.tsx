@@ -3,7 +3,6 @@ import {
   CubicBezierLine,
   Grid,
   PivotControls,
-  useCursor,
 } from "@react-three/drei";
 import { useContextBridge } from "its-fine";
 import { createPortal, useFrame } from "@react-three/fiber";
@@ -18,15 +17,13 @@ import {
 import { Html } from "@react-three/drei";
 import { useSceneTreeState } from "./SceneTreeState";
 import { rayToViserCoords } from "./WorldTransformUtils";
-import { HoverableContext } from "./HoverContext";
+import { HoverableContext, HoverState } from "./HoverContext";
 import {
   CameraFrustum,
   CoordinateFrame,
-  GlbAsset,
   InstancedAxes,
   PointCloud,
   ViserImage,
-  ViserMesh,
 } from "./ThreeAssets";
 import { opencvXyFromPointerXy } from "./ClickUtils";
 import { SceneNodeMessage } from "./WebsocketMessages";
@@ -36,6 +33,11 @@ import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Line } from "./Line";
 import { shadowArgs } from "./ShadowArgs";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
+import { BasicMesh } from "./mesh/BasicMesh";
+import { SkinnedMesh } from "./mesh/SkinnedMesh";
+import { BatchedMesh } from "./mesh/BatchedMesh";
+import { SingleGlbAsset } from "./mesh/SingleGlbAsset";
+import { BatchedGlbAsset } from "./mesh/BatchedGlbAsset";
 
 function rgbToInt(rgb: [number, number, number]): number {
   return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
@@ -279,9 +281,24 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     }
 
     // Add mesh
-    case "SkinnedMeshMessage":
+    case "SkinnedMeshMessage": {
+      return {
+        makeObject: (ref) => <SkinnedMesh ref={ref} {...message} />,
+      };
+    }
     case "MeshMessage": {
-      return { makeObject: (ref) => <ViserMesh ref={ref} {...message} /> };
+      return {
+        makeObject: (ref) => <BasicMesh ref={ref} {...message} />,
+      };
+    }
+    case "BatchedMeshesMessage": {
+      return {
+        makeObject: (ref) => <BatchedMesh ref={ref} {...message} />,
+        computeClickInstanceIndexFromInstanceId:
+          message.type === "BatchedMeshesMessage"
+            ? (instanceId) => instanceId!
+            : undefined,
+      };
     }
     // Add a camera frustum.
     case "CameraFrustumMessage": {
@@ -411,15 +428,13 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Add a glTF/GLB asset.
     case "GlbMessage": {
       return {
-        makeObject: (ref) => (
-          <GlbAsset
-            ref={ref}
-            glbData={new Uint8Array(message.props.glb_data)}
-            scale={message.props.scale}
-            castShadow={message.props.cast_shadow}
-            receiveShadow={message.props.receive_shadow}
-          />
-        ),
+        makeObject: (ref) => <SingleGlbAsset ref={ref} {...message} />,
+      };
+    }
+    case "BatchedGlbMessage": {
+      return {
+        makeObject: (ref) => <BatchedGlbAsset ref={ref} {...message} />,
+        computeClickInstanceIndexFromInstanceId: (instanceId) => instanceId!,
       };
     }
     case "LineSegmentsMessage": {
@@ -754,10 +769,23 @@ export function SceneNodeThreeObject(props: {
 
   // Clicking logic.
   const sendClicksThrottled = useThrottledMessageSender(50);
-  const [hovered, setHovered] = React.useState(false);
-  useCursor(hovered);
-  const hoveredRef = React.useRef(false);
-  if (!clickable && hovered) setHovered(false);
+
+  // Track hover state.
+  const hoveredRef = React.useRef<HoverState>({
+    isHovered: false,
+    instanceId: null,
+    clickable: false,
+  });
+  hoveredRef.current.clickable = clickable;
+
+  // Handle case where clickable is toggled to false while still hovered.
+  if (!clickable && hoveredRef.current.isHovered) {
+    hoveredRef.current.isHovered = false;
+    viewer.hoveredElementsCount.current--;
+    if (viewer.hoveredElementsCount.current === 0) {
+      document.body.style.cursor = "auto";
+    }
+  }
 
   const dragInfo = React.useRef({
     dragging: false,
@@ -767,7 +795,7 @@ export function SceneNodeThreeObject(props: {
 
   if (objNode === undefined || unmount) {
     return <>{children}</>;
-  } else if (clickable) {
+  } else {
     return (
       <>
         <group
@@ -777,86 +805,117 @@ export function SceneNodeThreeObject(props: {
           //  - onPointerMove, if triggered, sets dragged = true
           //  - onPointerUp, if triggered, sends a click if dragged = false.
           // Note: It would be cool to have dragged actions too...
-          onPointerDown={(e) => {
-            if (!isDisplayed()) return;
-            e.stopPropagation();
-            const state = dragInfo.current;
-            const canvasBbox =
-              viewer.canvasRef.current!.getBoundingClientRect();
-            state.startClientX = e.clientX - canvasBbox.left;
-            state.startClientY = e.clientY - canvasBbox.top;
-            state.dragging = false;
-          }}
-          onPointerMove={(e) => {
-            if (!isDisplayed()) return;
-            e.stopPropagation();
-            const state = dragInfo.current;
-            const canvasBbox =
-              viewer.canvasRef.current!.getBoundingClientRect();
-            const deltaX = e.clientX - canvasBbox.left - state.startClientX;
-            const deltaY = e.clientY - canvasBbox.top - state.startClientY;
-            // Minimum motion.
-            if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
-            state.dragging = true;
-          }}
-          onPointerUp={(e) => {
-            if (!isDisplayed()) return;
-            e.stopPropagation();
-            const state = dragInfo.current;
-            if (state.dragging) return;
-            // Convert ray to viser coordinates.
-            const ray = rayToViserCoords(viewer, e.ray);
+          onPointerDown={
+            !clickable
+              ? undefined
+              : (e) => {
+                  if (!isDisplayed()) return;
+                  e.stopPropagation();
+                  const state = dragInfo.current;
+                  const canvasBbox =
+                    viewer.canvasRef.current!.getBoundingClientRect();
+                  state.startClientX = e.clientX - canvasBbox.left;
+                  state.startClientY = e.clientY - canvasBbox.top;
+                  state.dragging = false;
+                }
+          }
+          onPointerMove={
+            !clickable
+              ? undefined
+              : (e) => {
+                  if (!isDisplayed()) return;
+                  e.stopPropagation();
+                  const state = dragInfo.current;
+                  const canvasBbox =
+                    viewer.canvasRef.current!.getBoundingClientRect();
+                  const deltaX =
+                    e.clientX - canvasBbox.left - state.startClientX;
+                  const deltaY =
+                    e.clientY - canvasBbox.top - state.startClientY;
+                  // Minimum motion.
+                  if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
+                  state.dragging = true;
+                }
+          }
+          onPointerUp={
+            !clickable
+              ? undefined
+              : (e) => {
+                  if (!isDisplayed()) return;
+                  e.stopPropagation();
+                  const state = dragInfo.current;
+                  if (state.dragging) return;
+                  // Convert ray to viser coordinates.
+                  const ray = rayToViserCoords(viewer, e.ray);
 
-            // Send OpenCV image coordinates to the server (normalized).
-            const canvasBbox =
-              viewer.canvasRef.current!.getBoundingClientRect();
-            const mouseVectorOpenCV = opencvXyFromPointerXy(viewer, [
-              e.clientX - canvasBbox.left,
-              e.clientY - canvasBbox.top,
-            ]);
+                  // Send OpenCV image coordinates to the server (normalized).
+                  const canvasBbox =
+                    viewer.canvasRef.current!.getBoundingClientRect();
+                  const mouseVectorOpenCV = opencvXyFromPointerXy(viewer, [
+                    e.clientX - canvasBbox.left,
+                    e.clientY - canvasBbox.top,
+                  ]);
 
-            sendClicksThrottled({
-              type: "SceneNodeClickMessage",
-              name: props.name,
-              instance_index:
-                computeClickInstanceIndexFromInstanceId === undefined
-                  ? null
-                  : computeClickInstanceIndexFromInstanceId(e.instanceId),
-              // Note that the threejs up is +Y, but we expose a +Z up.
-              ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
-              ray_direction: [
-                ray.direction.x,
-                ray.direction.y,
-                ray.direction.z,
-              ],
-              screen_pos: [mouseVectorOpenCV.x, mouseVectorOpenCV.y],
-            });
-          }}
-          onPointerOver={(e) => {
-            if (!isDisplayed()) return;
-            e.stopPropagation();
-            setHovered(true);
-            hoveredRef.current = true;
-          }}
-          onPointerOut={() => {
-            if (!isDisplayed()) return;
-            setHovered(false);
-            hoveredRef.current = false;
-          }}
+                  sendClicksThrottled({
+                    type: "SceneNodeClickMessage",
+                    name: props.name,
+                    instance_index:
+                      computeClickInstanceIndexFromInstanceId === undefined
+                        ? null
+                        : computeClickInstanceIndexFromInstanceId(e.instanceId),
+                    // Note that the threejs up is +Y, but we expose a +Z up.
+                    ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
+                    ray_direction: [
+                      ray.direction.x,
+                      ray.direction.y,
+                      ray.direction.z,
+                    ],
+                    screen_pos: [mouseVectorOpenCV.x, mouseVectorOpenCV.y],
+                  });
+                }
+          }
+          onPointerOver={
+            !clickable
+              ? undefined
+              : (e) => {
+                  if (!isDisplayed()) return;
+                  e.stopPropagation();
+
+                  // Update hover state
+                  hoveredRef.current.isHovered = true;
+                  // Store the instanceId in the hover ref
+                  hoveredRef.current.instanceId = e.instanceId ?? null;
+
+                  // Increment global hover count and update cursor
+                  viewer.hoveredElementsCount.current++;
+                  if (viewer.hoveredElementsCount.current === 1) {
+                    document.body.style.cursor = "pointer";
+                  }
+                }
+          }
+          onPointerOut={
+            !clickable
+              ? undefined
+              : () => {
+                  if (!isDisplayed()) return;
+
+                  // Update hover state
+                  hoveredRef.current.isHovered = false;
+                  // Clear the instanceId when no longer hovering
+                  hoveredRef.current.instanceId = null;
+
+                  // Decrement global hover count and update cursor if needed
+                  viewer.hoveredElementsCount.current--;
+                  if (viewer.hoveredElementsCount.current === 0) {
+                    document.body.style.cursor = "auto";
+                  }
+                }
+          }
         >
           <HoverableContext.Provider value={hoveredRef}>
             {objNode}
           </HoverableContext.Provider>
         </group>
-        {children}
-      </>
-    );
-  } else {
-    return (
-      <>
-        {/* This <group /> does nothing, but switching between clickable vs not
-        causes strange transform behavior without it. */}
-        <group>{objNode}</group>
         {children}
       </>
     );
