@@ -187,7 +187,7 @@ export const SkinnedMesh = React.forwardRef<
       newMaterial.color.setHex(rgbToInt(message.props.color));
 
       // Replace the material
-      if (ref && typeof ref !== 'function' && ref.current) {
+      if (ref && typeof ref !== "function" && ref.current) {
         ref.current.material = newMaterial;
         material.dispose();
       }
@@ -202,7 +202,7 @@ export const SkinnedMesh = React.forwardRef<
       newMaterial.color.setHex(rgbToInt(message.props.color));
 
       // Replace the material
-      if (ref && typeof ref !== 'function' && ref.current) {
+      if (ref && typeof ref !== "function" && ref.current) {
         ref.current.material = newMaterial;
         material.dispose();
       }

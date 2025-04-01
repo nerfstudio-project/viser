@@ -93,7 +93,7 @@ export const BasicMesh = React.forwardRef<THREE.Mesh, MeshMessage>(
         newMaterial.color.setHex(rgbToInt(message.props.color));
 
         // Replace the material
-        if (ref && typeof ref !== 'function' && ref.current) {
+        if (ref && typeof ref !== "function" && ref.current) {
           ref.current.material = newMaterial;
           material.dispose();
         }
@@ -108,7 +108,7 @@ export const BasicMesh = React.forwardRef<THREE.Mesh, MeshMessage>(
         newMaterial.color.setHex(rgbToInt(message.props.color));
 
         // Replace the material
-        if (ref && typeof ref !== 'function' && ref.current) {
+        if (ref && typeof ref !== "function" && ref.current) {
           ref.current.material = newMaterial;
           material.dispose();
         }

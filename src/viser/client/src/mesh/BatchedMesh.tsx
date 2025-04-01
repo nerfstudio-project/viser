@@ -22,20 +22,23 @@ export const BatchedMesh = React.forwardRef<
 
   // Setup a basic material just once - we'll update all properties via direct methods
   // This dramatically improves performance by avoiding material recreation
-  const material = React.useMemo(() => {
-    // Create a basic material with neutral properties - all will be updated in useEffect
-    return createStandardMaterial({
-      material: "standard",  // Will be updated if different
-      color: [128, 128, 128], // Will be updated immediately
-      wireframe: false,      // Will be updated
-      opacity: null,         // Will be updated
-      flat_shading: false,   // Will be updated
-      side: "front",         // Will be updated
-    });
-  }, [
-    // No dependencies - we never want to recreate the material
-    // All properties will be updated via updateMaterialProperties
-  ]);
+  const material = React.useMemo(
+    () => {
+      // Create a basic material with neutral properties - all will be updated in useEffect
+      return createStandardMaterial({
+        material: "standard", // Will be updated if different
+        color: [128, 128, 128], // Will be updated immediately
+        wireframe: false, // Will be updated
+        opacity: null, // Will be updated
+        flat_shading: false, // Will be updated
+        side: "front", // Will be updated
+      });
+    },
+    [
+      // No dependencies - we never want to recreate the material
+      // All properties will be updated via updateMaterialProperties
+    ],
+  );
 
   // Setup geometry using memoization.
   const geometry = React.useMemo(() => {
@@ -115,20 +118,20 @@ export const BatchedMesh = React.forwardRef<
   ]);
 
   // Effects for properties that can be updated without recreating the mesh
-  
+
   // 1. Update instance transforms (positions and orientations)
   React.useEffect(() => {
     meshManager.updateInstances(batched_positions, batched_wxyzs);
   }, [meshManager, batched_positions, batched_wxyzs]);
-  
+
   // 2. Update shadow settings
   React.useEffect(() => {
     meshManager.updateShadowSettings(
       message.props.cast_shadow,
-      message.props.receive_shadow
+      message.props.receive_shadow,
     );
   }, [meshManager, message.props.cast_shadow, message.props.receive_shadow]);
-  
+
   // 3. Update ALL material properties - the key optimization that saves your life!
   React.useEffect(() => {
     // Handle material type changes by mapping string values to THREE.Side constants
@@ -137,7 +140,7 @@ export const BatchedMesh = React.forwardRef<
       back: THREE.BackSide,
       double: THREE.DoubleSide,
     }[message.props.side];
-    
+
     // Update ALL material properties in one call - super fast!
     meshManager.updateMaterialProperties({
       color: message.props.color,
@@ -148,9 +151,8 @@ export const BatchedMesh = React.forwardRef<
       transparent: message.props.opacity !== null,
       materialType: message.props.material,
     });
-    
   }, [
-    meshManager, 
+    meshManager,
     message.props.color,
     message.props.wireframe,
     message.props.opacity,

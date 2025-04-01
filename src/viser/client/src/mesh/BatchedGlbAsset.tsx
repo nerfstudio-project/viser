@@ -130,7 +130,6 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       }
     }, [meshState, message.props.cast_shadow, message.props.receive_shadow]);
 
-
     // Clean up resources when dependencies change or component unmounts.
     React.useEffect(() => {
       return () => {

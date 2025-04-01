@@ -16,6 +16,7 @@ from pathlib import Path
 
 import numpy as np
 import trimesh
+
 import viser
 import viser.transforms as tf
 

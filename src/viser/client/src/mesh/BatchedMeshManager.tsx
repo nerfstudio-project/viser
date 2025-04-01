@@ -143,7 +143,9 @@ export class BatchedMeshManager {
 
         // Create a new toon material with the same properties
         // The flatShading property exists in THREE.Material but is not in the MeshToonMaterialParameters types
-        const materialProps: THREE.MeshToonMaterialParameters & { flatShading?: boolean } = {
+        const materialProps: THREE.MeshToonMaterialParameters & {
+          flatShading?: boolean;
+        } = {
           gradientMap: this.getGradientMap(shades),
           color: toonMat.color.clone(),
           wireframe: toonMat.wireframe,
@@ -155,7 +157,9 @@ export class BatchedMeshManager {
         lodMaterial = new THREE.MeshToonMaterial(materialProps);
       } else {
         // For other material types, just clone the material
-        lodMaterial = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material).clone();
+        lodMaterial = (
+          Array.isArray(mesh.material) ? mesh.material[0] : mesh.material
+        ).clone();
       }
 
       // Add this LOD level to the instanced mesh
