@@ -581,7 +581,7 @@ class MeshProps:
     """A numpy array of vertex positions. Should have shape (V, 3). Synchronized automatically when assigned."""
     faces: npt.NDArray[np.uint32]
     """A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). Synchronized automatically when assigned."""
-    color: Union[Tuple[int, int, int], None]
+    color: Tuple[int, int, int]
     """Color of the mesh as RGB integers. Synchronized automatically when assigned."""
     wireframe: bool
     """Boolean indicating if the mesh should be rendered as a wireframe. Synchronized automatically when assigned."""
@@ -653,12 +653,12 @@ class BatchedMeshesMessage(_CreateSceneNodeMessage):
 
 
 @dataclasses.dataclass
-class BatchedPoseProps:
+class _BatchedMeshExtraProps:
     batched_wxyzs: npt.NDArray[np.float32]
     """Float array of shape (N, 4) representing quaternion rotations. Synchronized automatically when assigned."""
     batched_positions: npt.NDArray[np.float32]
     """Float array of shape (N, 3) representing positions. Synchronized automatically when assigned."""
-    lod: Literal["auto", "off"] | tuple[tuple[float, float], ...]
+    lod: Union[Literal["auto", "off"], Tuple[Tuple[float, float], ...]]
     """LOD settings. Either "auto", "off", or a tuple of (distance, ratio) pairs. Synchronized automatically when assigned."""
 
     def __post_init__(self):
@@ -669,7 +669,7 @@ class BatchedPoseProps:
 
 
 @dataclasses.dataclass
-class BatchedMeshesProps(MeshProps, BatchedPoseProps):
+class BatchedMeshesProps(MeshProps, _BatchedMeshExtraProps):
     """Batched meshes message."""
 
 
@@ -681,7 +681,7 @@ class BatchedGlbMessage(_CreateSceneNodeMessage):
 
 
 @dataclasses.dataclass
-class BatchedGlbProps(GlbProps, BatchedPoseProps):
+class BatchedGlbProps(GlbProps, _BatchedMeshExtraProps):
     """Batched GLB message."""
 
 

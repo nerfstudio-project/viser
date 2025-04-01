@@ -132,22 +132,18 @@ export const BatchedMesh = React.forwardRef<
     );
   }, [meshManager, message.props.cast_shadow, message.props.receive_shadow]);
 
-  // 3. Update ALL material properties - the key optimization that saves your life!
+  // 3. Update material properties.
   React.useEffect(() => {
-    // Handle material type changes by mapping string values to THREE.Side constants
-    const side = {
-      front: THREE.FrontSide,
-      back: THREE.BackSide,
-      double: THREE.DoubleSide,
-    }[message.props.side];
-
-    // Update ALL material properties in one call - super fast!
     meshManager.updateMaterialProperties({
       color: message.props.color,
       wireframe: message.props.wireframe,
       opacity: message.props.opacity,
-      flatShading: message.props.flat_shading && !message.props.wireframe,
-      side: side,
+      flatShading: message.props.flat_shading,
+      side: {
+        front: THREE.FrontSide,
+        back: THREE.BackSide,
+        double: THREE.DoubleSide,
+      }[message.props.side],
       transparent: message.props.opacity !== null,
       materialType: message.props.material,
     });

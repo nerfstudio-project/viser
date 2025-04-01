@@ -220,7 +220,7 @@ export interface MeshMessage {
   props: {
     vertices: Uint8Array;
     faces: Uint8Array;
-    color: [number, number, number] | null;
+    color: [number, number, number];
     wireframe: boolean;
     opacity: number | null;
     flat_shading: boolean;
@@ -240,7 +240,7 @@ export interface SkinnedMeshMessage {
   props: {
     vertices: Uint8Array;
     faces: Uint8Array;
-    color: [number, number, number] | null;
+    color: [number, number, number];
     wireframe: boolean;
     opacity: number | null;
     flat_shading: boolean;
@@ -267,7 +267,7 @@ export interface BatchedMeshesMessage {
     lod: "auto" | "off" | [number, number][];
     vertices: Uint8Array;
     faces: Uint8Array;
-    color: [number, number, number] | null;
+    color: [number, number, number];
     wireframe: boolean;
     opacity: number | null;
     flat_shading: boolean;
