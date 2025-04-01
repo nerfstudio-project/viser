@@ -20,21 +20,21 @@ export const BatchedMesh = React.forwardRef<
       (state) => state.nodeFromName[message.name]?.clickable,
     ) ?? false;
 
-  // Setup material using memoization, but without color in dependencies
-  // We'll update color separately via updateMaterialColor for better performance
+  // Setup a basic material just once - we'll update all properties via direct methods
+  // This dramatically improves performance by avoiding material recreation
   const material = React.useMemo(() => {
-    // Create material with an initial color that will be immediately updated in useEffect
+    // Create a basic material with neutral properties - all will be updated in useEffect
     return createStandardMaterial({
-      ...message.props,
-      color: [128, 128, 128] // Initial neutral gray, will be updated
+      material: "standard",  // Will be updated if different
+      color: [128, 128, 128], // Will be updated immediately
+      wireframe: false,      // Will be updated
+      opacity: null,         // Will be updated
+      flat_shading: false,   // Will be updated
+      side: "front",         // Will be updated
     });
   }, [
-    // Dependencies excluding color (handled separately for performance)
-    message.props.material,
-    message.props.wireframe,
-    message.props.opacity,
-    message.props.flat_shading,
-    message.props.side,
+    // No dependencies - we never want to recreate the material
+    // All properties will be updated via updateMaterialProperties
   ]);
 
   // Setup geometry using memoization.
@@ -115,7 +115,6 @@ export const BatchedMesh = React.forwardRef<
   ]);
 
   // Effects for properties that can be updated without recreating the mesh
-  // We use separate effects to minimize unnecessary work when only some props change
   
   // 1. Update instance transforms (positions and orientations)
   React.useEffect(() => {
@@ -130,12 +129,35 @@ export const BatchedMesh = React.forwardRef<
     );
   }, [meshManager, message.props.cast_shadow, message.props.receive_shadow]);
   
-  // 3. Update material color
+  // 3. Update ALL material properties - the key optimization that saves your life!
   React.useEffect(() => {
-    if (message.props.color) {
-      meshManager.updateMaterialColor(message.props.color);
-    }
-  }, [meshManager, message.props.color]);
+    // Handle material type changes by mapping string values to THREE.Side constants
+    const side = {
+      front: THREE.FrontSide,
+      back: THREE.BackSide,
+      double: THREE.DoubleSide,
+    }[message.props.side];
+    
+    // Update ALL material properties in one call - super fast!
+    meshManager.updateMaterialProperties({
+      color: message.props.color,
+      wireframe: message.props.wireframe,
+      opacity: message.props.opacity,
+      flatShading: message.props.flat_shading && !message.props.wireframe,
+      side: side,
+      transparent: message.props.opacity !== null,
+      materialType: message.props.material,
+    });
+    
+  }, [
+    meshManager, 
+    message.props.color,
+    message.props.wireframe,
+    message.props.opacity,
+    message.props.flat_shading,
+    message.props.side,
+    message.props.material, // Added material type to dependencies
+  ]);
 
   // Handle cleanup when dependencies change or component unmounts.
   React.useEffect(() => {

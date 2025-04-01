@@ -23,11 +23,8 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       ) ?? false;
 
     // Note: We don't support animations for batched meshes
-    const { gltf } = useGlbLoader(
-      message.props.glb_data,
-      message.props.cast_shadow,
-      message.props.receive_shadow,
-    );
+    // We don't pass shadow settings to the GLB loader - we'll apply them manually
+    const { gltf } = useGlbLoader(message.props.glb_data);
 
     // Create Float32Arrays once for positions and orientations.
     const batched_positions = React.useMemo(
@@ -89,6 +86,8 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
           const numInstances =
             message.props.batched_positions.byteLength /
             (3 * Float32Array.BYTES_PER_ELEMENT);
+          
+          // Create manager without shadow settings to avoid recreation - we'll set them in useEffect
           const manager = new BatchedMeshManager(
             node.geometry,
             node.material,
@@ -106,7 +105,7 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       return { instancedGroup, managers, transforms };
     }, [gltf, message.props.lod, message.props.batched_positions.byteLength]);
 
-    // Update instance positions and rotations
+    // 1. Update instance transforms (positions and orientations)
     React.useEffect(() => {
       if (meshState && meshState.managers) {
         meshState.managers.forEach((manager, index) => {
@@ -119,7 +118,7 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       }
     }, [meshState, batched_positions, batched_wxyzs]);
 
-    // Update shadow settings
+    // 2. Update shadow settings - separate effect for better performance
     React.useEffect(() => {
       if (meshState && meshState.managers) {
         meshState.managers.forEach((manager) => {
@@ -130,6 +129,39 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
         });
       }
     }, [meshState, message.props.cast_shadow, message.props.receive_shadow]);
+    
+    // 3. Update material properties - separate effect for better performance
+    React.useEffect(() => {
+      if (meshState && meshState.managers) {
+        // Map string side values to THREE constants
+        const side = {
+          front: THREE.FrontSide,
+          back: THREE.BackSide,
+          double: THREE.DoubleSide,
+        }[message.props.side];
+        
+        // Update all material properties efficiently without recreation
+        meshState.managers.forEach((manager) => {
+          manager.updateMaterialProperties({
+            color: message.props.color,
+            wireframe: message.props.wireframe,
+            opacity: message.props.opacity,
+            flatShading: message.props.flat_shading && !message.props.wireframe,
+            side: side,
+            transparent: message.props.opacity !== null,
+            materialType: message.props.material,
+          });
+        });
+      }
+    }, [
+      meshState,
+      message.props.color,
+      message.props.wireframe,
+      message.props.opacity,
+      message.props.flat_shading,
+      message.props.side,
+      message.props.material,
+    ]);
 
     // Clean up resources when dependencies change or component unmounts.
     React.useEffect(() => {
@@ -147,6 +179,7 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
         }
       };
     }, [meshState]);
+    
     if (!gltf || !meshState) return null;
 
     return (
