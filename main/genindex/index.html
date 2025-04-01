@@ -349,6 +349,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/25_smpl_visualizer_skinned/">SMPL visualizer (Skinned Mesh)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/26_lighting/">Lighting and Shadows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/27_notifications/">Notifications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/28_meshes_batched/">Batched Meshes</a></li>
 </ul>
 
 </div>
@@ -475,6 +476,10 @@
         <li><a href="../scene_api/#viser.SceneApi.add_3d_gui_container">add_3d_gui_container() (viser.SceneApi method)</a>
 </li>
         <li><a href="../scene_api/#viser.SceneApi.add_batched_axes">add_batched_axes() (viser.SceneApi method)</a>
+</li>
+        <li><a href="../scene_api/#viser.SceneApi.add_batched_meshes_simple">add_batched_meshes_simple() (viser.SceneApi method)</a>
+</li>
+        <li><a href="../scene_api/#viser.SceneApi.add_batched_meshes_trimesh">add_batched_meshes_trimesh() (viser.SceneApi method)</a>
 </li>
         <li><a href="../scene_api/#viser.SceneApi.add_box">add_box() (viser.SceneApi method)</a>
 </li>
@@ -886,10 +891,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.ARROW_AUTOFIT_RIGHT">ARROW_AUTOFIT_RIGHT (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.ARROW_AUTOFIT_UP">ARROW_AUTOFIT_UP (viser.Icon attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.ARROW_AUTOFIT_UP">ARROW_AUTOFIT_UP (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.ARROW_AUTOFIT_WIDTH">ARROW_AUTOFIT_WIDTH (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.ARROW_BACK">ARROW_BACK (viser.Icon attribute)</a>
@@ -1487,10 +1492,20 @@
         <li><a href="../icons/#viser.Icon.BAT">BAT (viser.Icon attribute)</a>
 </li>
         <li><a href="../scene_handles/#viser.BatchedAxesHandle.batched_positions">batched_positions (viser.BatchedAxesHandle attribute)</a>
+
+        <ul>
+          <li><a href="../scene_handles/#viser.BatchedMeshHandle.batched_positions">(viser.BatchedMeshHandle attribute)</a>
 </li>
+        </ul></li>
         <li><a href="../scene_handles/#viser.BatchedAxesHandle.batched_wxyzs">batched_wxyzs (viser.BatchedAxesHandle attribute)</a>
+
+        <ul>
+          <li><a href="../scene_handles/#viser.BatchedMeshHandle.batched_wxyzs">(viser.BatchedMeshHandle attribute)</a>
 </li>
+        </ul></li>
         <li><a href="../scene_handles/#viser.BatchedAxesHandle">BatchedAxesHandle (class in viser)</a>
+</li>
+        <li><a href="../scene_handles/#viser.BatchedMeshHandle">BatchedMeshHandle (class in viser)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BATH">BATH (viser.Icon attribute)</a>
 </li>
@@ -2010,10 +2025,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.BRAND_DEVIANTART">BRAND_DEVIANTART (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.BRAND_DIGG">BRAND_DIGG (viser.Icon attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.BRAND_DIGG">BRAND_DIGG (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.BRAND_DINGTALK">BRAND_DINGTALK (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BRAND_DISCORD">BRAND_DISCORD (viser.Icon attribute)</a>
@@ -2864,9 +2879,11 @@
 </li>
         <li><a href="../icons/#viser.Icon.CAST_OFF">CAST_OFF (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.CameraFrustumHandle.cast_shadow">cast_shadow (viser.CameraFrustumHandle attribute)</a>
+        <li><a href="../scene_handles/#viser.BatchedMeshHandle.cast_shadow">cast_shadow (viser.BatchedMeshHandle attribute)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.CameraFrustumHandle.cast_shadow">(viser.CameraFrustumHandle attribute)</a>
+</li>
           <li><a href="../scene_handles/#viser.DirectionalLightHandle.cast_shadow">(viser.DirectionalLightHandle attribute)</a>
 </li>
           <li><a href="../scene_handles/#viser.GlbHandle.cast_shadow">(viser.GlbHandle attribute)</a>
@@ -3587,6 +3604,8 @@
         <li><a href="../scene_handles/#viser.AmbientLightHandle.color">color (viser.AmbientLightHandle attribute)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.BatchedMeshHandle.color">(viser.BatchedMeshHandle attribute)</a>
+</li>
           <li><a href="../scene_handles/#viser.CameraFrustumHandle.color">(viser.CameraFrustumHandle attribute)</a>
 </li>
           <li><a href="../scene_handles/#viser.DirectionalLightHandle.color">(viser.DirectionalLightHandle attribute)</a>
@@ -4898,9 +4917,11 @@
 </li>
         <li><a href="../icons/#viser.Icon.FACE_MASK_OFF">FACE_MASK_OFF (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.MeshHandle.faces">faces (viser.MeshHandle attribute)</a>
+        <li><a href="../scene_handles/#viser.BatchedMeshHandle.faces">faces (viser.BatchedMeshHandle attribute)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.MeshHandle.faces">(viser.MeshHandle attribute)</a>
+</li>
           <li><a href="../scene_handles/#viser.MeshSkinnedHandle.faces">(viser.MeshSkinnedHandle attribute)</a>
 </li>
         </ul></li>
@@ -5136,9 +5157,11 @@
 </li>
         <li><a href="../icons/#viser.Icon.FLASK_OFF">FLASK_OFF (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.MeshHandle.flat_shading">flat_shading (viser.MeshHandle attribute)</a>
+        <li><a href="../scene_handles/#viser.BatchedMeshHandle.flat_shading">flat_shading (viser.BatchedMeshHandle attribute)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.MeshHandle.flat_shading">(viser.MeshHandle attribute)</a>
+</li>
           <li><a href="../scene_handles/#viser.MeshSkinnedHandle.flat_shading">(viser.MeshSkinnedHandle attribute)</a>
 </li>
         </ul></li>
@@ -6658,6 +6681,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.LOCK_X">LOCK_X (viser.Icon attribute)</a>
 </li>
+        <li><a href="../scene_handles/#viser.BatchedMeshHandle.lod">lod (viser.BatchedMeshHandle attribute)</a>
+</li>
         <li><a href="../transforms/#viser.transforms.MatrixLieGroup.log">log() (viser.transforms.MatrixLieGroup method)</a>
 
         <ul>
@@ -6866,9 +6891,11 @@
 </li>
         <li><a href="../icons/#viser.Icon.MATCHSTICK">MATCHSTICK (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.MeshHandle.material">material (viser.MeshHandle attribute)</a>
+        <li><a href="../scene_handles/#viser.BatchedMeshHandle.material">material (viser.BatchedMeshHandle attribute)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.MeshHandle.material">(viser.MeshHandle attribute)</a>
+</li>
           <li><a href="../scene_handles/#viser.MeshSkinnedHandle.material">(viser.MeshSkinnedHandle attribute)</a>
 </li>
         </ul></li>
@@ -7060,10 +7087,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.MESSAGE_CHECK">MESSAGE_CHECK (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.MESSAGE_CIRCLE">MESSAGE_CIRCLE (viser.Icon attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.MESSAGE_CIRCLE">MESSAGE_CIRCLE (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.MESSAGE_CIRCLE_2">MESSAGE_CIRCLE_2 (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.MESSAGE_CIRCLE_2_FILLED">MESSAGE_CIRCLE_2_FILLED (viser.Icon attribute)</a>
@@ -7422,6 +7449,8 @@
         <ul>
           <li><a href="../scene_handles/#viser.BatchedAxesHandle.name">(viser.BatchedAxesHandle property)</a>
 </li>
+          <li><a href="../scene_handles/#viser.BatchedMeshHandle.name">(viser.BatchedMeshHandle property)</a>
+</li>
           <li><a href="../scene_handles/#viser.CameraFrustumHandle.name">(viser.CameraFrustumHandle property)</a>
 </li>
           <li><a href="../scene_handles/#viser.DirectionalLightHandle.name">(viser.DirectionalLightHandle property)</a>
@@ -7487,10 +7516,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.NEWS">NEWS (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.NEWS_OFF">NEWS_OFF (viser.Icon attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.NEWS_OFF">NEWS_OFF (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.NFC">NFC (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.NFC_OFF">NFC_OFF (viser.Icon attribute)</a>
@@ -7596,6 +7625,8 @@
         <li><a href="../scene_handles/#viser.BatchedAxesHandle.on_click">on_click() (viser.BatchedAxesHandle method)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.BatchedMeshHandle.on_click">(viser.BatchedMeshHandle method)</a>
+</li>
           <li><a href="../scene_handles/#viser.CameraFrustumHandle.on_click">(viser.CameraFrustumHandle method)</a>
 </li>
           <li><a href="../scene_handles/#viser.FrameHandle.on_click">(viser.FrameHandle method)</a>
@@ -7665,9 +7696,11 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../gui_handles/#viser.GuiUploadButtonHandle.on_upload">on_upload() (viser.GuiUploadButtonHandle method)</a>
 </li>
-        <li><a href="../scene_handles/#viser.MeshHandle.opacity">opacity (viser.MeshHandle attribute)</a>
+        <li><a href="../scene_handles/#viser.BatchedMeshHandle.opacity">opacity (viser.BatchedMeshHandle attribute)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.MeshHandle.opacity">(viser.MeshHandle attribute)</a>
+</li>
           <li><a href="../scene_handles/#viser.MeshSkinnedHandle.opacity">(viser.MeshSkinnedHandle attribute)</a>
 </li>
           <li><a href="../scene_handles/#viser.TransformControlsHandle.opacity">(viser.TransformControlsHandle attribute)</a>
@@ -8035,10 +8068,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.PLAY_CARD">PLAY_CARD (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.PLAY_CARD_OFF">PLAY_CARD_OFF (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.PLAY_FOOTBALL">PLAY_FOOTBALL (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.PLAY_HANDBALL">PLAY_HANDBALL (viser.Icon attribute)</a>
@@ -8201,6 +8234,8 @@
 
         <ul>
           <li><a href="../scene_handles/#viser.BatchedAxesHandle.position">(viser.BatchedAxesHandle property)</a>
+</li>
+          <li><a href="../scene_handles/#viser.BatchedMeshHandle.position">(viser.BatchedMeshHandle property)</a>
 </li>
           <li><a href="../scene_handles/#viser.CameraFrustumHandle.position">(viser.CameraFrustumHandle property)</a>
 </li>
@@ -8429,9 +8464,11 @@
 </li>
         <li><a href="../icons/#viser.Icon.RECEIPT_TAX">RECEIPT_TAX (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.CameraFrustumHandle.receive_shadow">receive_shadow (viser.CameraFrustumHandle attribute)</a>
+        <li><a href="../scene_handles/#viser.BatchedMeshHandle.receive_shadow">receive_shadow (viser.BatchedMeshHandle attribute)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.CameraFrustumHandle.receive_shadow">(viser.CameraFrustumHandle attribute)</a>
+</li>
           <li><a href="../scene_handles/#viser.GlbHandle.receive_shadow">(viser.GlbHandle attribute)</a>
 </li>
           <li><a href="../scene_handles/#viser.ImageHandle.receive_shadow">(viser.ImageHandle attribute)</a>
@@ -8507,6 +8544,8 @@
 
         <ul>
           <li><a href="../scene_handles/#viser.BatchedAxesHandle.remove">(viser.BatchedAxesHandle method)</a>
+</li>
+          <li><a href="../scene_handles/#viser.BatchedMeshHandle.remove">(viser.BatchedMeshHandle method)</a>
 </li>
           <li><a href="../scene_handles/#viser.CameraFrustumHandle.remove">(viser.CameraFrustumHandle method)</a>
 </li>
@@ -8596,6 +8635,8 @@
         <li><a href="../scene_handles/#viser.BatchedAxesHandle.remove_click_callback">remove_click_callback() (viser.BatchedAxesHandle method)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.BatchedMeshHandle.remove_click_callback">(viser.BatchedMeshHandle method)</a>
+</li>
           <li><a href="../scene_handles/#viser.CameraFrustumHandle.remove_click_callback">(viser.CameraFrustumHandle method)</a>
 </li>
           <li><a href="../scene_handles/#viser.FrameHandle.remove_click_callback">(viser.FrameHandle method)</a>
@@ -9205,9 +9246,11 @@
 </li>
         <li><a href="../icons/#viser.Icon.SHREDDER">SHREDDER (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.MeshHandle.side">side (viser.MeshHandle attribute)</a>
+        <li><a href="../scene_handles/#viser.BatchedMeshHandle.side">side (viser.BatchedMeshHandle attribute)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.MeshHandle.side">(viser.MeshHandle attribute)</a>
+</li>
           <li><a href="../scene_handles/#viser.MeshSkinnedHandle.side">(viser.MeshSkinnedHandle attribute)</a>
 </li>
         </ul></li>
@@ -10533,9 +10576,11 @@
 </li>
         <li><a href="../icons/#viser.Icon.VERSIONS_OFF">VERSIONS_OFF (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.MeshHandle.vertices">vertices (viser.MeshHandle attribute)</a>
+        <li><a href="../scene_handles/#viser.BatchedMeshHandle.vertices">vertices (viser.BatchedMeshHandle attribute)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.MeshHandle.vertices">(viser.MeshHandle attribute)</a>
+</li>
           <li><a href="../scene_handles/#viser.MeshSkinnedHandle.vertices">(viser.MeshSkinnedHandle attribute)</a>
 </li>
         </ul></li>
@@ -10593,6 +10638,8 @@
 
         <ul>
           <li><a href="../scene_handles/#viser.BatchedAxesHandle.visible">(viser.BatchedAxesHandle property)</a>
+</li>
+          <li><a href="../scene_handles/#viser.BatchedMeshHandle.visible">(viser.BatchedMeshHandle property)</a>
 </li>
           <li><a href="../scene_handles/#viser.CameraFrustumHandle.visible">(viser.CameraFrustumHandle property)</a>
 </li>
@@ -10831,10 +10878,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.WINDOW_MAXIMIZE">WINDOW_MAXIMIZE (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.WINDOW_MINIMIZE">WINDOW_MINIMIZE (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.WINDOW_OFF">WINDOW_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.WINDSOCK">WINDSOCK (viser.Icon attribute)</a>
@@ -10843,9 +10890,11 @@
 </li>
         <li><a href="../icons/#viser.Icon.WIPER_WASH">WIPER_WASH (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.MeshHandle.wireframe">wireframe (viser.MeshHandle attribute)</a>
+        <li><a href="../scene_handles/#viser.BatchedMeshHandle.wireframe">wireframe (viser.BatchedMeshHandle attribute)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.MeshHandle.wireframe">(viser.MeshHandle attribute)</a>
+</li>
           <li><a href="../scene_handles/#viser.MeshSkinnedHandle.wireframe">(viser.MeshSkinnedHandle attribute)</a>
 </li>
         </ul></li>
@@ -10923,6 +10972,8 @@
 
         <ul>
           <li><a href="../scene_handles/#viser.BatchedAxesHandle.wxyz">(viser.BatchedAxesHandle property)</a>
+</li>
+          <li><a href="../scene_handles/#viser.BatchedMeshHandle.wxyz">(viser.BatchedMeshHandle property)</a>
 </li>
           <li><a href="../scene_handles/#viser.CameraFrustumHandle.wxyz">(viser.CameraFrustumHandle property)</a>
 </li>

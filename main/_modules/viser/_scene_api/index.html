@@ -350,6 +350,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/25_smpl_visualizer_skinned/">SMPL visualizer (Skinned Mesh)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/26_lighting/">Lighting and Shadows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/27_notifications/">Notifications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/28_meshes_batched/">Batched Meshes</a></li>
 </ul>
 
 </div>
@@ -404,6 +405,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">._scene_handles</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AmbientLightHandle</span><span class="p">,</span>
     <span class="n">BatchedAxesHandle</span><span class="p">,</span>
+    <span class="n">BatchedGlbHandle</span><span class="p">,</span>
+    <span class="n">BatchedMeshHandle</span><span class="p">,</span>
     <span class="n">BoneState</span><span class="p">,</span>
     <span class="n">CameraFrustumHandle</span><span class="p">,</span>
     <span class="n">DirectionalLightHandle</span><span class="p">,</span>
@@ -1809,6 +1812,166 @@
                 <span class="n">position</span><span class="o">=</span><span class="n">position</span><span class="p">,</span>
                 <span class="n">visible</span><span class="o">=</span><span class="n">visible</span><span class="p">,</span>
             <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SceneApi.add_batched_meshes_simple">
+<a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_batched_meshes_simple">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_batched_meshes_simple</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">vertices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">faces</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">batched_wxyzs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">batched_positions</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">lod</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;off&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;off&quot;</span><span class="p">,</span>
+        <span class="n">color</span><span class="p">:</span> <span class="n">RgbTupleOrArray</span> <span class="o">=</span> <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+        <span class="n">wireframe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">opacity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">material</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;standard&quot;</span><span class="p">,</span> <span class="s2">&quot;toon3&quot;</span><span class="p">,</span> <span class="s2">&quot;toon5&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;standard&quot;</span><span class="p">,</span>
+        <span class="n">flat_shading</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">side</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;front&quot;</span><span class="p">,</span> <span class="s2">&quot;back&quot;</span><span class="p">,</span> <span class="s2">&quot;double&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;front&quot;</span><span class="p">,</span>
+        <span class="n">wxyz</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">position</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">cast_shadow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">receive_shadow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BatchedMeshHandle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add batched meshes to the scene.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Batched mesh instances are optimized for rendering many instances of the</span>
+<span class="sd">            same mesh efficiently.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: A scene tree name. Names in the format of /parent/child can be used to</span>
+<span class="sd">                define a kinematic tree.</span>
+<span class="sd">            vertices: A numpy array of vertex positions. Should have shape (V, 3).</span>
+<span class="sd">            faces: A numpy array of faces, where each face is represented by indices of</span>
+<span class="sd">                vertices. Should have shape (F, 3).</span>
+<span class="sd">            batched_wxyzs: Float array of shape (N, 4) for orientations.</span>
+<span class="sd">            batched_positions: Float array of shape (N, 3) for positions.</span>
+<span class="sd">            lod: LOD settings, either &quot;off&quot;, &quot;auto&quot;, or a tuple of (distance, ratio) pairs.</span>
+<span class="sd">            color: Color of the meshes as an RGB tuple.</span>
+<span class="sd">            wireframe: Boolean indicating if the meshes should be rendered as wireframes.</span>
+<span class="sd">            opacity: Opacity of the meshes. None means opaque.</span>
+<span class="sd">            material: Material type of the meshes (&#39;standard&#39;, &#39;toon3&#39;, &#39;toon5&#39;).</span>
+<span class="sd">                This argument is ignored when wireframe=True.</span>
+<span class="sd">            flat_shading: Whether to do flat shading. This argument is ignored</span>
+<span class="sd">                when wireframe=True.</span>
+<span class="sd">            side: Side of the surface to render (&#39;front&#39;, &#39;back&#39;, &#39;double&#39;).</span>
+<span class="sd">            wxyz: Quaternion rotation to parent frame from local frame (R_pl).</span>
+<span class="sd">            position: Translation from parent frame to local frame (t_pl).</span>
+<span class="sd">            visible: Whether or not these meshes are initially visible.</span>
+<span class="sd">            cast_shadow: Whether these meshes should cast shadows.</span>
+<span class="sd">            receive_shadow: Whether these meshes should receive shadows.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Handle for manipulating scene node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">wireframe</span> <span class="ow">and</span> <span class="n">material</span> <span class="o">!=</span> <span class="s2">&quot;standard&quot;</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid combination of </span><span class="si">{</span><span class="n">wireframe</span><span class="si">=}</span><span class="s2"> and </span><span class="si">{</span><span class="n">material</span><span class="si">=}</span><span class="s2">. Material argument will be ignored.&quot;</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">wireframe</span> <span class="ow">and</span> <span class="n">flat_shading</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid combination of </span><span class="si">{</span><span class="n">wireframe</span><span class="si">=}</span><span class="s2"> and </span><span class="si">{</span><span class="n">flat_shading</span><span class="si">=}</span><span class="s2">. Flat shading argument will be ignored.&quot;</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">batched_wxyzs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">batched_wxyzs</span><span class="p">)</span>
+        <span class="n">batched_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">batched_positions</span><span class="p">)</span>
+
+        <span class="n">num_instances</span> <span class="o">=</span> <span class="n">batched_wxyzs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">batched_wxyzs</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">num_instances</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">batched_positions</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">num_instances</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="n">_messages</span><span class="o">.</span><span class="n">BatchedMeshesMessage</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">props</span><span class="o">=</span><span class="n">_messages</span><span class="o">.</span><span class="n">BatchedMeshesProps</span><span class="p">(</span>
+                <span class="n">vertices</span><span class="o">=</span><span class="n">vertices</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                <span class="n">faces</span><span class="o">=</span><span class="n">faces</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">),</span>
+                <span class="n">batched_wxyzs</span><span class="o">=</span><span class="n">batched_wxyzs</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                <span class="n">batched_positions</span><span class="o">=</span><span class="n">batched_positions</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">_encode_rgb</span><span class="p">(</span><span class="n">color</span><span class="p">),</span>
+                <span class="n">wireframe</span><span class="o">=</span><span class="n">wireframe</span><span class="p">,</span>
+                <span class="n">opacity</span><span class="o">=</span><span class="n">opacity</span><span class="p">,</span>
+                <span class="n">flat_shading</span><span class="o">=</span><span class="n">flat_shading</span><span class="p">,</span>
+                <span class="n">side</span><span class="o">=</span><span class="n">side</span><span class="p">,</span>
+                <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">,</span>
+                <span class="n">lod</span><span class="o">=</span><span class="n">lod</span><span class="p">,</span>
+                <span class="n">cast_shadow</span><span class="o">=</span><span class="n">cast_shadow</span><span class="p">,</span>
+                <span class="n">receive_shadow</span><span class="o">=</span><span class="n">receive_shadow</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">BatchedMeshHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SceneApi.add_batched_meshes_trimesh">
+<a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_batched_meshes_trimesh">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_batched_meshes_trimesh</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">mesh</span><span class="p">:</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">Trimesh</span><span class="p">,</span>
+        <span class="n">batched_wxyzs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">batched_positions</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">lod</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;off&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;off&quot;</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">wxyz</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">position</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">cast_shadow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">receive_shadow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BatchedGlbHandle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add batched trimesh meshes to the scene.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Batched mesh instances are optimized for rendering many instances of the</span>
+<span class="sd">            same mesh. However, there are some limitations:</span>
+<span class="sd">            - Animations in the GLB file are not supported</span>
+<span class="sd">            - The node hierarchy from the GLB file is flattened</span>
+<span class="sd">            - Each mesh in the GLB is instanced separately</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: A scene tree name. Names in the format of /parent/child can be used to</span>
+<span class="sd">              define a kinematic tree.</span>
+<span class="sd">            mesh: A trimesh mesh object.</span>
+<span class="sd">            batched_wxyzs: Float array of shape (N, 4) for orientations.</span>
+<span class="sd">            batched_positions: Float array of shape (N, 3) for positions.</span>
+<span class="sd">            lod: LOD settings, either &quot;off&quot;, &quot;auto&quot;, or a tuple of (distance, ratio) pairs.</span>
+<span class="sd">            scale: A scale for resizing the mesh.</span>
+<span class="sd">            wxyz: Quaternion rotation to parent frame from local frame (R_pl).</span>
+<span class="sd">            position: Translation to parent frame from local frame (t_pl).</span>
+<span class="sd">            visible: Whether or not this scene node is initially visible.</span>
+<span class="sd">            cast_shadow: Whether these meshes should cast shadows.</span>
+<span class="sd">            receive_shadow: Whether these meshes should receive shadows.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Handle for manipulating scene node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">batched_wxyzs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">batched_wxyzs</span><span class="p">)</span>
+        <span class="n">batched_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">batched_positions</span><span class="p">)</span>
+
+        <span class="n">num_instances</span> <span class="o">=</span> <span class="n">batched_wxyzs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">batched_wxyzs</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">num_instances</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">batched_positions</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">num_instances</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">data_buffer</span><span class="p">:</span>
+            <span class="n">mesh</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">data_buffer</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="s2">&quot;glb&quot;</span><span class="p">)</span>
+            <span class="n">glb_data</span> <span class="o">=</span> <span class="n">data_buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">_messages</span><span class="o">.</span><span class="n">BatchedGlbMessage</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">props</span><span class="o">=</span><span class="n">_messages</span><span class="o">.</span><span class="n">BatchedGlbProps</span><span class="p">(</span>
+                    <span class="n">glb_data</span><span class="o">=</span><span class="n">glb_data</span><span class="p">,</span>
+                    <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span>
+                    <span class="n">batched_wxyzs</span><span class="o">=</span><span class="n">batched_wxyzs</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                    <span class="n">batched_positions</span><span class="o">=</span><span class="n">batched_positions</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                    <span class="n">lod</span><span class="o">=</span><span class="n">lod</span><span class="p">,</span>
+                    <span class="n">cast_shadow</span><span class="o">=</span><span class="n">cast_shadow</span><span class="p">,</span>
+                    <span class="n">receive_shadow</span><span class="o">=</span><span class="n">receive_shadow</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">BatchedGlbHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_add_gaussian_splats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GaussianSplatHandle</span><span class="p">:</span>

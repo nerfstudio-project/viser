@@ -350,6 +350,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/25_smpl_visualizer_skinned/">SMPL visualizer (Skinned Mesh)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/26_lighting/">Lighting and Shadows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/27_notifications/">Notifications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/28_meshes_batched/">Batched Meshes</a></li>
 </ul>
 
 </div>
@@ -950,6 +951,25 @@
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for mesh objects.&quot;&quot;&quot;</span></div>
 
+
+
+<div class="viewcode-block" id="BatchedMeshHandle">
+<a class="viewcode-back" href="../../../scene_handles/#viser.BatchedMeshHandle">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BatchedMeshHandle</span><span class="p">(</span>
+    <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
+    <span class="n">_messages</span><span class="o">.</span><span class="n">BatchedMeshesProps</span><span class="p">,</span>
+    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for batched mesh objects.&quot;&quot;&quot;</span></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BatchedGlbHandle</span><span class="p">(</span>
+    <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
+    <span class="n">_messages</span><span class="o">.</span><span class="n">BatchedGlbProps</span><span class="p">,</span>
+    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for batched GLB objects.&quot;&quot;&quot;</span>
 
 
 <div class="viewcode-block" id="GaussianSplatHandle">

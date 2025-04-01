@@ -351,6 +351,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/25_smpl_visualizer_skinned/">SMPL visualizer (Skinned Mesh)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/26_lighting/">Lighting and Shadows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/27_notifications/">Notifications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/28_meshes_batched/">Batched Meshes</a></li>
 </ul>
 
 </div>
@@ -1337,7 +1338,7 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshHandle.color">
-<span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.MeshHandle.color" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshHandle.color" title="Link to this definition">¶</a></dt>
 <dd><p>Color of the mesh as RGB integers. Synchronized automatically when assigned.</p>
 </dd></dl>
 
@@ -1381,6 +1382,162 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dt class="sig sig-object py" id="viser.MeshHandle.receive_shadow">
 <span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.MeshHandle.receive_shadow" title="Link to this definition">¶</a></dt>
 <dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">BatchedMeshHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#BatchedMeshHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.BatchedMeshHandle" title="Link to this definition">¶</a></dt>
+<dd><p>Handle for batched mesh objects.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#viser.BatchedMeshHandle.name" title="Link to this definition">¶</a></dt>
+<dd><p>Read-only name of the scene node.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.on_click">
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><span class="pre">SceneNodePointerEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Self</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><span class="pre">SceneNodePointerEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Self</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#viser.BatchedMeshHandle.on_click" title="Link to this definition">¶</a></dt>
+<dd><p>Attach a callback for when a scene node is clicked.</p>
+<p>The callback can be either a standard function or an async function:
+- Standard functions (def) will be executed in a threadpool.
+- Async functions (async def) will be executed in the event loop.</p>
+<p>Using async functions can be useful for reducing race conditions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<em>Self</em>)</p></li>
+<li><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><em>SceneNodePointerEvent</em></a><em>[</em><em>Self</em><em>]</em><em>]</em><em>, </em><em>NoneOrCoroutine</em><em>]</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Callable</em>[[<a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><em>SceneNodePointerEvent</em></a>[<em>Self</em>]], <em>NoneOrCoroutine</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#viser.BatchedMeshHandle.position" title="Link to this definition">¶</a></dt>
+<dd><p>Position of the scene node. This is equivalent to the t in
+<cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.BatchedMeshHandle.remove" title="Link to this definition">¶</a></dt>
+<dd><p>Remove the node from the scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.remove_click_callback">
+<span class="sig-name descname"><span class="pre">remove_click_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'all'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.BatchedMeshHandle.remove_click_callback" title="Link to this definition">¶</a></dt>
+<dd><p>Remove click callbacks from scene node.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>callback</strong> (<em>Literal</em><em>[</em><em>'all'</em><em>] </em><em>| </em><em>~typing.Callable</em>) – Either “all” to remove all callbacks, or a specific callback function to remove.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.visible">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.BatchedMeshHandle.visible" title="Link to this definition">¶</a></dt>
+<dd><p>Whether the scene node is visible or not. Synchronized to clients automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.wxyz">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#viser.BatchedMeshHandle.wxyz" title="Link to this definition">¶</a></dt>
+<dd><p>Orientation of the scene node. This is the quaternion representation of the R
+in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.vertices">
+<span class="sig-name descname"><span class="pre">vertices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.vertices" title="Link to this definition">¶</a></dt>
+<dd><p>A numpy array of vertex positions. Should have shape (V, 3). Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.faces">
+<span class="sig-name descname"><span class="pre">faces</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.uint32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.faces" title="Link to this definition">¶</a></dt>
+<dd><p>A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.color">
+<span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.color" title="Link to this definition">¶</a></dt>
+<dd><p>Color of the mesh as RGB integers. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.wireframe">
+<span class="sig-name descname"><span class="pre">wireframe</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.BatchedMeshHandle.wireframe" title="Link to this definition">¶</a></dt>
+<dd><p>Boolean indicating if the mesh should be rendered as a wireframe. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.opacity">
+<span class="sig-name descname"><span class="pre">opacity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.BatchedMeshHandle.opacity" title="Link to this definition">¶</a></dt>
+<dd><p>Opacity of the mesh. None means opaque. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.flat_shading">
+<span class="sig-name descname"><span class="pre">flat_shading</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.BatchedMeshHandle.flat_shading" title="Link to this definition">¶</a></dt>
+<dd><p>Whether to do flat shading. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.side">
+<span class="sig-name descname"><span class="pre">side</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'front'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'back'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'double'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.side" title="Link to this definition">¶</a></dt>
+<dd><p>Side of the surface to render. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.material">
+<span class="sig-name descname"><span class="pre">material</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'standard'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon3'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon5'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.material" title="Link to this definition">¶</a></dt>
+<dd><p>Material type of the mesh. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.cast_shadow">
+<span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.BatchedMeshHandle.cast_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.receive_shadow">
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.BatchedMeshHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.batched_wxyzs">
+<span class="sig-name descname"><span class="pre">batched_wxyzs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.batched_wxyzs" title="Link to this definition">¶</a></dt>
+<dd><p>Float array of shape (N, 4) representing quaternion rotations. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.batched_positions">
+<span class="sig-name descname"><span class="pre">batched_positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.batched_positions" title="Link to this definition">¶</a></dt>
+<dd><p>Float array of shape (N, 3) representing positions. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.lod">
+<span class="sig-name descname"><span class="pre">lod</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'auto'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'off'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.lod" title="Link to this definition">¶</a></dt>
+<dd><p>LOD settings. Either “auto”, “off”, or a tuple of (distance, ratio) pairs. Synchronized automatically when assigned.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1511,7 +1668,7 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.color">
-<span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.color" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.color" title="Link to this definition">¶</a></dt>
 <dd><p>Color of the mesh as RGB integers. Synchronized automatically when assigned.</p>
 </dd></dl>
 
@@ -2692,6 +2849,29 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <li><a class="reference internal" href="#viser.MeshHandle.material"><code class="docutils literal notranslate"><span class="pre">MeshHandle.material</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">MeshHandle.cast_shadow</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">MeshHandle.receive_shadow</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.name"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.name</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.on_click"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.on_click()</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.position"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.position</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.remove"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.remove()</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.remove_click_callback"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.remove_click_callback()</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.visible"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.visible</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.wxyz</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.vertices"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.vertices</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.faces"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.faces</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.color"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.color</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.wireframe"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.wireframe</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.opacity"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.opacity</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.flat_shading"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.flat_shading</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.side"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.side</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.material"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.material</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.cast_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.receive_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.batched_wxyzs"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.batched_wxyzs</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.batched_positions"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.batched_positions</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.lod"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.lod</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle</span></code></a><ul>
