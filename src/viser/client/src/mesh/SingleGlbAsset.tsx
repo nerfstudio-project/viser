@@ -1,10 +1,11 @@
 import React from "react";
 import * as THREE from "three";
-import { createPortal } from "@react-three/fiber";
 import { GlbMessage } from "../WebsocketMessages";
 import { useGlbLoader } from "./GlbLoaderUtils";
-import { OutlinesIfHovered } from "../OutlinesIfHovered";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
+import { HoverableContext } from "../HoverContext";
+import { OutlinesMaterial } from "../Outlines";
+import { ViewerContext } from "../ViewerContext";
 
 /**
  * Component for rendering a single GLB model
@@ -26,29 +27,60 @@ export const SingleGlbAsset = React.forwardRef<THREE.Group, GlbMessage>(
       });
     }, [gltf, message.props.cast_shadow, message.props.receive_shadow]);
 
-    // Apply material settings to meshes
-    // This is a placeholder for any future material updates needed
-    // Currently, we don't need to modify materials for GLB assets since they don't have a color property
-    React.useEffect(() => {
-      // Dependency on meshes is kept to ensure this runs when meshes are loaded
-      // In the future, material-specific properties can be updated here if needed
-    }, [meshes]);
-
     // Update animations on each frame if mixer exists.
     useFrame((_, delta: number) => {
       mixerRef.current?.update(delta);
     });
+
+    // Get rendering context for screen size.
+    const gl = useThree((state) => state.gl);
+    const contextSize = React.useMemo(
+      () => gl.getDrawingBufferSize(new THREE.Vector2()),
+      [gl],
+    );
+
+    // Hover/clicking.
+    const outlineMaterial = React.useMemo(() => {
+      const material = new OutlinesMaterial({
+        side: THREE.BackSide,
+      });
+      material.thickness = 10;
+      material.color = new THREE.Color(0xfbff00); // Yellow highlight color
+      material.opacity = 0.8;
+      material.size = contextSize;
+      material.transparent = true;
+      material.screenspace = true; // Use screenspace for consistent thickness
+      material.toneMapped = true;
+      return material;
+    }, [contextSize]);
+    const outlineRef = React.useRef<THREE.Group>(null);
+    const hoveredRef = React.useContext(HoverableContext)!;
+    const viewer = React.useContext(ViewerContext)!;
+    useFrame(() => {
+      if (outlineRef.current === null) return;
+      outlineRef.current.visible = hoveredRef.current.isHovered;
+    });
+    const clickable =
+      viewer.useSceneTree(
+        (state) => state.nodeFromName[message.name]?.clickable,
+      ) ?? false;
 
     if (!gltf) return null;
 
     return (
       <group ref={ref}>
         <primitive object={gltf.scene} scale={message.props.scale} />
-        {meshes.map((mesh, i) => (
-          <React.Fragment key={i}>
-            {createPortal(<OutlinesIfHovered alwaysMounted />, mesh)}
-          </React.Fragment>
-        ))}
+        {clickable ? (
+          <group ref={outlineRef} visible={false}>
+            {meshes.map((mesh, i) => (
+              <mesh
+                key={i}
+                geometry={mesh.geometry}
+                material={outlineMaterial}
+              />
+            ))}
+          </group>
+        ) : null}
       </group>
     );
   },
