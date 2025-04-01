@@ -180,15 +180,17 @@ export class BatchedMeshManager {
 
   /**
    * Update shadow settings without recreating the mesh
+   * @param castShadow Whether meshes should cast shadows
+   * @param receiveShadow Whether meshes should receive shadows
    */
   updateShadowSettings(castShadow: boolean, receiveShadow: boolean) {
     // Update main instance mesh
     this.instancedMesh.castShadow = castShadow;
     this.instancedMesh.receiveShadow = receiveShadow;
-
-    // Update all LOD levels
-    if (this.instancedMesh.LODinfo && this.instancedMesh.LODinfo.objects) {
-      this.instancedMesh.LODinfo.objects.forEach((obj) => {
+    
+    // Update all LOD objects
+    if (this.instancedMesh.LODinfo?.objects) {
+      this.instancedMesh.LODinfo.objects.forEach(obj => {
         obj.castShadow = castShadow;
         obj.receiveShadow = receiveShadow;
       });
@@ -197,44 +199,46 @@ export class BatchedMeshManager {
   
   /**
    * Update material color without recreating the mesh
+   * @param color RGB color values as a tuple [r, g, b]
    */
   updateMaterialColor(color: [number, number, number]) {
-    // Helper function to convert RGB array to integer
-    const rgbToInt = (rgb: [number, number, number]): number => {
-      return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
-    };
+    // Convert RGB array to integer (using bit shift)
+    const colorHex = (color[0] << 16) | (color[1] << 8) | color[2];
     
-    // Get all materials from the mesh (main and LODs)
-    const materials: THREE.Material[] = [];
-    
-    // Get main mesh material
+    // Update materials that have a color property
+    this.forEachMaterial((material) => {
+      if ('color' in material && material.color instanceof THREE.Color) {
+        material.color.setHex(colorHex);
+      }
+    });
+  }
+  
+  /**
+   * Helper function to iterate over all materials in the instanced mesh and its LODs
+   * @param callback Function to call for each material
+   */
+  private forEachMaterial(callback: (material: THREE.Material) => void) {
+    // Process the main mesh material
     if (this.instancedMesh.material) {
       if (Array.isArray(this.instancedMesh.material)) {
-        materials.push(...this.instancedMesh.material);
+        this.instancedMesh.material.forEach(callback);
       } else {
-        materials.push(this.instancedMesh.material);
+        callback(this.instancedMesh.material);
       }
     }
     
-    // Get LOD materials
-    if (this.instancedMesh.LODinfo && this.instancedMesh.LODinfo.objects) {
+    // Process materials from LOD levels
+    if (this.instancedMesh.LODinfo?.objects) {
       this.instancedMesh.LODinfo.objects.forEach((obj) => {
         if (obj.material) {
           if (Array.isArray(obj.material)) {
-            materials.push(...obj.material);
+            obj.material.forEach(callback);
           } else {
-            materials.push(obj.material);
+            callback(obj.material);
           }
         }
       });
     }
-    
-    // Update color on all materials
-    materials.forEach((material) => {
-      if ('color' in material && material.color instanceof THREE.Color) {
-        material.color.setHex(rgbToInt(color));
-      }
-    });
   }
 
   /** Dispose all resources */

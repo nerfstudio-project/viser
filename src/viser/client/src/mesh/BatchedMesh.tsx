@@ -21,16 +21,16 @@ export const BatchedMesh = React.forwardRef<
     ) ?? false;
 
   // Setup material using memoization, but without color in dependencies
-  // Color will be updated separately with updateMaterialColor
+  // We'll update color separately via updateMaterialColor for better performance
   const material = React.useMemo(() => {
+    // Create material with an initial color that will be immediately updated in useEffect
     return createStandardMaterial({
       ...message.props,
-      // Use a default color, we'll update it separately
-      color: message.props.color || [200, 200, 200]
+      color: [128, 128, 128] // Initial neutral gray, will be updated
     });
   }, [
+    // Dependencies excluding color (handled separately for performance)
     message.props.material,
-    // message.props.color, // Removed from dependencies
     message.props.wireframe,
     message.props.opacity,
     message.props.flat_shading,
@@ -114,12 +114,15 @@ export const BatchedMesh = React.forwardRef<
     message.props.batched_positions.byteLength, // Keep this to handle instance count changes
   ]);
 
-  // Add useEffect to handle position updates
+  // Effects for properties that can be updated without recreating the mesh
+  // We use separate effects to minimize unnecessary work when only some props change
+  
+  // 1. Update instance transforms (positions and orientations)
   React.useEffect(() => {
     meshManager.updateInstances(batched_positions, batched_wxyzs);
   }, [meshManager, batched_positions, batched_wxyzs]);
   
-  // Add useEffect to handle shadow setting updates
+  // 2. Update shadow settings
   React.useEffect(() => {
     meshManager.updateShadowSettings(
       message.props.cast_shadow,
@@ -127,7 +130,7 @@ export const BatchedMesh = React.forwardRef<
     );
   }, [meshManager, message.props.cast_shadow, message.props.receive_shadow]);
   
-  // Add useEffect to handle color updates without recreating material
+  // 3. Update material color
   React.useEffect(() => {
     if (message.props.color) {
       meshManager.updateMaterialColor(message.props.color);
