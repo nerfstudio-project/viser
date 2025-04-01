@@ -173,6 +173,21 @@ export class BatchedMeshManager {
     return this.instancedMesh;
   }
 
+  /** Update shadow settings */
+  updateShadowSettings(castShadow: boolean, receiveShadow: boolean) {
+    // Update main instance mesh
+    this.instancedMesh.castShadow = castShadow;
+    this.instancedMesh.receiveShadow = receiveShadow;
+
+    // Update all LOD levels
+    if (this.instancedMesh.LODinfo && this.instancedMesh.LODinfo.objects) {
+      this.instancedMesh.LODinfo.objects.forEach((obj) => {
+        obj.castShadow = castShadow;
+        obj.receiveShadow = receiveShadow;
+      });
+    }
+  }
+
   /** Dispose all resources */
   dispose() {
     // Dispose all LOD geometries

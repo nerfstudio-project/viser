@@ -94,8 +94,8 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
             node.material,
             numInstances,
             message.props.lod,
-            message.props.cast_shadow,
-            message.props.receive_shadow,
+            message.props.cast_shadow, // Initial value
+            message.props.receive_shadow, // Initial value
             Math.max(scale.x, scale.y, scale.z),
           );
 
@@ -109,12 +109,10 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
     }, [
       gltf,
       message.props.lod,
-      message.props.cast_shadow,
-      message.props.receive_shadow,
       message.props.batched_positions.byteLength,
     ]);
 
-    // Add new useEffect to handle position updates
+    // Add useEffect to handle position updates
     React.useEffect(() => {
       if (meshState && meshState.managers) {
         meshState.managers.forEach((manager, index) => {
@@ -126,6 +124,18 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
         });
       }
     }, [meshState, batched_positions, batched_wxyzs]);
+
+    // Add useEffect to handle shadow setting updates
+    React.useEffect(() => {
+      if (meshState && meshState.managers) {
+        meshState.managers.forEach((manager) => {
+          manager.updateShadowSettings(
+            message.props.cast_shadow,
+            message.props.receive_shadow
+          );
+        });
+      }
+    }, [meshState, message.props.cast_shadow, message.props.receive_shadow]);
 
     // Clean up resources when dependencies change or component unmounts.
     React.useEffect(() => {
