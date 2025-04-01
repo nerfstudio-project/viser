@@ -37,6 +37,10 @@ methods like :func:`viser.ViserServer.add_frame()` or
 
 .. autoclass:: viser.MeshHandle
 
+.. autoclass:: viser.BatchedMeshHandle
+
+.. autoclass:: viser.BatchedGlbHandle
+
 .. autoclass:: viser.MeshSkinnedHandle
 
 .. autoclass:: viser.MeshSkinnedBoneHandle
