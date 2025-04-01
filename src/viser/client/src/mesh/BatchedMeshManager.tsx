@@ -142,16 +142,17 @@ export class BatchedMeshManager {
             : 3;
 
         // Create a new toon material with the same properties
-        lodMaterial = new THREE.MeshToonMaterial({
+        // The flatShading property exists in THREE.Material but is not in the MeshToonMaterialParameters types
+        const materialProps: THREE.MeshToonMaterialParameters & { flatShading?: boolean } = {
           gradientMap: this.getGradientMap(shades),
           color: toonMat.color.clone(),
           wireframe: toonMat.wireframe,
           transparent: toonMat.transparent,
           opacity: toonMat.opacity,
-          // @ts-ignore - flatShading exists on MeshToonMaterial but is missing from type definitions
-          flatShading: toonMat.flatShading,
+          flatShading: (toonMat as any).flatShading,
           side: toonMat.side,
-        });
+        };
+        lodMaterial = new THREE.MeshToonMaterial(materialProps);
       } else {
         // For other material types, just clone the material
         lodMaterial = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material).clone();
