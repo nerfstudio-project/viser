@@ -45,9 +45,9 @@ export class BatchedMeshManager {
     material: THREE.Material,
     numInstances: number,
     lodSetting: "off" | "auto" | [number, number][],
-    castShadow: boolean,
-    receiveShadow: boolean,
     scale?: number,
+    castShadow: boolean = true,
+    receiveShadow: boolean = true,
   ) {
     this.geometry = geometry.clone();
     this.instancedMesh = new InstancedMesh2(this.geometry, material);
@@ -56,7 +56,7 @@ export class BatchedMeshManager {
 
     // Setup LODs if needed
     if (lodSetting !== "off") {
-      this.setupLODs(this.geometry, material, lodSetting, castShadow, scale);
+      this.setupLODs(this.geometry, material, lodSetting, castShadow, receiveShadow, scale);
     }
 
     // Setup instances
@@ -69,6 +69,7 @@ export class BatchedMeshManager {
     material: THREE.Material,
     lodSetting: "auto" | [number, number][],
     castShadow: boolean,
+    receiveShadow: boolean,
     scale?: number,
   ) {
     const dummyMesh = new THREE.Mesh(geometry, material);
@@ -82,6 +83,14 @@ export class BatchedMeshManager {
         lodSetting.map((pair) => pair[1]),
         lodSetting.map((pair) => pair[0]),
       );
+    }
+
+    // Apply shadow settings to all LOD objects
+    if (this.instancedMesh.LODinfo && this.instancedMesh.LODinfo.objects) {
+      this.instancedMesh.LODinfo.objects.forEach((obj) => {
+        obj.castShadow = castShadow;
+        obj.receiveShadow = receiveShadow;
+      });
     }
   }
 
@@ -107,10 +116,6 @@ export class BatchedMeshManager {
 
       // Store the geometry for proper disposal later
       this.lodGeometries.push(lodGeometry);
-    });
-    this.instancedMesh.LODinfo.objects.forEach((obj) => {
-      obj.castShadow = this.instancedMesh.castShadow;
-      obj.receiveShadow = this.instancedMesh.receiveShadow;
     });
   }
 
@@ -173,7 +178,9 @@ export class BatchedMeshManager {
     return this.instancedMesh;
   }
 
-  /** Update shadow settings */
+  /**
+   * Update shadow settings without recreating the mesh
+   */
   updateShadowSettings(castShadow: boolean, receiveShadow: boolean) {
     // Update main instance mesh
     this.instancedMesh.castShadow = castShadow;

@@ -8,7 +8,7 @@ import { ViewerContext } from "../ViewerContext";
 
 /**
  * Component for rendering batched/instanced GLB models
- * 
+ *
  * Note: Batched GLB has some limitations:
  * - Animations are not supported
  * - The hierarchy in the GLB is flattened
@@ -94,8 +94,6 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
             node.material,
             numInstances,
             message.props.lod,
-            message.props.cast_shadow, // Initial value
-            message.props.receive_shadow, // Initial value
             Math.max(scale.x, scale.y, scale.z),
           );
 
@@ -106,32 +104,28 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       });
 
       return { instancedGroup, managers, transforms };
-    }, [
-      gltf,
-      message.props.lod,
-      message.props.batched_positions.byteLength,
-    ]);
+    }, [gltf, message.props.lod, message.props.batched_positions.byteLength]);
 
-    // Add useEffect to handle position updates
+    // Update instance positions and rotations
     React.useEffect(() => {
       if (meshState && meshState.managers) {
         meshState.managers.forEach((manager, index) => {
           manager.updateInstances(
             batched_positions,
             batched_wxyzs,
-            meshState.transforms[index]
+            meshState.transforms[index],
           );
         });
       }
     }, [meshState, batched_positions, batched_wxyzs]);
 
-    // Add useEffect to handle shadow setting updates
+    // Update shadow settings
     React.useEffect(() => {
       if (meshState && meshState.managers) {
         meshState.managers.forEach((manager) => {
           manager.updateShadowSettings(
             message.props.cast_shadow,
-            message.props.receive_shadow
+            message.props.receive_shadow,
           );
         });
       }
