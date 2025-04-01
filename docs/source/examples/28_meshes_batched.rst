@@ -87,7 +87,7 @@ same mesh, but have some limitations:
             wiggle_checkbox = server.gui.add_checkbox("Wiggle", initial_value=False)
 
             # Allow user to toggle LOD.
-            lod_checkbox = server.gui.add_checkbox("Enable LoD", initial_value=True)
+            lod_checkbox = server.gui.add_checkbox("Enable LOD", initial_value=True)
 
             @lod_checkbox.on_update
             def _(_):
