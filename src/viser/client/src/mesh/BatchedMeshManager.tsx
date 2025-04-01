@@ -148,12 +148,13 @@ export class BatchedMeshManager {
           wireframe: toonMat.wireframe,
           transparent: toonMat.transparent,
           opacity: toonMat.opacity,
+          // @ts-ignore - flatShading exists on MeshToonMaterial but is missing from type definitions
           flatShading: toonMat.flatShading,
           side: toonMat.side,
         });
       } else {
         // For other material types, just clone the material
-        lodMaterial = mesh.material.clone();
+        lodMaterial = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material).clone();
       }
 
       // Add this LOD level to the instanced mesh
