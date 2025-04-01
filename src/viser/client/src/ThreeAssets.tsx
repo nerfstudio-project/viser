@@ -141,8 +141,14 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
     // Update material properties with point_ball_norm
     React.useEffect(() => {
       material.uniforms.scale.value = 10.0;
-      material.uniforms.point_ball_norm.value = props.point_ball_norm;
-    }, [props.point_ball_norm, material]);
+      material.uniforms.point_ball_norm.value = {
+        square: Infinity,
+        diamond: 1.0,
+        circle: 2.0,
+        rounded: 3.0,
+        sparkle: 0.6,
+      }[props.point_shape];
+    }, [props.point_shape, material]);
 
     const rendererSize = new THREE.Vector2();
     useFrame(() => {
