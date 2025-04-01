@@ -67,7 +67,7 @@ function SceneNodeThreeChildren(props: {
       if (
         newChildren === undefined ||
         newChildren === children || // Note that this won't check for elementwise equality!
-        (newChildren.length === 0 && children.length == 0)
+        (newChildren.length === 0 && children.length === 0)
       )
         return;
 
@@ -540,6 +540,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             />
           </group>
         ),
+        // CsmDirectionalLight is not influenced by visibility, since the
+        // lights it adds are portaled to the scene root.
+        unmountWhenInvisible: true,
       };
     }
 

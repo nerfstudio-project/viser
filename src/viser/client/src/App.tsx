@@ -754,7 +754,7 @@ function ViserLogo() {
           onClick={openAbout}
           title="About Viser"
         >
-          <Image src="/logo.svg" style={{ width: "2.5em", height: "auto" }} />
+          <Image src="./logo.svg" style={{ width: "2.5em", height: "auto" }} />
         </Box>
       </Tooltip>
       <Modal

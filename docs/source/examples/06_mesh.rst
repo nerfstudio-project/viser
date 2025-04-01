@@ -18,6 +18,7 @@ Visualize a mesh. To get the demo data, see ``./assets/download_dragon_mesh.sh``
 
         import numpy as np
         import trimesh
+
         import viser
         import viser.transforms as tf
 

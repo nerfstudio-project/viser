@@ -20,7 +20,7 @@ from typing import (
 
 import numpy as np
 import numpy.typing as onpt
-from typing_extensions import Self, get_type_hints
+from typing_extensions import Self, get_type_hints, override
 
 from . import _messages
 from .infra._infra import WebsockClientConnection, WebsockServer
@@ -43,8 +43,25 @@ def colors_to_uint8(colors: np.ndarray) -> onpt.NDArray[np.uint8]:
     return colors
 
 
-class _OverridableScenePropApi:
-    """Mixin that allows reading/assigning properties defined in each scene node message."""
+class _HasCastArrayDtypes:
+    def _cast_array_dtypes(
+        self, prop_hints: Dict[str, Any], prop_name: str, value: np.ndarray
+    ) -> np.ndarray:
+        """Helper used by __setattr__, which casts assigned values to the
+        correct type."""
+        hint = prop_hints[prop_name]
+        if hint == onpt.NDArray[np.float32]:
+            value = value.astype(np.float32)
+        elif hint == onpt.NDArray[np.float16]:
+            value = value.astype(np.float16)
+        elif hint == onpt.NDArray[np.uint8] and "color" in prop_name:
+            value = colors_to_uint8(value)
+        return value
+
+
+class _OverridableScenePropApi(_HasCastArrayDtypes):
+    """Mixin that allows reading/assigning properties defined in each scene
+    node message."""
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name == "_impl":
@@ -53,14 +70,7 @@ class _OverridableScenePropApi:
         handle = cast(SceneNodeHandle, self)
         # Get the value of the T TypeVar.
         if name in self._prop_hints:
-            # Help the user with some casting...
-            hint = self._prop_hints[name]
-            if hint == onpt.NDArray[np.float32]:
-                value = value.astype(np.float32)
-            elif hint == onpt.NDArray[np.float16]:
-                value = value.astype(np.float16)
-            elif hint == onpt.NDArray[np.uint8] and "color" in name:
-                value = colors_to_uint8(value)
+            value = self._cast_array_dtypes(self._prop_hints, name, value)
 
             current_value = getattr(handle._impl.props, name)
 
@@ -463,9 +473,24 @@ class SpotLightHandle(
 class PointCloudHandle(
     SceneNodeHandle,
     _messages.PointCloudProps,
-    _OverridableScenePropApi if not TYPE_CHECKING else object,
+    # We need `_HasCastArrayDtypes` here for type checking on `_cast_array_dtypes`.
+    _OverridableScenePropApi if not TYPE_CHECKING else _HasCastArrayDtypes,
 ):
     """Handle for point clouds. Does not support click events."""
+
+    @override
+    def _cast_array_dtypes(
+        self,
+        prop_hints: Dict[str, Any],
+        prop_name: str,
+        value: np.ndarray,
+    ) -> np.ndarray:
+        """Casts assigned `points` based on the current value of `precision`."""
+        if prop_name == "points":
+            return value.astype(
+                {"float16": np.float16, "float32": np.float32}[self.precision]
+            )
+        return super()._cast_array_dtypes(prop_hints, prop_name, value)
 
 
 class BatchedAxesHandle(

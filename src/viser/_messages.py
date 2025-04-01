@@ -179,7 +179,8 @@ class ViewerCameraMessage(Message):
     fov: float
     near: float
     far: float
-    aspect: float
+    image_height: int
+    image_width: int
     look_at: Tuple[float, float, float]
     up_direction: Tuple[float, float, float]
 
@@ -386,7 +387,7 @@ class PointCloudMessage(_CreateSceneNodeMessage):
 
 @dataclasses.dataclass
 class PointCloudProps:
-    points: npt.NDArray[np.float16]
+    points: Union[npt.NDArray[np.float16], npt.NDArray[np.float32]]
     """Location of points. Should have shape (N, 3). Synchronized automatically when assigned."""
     colors: npt.NDArray[np.uint8]
     """Colors of points. Should have shape (N, 3) or (3,). Synchronized automatically when assigned."""
@@ -394,6 +395,10 @@ class PointCloudProps:
     """Size of each point. Synchronized automatically when assigned."""
     point_ball_norm: float
     """Norm value determining the shape of each point. Synchronized automatically when assigned."""
+    precision: Literal["float16", "float32"]
+    """Precision of the point cloud. Assignments to `points` are automatically casted
+    based on the current precision value. Updates to `points` should therefore happen
+    *after* updates to `precision`. Synchronized automatically when assigned."""
 
     def __post_init__(self):
         # Check shapes.
@@ -401,7 +406,10 @@ class PointCloudProps:
         assert self.points.shape[-1] == 3
 
         # Check dtypes.
-        assert self.points.dtype == np.float16
+        if self.precision == "float16":
+            assert self.points.dtype == np.float16
+        else:
+            assert self.points.dtype == np.float32
         assert self.colors.dtype == np.uint8
 
 

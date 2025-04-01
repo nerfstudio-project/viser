@@ -70,11 +70,6 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
                 average_up /= np.linalg.norm(average_up)
                 server.scene.set_up_direction((average_up[0], average_up[1], average_up[2]))
 
-            # Get transformed z-coordinates and place grid at 5th percentile height.
-            transformed_z = points[..., 2]
-            grid_height = float(np.percentile(transformed_z, 5))
-            server.scene.add_grid(name="/grid", position=(0.0, 0.0, grid_height))
-
             @gui_reset_up.on_click
             def _(event: viser.GuiEvent) -> None:
                 client = event.client
@@ -172,8 +167,9 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
             @gui_points.on_update
             def _(_) -> None:
                 point_mask = np.random.choice(points.shape[0], gui_points.value, replace=False)
-                point_cloud.points = points[point_mask]
-                point_cloud.colors = colors[point_mask]
+                with server.atomic():
+                    point_cloud.points = points[point_mask]
+                    point_cloud.colors = colors[point_mask]
 
             @gui_frames.on_update
             def _(_) -> None:

@@ -488,7 +488,7 @@ class SceneApi:
         )
         return SpotLightHandle._make(self, message, name, wxyz, position, visible)
 
-    def set_environment_map(
+    def configure_environment_map(
         self,
         hdri: None
         | Literal[
@@ -520,7 +520,7 @@ class SceneApi:
             0.0,
         ),
     ) -> None:
-        """Set the environment map for the scene. This will set some lights and background.
+        """Configure the environment map for the scene. This will set some lights and background.
 
         Args:
             hdri: Preset HDRI environment to use.
@@ -551,7 +551,7 @@ class SceneApi:
         """Configure the default lights in the scene.
 
         This does not affect lighting from the environment map. To turn these off,
-        see :meth:`SceneApi.set_environment_map()`.
+        see :meth:`SceneApi.configure_environment_map()`.
 
         Args:
             enabled: Whether or not the lights are enabled.
@@ -569,6 +569,13 @@ class SceneApi:
                 DeprecationWarning,
             )
             return self.configure_default_lights(*args, **kwargs)
+
+        def set_environment_map(self, *args, **kwargs) -> None:
+            warnings.warn(
+                "The 'set_environment_map' method has been renamed to 'configure_environment_map'.",
+                DeprecationWarning,
+            )
+            return self.configure_environment_map(*args, **kwargs)
 
     def add_glb(
         self,
@@ -1069,6 +1076,7 @@ class SceneApi:
         point_shape: Literal[
             "square", "diamond", "circle", "rounded", "sparkle"
         ] = "square",
+        precision: Literal["float16", "float32"] = "float16",
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1081,6 +1089,8 @@ class SceneApi:
             colors: Colors of points. Should have shape (N, 3) or (3,).
             point_size: Size of each point.
             point_shape: Shape to draw each point.
+            precision: Precision of the point cloud data. The input points array
+                will be cast to this precision.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -1099,7 +1109,12 @@ class SceneApi:
         message = _messages.PointCloudMessage(
             name=name,
             props=_messages.PointCloudProps(
-                points=points.astype(np.float16),
+                points=points.astype(
+                    {
+                        "float16": np.float16,
+                        "float32": np.float32,
+                    }[precision]
+                ),
                 colors=colors_cast,
                 point_size=point_size,
                 point_ball_norm={
@@ -1109,6 +1124,7 @@ class SceneApi:
                     "rounded": 3.0,
                     "sparkle": 0.6,
                 }[point_shape],
+                precision=precision,
             ),
         )
         return PointCloudHandle._make(self, message, name, wxyz, position, visible)

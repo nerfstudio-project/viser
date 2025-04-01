@@ -1,6 +1,5 @@
-# GUI Handles
-
-<!-- prettier-ignore-start -->
+GUI Handles
+===========
 
 .. autoclass:: viser.GuiInputHandle()
 
@@ -43,5 +42,3 @@
 .. autoclass:: viser.GuiVector2Handle()
 
 .. autoclass:: viser.GuiVector3Handle()
-
-<!-- prettier-ignore-end -->

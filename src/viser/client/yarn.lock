@@ -659,7 +659,7 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@react-three/drei@10.0.5":
+"@react-three/drei@^10.0.5":
   version "10.0.5"
   resolved "https://registry.yarnpkg.com/@react-three/drei/-/drei-10.0.5.tgz#55991173d4d212726a001fe51cc827ff7aa48c3e"
   integrity sha512-zK1QOm5g46RANYUKlf6qZQg+n+qyBWT1sOUfHNwXf6L2Cn4cgxMpJV4Lue7IyytAZXUCzhGAgPiG13D0hKH1Gg==

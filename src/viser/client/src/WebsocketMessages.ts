@@ -124,6 +124,7 @@ export interface PointCloudMessage {
     colors: Uint8Array;
     point_size: number;
     point_ball_norm: number;
+    precision: "float16" | "float32";
   };
 }
 /** Directional light message.
@@ -853,7 +854,8 @@ export interface ViewerCameraMessage {
   fov: number;
   near: number;
   far: number;
-  aspect: number;
+  image_height: number;
+  image_width: number;
   look_at: [number, number, number];
   up_direction: [number, number, number];
 }

@@ -9,8 +9,6 @@
 import os
 from typing import Dict, List
 
-import m2r2
-
 import viser
 
 # -- Path setup --------------------------------------------------------------
@@ -56,7 +54,6 @@ extensions = [
     "sphinx.ext.napoleon",
     # "sphinx.ext.inheritance_diagram",
     "sphinx.ext.viewcode",
-    "m2r2",
     "sphinxcontrib.programoutput",
     "sphinxcontrib.ansi",
     "sphinxcontrib.googleanalytics",  # google analytics extension https://github.com/sphinx-contrib/googleanalytics/tree/master
@@ -103,7 +100,7 @@ templates_path = ["_templates"]
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_suffix = [".rst", ".md"]
+source_suffix = ".rst"
 # source_suffix = ".rst"
 
 # The master toctree document.
@@ -122,7 +119,7 @@ language: str = "en"
 exclude_patterns: List[str] = []
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "monokai"
+pygments_style = "default"
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -235,18 +232,10 @@ googleanalytics_id = "G-RRGY51J5ZH"
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
 
-# -- Enable Markdown -> RST conversion ----------------------------------------
-
-
-def docstring(app, what, name, obj, options, lines):
-    md = "\n".join(lines)
-    rst = m2r2.convert(md)
-    lines.clear()
-    lines += rst.splitlines()
+# -- Setup function ----------------------------------------
 
 
 def setup(app):
-    app.connect("autodoc-process-docstring", docstring)
     app.add_css_file("css/custom.css")
 
 
