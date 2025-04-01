@@ -1,6 +1,12 @@
 """Batched Meshes
 
 Visualize batched meshes. To get the demo data, see `./assets/download_dragon_mesh.sh`.
+
+Note that batched meshes are optimized for rendering many instances of the
+same mesh, but have some limitations:
+- Animations in GLB files are not supported
+- GLB hierarchy is flattened
+- Each mesh in the GLB is instanced separately
 """
 
 from __future__ import annotations

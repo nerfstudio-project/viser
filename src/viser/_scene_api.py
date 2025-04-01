@@ -1355,6 +1355,10 @@ class SceneApi:
     ) -> BatchedMeshHandle:
         """Add batched meshes to the scene.
 
+        Note:
+            Batched mesh instances are optimized for rendering many instances of the
+            same mesh efficiently.
+
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
                 define a kinematic tree.
@@ -1375,6 +1379,9 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not these meshes are initially visible.
+            cast_shadow: Whether these meshes should cast shadows.
+            receive_shadow: Whether these meshes should receive shadows.
+
         Returns:
             Handle for manipulating scene node.
         """
@@ -1432,17 +1439,29 @@ class SceneApi:
     ) -> BatchedGlbHandle:
         """Add batched trimesh meshes to the scene.
 
+        Note:
+            Batched mesh instances are optimized for rendering many instances of the
+            same mesh. However, there are some limitations:
+            - Animations in the GLB file are not supported
+            - The node hierarchy from the GLB file is flattened
+            - Each mesh in the GLB is instanced separately
+
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
               define a kinematic tree.
             mesh: A trimesh mesh object.
             batched_wxyzs: Float array of shape (N, 4) for orientations.
             batched_positions: Float array of shape (N, 3) for positions.
-            scale: A scale for resizing the mesh.
             lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
+            scale: A scale for resizing the mesh.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
+            cast_shadow: Whether these meshes should cast shadows.
+            receive_shadow: Whether these meshes should receive shadows.
+
+        Returns:
+            Handle for manipulating scene node.
         """
         batched_wxyzs = np.asarray(batched_wxyzs)
         batched_positions = np.asarray(batched_positions)

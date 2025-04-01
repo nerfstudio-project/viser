@@ -9,6 +9,11 @@ import { ViewerContext } from "../ViewerContext";
 
 /**
  * Component for rendering batched/instanced GLB models
+ * 
+ * Note: Batched GLB has some limitations:
+ * - Animations are not supported
+ * - The hierarchy in the GLB is flattened
+ * - Each mesh in the GLB is instanced separately
  */
 export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
   function BatchedGlbAsset(message, ref) {
@@ -18,16 +23,12 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
         (state) => state.nodeFromName[message.name]?.clickable,
       ) ?? false;
 
-    const { gltf, mixerRef } = useGlbLoader(
+    // Note: We don't support animations for batched meshes
+    const { gltf } = useGlbLoader(
       message.props.glb_data,
       message.props.cast_shadow,
       message.props.receive_shadow,
     );
-
-    // Update animations on each frame if mixer exists.
-    useFrame((_, delta: number) => {
-      mixerRef.current?.update(delta);
-    });
 
     // Create Float32Arrays once for positions and orientations.
     const batched_positions = React.useMemo(
