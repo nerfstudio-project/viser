@@ -86,7 +86,7 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
           const numInstances =
             message.props.batched_positions.byteLength /
             (3 * Float32Array.BYTES_PER_ELEMENT);
-          
+
           // Create manager without shadow settings to avoid recreation - we'll set them in useEffect
           const manager = new BatchedMeshManager(
             node.geometry,
@@ -129,39 +129,7 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
         });
       }
     }, [meshState, message.props.cast_shadow, message.props.receive_shadow]);
-    
-    // 3. Update material properties - separate effect for better performance
-    React.useEffect(() => {
-      if (meshState && meshState.managers) {
-        // Map string side values to THREE constants
-        const side = {
-          front: THREE.FrontSide,
-          back: THREE.BackSide,
-          double: THREE.DoubleSide,
-        }[message.props.side];
-        
-        // Update all material properties efficiently without recreation
-        meshState.managers.forEach((manager) => {
-          manager.updateMaterialProperties({
-            color: message.props.color,
-            wireframe: message.props.wireframe,
-            opacity: message.props.opacity,
-            flatShading: message.props.flat_shading && !message.props.wireframe,
-            side: side,
-            transparent: message.props.opacity !== null,
-            materialType: message.props.material,
-          });
-        });
-      }
-    }, [
-      meshState,
-      message.props.color,
-      message.props.wireframe,
-      message.props.opacity,
-      message.props.flat_shading,
-      message.props.side,
-      message.props.material,
-    ]);
+
 
     // Clean up resources when dependencies change or component unmounts.
     React.useEffect(() => {
@@ -179,7 +147,7 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
         }
       };
     }, [meshState]);
-    
+
     if (!gltf || !meshState) return null;
 
     return (
