@@ -393,8 +393,8 @@ class PointCloudProps:
     """Colors of points. Should have shape (N, 3) or (3,). Synchronized automatically when assigned."""
     point_size: float
     """Size of each point. Synchronized automatically when assigned."""
-    point_ball_norm: float
-    """Norm value determining the shape of each point. Synchronized automatically when assigned."""
+    point_shape: Literal["square", "diamond", "circle", "rounded", "sparkle"]
+    """Shape to draw each point. Synchronized automatically when assigned."""
     precision: Literal["float16", "float32"]
     """Precision of the point cloud. Assignments to `points` are automatically casted
     based on the current precision value. Updates to `points` should therefore happen

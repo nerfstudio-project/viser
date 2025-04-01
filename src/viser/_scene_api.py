@@ -1117,13 +1117,7 @@ class SceneApi:
                 ),
                 colors=colors_cast,
                 point_size=point_size,
-                point_ball_norm={
-                    "square": float("inf"),
-                    "diamond": 1.0,
-                    "circle": 2.0,
-                    "rounded": 3.0,
-                    "sparkle": 0.6,
-                }[point_shape],
+                point_shape=point_shape,
                 precision=precision,
             ),
         )
