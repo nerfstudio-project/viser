@@ -746,6 +746,7 @@ export interface GuiTextMessage {
     hint: string | null;
     visible: boolean;
     disabled: boolean;
+    multiline: boolean;
   };
 }
 /** GuiDropdownMessage(uuid: 'str', value: 'str', container_uuid: 'str', props: 'GuiDropdownProps')

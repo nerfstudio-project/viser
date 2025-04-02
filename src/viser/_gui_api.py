@@ -983,6 +983,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
+        multiline: bool = False,
     ) -> GuiTextHandle:
         """Add a text input to the GUI.
 
@@ -993,6 +994,7 @@ class GuiApi:
             visible: Whether the text input is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
+            multiline: Whether the text input supports multiple lines.
 
         Returns:
             A handle that can be used to interact with the GUI element.
@@ -1014,6 +1016,7 @@ class GuiApi:
                         hint=hint,
                         disabled=disabled,
                         visible=visible,
+                        multiline=multiline,
                     ),
                 ),
             )

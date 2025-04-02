@@ -49,6 +49,11 @@ def main() -> None:
                 "Text",
                 initial_value="Hello world",
             )
+            gui_text_multiline = server.gui.add_text(
+                "Text area",
+                initial_value="Hello\nWorld",
+                multiline=True
+            )
             gui_button = server.gui.add_button("Button")
             gui_checkbox_disable = server.gui.add_checkbox(
                 "Disable",
@@ -113,6 +118,7 @@ def main() -> None:
 
         # We can use `.visible` and `.disabled` to toggle GUI elements.
         gui_text.visible = not gui_checkbox_hide.value
+        gui_text_multiline.visible = not gui_checkbox_hide.value
         gui_button.visible = not gui_checkbox_hide.value
         gui_rgb.disabled = gui_checkbox_disable.value
         gui_button.disabled = gui_checkbox_disable.value
