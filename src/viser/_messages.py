@@ -179,7 +179,8 @@ class ViewerCameraMessage(Message):
     fov: float
     near: float
     far: float
-    aspect: float
+    image_height: int
+    image_width: int
     look_at: Tuple[float, float, float]
     up_direction: Tuple[float, float, float]
 
@@ -386,14 +387,18 @@ class PointCloudMessage(_CreateSceneNodeMessage):
 
 @dataclasses.dataclass
 class PointCloudProps:
-    points: npt.NDArray[np.float16]
+    points: Union[npt.NDArray[np.float16], npt.NDArray[np.float32]]
     """Location of points. Should have shape (N, 3). Synchronized automatically when assigned."""
     colors: npt.NDArray[np.uint8]
     """Colors of points. Should have shape (N, 3) or (3,). Synchronized automatically when assigned."""
     point_size: float
     """Size of each point. Synchronized automatically when assigned."""
-    point_ball_norm: float
-    """Norm value determining the shape of each point. Synchronized automatically when assigned."""
+    point_shape: Literal["square", "diamond", "circle", "rounded", "sparkle"]
+    """Shape to draw each point. Synchronized automatically when assigned."""
+    precision: Literal["float16", "float32"]
+    """Precision of the point cloud. Assignments to `points` are automatically casted
+    based on the current precision value. Updates to `points` should therefore happen
+    *after* updates to `precision`. Synchronized automatically when assigned."""
 
     def __post_init__(self):
         # Check shapes.
@@ -401,7 +406,10 @@ class PointCloudProps:
         assert self.points.shape[-1] == 3
 
         # Check dtypes.
-        assert self.points.dtype == np.float16
+        if self.precision == "float16":
+            assert self.points.dtype == np.float16
+        else:
+            assert self.points.dtype == np.float32
         assert self.colors.dtype == np.uint8
 
 
@@ -573,7 +581,7 @@ class MeshProps:
     """A numpy array of vertex positions. Should have shape (V, 3). Synchronized automatically when assigned."""
     faces: npt.NDArray[np.uint32]
     """A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). Synchronized automatically when assigned."""
-    color: Union[Tuple[int, int, int], None]
+    color: Tuple[int, int, int]
     """Color of the mesh as RGB integers. Synchronized automatically when assigned."""
     wireframe: bool
     """Boolean indicating if the mesh should be rendered as a wireframe. Synchronized automatically when assigned."""
@@ -635,6 +643,46 @@ class SkinnedMeshProps(MeshProps):
             == self.skin_weights.shape
             == (self.vertices.shape[0], 4)
         )
+
+
+@dataclasses.dataclass
+class BatchedMeshesMessage(_CreateSceneNodeMessage):
+    """Message from server->client carrying batched meshes information."""
+
+    props: BatchedMeshesProps
+
+
+@dataclasses.dataclass
+class _BatchedMeshExtraProps:
+    batched_wxyzs: npt.NDArray[np.float32]
+    """Float array of shape (N, 4) representing quaternion rotations. Synchronized automatically when assigned."""
+    batched_positions: npt.NDArray[np.float32]
+    """Float array of shape (N, 3) representing positions. Synchronized automatically when assigned."""
+    lod: Union[Literal["auto", "off"], Tuple[Tuple[float, float], ...]]
+    """LOD settings. Either "auto", "off", or a tuple of (distance, ratio) pairs. Synchronized automatically when assigned."""
+
+    def __post_init__(self):
+        # Check shapes.
+        assert self.batched_wxyzs.shape[-1] == 4
+        assert self.batched_positions.shape[-1] == 3
+        assert self.batched_wxyzs.shape[0] == self.batched_positions.shape[0]
+
+
+@dataclasses.dataclass
+class BatchedMeshesProps(MeshProps, _BatchedMeshExtraProps):
+    """Batched meshes message."""
+
+
+@dataclasses.dataclass
+class BatchedGlbMessage(_CreateSceneNodeMessage):
+    """Message from server->client carrying batched GLB information."""
+
+    props: BatchedGlbProps
+
+
+@dataclasses.dataclass
+class BatchedGlbProps(GlbProps, _BatchedMeshExtraProps):
+    """Batched GLB message."""
 
 
 @dataclasses.dataclass

@@ -201,7 +201,7 @@ Example adding lights and enabling shadow rendering.
                 )
 
             def update_environment_map(_) -> None:
-                server.scene.set_environment_map(
+                server.scene.configure_environment_map(
                     gui_env_preset.value if gui_env_preset.value != "None" else None,
                     background=gui_background.value,
                     background_blurriness=gui_bg_blurriness.value,

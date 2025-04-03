@@ -1599,14 +1599,14 @@ class GuiApi:
             )
         )
 
-    class GuiMessage(Protocol[GuiInputPropsType]):
+    class _GuiMessage(Protocol[GuiInputPropsType]):
         uuid: str
         props: GuiInputPropsType
 
     def _create_gui_input(
         self,
         value: T,
-        message: GuiMessage,
+        message: _GuiMessage,
         is_button: bool = False,
     ) -> _GuiHandleState[T]:
         """Private helper for adding a simple GUI element."""

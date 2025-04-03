@@ -17,6 +17,8 @@ from . import transforms as tf
 from ._scene_handles import (
     AmbientLightHandle,
     BatchedAxesHandle,
+    BatchedGlbHandle,
+    BatchedMeshHandle,
     BoneState,
     CameraFrustumHandle,
     DirectionalLightHandle,
@@ -486,7 +488,7 @@ class SceneApi:
         )
         return SpotLightHandle._make(self, message, name, wxyz, position, visible)
 
-    def set_environment_map(
+    def configure_environment_map(
         self,
         hdri: None
         | Literal[
@@ -518,7 +520,7 @@ class SceneApi:
             0.0,
         ),
     ) -> None:
-        """Set the environment map for the scene. This will set some lights and background.
+        """Configure the environment map for the scene. This will set some lights and background.
 
         Args:
             hdri: Preset HDRI environment to use.
@@ -549,7 +551,7 @@ class SceneApi:
         """Configure the default lights in the scene.
 
         This does not affect lighting from the environment map. To turn these off,
-        see :meth:`SceneApi.set_environment_map()`.
+        see :meth:`SceneApi.configure_environment_map()`.
 
         Args:
             enabled: Whether or not the lights are enabled.
@@ -567,6 +569,13 @@ class SceneApi:
                 DeprecationWarning,
             )
             return self.configure_default_lights(*args, **kwargs)
+
+        def set_environment_map(self, *args, **kwargs) -> None:
+            warnings.warn(
+                "The 'set_environment_map' method has been renamed to 'configure_environment_map'.",
+                DeprecationWarning,
+            )
+            return self.configure_environment_map(*args, **kwargs)
 
     def add_glb(
         self,
@@ -1067,6 +1076,7 @@ class SceneApi:
         point_shape: Literal[
             "square", "diamond", "circle", "rounded", "sparkle"
         ] = "square",
+        precision: Literal["float16", "float32"] = "float16",
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1079,6 +1089,8 @@ class SceneApi:
             colors: Colors of points. Should have shape (N, 3) or (3,).
             point_size: Size of each point.
             point_shape: Shape to draw each point.
+            precision: Precision of the point cloud data. The input points array
+                will be cast to this precision.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -1097,16 +1109,16 @@ class SceneApi:
         message = _messages.PointCloudMessage(
             name=name,
             props=_messages.PointCloudProps(
-                points=points.astype(np.float16),
+                points=points.astype(
+                    {
+                        "float16": np.float16,
+                        "float32": np.float32,
+                    }[precision]
+                ),
                 colors=colors_cast,
                 point_size=point_size,
-                point_ball_norm={
-                    "square": float("inf"),
-                    "diamond": 1.0,
-                    "circle": 2.0,
-                    "rounded": 3.0,
-                    "sparkle": 0.6,
-                }[point_shape],
+                point_shape=point_shape,
+                precision=precision,
             ),
         )
         return PointCloudHandle._make(self, message, name, wxyz, position, visible)
@@ -1330,6 +1342,160 @@ class SceneApi:
                 position=position,
                 visible=visible,
             )
+
+    def add_batched_meshes_simple(
+        self,
+        name: str,
+        vertices: np.ndarray,
+        faces: np.ndarray,
+        batched_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
+        batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        lod: Literal["auto", "off"] | tuple[tuple[float, float], ...] = "off",
+        color: RgbTupleOrArray = (90, 200, 255),
+        wireframe: bool = False,
+        opacity: float | None = None,
+        material: Literal["standard", "toon3", "toon5"] = "standard",
+        flat_shading: bool = False,
+        side: Literal["front", "back", "double"] = "front",
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
+    ) -> BatchedMeshHandle:
+        """Add batched meshes to the scene.
+
+        Note:
+            Batched mesh instances are optimized for rendering many instances of the
+            same mesh efficiently.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            vertices: A numpy array of vertex positions. Should have shape (V, 3).
+            faces: A numpy array of faces, where each face is represented by indices of
+                vertices. Should have shape (F, 3).
+            batched_wxyzs: Float array of shape (N, 4) for orientations.
+            batched_positions: Float array of shape (N, 3) for positions.
+            lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
+            color: Color of the meshes as an RGB tuple.
+            wireframe: Boolean indicating if the meshes should be rendered as wireframes.
+            opacity: Opacity of the meshes. None means opaque.
+            material: Material type of the meshes ('standard', 'toon3', 'toon5').
+                This argument is ignored when wireframe=True.
+            flat_shading: Whether to do flat shading. This argument is ignored
+                when wireframe=True.
+            side: Side of the surface to render ('front', 'back', 'double').
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation from parent frame to local frame (t_pl).
+            visible: Whether or not these meshes are initially visible.
+            cast_shadow: Whether these meshes should cast shadows.
+            receive_shadow: Whether these meshes should receive shadows.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+        if wireframe and material != "standard":
+            warnings.warn(
+                f"Invalid combination of {wireframe=} and {material=}. Material argument will be ignored.",
+                stacklevel=2,
+            )
+        if wireframe and flat_shading:
+            warnings.warn(
+                f"Invalid combination of {wireframe=} and {flat_shading=}. Flat shading argument will be ignored.",
+                stacklevel=2,
+            )
+
+        batched_wxyzs = np.asarray(batched_wxyzs)
+        batched_positions = np.asarray(batched_positions)
+
+        num_instances = batched_wxyzs.shape[0]
+        assert batched_wxyzs.shape == (num_instances, 4)
+        assert batched_positions.shape == (num_instances, 3)
+
+        message = _messages.BatchedMeshesMessage(
+            name=name,
+            props=_messages.BatchedMeshesProps(
+                vertices=vertices.astype(np.float32),
+                faces=faces.astype(np.uint32),
+                batched_wxyzs=batched_wxyzs.astype(np.float32),
+                batched_positions=batched_positions.astype(np.float32),
+                color=_encode_rgb(color),
+                wireframe=wireframe,
+                opacity=opacity,
+                flat_shading=flat_shading,
+                side=side,
+                material=material,
+                lod=lod,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
+            ),
+        )
+        return BatchedMeshHandle._make(self, message, name, wxyz, position, visible)
+
+    def add_batched_meshes_trimesh(
+        self,
+        name: str,
+        mesh: trimesh.Trimesh,
+        batched_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
+        batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        lod: Literal["auto", "off"] | tuple[tuple[float, float], ...] = "off",
+        scale: float = 1.0,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
+    ) -> BatchedGlbHandle:
+        """Add batched trimesh meshes to the scene.
+
+        Note:
+            Batched mesh instances are optimized for rendering many instances of the
+            same mesh. However, there are some limitations:
+            - Animations in the GLB file are not supported
+            - The node hierarchy from the GLB file is flattened
+            - Each mesh in the GLB is instanced separately
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+              define a kinematic tree.
+            mesh: A trimesh mesh object.
+            batched_wxyzs: Float array of shape (N, 4) for orientations.
+            batched_positions: Float array of shape (N, 3) for positions.
+            lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
+            scale: A scale for resizing the mesh.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+            cast_shadow: Whether these meshes should cast shadows.
+            receive_shadow: Whether these meshes should receive shadows.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+        batched_wxyzs = np.asarray(batched_wxyzs)
+        batched_positions = np.asarray(batched_positions)
+
+        num_instances = batched_wxyzs.shape[0]
+        assert batched_wxyzs.shape == (num_instances, 4)
+        assert batched_positions.shape == (num_instances, 3)
+
+        with io.BytesIO() as data_buffer:
+            mesh.export(data_buffer, file_type="glb")
+            glb_data = data_buffer.getvalue()
+            message = _messages.BatchedGlbMessage(
+                name=name,
+                props=_messages.BatchedGlbProps(
+                    glb_data=glb_data,
+                    scale=scale,
+                    batched_wxyzs=batched_wxyzs.astype(np.float32),
+                    batched_positions=batched_positions.astype(np.float32),
+                    lod=lod,
+                    cast_shadow=cast_shadow,
+                    receive_shadow=receive_shadow,
+                ),
+            )
+            return BatchedGlbHandle._make(self, message, name, wxyz, position, visible)
 
     def _add_gaussian_splats(self, *args, **kwargs) -> GaussianSplatHandle:
         """Backwards compatibility shim. Use `add_gaussian_splats()` instead."""
