@@ -794,7 +794,7 @@ export function SceneNodeThreeObject(props: {
   });
 
   if (objNode === undefined || unmount) {
-    return <>{children}</>;
+    return null;
   } else {
     return (
       <>
