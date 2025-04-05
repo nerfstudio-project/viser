@@ -22,12 +22,14 @@ export default function TextInputComponent({
           }}
           styles={{
             input: {
-              minHeight: "1.625rem",
               padding: "0 0.5em",
             },
           }}
           disabled={disabled}
+          minRows={2}
+          maxRows={6}
           autosize
+          resize="vertical"
         />
       ) : (
         <TextInput

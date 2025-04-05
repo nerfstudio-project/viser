@@ -52,7 +52,7 @@ def main() -> None:
             gui_text_multiline = server.gui.add_text(
                 "Text area",
                 initial_value="Hello\nWorld",
-                multiline=True
+                multiline=True,
             )
             gui_button = server.gui.add_button("Button")
             gui_checkbox_disable = server.gui.add_checkbox(

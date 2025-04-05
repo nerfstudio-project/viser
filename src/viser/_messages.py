@@ -1227,7 +1227,7 @@ class GuiVector3Message(_CreateGuiComponentMessage):
 
 @dataclasses.dataclass
 class GuiTextProps(GuiBaseProps):
-    pass
+    multiline: bool
 
 
 @dataclasses.dataclass
