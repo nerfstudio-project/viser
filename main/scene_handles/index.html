@@ -1543,6 +1543,126 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">BatchedGlbHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#BatchedGlbHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.BatchedGlbHandle" title="Link to this definition">¶</a></dt>
+<dd><p>Handle for batched GLB objects.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#viser.BatchedGlbHandle.name" title="Link to this definition">¶</a></dt>
+<dd><p>Read-only name of the scene node.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.on_click">
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><span class="pre">SceneNodePointerEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Self</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><span class="pre">SceneNodePointerEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Self</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#viser.BatchedGlbHandle.on_click" title="Link to this definition">¶</a></dt>
+<dd><p>Attach a callback for when a scene node is clicked.</p>
+<p>The callback can be either a standard function or an async function:
+- Standard functions (def) will be executed in a threadpool.
+- Async functions (async def) will be executed in the event loop.</p>
+<p>Using async functions can be useful for reducing race conditions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<em>Self</em>)</p></li>
+<li><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><em>SceneNodePointerEvent</em></a><em>[</em><em>Self</em><em>]</em><em>]</em><em>, </em><em>NoneOrCoroutine</em><em>]</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Callable</em>[[<a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><em>SceneNodePointerEvent</em></a>[<em>Self</em>]], <em>NoneOrCoroutine</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#viser.BatchedGlbHandle.position" title="Link to this definition">¶</a></dt>
+<dd><p>Position of the scene node. This is equivalent to the t in
+<cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.BatchedGlbHandle.remove" title="Link to this definition">¶</a></dt>
+<dd><p>Remove the node from the scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.remove_click_callback">
+<span class="sig-name descname"><span class="pre">remove_click_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'all'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.BatchedGlbHandle.remove_click_callback" title="Link to this definition">¶</a></dt>
+<dd><p>Remove click callbacks from scene node.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>callback</strong> (<em>Literal</em><em>[</em><em>'all'</em><em>] </em><em>| </em><em>~typing.Callable</em>) – Either “all” to remove all callbacks, or a specific callback function to remove.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.visible">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.BatchedGlbHandle.visible" title="Link to this definition">¶</a></dt>
+<dd><p>Whether the scene node is visible or not. Synchronized to clients automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.wxyz">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#viser.BatchedGlbHandle.wxyz" title="Link to this definition">¶</a></dt>
+<dd><p>Orientation of the scene node. This is the quaternion representation of the R
+in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.glb_data">
+<span class="sig-name descname"><span class="pre">glb_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#viser.BatchedGlbHandle.glb_data" title="Link to this definition">¶</a></dt>
+<dd><p>A binary payload containing the GLB data. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.scale">
+<span class="sig-name descname"><span class="pre">scale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#viser.BatchedGlbHandle.scale" title="Link to this definition">¶</a></dt>
+<dd><p>A scale for resizing the GLB asset. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.cast_shadow">
+<span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.BatchedGlbHandle.cast_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.receive_shadow">
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.BatchedGlbHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.batched_wxyzs">
+<span class="sig-name descname"><span class="pre">batched_wxyzs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedGlbHandle.batched_wxyzs" title="Link to this definition">¶</a></dt>
+<dd><p>Float array of shape (N, 4) representing quaternion rotations. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.batched_positions">
+<span class="sig-name descname"><span class="pre">batched_positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedGlbHandle.batched_positions" title="Link to this definition">¶</a></dt>
+<dd><p>Float array of shape (N, 3) representing positions. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.lod">
+<span class="sig-name descname"><span class="pre">lod</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'auto'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'off'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedGlbHandle.lod" title="Link to this definition">¶</a></dt>
+<dd><p>LOD settings. Either “auto”, “off”, or a tuple of (distance, ratio) pairs. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">MeshSkinnedHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#MeshSkinnedHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.MeshSkinnedHandle" title="Link to this definition">¶</a></dt>
 <dd><p>Handle for skinned mesh objects.</p>
@@ -2874,6 +2994,23 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <li><a class="reference internal" href="#viser.BatchedMeshHandle.batched_wxyzs"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.batched_wxyzs</span></code></a></li>
 <li><a class="reference internal" href="#viser.BatchedMeshHandle.batched_positions"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.batched_positions</span></code></a></li>
 <li><a class="reference internal" href="#viser.BatchedMeshHandle.lod"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.lod</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.name"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.name</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.on_click"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.on_click()</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.position"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.position</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.remove"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.remove()</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.remove_click_callback"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.remove_click_callback()</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.visible"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.visible</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.wxyz</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.glb_data"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.glb_data</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.scale"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.scale</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.cast_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.receive_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.batched_wxyzs"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.batched_wxyzs</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.batched_positions"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.batched_positions</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.lod"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.lod</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle</span></code></a><ul>
