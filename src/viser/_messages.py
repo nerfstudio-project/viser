@@ -721,17 +721,6 @@ class TransformControlsMessage(_CreateSceneNodeMessage):
 
     props: TransformControlsProps
 
-    # disable_axes: Boolean to disable axes interaction. These are used
-    #     for translation in the X, Y, or Z directions.
-    # disable_sliders: Boolean to disable slider interaction. These are
-    #     used for translation on the XY, YZ, or XZ planes.
-    # disable_rotations: Boolean to disable rotation interaction. These
-    #     are used for rotation around the X, Y, or Z axes.
-    # depth_test: Boolean indicating if depth testing should be used when
-    #     rendering. Setting to False can be used to render the gizmo
-    #     event when occluded by other objects.
-    #
-
 
 @dataclasses.dataclass
 class TransformControlsProps:
