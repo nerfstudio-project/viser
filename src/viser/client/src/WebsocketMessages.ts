@@ -305,7 +305,6 @@ export interface TransformControlsMessage {
     scale: number;
     line_width: number;
     fixed: boolean;
-    auto_transform: boolean;
     active_axes: [boolean, boolean, boolean];
     disable_axes: boolean;
     disable_sliders: boolean;
