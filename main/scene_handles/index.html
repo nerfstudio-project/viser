@@ -2041,12 +2041,6 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="viser.TransformControlsHandle.auto_transform">
-<span class="sig-name descname"><span class="pre">auto_transform</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.TransformControlsHandle.auto_transform" title="Link to this definition">¶</a></dt>
-<dd><p>Whether the transform should be applied automatically. Synchronized automatically when assigned.</p>
-</dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.active_axes">
 <span class="sig-name descname"><span class="pre">active_axes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.TransformControlsHandle.active_axes" title="Link to this definition">¶</a></dt>
 <dd><p>Tuple of booleans indicating active axes. Synchronized automatically when assigned.</p>
@@ -2055,19 +2049,25 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.disable_axes">
 <span class="sig-name descname"><span class="pre">disable_axes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.TransformControlsHandle.disable_axes" title="Link to this definition">¶</a></dt>
-<dd><p>Boolean to disable axes interaction. Synchronized automatically when assigned.</p>
+<dd><p>Tuple of booleans indicating if axes are disabled. These are used for
+translation in the X, Y, or Z directions. Synchronized automatically when
+assigned.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.disable_sliders">
 <span class="sig-name descname"><span class="pre">disable_sliders</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.TransformControlsHandle.disable_sliders" title="Link to this definition">¶</a></dt>
-<dd><p>Boolean to disable slider interaction. Synchronized automatically when assigned.</p>
+<dd><p>Tuple of booleans indicating if sliders are disabled. These are used for
+translation on the XY, YZ, or XZ planes. Synchronized automatically when
+assigned.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.disable_rotations">
 <span class="sig-name descname"><span class="pre">disable_rotations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.TransformControlsHandle.disable_rotations" title="Link to this definition">¶</a></dt>
-<dd><p>Boolean to disable rotation interaction. Synchronized automatically when assigned.</p>
+<dd><p>Tuple of booleans indicating if rotations are disabled. These are used
+for rotation around the X, Y, or Z axes. Synchronized automatically when
+assigned.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2085,7 +2085,9 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.depth_test">
 <span class="sig-name descname"><span class="pre">depth_test</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.TransformControlsHandle.depth_test" title="Link to this definition">¶</a></dt>
-<dd><p>Boolean indicating if depth testing should be used when rendering. Synchronized automatically when assigned.</p>
+<dd><p>Boolean indicating if depth testing should be used when rendering.
+Setting to False can be used to render the gizmo even when occluded by
+other objects. Synchronized automatically when assigned.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2954,7 +2956,6 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <li><a class="reference internal" href="#viser.TransformControlsHandle.scale"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.scale</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.line_width"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.line_width</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.fixed"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.fixed</span></code></a></li>
-<li><a class="reference internal" href="#viser.TransformControlsHandle.auto_transform"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.auto_transform</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.active_axes"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.active_axes</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.disable_axes"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.disable_axes</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.disable_sliders"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.disable_sliders</span></code></a></li>

@@ -2243,7 +2243,6 @@
         <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">line_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.5</span><span class="p">,</span>
         <span class="n">fixed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">auto_transform</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">active_axes</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
         <span class="n">disable_axes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">disable_sliders</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -2271,14 +2270,18 @@
 <span class="sd">            scale: Scale of the transform controls.</span>
 <span class="sd">            line_width: Width of the lines used in the gizmo.</span>
 <span class="sd">            fixed: Boolean indicating if the gizmo should be fixed in position.</span>
-<span class="sd">            auto_transform: Whether the transform should be applied automatically.</span>
-<span class="sd">            active_axes: tuple of booleans indicating active axes.</span>
-<span class="sd">            disable_axes: Boolean to disable axes interaction.</span>
-<span class="sd">            disable_sliders: Boolean to disable slider interaction.</span>
-<span class="sd">            disable_rotations: Boolean to disable rotation interaction.</span>
+<span class="sd">            active_axes: Tuple of booleans indicating active axes.</span>
+<span class="sd">            disable_axes: Boolean to disable axes interaction. These are used</span>
+<span class="sd">                for translation in the X, Y, or Z directions.</span>
+<span class="sd">            disable_sliders: Boolean to disable slider interaction. These are</span>
+<span class="sd">                used for translation on the XY, YZ, or XZ planes.</span>
+<span class="sd">            disable_rotations: Boolean to disable rotation interaction. These</span>
+<span class="sd">                are used for rotation around the X, Y, or Z axes.</span>
 <span class="sd">            translation_limits: Limits for translation.</span>
 <span class="sd">            rotation_limits: Limits for rotation.</span>
-<span class="sd">            depth_test: Boolean indicating if depth testing should be used when rendering.</span>
+<span class="sd">            depth_test: Boolean indicating if depth testing should be used when</span>
+<span class="sd">                rendering. Setting to False can be used to render the gizmo</span>
+<span class="sd">                event when occluded by other objects.</span>
 <span class="sd">            opacity: Opacity of the gizmo.</span>
 <span class="sd">            wxyz: Quaternion rotation to parent frame from local frame (R_pl).</span>
 <span class="sd">            position: Translation from parent frame to local frame (t_pl).</span>
@@ -2293,7 +2296,6 @@
                 <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span>
                 <span class="n">line_width</span><span class="o">=</span><span class="n">line_width</span><span class="p">,</span>
                 <span class="n">fixed</span><span class="o">=</span><span class="n">fixed</span><span class="p">,</span>
-                <span class="n">auto_transform</span><span class="o">=</span><span class="n">auto_transform</span><span class="p">,</span>
                 <span class="n">active_axes</span><span class="o">=</span><span class="n">active_axes</span><span class="p">,</span>
                 <span class="n">disable_axes</span><span class="o">=</span><span class="n">disable_axes</span><span class="p">,</span>
                 <span class="n">disable_sliders</span><span class="o">=</span><span class="n">disable_sliders</span><span class="p">,</span>
