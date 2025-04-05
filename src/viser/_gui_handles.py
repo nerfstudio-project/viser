@@ -66,7 +66,7 @@ if TYPE_CHECKING:
 
 
 T = TypeVar("T")
-TGuiHandle = TypeVar("TGuiHandle", bound="_GuiInputHandle")
+TGuiHandle = TypeVar("TGuiHandle", bound="_GuiHandle")
 NoneOrCoroutine = TypeVar("NoneOrCoroutine", None, Coroutine)
 
 
@@ -167,8 +167,7 @@ class _GuiHandle(
         ]
         parent._children[self._impl.uuid] = self
 
-        if isinstance(self, _GuiInputHandle):
-            self._impl.gui_api._gui_input_handle_from_uuid[self._impl.uuid] = self
+        self._impl.gui_api._gui_handle_from_uuid[self._impl.uuid] = self
 
     def remove(self) -> None:
         """Permanently remove this GUI element from the visualizer."""
@@ -193,8 +192,7 @@ class _GuiHandle(
         parent = gui_api._container_handle_from_uuid[self._impl.parent_container_id]
         parent._children.pop(self._impl.uuid)
 
-        if isinstance(self, _GuiInputHandle):
-            gui_api._gui_input_handle_from_uuid.pop(self._impl.uuid)
+        gui_api._gui_handle_from_uuid.pop(self._impl.uuid)
 
 
 class _GuiInputHandle(
@@ -824,7 +822,7 @@ class GuiPlotlyHandle(_GuiHandle[None], GuiPlotlyProps):
         self._plotly_json_str = json_str
 
 
-class GuiImageHandle(_GuiHandle[None], GuiImageProps):
+class GuiImageHandle(_GuiHandle[Tuple[float, float]], GuiImageProps):
     """Handle for updating and removing images."""
 
     def __init__(
@@ -836,6 +834,36 @@ class GuiImageHandle(_GuiHandle[None], GuiImageProps):
         super().__init__(_impl=_impl)
         self._image = _image
         self._jpeg_quality = _jpeg_quality
+
+    @property
+    def clicked_xy(self) -> Tuple[float, float]:
+        """Last-clicked XY coordinate of the image. Normalized [0, 1]."""
+        return self._impl.value
+
+    def on_click(
+        self, func: Callable[[GuiEvent[TGuiHandle]], NoneOrCoroutine]
+    ) -> Callable[[GuiEvent[TGuiHandle]], NoneOrCoroutine]:
+        """Attach a function to call when an image is clicked."""
+        self._impl.update_cb.append(func)
+        self._clickable = True
+        return func
+
+    def remove_click_callback(
+        self, callback: Literal["all"] | Callable = "all"
+    ) -> None:
+        """Remove click callbacks from the GUI input.
+
+        Args:
+            callback: Either "all" to remove all callbacks, or a specific callback function to remove.
+        """
+        if callback == "all":
+            self._impl.update_cb.clear()
+        else:
+            self._impl.update_cb = [cb for cb in self._impl.update_cb if cb != callback]
+
+        # Set clickable to False if not more callbacks.
+        if len(self._impl.update_cb) == 0:
+            self._clickable = False
 
     @property
     def image(self) -> np.ndarray:
