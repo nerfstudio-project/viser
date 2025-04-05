@@ -721,6 +721,17 @@ class TransformControlsMessage(_CreateSceneNodeMessage):
 
     props: TransformControlsProps
 
+    # disable_axes: Boolean to disable axes interaction. These are used
+    #     for translation in the X, Y, or Z directions.
+    # disable_sliders: Boolean to disable slider interaction. These are
+    #     used for translation on the XY, YZ, or XZ planes.
+    # disable_rotations: Boolean to disable rotation interaction. These
+    #     are used for rotation around the X, Y, or Z axes.
+    # depth_test: Boolean indicating if depth testing should be used when
+    #     rendering. Setting to False can be used to render the gizmo
+    #     event when occluded by other objects.
+    #
+
 
 @dataclasses.dataclass
 class TransformControlsProps:
@@ -730,16 +741,20 @@ class TransformControlsProps:
     """Width of the lines used in the gizmo. Synchronized automatically when assigned."""
     fixed: bool
     """Boolean indicating if the gizmo should be fixed in position. Synchronized automatically when assigned."""
-    auto_transform: bool
-    """Whether the transform should be applied automatically. Synchronized automatically when assigned."""
     active_axes: Tuple[bool, bool, bool]
     """Tuple of booleans indicating active axes. Synchronized automatically when assigned."""
     disable_axes: bool
-    """Boolean to disable axes interaction. Synchronized automatically when assigned."""
+    """Tuple of booleans indicating if axes are disabled. These are used for
+    translation in the X, Y, or Z directions. Synchronized automatically when
+    assigned."""
     disable_sliders: bool
-    """Boolean to disable slider interaction. Synchronized automatically when assigned."""
+    """Tuple of booleans indicating if sliders are disabled. These are used for
+    translation on the XY, YZ, or XZ planes. Synchronized automatically when
+    assigned."""
     disable_rotations: bool
-    """Boolean to disable rotation interaction. Synchronized automatically when assigned."""
+    """Tuple of booleans indicating if rotations are disabled. These are used
+    for rotation around the X, Y, or Z axes. Synchronized automatically when
+    assigned."""
     translation_limits: Tuple[
         Tuple[float, float], Tuple[float, float], Tuple[float, float]
     ]
@@ -749,7 +764,9 @@ class TransformControlsProps:
     ]
     """Limits for rotation. Synchronized automatically when assigned."""
     depth_test: bool
-    """Boolean indicating if depth testing should be used when rendering. Synchronized automatically when assigned."""
+    """Boolean indicating if depth testing should be used when rendering.
+    Setting to False can be used to render the gizmo even when occluded by
+    other objects. Synchronized automatically when assigned."""
     opacity: float
     """Opacity of the gizmo. Synchronized automatically when assigned."""
 
