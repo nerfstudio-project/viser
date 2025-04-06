@@ -317,7 +317,6 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
               scale={message.props.scale}
               lineWidth={message.props.line_width}
               fixed={message.props.fixed}
-              autoTransform={message.props.auto_transform}
               activeAxes={message.props.active_axes}
               disableAxes={message.props.disable_axes}
               disableSliders={message.props.disable_sliders}
@@ -803,7 +802,7 @@ export function SceneNodeThreeObject(props: {
   });
 
   if (objNode === undefined || unmount) {
-    return <>{children}</>;
+    return null;
   } else {
     return (
       <>

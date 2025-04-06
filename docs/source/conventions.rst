@@ -1,10 +1,10 @@
 Frame Conventions
-===============
+=================
 
 In this note, we describe the coordinate frame conventions used in ``viser``.
 
 Scene tree naming
-----------------
+-----------------
 
 Each object that we add to the scene in viser is instantiated as a node in a
 scene tree. The structure of this tree is determined by the names assigned to
@@ -38,7 +38,7 @@ where ``wxyz`` is the quaternion form of the :math:`\mathrm{SO}(3)` matrix
 :math:`t`.
 
 World coordinates
----------------
+-----------------
 
 In the world coordinate space, +Z points upward by default. This can be
 overridden with :func:`viser.SceneApi.set_up_direction()`.

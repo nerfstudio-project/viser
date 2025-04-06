@@ -305,7 +305,6 @@ export interface TransformControlsMessage {
     scale: number;
     line_width: number;
     fixed: boolean;
-    auto_transform: boolean;
     active_axes: [boolean, boolean, boolean];
     disable_axes: boolean;
     disable_sliders: boolean;
@@ -749,6 +748,7 @@ export interface GuiTextMessage {
     hint: string | null;
     visible: boolean;
     disabled: boolean;
+    multiline: boolean;
   };
 }
 /** GuiDropdownMessage(uuid: 'str', value: 'str', container_uuid: 'str', props: 'GuiDropdownProps')

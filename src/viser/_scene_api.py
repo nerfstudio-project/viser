@@ -1780,7 +1780,6 @@ class SceneApi:
         scale: float = 1.0,
         line_width: float = 2.5,
         fixed: bool = False,
-        auto_transform: bool = True,
         active_axes: tuple[bool, bool, bool] = (True, True, True),
         disable_axes: bool = False,
         disable_sliders: bool = False,
@@ -1808,14 +1807,18 @@ class SceneApi:
             scale: Scale of the transform controls.
             line_width: Width of the lines used in the gizmo.
             fixed: Boolean indicating if the gizmo should be fixed in position.
-            auto_transform: Whether the transform should be applied automatically.
-            active_axes: tuple of booleans indicating active axes.
-            disable_axes: Boolean to disable axes interaction.
-            disable_sliders: Boolean to disable slider interaction.
-            disable_rotations: Boolean to disable rotation interaction.
+            active_axes: Tuple of booleans indicating active axes.
+            disable_axes: Boolean to disable axes interaction. These are used
+                for translation in the X, Y, or Z directions.
+            disable_sliders: Boolean to disable slider interaction. These are
+                used for translation on the XY, YZ, or XZ planes.
+            disable_rotations: Boolean to disable rotation interaction. These
+                are used for rotation around the X, Y, or Z axes.
             translation_limits: Limits for translation.
             rotation_limits: Limits for rotation.
-            depth_test: Boolean indicating if depth testing should be used when rendering.
+            depth_test: Boolean indicating if depth testing should be used when
+                rendering. Setting to False can be used to render the gizmo
+                event when occluded by other objects.
             opacity: Opacity of the gizmo.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
@@ -1830,7 +1833,6 @@ class SceneApi:
                 scale=scale,
                 line_width=line_width,
                 fixed=fixed,
-                auto_transform=auto_transform,
                 active_axes=active_axes,
                 disable_axes=disable_axes,
                 disable_sliders=disable_sliders,
