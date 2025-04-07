@@ -28,6 +28,7 @@ from ._notification_handle import NotificationHandle as NotificationHandle
 from ._scene_api import SceneApi as SceneApi
 from ._scene_handles import AmbientLightHandle as AmbientLightHandle
 from ._scene_handles import BatchedAxesHandle as BatchedAxesHandle
+from ._scene_handles import BatchedGlbHandle as BatchedGlbHandle
 from ._scene_handles import BatchedMeshHandle as BatchedMeshHandle
 from ._scene_handles import CameraFrustumHandle as CameraFrustumHandle
 from ._scene_handles import DirectionalLightHandle as DirectionalLightHandle
