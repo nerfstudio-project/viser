@@ -9,8 +9,10 @@ import { OutlinesMaterial } from "../Outlines";
  */
 interface BatchedMeshHoverOutlinesProps {
   geometry: THREE.BufferGeometry;
-  batched_positions: Float32Array;
-  batched_wxyzs: Float32Array;
+  /** Raw bytes containing float32 position values (xyz) */
+  batched_positions: Uint8Array;
+  /** Raw bytes containing float32 quaternion values (wxyz) */
+  batched_wxyzs: Uint8Array;
   meshTransform?: {
     position: THREE.Vector3;
     rotation: THREE.Quaternion;
@@ -25,6 +27,17 @@ interface BatchedMeshHoverOutlinesProps {
  * A reusable component that renders hover outlines for batched/instanced meshes
  * Shows a highlighted outline around the instance that is currently being hovered
  */
+// Static reusable objects for matrix operations.
+const _tempObjects = {
+  instanceMatrix: new THREE.Matrix4(),
+  transformMatrix: new THREE.Matrix4(),
+  finalMatrix: new THREE.Matrix4(),
+  position: new THREE.Vector3(),
+  quaternion: new THREE.Quaternion(),
+  scale: new THREE.Vector3(),
+  oneVector: new THREE.Vector3(1, 1, 1),
+};
+
 export const BatchedMeshHoverOutlines: React.FC<
   BatchedMeshHoverOutlinesProps
 > = ({
@@ -111,55 +124,75 @@ export const BatchedMeshHoverOutlines: React.FC<
         ? computeBatchIndexFromInstanceIndex(hoveredInstanceId)
         : hoveredInstanceId; // Default is identity mapping
 
-      // Only show outline if the batch index is valid
-      if (batchIndex >= 0 && batchIndex < batched_positions.length / 3) {
+      // Create DataViews to read float values
+      const positionsView = new DataView(
+        batched_positions.buffer,
+        batched_positions.byteOffset,
+        batched_positions.byteLength,
+      );
+
+      const wxyzsView = new DataView(
+        batched_wxyzs.buffer,
+        batched_wxyzs.byteOffset,
+        batched_wxyzs.byteLength,
+      );
+
+      // Only show outline if the batch index is valid (check bytes per position = 3 floats * 4 bytes)
+      if (batchIndex >= 0 && batchIndex * 12 < batched_positions.byteLength) {
+        // Calculate byte offsets.
+        const posOffset = batchIndex * 3 * 4; // 3 floats, 4 bytes per float
+        const wxyzOffset = batchIndex * 4 * 4; // 4 floats, 4 bytes per float
+
         // Position the outline at the hovered instance
         outlineRef.current.position.set(
-          batched_positions[batchIndex * 3 + 0],
-          batched_positions[batchIndex * 3 + 1],
-          batched_positions[batchIndex * 3 + 2],
+          positionsView.getFloat32(posOffset, true), // x
+          positionsView.getFloat32(posOffset + 4, true), // y
+          positionsView.getFloat32(posOffset + 8, true), // z
         );
 
         // Set rotation to match the hovered instance
         outlineRef.current.quaternion.set(
-          batched_wxyzs[batchIndex * 4 + 1], // x
-          batched_wxyzs[batchIndex * 4 + 2], // y
-          batched_wxyzs[batchIndex * 4 + 3], // z
-          batched_wxyzs[batchIndex * 4 + 0], // w
+          wxyzsView.getFloat32(wxyzOffset + 4, true), // x
+          wxyzsView.getFloat32(wxyzOffset + 8, true), // y
+          wxyzsView.getFloat32(wxyzOffset + 12, true), // z
+          wxyzsView.getFloat32(wxyzOffset, true), // w
         );
 
         // Apply mesh transform if provided (for GLB assets)
         if (meshTransform) {
-          // Create instance matrix from batched data
-          const instanceMatrix = new THREE.Matrix4().compose(
+          // Create instance matrix from batched data.
+          _tempObjects.instanceMatrix.compose(
             outlineRef.current.position,
             outlineRef.current.quaternion,
-            new THREE.Vector3(1, 1, 1),
+            _tempObjects.oneVector,
           );
 
-          // Create mesh transform matrix
-          const transformMatrix = new THREE.Matrix4().compose(
+          // Create mesh transform matrix.
+          _tempObjects.transformMatrix.compose(
             meshTransform.position,
             meshTransform.rotation,
             meshTransform.scale,
           );
 
-          // Create final matrix by right-multiplying (match how it's done in ThreeAssets.tsx)
-          const finalMatrix = instanceMatrix.clone().multiply(transformMatrix);
+          // Create final matrix by right-multiplying (match how it's done in ThreeAssets.tsx).
+          _tempObjects.finalMatrix
+            .copy(_tempObjects.instanceMatrix)
+            .multiply(_tempObjects.transformMatrix);
 
-          // Decompose the final matrix into position, quaternion, scale
-          const position = new THREE.Vector3();
-          const quaternion = new THREE.Quaternion();
-          const scale = new THREE.Vector3();
-          finalMatrix.decompose(position, quaternion, scale);
+          // Decompose the final matrix into position, quaternion, scale.
+          _tempObjects.finalMatrix.decompose(
+            _tempObjects.position,
+            _tempObjects.quaternion,
+            _tempObjects.scale,
+          );
 
-          // Apply the decomposed transformation
-          outlineRef.current.position.copy(position);
-          outlineRef.current.quaternion.copy(quaternion);
-          outlineRef.current.scale.copy(scale);
+          // Apply the decomposed transformation.
+          outlineRef.current.position.copy(_tempObjects.position);
+          outlineRef.current.quaternion.copy(_tempObjects.quaternion);
+          outlineRef.current.scale.copy(_tempObjects.scale);
         }
 
-        // Show the outline
+        // Show the outline.
         outlineRef.current.visible = true;
       }
     }

@@ -165,45 +165,86 @@ export class BatchedMeshManager {
     });
   }
 
-  /** Update instance transforms */
+  // Reusable objects for transform calculations
+  private readonly _tempPosition = new THREE.Vector3();
+  private readonly _tempQuaternion = new THREE.Quaternion();
+  private readonly _tempScale = new THREE.Vector3(1, 1, 1);
+  private readonly _instanceWorldMatrix = new THREE.Matrix4();
+  private readonly _meshMatrix = new THREE.Matrix4();
+
+  /**
+   * Update instance transforms without allocating new objects
+   * @param batched_positions Raw bytes containing float32 position values (xyz)
+   * @param batched_wxyzs Raw bytes containing float32 quaternion values (wxyz)
+   * @param meshTransform Optional transform to apply to each instance
+   */
   updateInstances(
-    batched_positions: Float32Array,
-    batched_wxyzs: Float32Array,
+    /** Raw bytes containing float32 position values (xyz) */
+    batched_positions: Uint8Array,
+    /** Raw bytes containing float32 quaternion values (wxyz) */
+    batched_wxyzs: Uint8Array,
     meshTransform?: {
       position: THREE.Vector3;
       rotation: THREE.Quaternion;
       scale: THREE.Vector3;
     },
   ) {
+    // Cache member variables to avoid 'this' lookup in loop.
+    const tempPosition = this._tempPosition;
+    const tempQuaternion = this._tempQuaternion;
+    const tempScale = this._tempScale;
+    const instanceWorldMatrix = this._instanceWorldMatrix;
+    const meshMatrix = this._meshMatrix;
+
+    // Pre-compute mesh matrix if needed (only once outside the loop).
+    if (meshTransform) {
+      meshMatrix.compose(
+        meshTransform.position,
+        meshTransform.rotation,
+        tempScale, // Reuse scale vector (1,1,1)
+      );
+    }
+
+    // Create DataViews to read float values directly from the Uint8Array.
+    const positionsView = new DataView(
+      batched_positions.buffer,
+      batched_positions.byteOffset,
+      batched_positions.byteLength,
+    );
+
+    const wxyzsView = new DataView(
+      batched_wxyzs.buffer,
+      batched_wxyzs.byteOffset,
+      batched_wxyzs.byteLength,
+    );
+
     this.instancedMesh.updateInstances((obj, index) => {
-      // Create instance world transform
-      const instanceWorldMatrix = new THREE.Matrix4().compose(
-        new THREE.Vector3(
-          batched_positions[index * 3 + 0],
-          batched_positions[index * 3 + 1],
-          batched_positions[index * 3 + 2],
-        ),
-        new THREE.Quaternion(
-          batched_wxyzs[index * 4 + 1],
-          batched_wxyzs[index * 4 + 2],
-          batched_wxyzs[index * 4 + 3],
-          batched_wxyzs[index * 4 + 0],
-        ),
-        new THREE.Vector3(1, 1, 1),
+      // Calculate byte offsets for reading float values.
+      const posOffset = index * 3 * 4; // 3 floats, 4 bytes per float
+      const wxyzOffset = index * 4 * 4; // 4 floats, 4 bytes per float
+
+      // Read float values from DataView.
+      tempPosition.set(
+        positionsView.getFloat32(posOffset, true), // x
+        positionsView.getFloat32(posOffset + 4, true), // y
+        positionsView.getFloat32(posOffset + 8, true), // z
       );
 
-      if (meshTransform) {
-        // Apply mesh's original transform relative to the instance
-        const meshMatrix = new THREE.Matrix4().compose(
-          meshTransform.position,
-          meshTransform.rotation,
-          new THREE.Vector3(1, 1, 1),
-        );
+      tempQuaternion.set(
+        wxyzsView.getFloat32(wxyzOffset + 4, true), // x
+        wxyzsView.getFloat32(wxyzOffset + 8, true), // y
+        wxyzsView.getFloat32(wxyzOffset + 12, true), // z
+        wxyzsView.getFloat32(wxyzOffset, true), // w (first value)
+      );
 
-        // Combine transforms and apply
-        const finalMatrix = instanceWorldMatrix.multiply(meshMatrix);
-        obj.position.setFromMatrixPosition(finalMatrix);
-        obj.quaternion.setFromRotationMatrix(finalMatrix);
+      // Create instance world transform.
+      instanceWorldMatrix.compose(tempPosition, tempQuaternion, tempScale);
+
+      if (meshTransform) {
+        // Combine transforms and apply (reuses the instanceWorldMatrix).
+        instanceWorldMatrix.multiply(meshMatrix);
+        obj.position.setFromMatrixPosition(instanceWorldMatrix);
+        obj.quaternion.setFromRotationMatrix(instanceWorldMatrix);
         obj.scale.copy(meshTransform.scale);
       } else {
         // Direct instance transform without mesh offset

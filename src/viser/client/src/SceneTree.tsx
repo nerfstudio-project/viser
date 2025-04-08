@@ -162,29 +162,10 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     case "BatchedAxesMessage": {
       return {
         makeObject: (ref) => (
-          // Minor naming discrepancy: I think "batched" will be clearer to
-          // folks on the Python side, but instanced is somewhat more
-          // precise.
           <InstancedAxes
             ref={ref}
-            batched_wxyzs={
-              new Float32Array(
-                message.props.batched_wxyzs.buffer.slice(
-                  message.props.batched_wxyzs.byteOffset,
-                  message.props.batched_wxyzs.byteOffset +
-                    message.props.batched_wxyzs.byteLength,
-                ),
-              )
-            }
-            batched_positions={
-              new Float32Array(
-                message.props.batched_positions.buffer.slice(
-                  message.props.batched_positions.byteOffset,
-                  message.props.batched_positions.byteOffset +
-                    message.props.batched_positions.byteLength,
-                ),
-              )
-            }
+            batched_wxyzs={message.props.batched_wxyzs}
+            batched_positions={message.props.batched_positions}
             axes_length={message.props.axes_length}
             axes_radius={message.props.axes_radius}
           />

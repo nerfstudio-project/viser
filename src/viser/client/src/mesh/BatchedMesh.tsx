@@ -72,31 +72,6 @@ export const BatchedMesh = React.forwardRef<
     return geometry;
   }, [message.props.vertices.buffer, message.props.faces.buffer]);
 
-  // Create Float32Arrays once for positions and orientations.
-  const batched_positions = React.useMemo(
-    () =>
-      new Float32Array(
-        message.props.batched_positions.buffer.slice(
-          message.props.batched_positions.byteOffset,
-          message.props.batched_positions.byteOffset +
-            message.props.batched_positions.byteLength,
-        ),
-      ),
-    [message.props.batched_positions],
-  );
-
-  const batched_wxyzs = React.useMemo(
-    () =>
-      new Float32Array(
-        message.props.batched_wxyzs.buffer.slice(
-          message.props.batched_wxyzs.byteOffset,
-          message.props.batched_wxyzs.byteOffset +
-            message.props.batched_wxyzs.byteLength,
-        ),
-      ),
-    [message.props.batched_wxyzs],
-  );
-
   // Create mesh manager with useMemo for better performance.
   const meshManager = React.useMemo(() => {
     const numInstances =
@@ -121,8 +96,16 @@ export const BatchedMesh = React.forwardRef<
 
   // 1. Update instance transforms (positions and orientations)
   React.useEffect(() => {
-    meshManager.updateInstances(batched_positions, batched_wxyzs);
-  }, [meshManager, batched_positions, batched_wxyzs]);
+    // Pass buffer views directly to avoid creating new arrays.
+    meshManager.updateInstances(
+      message.props.batched_positions,
+      message.props.batched_wxyzs,
+    );
+  }, [
+    meshManager,
+    message.props.batched_positions,
+    message.props.batched_wxyzs,
+  ]);
 
   // 2. Update shadow settings
   React.useEffect(() => {
@@ -171,8 +154,12 @@ export const BatchedMesh = React.forwardRef<
       {clickable && geometry && (
         <BatchedMeshHoverOutlines
           geometry={geometry}
-          batched_positions={batched_positions}
-          batched_wxyzs={batched_wxyzs}
+          batched_positions={
+            message.props.batched_positions
+          } /* Raw bytes containing float32 position values */
+          batched_wxyzs={
+            message.props.batched_wxyzs
+          } /* Raw bytes containing float32 quaternion values */
         />
       )}
     </>
