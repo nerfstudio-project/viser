@@ -26,30 +26,7 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
     // We don't pass shadow settings to the GLB loader - we'll apply them manually
     const { gltf } = useGlbLoader(message.props.glb_data);
 
-    // Create Float32Arrays once for positions and orientations.
-    const batched_positions = React.useMemo(
-      () =>
-        new Float32Array(
-          message.props.batched_positions.buffer.slice(
-            message.props.batched_positions.byteOffset,
-            message.props.batched_positions.byteOffset +
-              message.props.batched_positions.byteLength,
-          ),
-        ),
-      [message.props.batched_positions],
-    );
-
-    const batched_wxyzs = React.useMemo(
-      () =>
-        new Float32Array(
-          message.props.batched_wxyzs.buffer.slice(
-            message.props.batched_wxyzs.byteOffset,
-            message.props.batched_wxyzs.byteOffset +
-              message.props.batched_wxyzs.byteLength,
-          ),
-        ),
-      [message.props.batched_wxyzs],
-    );
+    // Use the buffer views directly - no need to create new Float32Arrays
 
     // Use memoization to create mesh managers and transforms when GLB loads.
     const meshState = React.useMemo(() => {
@@ -109,14 +86,19 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
     React.useEffect(() => {
       if (meshState && meshState.managers) {
         meshState.managers.forEach((manager, index) => {
+          // Pass buffer views directly to avoid creating new arrays
           manager.updateInstances(
-            batched_positions,
-            batched_wxyzs,
+            message.props.batched_positions,
+            message.props.batched_wxyzs,
             meshState.transforms[index],
           );
         });
       }
-    }, [meshState, batched_positions, batched_wxyzs]);
+    }, [
+      meshState,
+      message.props.batched_positions,
+      message.props.batched_wxyzs,
+    ]);
 
     // 2. Update shadow settings - separate effect for better performance
     React.useEffect(() => {
@@ -170,8 +152,8 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
               <BatchedMeshHoverOutlines
                 key={index}
                 geometry={mesh.geometry}
-                batched_positions={batched_positions}
-                batched_wxyzs={batched_wxyzs}
+                batched_positions={message.props.batched_positions}
+                batched_wxyzs={message.props.batched_wxyzs}
                 meshTransform={transform}
               />
             );
