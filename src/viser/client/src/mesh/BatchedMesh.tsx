@@ -72,7 +72,6 @@ export const BatchedMesh = React.forwardRef<
     return geometry;
   }, [message.props.vertices.buffer, message.props.faces.buffer]);
 
-
   // Create mesh manager with useMemo for better performance.
   const meshManager = React.useMemo(() => {
     const numInstances =
@@ -155,8 +154,12 @@ export const BatchedMesh = React.forwardRef<
       {clickable && geometry && (
         <BatchedMeshHoverOutlines
           geometry={geometry}
-          batched_positions={message.props.batched_positions} /* Raw bytes containing float32 position values */
-          batched_wxyzs={message.props.batched_wxyzs} /* Raw bytes containing float32 quaternion values */
+          batched_positions={
+            message.props.batched_positions
+          } /* Raw bytes containing float32 position values */
+          batched_wxyzs={
+            message.props.batched_wxyzs
+          } /* Raw bytes containing float32 quaternion values */
         />
       )}
     </>

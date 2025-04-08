@@ -26,7 +26,6 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
     // We don't pass shadow settings to the GLB loader - we'll apply them manually.
     const { gltf } = useGlbLoader(message.props.glb_data);
 
-
     // Use memoization to create mesh managers and transforms when GLB loads.
     const meshState = React.useMemo(() => {
       if (!gltf) return null;
@@ -151,8 +150,12 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
               <BatchedMeshHoverOutlines
                 key={index}
                 geometry={mesh.geometry}
-                batched_positions={message.props.batched_positions} /* Raw bytes containing float32 position values */
-                batched_wxyzs={message.props.batched_wxyzs} /* Raw bytes containing float32 quaternion values */
+                batched_positions={
+                  message.props.batched_positions
+                } /* Raw bytes containing float32 position values */
+                batched_wxyzs={
+                  message.props.batched_wxyzs
+                } /* Raw bytes containing float32 quaternion values */
                 meshTransform={transform}
               />
             );
