@@ -72,7 +72,6 @@ export const BatchedMesh = React.forwardRef<
     return geometry;
   }, [message.props.vertices.buffer, message.props.faces.buffer]);
 
-  // Use the buffer views directly - no need to create new Float32Arrays
 
   // Create mesh manager with useMemo for better performance.
   const meshManager = React.useMemo(() => {
@@ -98,7 +97,7 @@ export const BatchedMesh = React.forwardRef<
 
   // 1. Update instance transforms (positions and orientations)
   React.useEffect(() => {
-    // Pass buffer views directly to avoid creating new arrays
+    // Pass buffer views directly to avoid creating new arrays.
     meshManager.updateInstances(
       message.props.batched_positions,
       message.props.batched_wxyzs,
@@ -156,8 +155,8 @@ export const BatchedMesh = React.forwardRef<
       {clickable && geometry && (
         <BatchedMeshHoverOutlines
           geometry={geometry}
-          batched_positions={message.props.batched_positions}
-          batched_wxyzs={message.props.batched_wxyzs}
+          batched_positions={message.props.batched_positions} /* Raw bytes containing float32 position values */
+          batched_wxyzs={message.props.batched_wxyzs} /* Raw bytes containing float32 quaternion values */
         />
       )}
     </>

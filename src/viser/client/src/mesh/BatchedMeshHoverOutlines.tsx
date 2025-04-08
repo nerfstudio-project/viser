@@ -27,7 +27,7 @@ interface BatchedMeshHoverOutlinesProps {
  * A reusable component that renders hover outlines for batched/instanced meshes
  * Shows a highlighted outline around the instance that is currently being hovered
  */
-// Static reusable objects for matrix operations
+// Static reusable objects for matrix operations.
 const _tempObjects = {
   instanceMatrix: new THREE.Matrix4(),
   transformMatrix: new THREE.Matrix4(),
@@ -139,7 +139,7 @@ export const BatchedMeshHoverOutlines: React.FC<
 
       // Only show outline if the batch index is valid (check bytes per position = 3 floats * 4 bytes)
       if (batchIndex >= 0 && batchIndex * 12 < batched_positions.byteLength) {
-        // Calculate byte offsets
+        // Calculate byte offsets.
         const posOffset = batchIndex * 3 * 4; // 3 floats, 4 bytes per float
         const wxyzOffset = batchIndex * 4 * 4; // 4 floats, 4 bytes per float
 
@@ -160,39 +160,39 @@ export const BatchedMeshHoverOutlines: React.FC<
 
         // Apply mesh transform if provided (for GLB assets)
         if (meshTransform) {
-          // Create instance matrix from batched data
+          // Create instance matrix from batched data.
           _tempObjects.instanceMatrix.compose(
             outlineRef.current.position,
             outlineRef.current.quaternion,
             _tempObjects.oneVector,
           );
 
-          // Create mesh transform matrix
+          // Create mesh transform matrix.
           _tempObjects.transformMatrix.compose(
             meshTransform.position,
             meshTransform.rotation,
             meshTransform.scale,
           );
 
-          // Create final matrix by right-multiplying (match how it's done in ThreeAssets.tsx)
+          // Create final matrix by right-multiplying (match how it's done in ThreeAssets.tsx).
           _tempObjects.finalMatrix
             .copy(_tempObjects.instanceMatrix)
             .multiply(_tempObjects.transformMatrix);
 
-          // Decompose the final matrix into position, quaternion, scale
+          // Decompose the final matrix into position, quaternion, scale.
           _tempObjects.finalMatrix.decompose(
             _tempObjects.position,
             _tempObjects.quaternion,
             _tempObjects.scale,
           );
 
-          // Apply the decomposed transformation
+          // Apply the decomposed transformation.
           outlineRef.current.position.copy(_tempObjects.position);
           outlineRef.current.quaternion.copy(_tempObjects.quaternion);
           outlineRef.current.scale.copy(_tempObjects.scale);
         }
 
-        // Show the outline
+        // Show the outline.
         outlineRef.current.visible = true;
       }
     }

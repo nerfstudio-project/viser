@@ -240,7 +240,9 @@ export const CoordinateFrame = React.forwardRef<
 export const InstancedAxes = React.forwardRef<
   THREE.Group,
   {
+    /** Raw bytes containing float32 quaternion values (wxyz) */
     batched_wxyzs: Uint8Array;
+    /** Raw bytes containing float32 position values (xyz) */
     batched_positions: Uint8Array;
     axes_length?: number;
     axes_radius?: number;
@@ -299,7 +301,7 @@ export const InstancedAxes = React.forwardRef<
     const { T_frame_framex, T_frame_framey, T_frame_framez, red, green, blue } =
       axesTransformations;
 
-    // Create DataViews to read float values directly
+    // Create DataViews to read float values directly.
     const positionsView = new DataView(
       batched_positions.buffer,
       batched_positions.byteOffset,
@@ -312,15 +314,15 @@ export const InstancedAxes = React.forwardRef<
       batched_wxyzs.byteLength,
     );
 
-    // Calculate number of instances
+    // Calculate number of instances.
     const numInstances = batched_wxyzs.byteLength / (4 * 4); // 4 floats, 4 bytes per float
 
     for (let i = 0; i < numInstances; i++) {
-      // Calculate byte offsets for reading float values
+      // Calculate byte offsets for reading float values.
       const posOffset = i * 3 * 4; // 3 floats, 4 bytes per float
       const wxyzOffset = i * 4 * 4; // 4 floats, 4 bytes per float
 
-      // Set position from DataView
+      // Set position from DataView.
       T_world_frame.makeRotationFromQuaternion(
         tmpQuat.set(
           wxyzsView.getFloat32(wxyzOffset + 4, true), // x
@@ -388,7 +390,7 @@ export const InstancedAxes = React.forwardRef<
     [axes_length],
   );
 
-  // Calculate number of instances for args
+  // Calculate number of instances for args.
   const numInstances = (batched_wxyzs.byteLength / (4 * 4)) * 3; // 4 floats per WXYZ * 4 bytes per float * 3 axes
 
   return (

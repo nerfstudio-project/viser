@@ -174,27 +174,29 @@ export class BatchedMeshManager {
 
   /**
    * Update instance transforms without allocating new objects
-   * @param batched_positions Array containing position values (xyz)
-   * @param batched_wxyzs Array containing quaternion values (wxyz)
+   * @param batched_positions Raw bytes containing float32 position values (xyz)
+   * @param batched_wxyzs Raw bytes containing float32 quaternion values (wxyz)
    * @param meshTransform Optional transform to apply to each instance
    */
   updateInstances(
-    batched_positions: Float32Array | Uint8Array,
-    batched_wxyzs: Float32Array | Uint8Array,
+    /** Raw bytes containing float32 position values (xyz) */
+    batched_positions: Uint8Array,
+    /** Raw bytes containing float32 quaternion values (wxyz) */
+    batched_wxyzs: Uint8Array,
     meshTransform?: {
       position: THREE.Vector3;
       rotation: THREE.Quaternion;
       scale: THREE.Vector3;
     },
   ) {
-    // Cache member variables to avoid 'this' lookup in loop
+    // Cache member variables to avoid 'this' lookup in loop.
     const tempPosition = this._tempPosition;
     const tempQuaternion = this._tempQuaternion;
     const tempScale = this._tempScale;
     const instanceWorldMatrix = this._instanceWorldMatrix;
     const meshMatrix = this._meshMatrix;
 
-    // Pre-compute mesh matrix if needed (only once outside the loop)
+    // Pre-compute mesh matrix if needed (only once outside the loop).
     if (meshTransform) {
       meshMatrix.compose(
         meshTransform.position,
@@ -203,7 +205,7 @@ export class BatchedMeshManager {
       );
     }
 
-    // Create DataViews to read float values directly from the Uint8Array
+    // Create DataViews to read float values directly from the Uint8Array.
     const positionsView = new DataView(
       batched_positions.buffer,
       batched_positions.byteOffset,
@@ -217,11 +219,11 @@ export class BatchedMeshManager {
     );
 
     this.instancedMesh.updateInstances((obj, index) => {
-      // Calculate byte offsets for reading float values
+      // Calculate byte offsets for reading float values.
       const posOffset = index * 3 * 4; // 3 floats, 4 bytes per float
       const wxyzOffset = index * 4 * 4; // 4 floats, 4 bytes per float
 
-      // Read float values from DataView
+      // Read float values from DataView.
       tempPosition.set(
         positionsView.getFloat32(posOffset, true), // x
         positionsView.getFloat32(posOffset + 4, true), // y
@@ -235,11 +237,11 @@ export class BatchedMeshManager {
         wxyzsView.getFloat32(wxyzOffset, true), // w (first value)
       );
 
-      // Create instance world transform
+      // Create instance world transform.
       instanceWorldMatrix.compose(tempPosition, tempQuaternion, tempScale);
 
       if (meshTransform) {
-        // Combine transforms and apply (reuses the instanceWorldMatrix)
+        // Combine transforms and apply (reuses the instanceWorldMatrix).
         instanceWorldMatrix.multiply(meshMatrix);
         obj.position.setFromMatrixPosition(instanceWorldMatrix);
         obj.quaternion.setFromRotationMatrix(instanceWorldMatrix);

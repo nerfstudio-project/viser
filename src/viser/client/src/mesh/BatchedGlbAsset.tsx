@@ -22,11 +22,10 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
         (state) => state.nodeFromName[message.name]?.clickable,
       ) ?? false;
 
-    // Note: We don't support animations for batched meshes
-    // We don't pass shadow settings to the GLB loader - we'll apply them manually
+    // Note: We don't support animations for batched meshes.
+    // We don't pass shadow settings to the GLB loader - we'll apply them manually.
     const { gltf } = useGlbLoader(message.props.glb_data);
 
-    // Use the buffer views directly - no need to create new Float32Arrays
 
     // Use memoization to create mesh managers and transforms when GLB loads.
     const meshState = React.useMemo(() => {
@@ -86,7 +85,7 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
     React.useEffect(() => {
       if (meshState && meshState.managers) {
         meshState.managers.forEach((manager, index) => {
-          // Pass buffer views directly to avoid creating new arrays
+          // Pass buffer views directly to avoid creating new arrays.
           manager.updateInstances(
             message.props.batched_positions,
             message.props.batched_wxyzs,
@@ -152,8 +151,8 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
               <BatchedMeshHoverOutlines
                 key={index}
                 geometry={mesh.geometry}
-                batched_positions={message.props.batched_positions}
-                batched_wxyzs={message.props.batched_wxyzs}
+                batched_positions={message.props.batched_positions} /* Raw bytes containing float32 position values */
+                batched_wxyzs={message.props.batched_wxyzs} /* Raw bytes containing float32 quaternion values */
                 meshTransform={transform}
               />
             );
