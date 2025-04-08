@@ -979,16 +979,19 @@ class GuiApi:
         self,
         label: str,
         initial_value: str,
+        multiline: bool = False,
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
     ) -> GuiTextHandle:
-        """Add a text input to the GUI.
+        r"""Add a text input to the GUI.
 
         Args:
             label: Label to display on the text input.
             initial_value: Initial value of the text input.
+            multiline: Whether the text input supports multiple lines, delimited with
+                the \n character.
             disabled: Whether the text input is disabled.
             visible: Whether the text input is visible.
             hint: Optional hint to display on hover.
@@ -1014,6 +1017,7 @@ class GuiApi:
                         hint=hint,
                         disabled=disabled,
                         visible=visible,
+                        multiline=multiline,
                     ),
                 ),
             )
