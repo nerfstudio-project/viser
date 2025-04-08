@@ -299,7 +299,10 @@ class WebsockServer(WebsockMessageHandler):
     def flush_client(self, client_id: int) -> None:
         """Flush the outgoing message buffer for a particular client. Any buffered
         messages will immediately be sent. (by default they are windowed)"""
-        self._client_state_from_id[client_id].message_buffer.flush()
+        # No-op if client is disconnected.
+        client_state = self._client_state_from_id.get(client_id)
+        if client_state is not None:
+            client_state.message_buffer.flush()
 
     def _background_worker(self, ready_sem: threading.Semaphore) -> None:
         host = self._host
