@@ -3,7 +3,7 @@ from typing import ClassVar, Generic, Tuple, TypeVar, Union, overload
 
 import numpy as np
 import numpy.typing as npt
-from typing_extensions import Self, final, get_args, override
+from typing_extensions import Never, Self, final, get_args, override
 
 
 class MatrixLieGroup(abc.ABC):
@@ -68,7 +68,7 @@ class MatrixLieGroup(abc.ABC):
             return self.apply(target=other)
         elif isinstance(other, MatrixLieGroup):
             assert self.space_dim == other.space_dim
-            return self.multiply(other=other)
+            return self.multiply(other=other)  # type: ignore
         else:
             assert False, f"Invalid argument type for `@` operator: {type(other)}"
 
@@ -124,8 +124,12 @@ class MatrixLieGroup(abc.ABC):
             Transformed point.
         """
 
+    # It's never type-safe to multiply two MatrixLieGroup types, since they may
+    # belong to different groups (e.g. SO2 and SO3).
+    #
+    # The `Never` type will be broadened in subclasses.
     @abc.abstractmethod
-    def multiply(self, other: Self) -> Self:
+    def multiply(self, other: Never) -> Self:
         """Composes this transformation with another.
 
         Returns:
