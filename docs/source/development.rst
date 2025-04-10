@@ -1,11 +1,11 @@
 Development
-==========
+===========
 
 In this note, we outline current practices, tools, and workflows for ``viser``
 development. We assume that the repository is cloned to ``~/viser``.
 
 Python install
--------------
+--------------
 
 We recommend an editable install for Python development, ideally in a virtual
 environment (eg via conda).
@@ -45,13 +45,13 @@ For code quality, rely primarily on ``pyright`` and ``ruff``:
    ruff format .
 
 Client-Server Synchronization
--------------------------
+-----------------------------
 
 The ``viser`` frontend and backend communicate via a shared set of message definitions and enforce
 version compatibility to prevent security issues and crashes from mismatched versions.
 
 Message Definitions
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 - On the server, messages are defined as Python dataclasses in
   ``~/viser/src/viser/_messages.py``.
@@ -61,7 +61,7 @@ Message Definitions
 There is a 1:1 correspondence between the Python dataclasses and the TypeScript interfaces.
 
 Version Compatibility
-^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
 Viser implements strict version compatibility checking between client and server:
 
@@ -71,7 +71,7 @@ Viser implements strict version compatibility checking between client and server
 4. This ensures that client and server components always operate with compatible functionality
 
 Synchronization Script
-^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 
 To synchronize message definitions and version information between the Python backend and TypeScript frontend,
 use the ``sync_client_server.py`` script:
@@ -93,7 +93,7 @@ Always run this script after:
 - Updating the version in ``__init__.py``
 
 Client development
-----------------
+------------------
 
 For client development, we can start by launching a relevant Python script. The
 examples are a good place to start:
