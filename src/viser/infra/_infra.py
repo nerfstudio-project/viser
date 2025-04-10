@@ -542,7 +542,7 @@ class WebsockServer(WebsockMessageHandler):
                         process_request=(
                             viser_http_server if http_server_root is not None else None
                         ),
-                        # Accept connections with version-based protocol and extract version in handler
+                        # Accept connections with version-based protocol and extract version in handler.
                         subprotocols=None,
                         select_subprotocol=lambda _, subprotocols: (
                             next(

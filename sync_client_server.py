@@ -34,8 +34,8 @@ if __name__ == "__main__":
     # Create directory if it doesn't exist
     version_path.parent.mkdir(parents=True, exist_ok=True)
 
-    version_content = f"""// Automatically generated file - do not edit manually
-// This is synchronized with the Python package version in viser/__init__.py
+    version_content = f"""// Automatically generated file - do not edit manually.
+// This is synchronized with the Python package version in viser/__init__.py.
 export const VISER_VERSION = "{viser.__version__}";
 """
     version_path.write_text(version_content)

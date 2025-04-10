@@ -70,10 +70,10 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
     };
 
     ws.onclose = (event) => {
-      // Check for explicit close (code 1002 = protocol error, which we use for version mismatch)
+      // Check for explicit close (code 1002 = protocol error, which we use for version mismatch).
       const versionMismatch = event.code === 1002;
 
-      // Send close notification
+      // Send close notification.
       postOutgoing({
         type: "closed",
         versionMismatch: versionMismatch,
