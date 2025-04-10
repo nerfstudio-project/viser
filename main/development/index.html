@@ -428,24 +428,50 @@ ruff<span class="w"> </span>format<span class="w"> </span>.
 </pre></div>
 </div>
 </section>
-<section id="message-updates">
-<h2>Message updates<a class="headerlink" href="#message-updates" title="Link to this heading">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">viser</span></code> frontend and backend communicate via a shared set of message
-definitions:</p>
+<section id="client-server-synchronization">
+<h2>Client-Server Synchronization<a class="headerlink" href="#client-server-synchronization" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">viser</span></code> frontend and backend communicate via a shared set of message definitions and enforce
+version compatibility to prevent security issues and crashes from mismatched versions.</p>
+<section id="message-definitions">
+<h3>Message Definitions<a class="headerlink" href="#message-definitions" title="Link to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>On the server, these are defined as Python dataclasses in
+<li><p>On the server, messages are defined as Python dataclasses in
 <code class="docutils literal notranslate"><span class="pre">~/viser/src/viser/_messages.py</span></code>.</p></li>
 <li><p>On the client, these are defined as TypeScript interfaces in
-<code class="docutils literal notranslate"><span class="pre">~/viser/src/viser/client/src/WebsocketMessages.tsx</span></code>.</p></li>
+<code class="docutils literal notranslate"><span class="pre">~/viser/src/viser/client/src/WebsocketMessages.ts</span></code>.</p></li>
 </ul>
-<p>Note that there is a 1:1 correspondence between the dataclasses message types
-and the TypeScript ones.</p>
-<p>The TypeScript definitions should not be manually modified. Instead, changes
-should be made in Python and synchronized via the <code class="docutils literal notranslate"><span class="pre">sync_message_defs.py</span></code> script:</p>
+<p>There is a 1:1 correspondence between the Python dataclasses and the TypeScript interfaces.</p>
+</section>
+<section id="version-compatibility">
+<h3>Version Compatibility<a class="headerlink" href="#version-compatibility" title="Link to this heading">¶</a></h3>
+<p>Viser implements strict version compatibility checking between client and server:</p>
+<ol class="arabic simple">
+<li><p>The client includes its version in the WebSocket subprotocol name (e.g., <code class="docutils literal notranslate"><span class="pre">viser-v0.2.23</span></code>)</p></li>
+<li><p>The server extracts the client version from the subprotocol and compares it with its own version</p></li>
+<li><p>If versions don’t match, the connection is rejected with code 1002 (protocol error) and an informative message</p></li>
+<li><p>This ensures that client and server components always operate with compatible functionality</p></li>
+</ol>
+</section>
+<section id="synchronization-script">
+<h3>Synchronization Script<a class="headerlink" href="#synchronization-script" title="Link to this heading">¶</a></h3>
+<p>To synchronize message definitions and version information between the Python backend and TypeScript frontend,
+use the <code class="docutils literal notranslate"><span class="pre">sync_client_server.py</span></code> script:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/viser
-python<span class="w"> </span>sync_message_defs.py
+python<span class="w"> </span>sync_client_server.py
 </pre></div>
 </div>
+<p>This script:</p>
+<ol class="arabic simple">
+<li><p>Generates TypeScript interfaces from Python dataclasses</p></li>
+<li><p>Creates the VersionInfo.ts file with the current server version</p></li>
+<li><p>Formats the generated files using prettier</p></li>
+</ol>
+<p>Always run this script after:</p>
+<ul class="simple">
+<li><p>Changing message definitions in <code class="docutils literal notranslate"><span class="pre">_messages.py</span></code></p></li>
+<li><p>Updating the version in <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code></p></li>
+</ul>
+</section>
 </section>
 <section id="client-development">
 <h2>Client development<a class="headerlink" href="#client-development" title="Link to this heading">¶</a></h2>
@@ -563,7 +589,12 @@ one of:</p>
             <ul>
 <li><a class="reference internal" href="#">Development</a><ul>
 <li><a class="reference internal" href="#python-install">Python install</a></li>
-<li><a class="reference internal" href="#message-updates">Message updates</a></li>
+<li><a class="reference internal" href="#client-server-synchronization">Client-Server Synchronization</a><ul>
+<li><a class="reference internal" href="#message-definitions">Message Definitions</a></li>
+<li><a class="reference internal" href="#version-compatibility">Version Compatibility</a></li>
+<li><a class="reference internal" href="#synchronization-script">Synchronization Script</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#client-development">Client development</a></li>
 </ul>
 </li>
