@@ -162,9 +162,13 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
           position="top-left"
           limit={10}
           containerWidth="20em"
+          withinPortal={false}
           styles={{
             root: {
               boxShadow: "0.1em 0 1em 0 rgba(0,0,0,0.1) !important",
+              position: "absolute",
+              top: "1em",
+              left: "1em",
             },
           }}
         />
