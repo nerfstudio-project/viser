@@ -3,7 +3,7 @@ from typing import ClassVar, Generic, Tuple, TypeVar, Union, overload
 
 import numpy as np
 import numpy.typing as npt
-from typing_extensions import Never, Self, final, get_args, override
+from typing_extensions import Self, final, get_args, override
 
 
 class MatrixLieGroup(abc.ABC):
@@ -124,12 +124,8 @@ class MatrixLieGroup(abc.ABC):
             Transformed point.
         """
 
-    # It's never type-safe to multiply two MatrixLieGroup types, since they may
-    # belong to different groups (e.g. SO2 and SO3).
-    #
-    # The `Never` type will be broadened in subclasses.
     @abc.abstractmethod
-    def multiply(self, other: Never) -> Self:
+    def multiply(self, other: Self) -> Self:
         """Composes this transformation with another.
 
         Returns:
@@ -288,7 +284,7 @@ class SEBase(Generic[ContainedSOType], MatrixLieGroup):
 
     @final
     @override
-    def multiply(self, other: Self) -> Self:
+    def multiply(self, other: Self) -> Self:  # type: ignore
         return type(self).from_rotation_and_translation(
             rotation=self.rotation() @ other.rotation(),
             translation=(self.rotation() @ other.translation()) + self.translation(),

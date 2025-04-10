@@ -99,7 +99,7 @@ class SO2(
         return np.einsum("...ij,...j->...i", self.as_matrix(), target)
 
     @override
-    def multiply(self, other: SO2) -> SO2:
+    def multiply(self, other: SO2) -> SO2:  # type: ignore
         return SO2(
             unit_complex=np.einsum(
                 "...ij,...j->...i", self.as_matrix(), other.unit_complex
