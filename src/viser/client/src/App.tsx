@@ -169,6 +169,10 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
               position: "absolute",
               top: "1em",
               left: "1em",
+              pointerEvents: "none",
+            },
+            notification: {
+              pointerEvents: "all",
             },
           }}
         />
