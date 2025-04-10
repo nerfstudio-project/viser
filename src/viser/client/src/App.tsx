@@ -46,6 +46,7 @@ import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
 import { MacWindowWrapper } from "./MacWindowWrapper";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
+import { VISER_VERSION } from "./VersionInfo";
 
 function ViewerRoot() {
   // What websocket server should we connect to?
@@ -742,7 +743,7 @@ function ViserLogo() {
     useDisclosure(false);
   return (
     <>
-      <Tooltip label="About Viser">
+      <Tooltip label={`Viser ${VISER_VERSION}`}>
         <Box
           style={{
             position: "absolute",
