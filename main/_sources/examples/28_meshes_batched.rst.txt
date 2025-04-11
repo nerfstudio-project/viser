@@ -28,6 +28,7 @@ same mesh, but have some limitations:
 
         import numpy as np
         import trimesh
+
         import viser
         import viser.transforms as tf
 

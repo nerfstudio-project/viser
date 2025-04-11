@@ -409,132 +409,133 @@ same mesh, but have some limitations:</p>
 <span class="linenos">  5</span>
 <span class="linenos">  6</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="linenos">  7</span><span class="kn">import</span><span class="w"> </span><span class="nn">trimesh</span>
-<span class="linenos">  8</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
-<span class="linenos">  9</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser.transforms</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
-<span class="linenos"> 10</span>
+<span class="linenos">  8</span>
+<span class="linenos">  9</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
+<span class="linenos"> 10</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser.transforms</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
 <span class="linenos"> 11</span>
-<span class="linenos"> 12</span><span class="k">def</span><span class="w"> </span><span class="nf">create_grid_transforms</span><span class="p">(</span><span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="linenos"> 13</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Create grid positions and rotations for mesh instances.</span>
-<span class="linenos"> 14</span>
-<span class="linenos"> 15</span><span class="sd">    Args:</span>
-<span class="linenos"> 16</span><span class="sd">        num_instances: Number of mesh instances to create transforms for.</span>
-<span class="linenos"> 17</span>
-<span class="linenos"> 18</span><span class="sd">    Returns:</span>
-<span class="linenos"> 19</span><span class="sd">        tuple containing:</span>
-<span class="linenos"> 20</span><span class="sd">            - positions: (N, 3) float32 array of random positions</span>
-<span class="linenos"> 21</span><span class="sd">            - rotations: (N, 4) float32 array of quaternions (wxyz format)</span>
-<span class="linenos"> 22</span><span class="sd">    &quot;&quot;&quot;</span>
-<span class="linenos"> 23</span>    <span class="n">grid_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">num_instances</span><span class="p">)))</span>
-<span class="linenos"> 24</span>    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">grid_size</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">grid_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-<span class="linenos"> 25</span>    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">grid_size</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">grid_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-<span class="linenos"> 26</span>    <span class="n">positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="linenos"> 27</span>    <span class="n">positions</span> <span class="o">=</span> <span class="n">positions</span><span class="p">[:</span><span class="n">num_instances</span><span class="p">]</span>
-<span class="linenos"> 28</span>    <span class="n">rotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-<span class="linenos"> 29</span>        <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">identity</span><span class="p">()</span><span class="o">.</span><span class="n">wxyz</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_instances</span><span class="p">)],</span>
-<span class="linenos"> 30</span>        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
-<span class="linenos"> 31</span>    <span class="p">)</span>
-<span class="linenos"> 32</span>
-<span class="linenos"> 33</span>    <span class="k">return</span> <span class="n">positions</span><span class="p">,</span> <span class="n">rotations</span>
-<span class="linenos"> 34</span>
+<span class="linenos"> 12</span>
+<span class="linenos"> 13</span><span class="k">def</span><span class="w"> </span><span class="nf">create_grid_transforms</span><span class="p">(</span><span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="linenos"> 14</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Create grid positions and rotations for mesh instances.</span>
+<span class="linenos"> 15</span>
+<span class="linenos"> 16</span><span class="sd">    Args:</span>
+<span class="linenos"> 17</span><span class="sd">        num_instances: Number of mesh instances to create transforms for.</span>
+<span class="linenos"> 18</span>
+<span class="linenos"> 19</span><span class="sd">    Returns:</span>
+<span class="linenos"> 20</span><span class="sd">        tuple containing:</span>
+<span class="linenos"> 21</span><span class="sd">            - positions: (N, 3) float32 array of random positions</span>
+<span class="linenos"> 22</span><span class="sd">            - rotations: (N, 4) float32 array of quaternions (wxyz format)</span>
+<span class="linenos"> 23</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos"> 24</span>    <span class="n">grid_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">num_instances</span><span class="p">)))</span>
+<span class="linenos"> 25</span>    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">grid_size</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">grid_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+<span class="linenos"> 26</span>    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">grid_size</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">grid_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+<span class="linenos"> 27</span>    <span class="n">positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="linenos"> 28</span>    <span class="n">positions</span> <span class="o">=</span> <span class="n">positions</span><span class="p">[:</span><span class="n">num_instances</span><span class="p">]</span>
+<span class="linenos"> 29</span>    <span class="n">rotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+<span class="linenos"> 30</span>        <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">identity</span><span class="p">()</span><span class="o">.</span><span class="n">wxyz</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_instances</span><span class="p">)],</span>
+<span class="linenos"> 31</span>        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+<span class="linenos"> 32</span>    <span class="p">)</span>
+<span class="linenos"> 33</span>
+<span class="linenos"> 34</span>    <span class="k">return</span> <span class="n">positions</span><span class="p">,</span> <span class="n">rotations</span>
 <span class="linenos"> 35</span>
-<span class="linenos"> 36</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-<span class="linenos"> 37</span>    <span class="c1"># Load and prepare mesh data.</span>
-<span class="linenos"> 38</span>    <span class="n">dragon_mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">load_mesh</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;assets/dragon.obj&quot;</span><span class="p">))</span>
-<span class="linenos"> 39</span>    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dragon_mesh</span><span class="p">,</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">Trimesh</span><span class="p">)</span>
-<span class="linenos"> 40</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">apply_scale</span><span class="p">(</span><span class="mf">0.005</span><span class="p">)</span>
-<span class="linenos"> 41</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">vertices</span> <span class="o">-=</span> <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">centroid</span>
-<span class="linenos"> 42</span>
-<span class="linenos"> 43</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">apply_transform</span><span class="p">(</span>
-<span class="linenos"> 44</span>        <span class="n">trimesh</span><span class="o">.</span><span class="n">transformations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-<span class="linenos"> 45</span>    <span class="p">)</span>
-<span class="linenos"> 46</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">apply_translation</span><span class="p">(</span><span class="o">-</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">centroid</span><span class="p">)</span>
-<span class="linenos"> 47</span>
-<span class="linenos"> 48</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
-<span class="linenos"> 49</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">configure_default_lights</span><span class="p">()</span>
-<span class="linenos"> 50</span>    <span class="n">grid_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_grid</span><span class="p">(</span>
-<span class="linenos"> 51</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;grid&quot;</span><span class="p">,</span>
-<span class="linenos"> 52</span>        <span class="n">width</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
-<span class="linenos"> 53</span>        <span class="n">height</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
-<span class="linenos"> 54</span>        <span class="n">width_segments</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
-<span class="linenos"> 55</span>        <span class="n">height_segments</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
-<span class="linenos"> 56</span>    <span class="p">)</span>
-<span class="linenos"> 57</span>
-<span class="linenos"> 58</span>    <span class="c1"># Add GUI controls.</span>
-<span class="linenos"> 59</span>    <span class="n">instance_count_slider</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_slider</span><span class="p">(</span>
-<span class="linenos"> 60</span>        <span class="s2">&quot;# of instances&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mi">100</span>
-<span class="linenos"> 61</span>    <span class="p">)</span>
-<span class="linenos"> 62</span>
-<span class="linenos"> 63</span>    <span class="c1"># Wiggle mesh, to test pose update latency.</span>
-<span class="linenos"> 64</span>    <span class="n">wiggle_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Wiggle&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="linenos"> 65</span>
-<span class="linenos"> 66</span>    <span class="c1"># Allow user to toggle LOD.</span>
-<span class="linenos"> 67</span>    <span class="n">lod_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Enable LOD&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos"> 68</span>
-<span class="linenos"> 69</span>    <span class="nd">@lod_checkbox</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos"> 70</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-<span class="linenos"> 71</span>        <span class="n">mesh_handle</span><span class="o">.</span><span class="n">lod</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span> <span class="k">if</span> <span class="n">lod_checkbox</span><span class="o">.</span><span class="n">value</span> <span class="k">else</span> <span class="s2">&quot;off&quot;</span>
-<span class="linenos"> 72</span>
-<span class="linenos"> 73</span>    <span class="c1"># Allow user to toggle cast shadow.</span>
-<span class="linenos"> 74</span>    <span class="n">cast_shadow_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Cast shadow&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos"> 75</span>
-<span class="linenos"> 76</span>    <span class="nd">@cast_shadow_checkbox</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos"> 77</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-<span class="linenos"> 78</span>        <span class="n">mesh_handle</span><span class="o">.</span><span class="n">cast_shadow</span> <span class="o">=</span> <span class="n">cast_shadow_checkbox</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos"> 79</span>
-<span class="linenos"> 80</span>    <span class="c1"># Initialize transforms.</span>
-<span class="linenos"> 81</span>    <span class="n">positions</span><span class="p">,</span> <span class="n">rotations</span> <span class="o">=</span> <span class="n">create_grid_transforms</span><span class="p">(</span><span class="n">instance_count_slider</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-<span class="linenos"> 82</span>
-<span class="linenos"> 83</span>    <span class="c1"># Create batched mesh visualization.</span>
-<span class="linenos"> 84</span>    <span class="n">axes_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_batched_axes</span><span class="p">(</span>
-<span class="linenos"> 85</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;axes&quot;</span><span class="p">,</span>
-<span class="linenos"> 86</span>        <span class="n">batched_positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
-<span class="linenos"> 87</span>        <span class="n">batched_wxyzs</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
-<span class="linenos"> 88</span>    <span class="p">)</span>
-<span class="linenos"> 89</span>    <span class="n">mesh_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_batched_meshes_simple</span><span class="p">(</span>
-<span class="linenos"> 90</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;dragon&quot;</span><span class="p">,</span>
-<span class="linenos"> 91</span>        <span class="c1"># mesh=dragon_mesh,</span>
-<span class="linenos"> 92</span>        <span class="n">vertices</span><span class="o">=</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span>
-<span class="linenos"> 93</span>        <span class="n">faces</span><span class="o">=</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">faces</span><span class="p">,</span>
-<span class="linenos"> 94</span>        <span class="n">batched_positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
-<span class="linenos"> 95</span>        <span class="n">batched_wxyzs</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
-<span class="linenos"> 96</span>        <span class="n">lod</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span> <span class="k">if</span> <span class="n">lod_checkbox</span><span class="o">.</span><span class="n">value</span> <span class="k">else</span> <span class="s2">&quot;off&quot;</span><span class="p">,</span>
-<span class="linenos"> 97</span>    <span class="p">)</span>
-<span class="linenos"> 98</span>
-<span class="linenos"> 99</span>    <span class="c1"># Animation loop.</span>
-<span class="linenos">100</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos">101</span>        <span class="n">current_instance_count</span> <span class="o">=</span> <span class="n">instance_count_slider</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos">102</span>        <span class="n">update_visualization</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="linenos">103</span>
-<span class="linenos">104</span>        <span class="c1"># Recreate transforms if instance count changed.</span>
-<span class="linenos">105</span>        <span class="k">if</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">current_instance_count</span><span class="p">:</span>
-<span class="linenos">106</span>            <span class="n">positions</span><span class="p">,</span> <span class="n">rotations</span> <span class="o">=</span> <span class="n">create_grid_transforms</span><span class="p">(</span><span class="n">current_instance_count</span><span class="p">)</span>
-<span class="linenos">107</span>            <span class="n">update_visualization</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="linenos">108</span>
-<span class="linenos">109</span>        <span class="c1"># Add small random perturbations, to test the update latency.</span>
-<span class="linenos">110</span>        <span class="k">if</span> <span class="n">wiggle_checkbox</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
-<span class="linenos">111</span>            <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">current_instance_count</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.02</span> <span class="o">-</span> <span class="mf">0.01</span>
-<span class="linenos">112</span>            <span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">delta</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-<span class="linenos">113</span>            <span class="n">update_visualization</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="linenos">114</span>
-<span class="linenos">115</span>        <span class="c1"># Update visualization -- positions and wxyzs together, to make sure the shapes remain consistent.</span>
-<span class="linenos">116</span>        <span class="k">if</span> <span class="n">update_visualization</span><span class="p">:</span>
-<span class="linenos">117</span>            <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">atomic</span><span class="p">():</span>
-<span class="linenos">118</span>                <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_positions</span> <span class="o">=</span> <span class="n">positions</span>
-<span class="linenos">119</span>                <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_wxyzs</span> <span class="o">=</span> <span class="n">rotations</span>
-<span class="linenos">120</span>                <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_positions</span> <span class="o">=</span> <span class="n">positions</span>
-<span class="linenos">121</span>                <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_wxyzs</span> <span class="o">=</span> <span class="n">rotations</span>
-<span class="linenos">122</span>
-<span class="linenos">123</span>                <span class="n">grid_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">current_instance_count</span><span class="p">)))</span>
-<span class="linenos">124</span>                <span class="n">grid_handle</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">grid_size</span> <span class="o">+</span> <span class="mi">2</span>
-<span class="linenos">125</span>                <span class="n">grid_handle</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">grid_size</span> <span class="o">+</span> <span class="mi">2</span>
-<span class="linenos">126</span>                <span class="n">grid_handle</span><span class="o">.</span><span class="n">width_segments</span> <span class="o">=</span> <span class="n">grid_size</span> <span class="o">+</span> <span class="mi">2</span>
-<span class="linenos">127</span>                <span class="n">grid_handle</span><span class="o">.</span><span class="n">height_segments</span> <span class="o">=</span> <span class="n">grid_size</span> <span class="o">+</span> <span class="mi">2</span>
-<span class="linenos">128</span>
-<span class="linenos">129</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">30.0</span><span class="p">)</span>
-<span class="linenos">130</span>
+<span class="linenos"> 36</span>
+<span class="linenos"> 37</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<span class="linenos"> 38</span>    <span class="c1"># Load and prepare mesh data.</span>
+<span class="linenos"> 39</span>    <span class="n">dragon_mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">load_mesh</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;assets/dragon.obj&quot;</span><span class="p">))</span>
+<span class="linenos"> 40</span>    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dragon_mesh</span><span class="p">,</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">Trimesh</span><span class="p">)</span>
+<span class="linenos"> 41</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">apply_scale</span><span class="p">(</span><span class="mf">0.005</span><span class="p">)</span>
+<span class="linenos"> 42</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">vertices</span> <span class="o">-=</span> <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">centroid</span>
+<span class="linenos"> 43</span>
+<span class="linenos"> 44</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">apply_transform</span><span class="p">(</span>
+<span class="linenos"> 45</span>        <span class="n">trimesh</span><span class="o">.</span><span class="n">transformations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="linenos"> 46</span>    <span class="p">)</span>
+<span class="linenos"> 47</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">apply_translation</span><span class="p">(</span><span class="o">-</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">centroid</span><span class="p">)</span>
+<span class="linenos"> 48</span>
+<span class="linenos"> 49</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
+<span class="linenos"> 50</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">configure_default_lights</span><span class="p">()</span>
+<span class="linenos"> 51</span>    <span class="n">grid_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_grid</span><span class="p">(</span>
+<span class="linenos"> 52</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;grid&quot;</span><span class="p">,</span>
+<span class="linenos"> 53</span>        <span class="n">width</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+<span class="linenos"> 54</span>        <span class="n">height</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+<span class="linenos"> 55</span>        <span class="n">width_segments</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+<span class="linenos"> 56</span>        <span class="n">height_segments</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+<span class="linenos"> 57</span>    <span class="p">)</span>
+<span class="linenos"> 58</span>
+<span class="linenos"> 59</span>    <span class="c1"># Add GUI controls.</span>
+<span class="linenos"> 60</span>    <span class="n">instance_count_slider</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_slider</span><span class="p">(</span>
+<span class="linenos"> 61</span>        <span class="s2">&quot;# of instances&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mi">100</span>
+<span class="linenos"> 62</span>    <span class="p">)</span>
+<span class="linenos"> 63</span>
+<span class="linenos"> 64</span>    <span class="c1"># Wiggle mesh, to test pose update latency.</span>
+<span class="linenos"> 65</span>    <span class="n">wiggle_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Wiggle&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="linenos"> 66</span>
+<span class="linenos"> 67</span>    <span class="c1"># Allow user to toggle LOD.</span>
+<span class="linenos"> 68</span>    <span class="n">lod_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Enable LOD&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos"> 69</span>
+<span class="linenos"> 70</span>    <span class="nd">@lod_checkbox</span><span class="o">.</span><span class="n">on_update</span>
+<span class="linenos"> 71</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos"> 72</span>        <span class="n">mesh_handle</span><span class="o">.</span><span class="n">lod</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span> <span class="k">if</span> <span class="n">lod_checkbox</span><span class="o">.</span><span class="n">value</span> <span class="k">else</span> <span class="s2">&quot;off&quot;</span>
+<span class="linenos"> 73</span>
+<span class="linenos"> 74</span>    <span class="c1"># Allow user to toggle cast shadow.</span>
+<span class="linenos"> 75</span>    <span class="n">cast_shadow_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Cast shadow&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos"> 76</span>
+<span class="linenos"> 77</span>    <span class="nd">@cast_shadow_checkbox</span><span class="o">.</span><span class="n">on_update</span>
+<span class="linenos"> 78</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos"> 79</span>        <span class="n">mesh_handle</span><span class="o">.</span><span class="n">cast_shadow</span> <span class="o">=</span> <span class="n">cast_shadow_checkbox</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos"> 80</span>
+<span class="linenos"> 81</span>    <span class="c1"># Initialize transforms.</span>
+<span class="linenos"> 82</span>    <span class="n">positions</span><span class="p">,</span> <span class="n">rotations</span> <span class="o">=</span> <span class="n">create_grid_transforms</span><span class="p">(</span><span class="n">instance_count_slider</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="linenos"> 83</span>
+<span class="linenos"> 84</span>    <span class="c1"># Create batched mesh visualization.</span>
+<span class="linenos"> 85</span>    <span class="n">axes_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_batched_axes</span><span class="p">(</span>
+<span class="linenos"> 86</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;axes&quot;</span><span class="p">,</span>
+<span class="linenos"> 87</span>        <span class="n">batched_positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
+<span class="linenos"> 88</span>        <span class="n">batched_wxyzs</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
+<span class="linenos"> 89</span>    <span class="p">)</span>
+<span class="linenos"> 90</span>    <span class="n">mesh_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_batched_meshes_simple</span><span class="p">(</span>
+<span class="linenos"> 91</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;dragon&quot;</span><span class="p">,</span>
+<span class="linenos"> 92</span>        <span class="c1"># mesh=dragon_mesh,</span>
+<span class="linenos"> 93</span>        <span class="n">vertices</span><span class="o">=</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span>
+<span class="linenos"> 94</span>        <span class="n">faces</span><span class="o">=</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">faces</span><span class="p">,</span>
+<span class="linenos"> 95</span>        <span class="n">batched_positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
+<span class="linenos"> 96</span>        <span class="n">batched_wxyzs</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
+<span class="linenos"> 97</span>        <span class="n">lod</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span> <span class="k">if</span> <span class="n">lod_checkbox</span><span class="o">.</span><span class="n">value</span> <span class="k">else</span> <span class="s2">&quot;off&quot;</span><span class="p">,</span>
+<span class="linenos"> 98</span>    <span class="p">)</span>
+<span class="linenos"> 99</span>
+<span class="linenos">100</span>    <span class="c1"># Animation loop.</span>
+<span class="linenos">101</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">102</span>        <span class="n">current_instance_count</span> <span class="o">=</span> <span class="n">instance_count_slider</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">103</span>        <span class="n">update_visualization</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="linenos">104</span>
+<span class="linenos">105</span>        <span class="c1"># Recreate transforms if instance count changed.</span>
+<span class="linenos">106</span>        <span class="k">if</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">current_instance_count</span><span class="p">:</span>
+<span class="linenos">107</span>            <span class="n">positions</span><span class="p">,</span> <span class="n">rotations</span> <span class="o">=</span> <span class="n">create_grid_transforms</span><span class="p">(</span><span class="n">current_instance_count</span><span class="p">)</span>
+<span class="linenos">108</span>            <span class="n">update_visualization</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">109</span>
+<span class="linenos">110</span>        <span class="c1"># Add small random perturbations, to test the update latency.</span>
+<span class="linenos">111</span>        <span class="k">if</span> <span class="n">wiggle_checkbox</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+<span class="linenos">112</span>            <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">current_instance_count</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.02</span> <span class="o">-</span> <span class="mf">0.01</span>
+<span class="linenos">113</span>            <span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">delta</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="linenos">114</span>            <span class="n">update_visualization</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">115</span>
+<span class="linenos">116</span>        <span class="c1"># Update visualization -- positions and wxyzs together, to make sure the shapes remain consistent.</span>
+<span class="linenos">117</span>        <span class="k">if</span> <span class="n">update_visualization</span><span class="p">:</span>
+<span class="linenos">118</span>            <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">atomic</span><span class="p">():</span>
+<span class="linenos">119</span>                <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_positions</span> <span class="o">=</span> <span class="n">positions</span>
+<span class="linenos">120</span>                <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_wxyzs</span> <span class="o">=</span> <span class="n">rotations</span>
+<span class="linenos">121</span>                <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_positions</span> <span class="o">=</span> <span class="n">positions</span>
+<span class="linenos">122</span>                <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_wxyzs</span> <span class="o">=</span> <span class="n">rotations</span>
+<span class="linenos">123</span>
+<span class="linenos">124</span>                <span class="n">grid_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">current_instance_count</span><span class="p">)))</span>
+<span class="linenos">125</span>                <span class="n">grid_handle</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">grid_size</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="linenos">126</span>                <span class="n">grid_handle</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">grid_size</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="linenos">127</span>                <span class="n">grid_handle</span><span class="o">.</span><span class="n">width_segments</span> <span class="o">=</span> <span class="n">grid_size</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="linenos">128</span>                <span class="n">grid_handle</span><span class="o">.</span><span class="n">height_segments</span> <span class="o">=</span> <span class="n">grid_size</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="linenos">129</span>
+<span class="linenos">130</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">30.0</span><span class="p">)</span>
 <span class="linenos">131</span>
-<span class="linenos">132</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-<span class="linenos">133</span>    <span class="n">main</span><span class="p">()</span>
+<span class="linenos">132</span>
+<span class="linenos">133</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">134</span>    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
