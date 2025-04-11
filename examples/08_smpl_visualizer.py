@@ -76,8 +76,6 @@ class SmplHelper:
 def main(model_path: Path) -> None:
     server = viser.ViserServer()
     server.scene.set_up_direction("+y")
-    server.gui.configure_theme(control_layout="collapsible")
-
     server.scene.add_grid("/grid", position=(0.0, -1.3, 0.0), plane="xz")
 
     # Main loop. We'll read pose/shape from the GUI elements, compute the mesh,
@@ -111,8 +109,8 @@ def main(model_path: Path) -> None:
     @vertex_selector.on_click
     def _(event: viser.SceneNodePointerEvent) -> None:
         event.client.add_notification(
-            "Clicked on vertex!",
-            body=f"index={event.instance_index}",
+            f"Clicked on vertex {event.instance_index}",
+            body="",
             auto_close=3000,
         )
 

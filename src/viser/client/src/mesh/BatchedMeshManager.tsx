@@ -44,7 +44,6 @@ export class BatchedMeshManager {
   constructor(
     geometry: THREE.BufferGeometry,
     material: THREE.Material,
-    numInstances: number,
     lodSetting: "off" | "auto" | [number, number][],
     scale?: number,
     castShadow: boolean = true,
@@ -66,10 +65,6 @@ export class BatchedMeshManager {
         scale,
       );
     }
-
-    // Setup instances
-    this.instancedMesh.addInstances(numInstances, () => {});
-    this.instancedMesh.computeBVH();
   }
 
   private setupLODs(
@@ -258,6 +253,7 @@ export class BatchedMeshManager {
   setInstanceCount(numInstances: number) {
     this.instancedMesh.clearInstances();
     this.instancedMesh.addInstances(numInstances, () => {});
+    this.instancedMesh.computeBVH();
   }
 
   /** Get the instanced mesh object */

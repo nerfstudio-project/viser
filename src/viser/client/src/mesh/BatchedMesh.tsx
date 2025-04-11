@@ -74,25 +74,21 @@ export const BatchedMesh = React.forwardRef<
 
   // Create mesh manager with useMemo for better performance.
   const meshManager = React.useMemo(() => {
+    // Create new manager without shadow settings to reduce dependencies
+    return new BatchedMeshManager(geometry, material, message.props.lod);
+  }, [geometry, material, message.props.lod]);
+
+  // Effects for properties that can be updated without recreating the mesh
+  //
+  // 0. Update instance count.
+  React.useEffect(() => {
+    if (meshManager === null) return;
+    // Create instanced mesh with LOD.
     const numInstances =
       message.props.batched_positions.byteLength /
       (3 * Float32Array.BYTES_PER_ELEMENT);
-
-    // Create new manager without shadow settings to reduce dependencies
-    return new BatchedMeshManager(
-      geometry,
-      material,
-      numInstances,
-      message.props.lod,
-    );
-  }, [
-    geometry,
-    material,
-    message.props.lod,
-    message.props.batched_positions.byteLength, // Keep this to handle instance count changes
-  ]);
-
-  // Effects for properties that can be updated without recreating the mesh
+    meshManager.setInstanceCount(numInstances);
+  }, [message.props.batched_positions.byteLength]);
 
   // 1. Update instance transforms (positions and orientations)
   React.useEffect(() => {

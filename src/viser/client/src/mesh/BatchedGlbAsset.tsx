@@ -57,16 +57,10 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
           };
           transforms.push(transform);
 
-          // Create instanced mesh with LOD.
-          const numInstances =
-            message.props.batched_positions.byteLength /
-            (3 * Float32Array.BYTES_PER_ELEMENT);
-
           // Create manager without shadow settings to avoid recreation - we'll set them in useEffect
           const manager = new BatchedMeshManager(
             node.geometry,
             node.material,
-            numInstances,
             message.props.lod,
             Math.max(scale.x, scale.y, scale.z),
           );
@@ -78,20 +72,31 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       });
 
       return { instancedGroup, managers, transforms };
-    }, [gltf, message.props.lod, message.props.batched_positions.byteLength]);
+    }, [gltf, message.props.lod]);
+
+    // 0. Update instance count.
+    React.useEffect(() => {
+      if (meshState === null) return;
+      // Create instanced mesh with LOD.
+      const numInstances =
+        message.props.batched_positions.byteLength /
+        (3 * Float32Array.BYTES_PER_ELEMENT);
+      meshState.managers.forEach((manager) => {
+        manager.setInstanceCount(numInstances);
+      });
+    }, [meshState, message.props.batched_positions.byteLength]);
 
     // 1. Update instance transforms (positions and orientations)
     React.useEffect(() => {
-      if (meshState && meshState.managers) {
-        meshState.managers.forEach((manager, index) => {
-          // Pass buffer views directly to avoid creating new arrays.
-          manager.updateInstances(
-            message.props.batched_positions,
-            message.props.batched_wxyzs,
-            meshState.transforms[index],
-          );
-        });
-      }
+      if (meshState === null) return;
+      meshState.managers.forEach((manager, index) => {
+        // Pass buffer views directly to avoid creating new arrays.
+        manager.updateInstances(
+          message.props.batched_positions,
+          message.props.batched_wxyzs,
+          meshState.transforms[index],
+        );
+      });
     }, [
       meshState,
       message.props.batched_positions,
@@ -100,29 +105,27 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
 
     // 2. Update shadow settings - separate effect for better performance
     React.useEffect(() => {
-      if (meshState && meshState.managers) {
-        meshState.managers.forEach((manager) => {
-          manager.updateShadowSettings(
-            message.props.cast_shadow,
-            message.props.receive_shadow,
-          );
-        });
-      }
+      if (meshState === null) return;
+      meshState.managers.forEach((manager) => {
+        manager.updateShadowSettings(
+          message.props.cast_shadow,
+          message.props.receive_shadow,
+        );
+      });
     }, [meshState, message.props.cast_shadow, message.props.receive_shadow]);
 
     // Clean up resources when dependencies change or component unmounts.
     React.useEffect(() => {
       return () => {
-        if (meshState) {
-          // Dispose all batch managers.
-          meshState.managers.forEach((manager) => {
-            manager.dispose();
-          });
+        if (meshState === null) return;
+        // Dispose all batch managers.
+        meshState.managers.forEach((manager) => {
+          manager.dispose();
+        });
 
-          // Clear the instanced group.
-          if (meshState.instancedGroup) {
-            meshState.instancedGroup.clear();
-          }
+        // Clear the instanced group.
+        if (meshState.instancedGroup) {
+          meshState.instancedGroup.clear();
         }
       };
     }, [meshState]);

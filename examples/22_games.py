@@ -15,7 +15,6 @@ import viser.transforms as tf
 
 def main() -> None:
     server = viser.ViserServer()
-    server.gui.configure_theme(dark_mode=True)
     play_connect_4(server)
 
     server.gui.add_button("Tic-Tac-Toe").on_click(lambda _: play_tic_tac_toe(server))
