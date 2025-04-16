@@ -1,6 +1,11 @@
-"""SMPL model visualizer
+# mypy: disable-error-code="assignment"
+#
+# Asymmetric properties are supported in Pyright, but not yet in mypy.
+# - https://github.com/python/mypy/issues/3004
+# - https://github.com/python/mypy/pull/11643
+"""SMPL visualizer (Skinned Mesh)
 
-Visualizer for SMPL human body models. Requires a .npz model file.
+Requires a .npz model file.
 
 See here for download instructions:
     https://github.com/vchoutas/smplx?tab=readme-ov-file#downloading-the-model
@@ -11,9 +16,9 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import List, Tuple
 
 import numpy as np
-import trimesh
 import tyro
 
 import viser
@@ -21,15 +26,13 @@ import viser.transforms as tf
 
 
 @dataclass(frozen=True)
-class SmplOutputs:
-    vertices: np.ndarray
-    faces: np.ndarray
+class SmplFkOutputs:
     T_world_joint: np.ndarray  # (num_joints, 4, 4)
     T_parent_joint: np.ndarray  # (num_joints, 4, 4)
 
 
 class SmplHelper:
-    """Helper for models in the SMPL family, implemented in numpy."""
+    """Helper for models in the SMPL family, implemented in numpy. Does not include blend skinning."""
 
     def __init__(self, model_path: Path) -> None:
         assert model_path.suffix.lower() == ".npz", "Model should be an .npz file!"
@@ -46,7 +49,15 @@ class SmplHelper:
         self.num_betas: int = self.shapedirs.shape[-1]
         self.parent_idx: np.ndarray = body_dict["kintree_table"][0]
 
-    def get_outputs(self, betas: np.ndarray, joint_rotmats: np.ndarray) -> SmplOutputs:
+    def get_tpose(self, betas: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        # Get shaped vertices + joint positions, when all local poses are identity.
+        v_tpose = self.v_template + np.einsum("vxb,b->vx", self.shapedirs, betas)
+        j_tpose = np.einsum("jv,vx->jx", self.J_regressor, v_tpose)
+        return v_tpose, j_tpose
+
+    def get_outputs(
+        self, betas: np.ndarray, joint_rotmats: np.ndarray
+    ) -> SmplFkOutputs:
         # Get shaped vertices + joint positions, when all local poses are identity.
         v_tpose = self.v_template + np.einsum("vxb,b->vx", self.shapedirs, betas)
         j_tpose = np.einsum("jv,vx->jx", self.J_regressor, v_tpose)
@@ -62,21 +73,12 @@ class SmplHelper:
         for i in range(1, self.num_joints):
             T_world_joint[i] = T_world_joint[self.parent_idx[i]] @ T_parent_joint[i]
 
-        # Linear blend skinning.
-        pose_delta = (joint_rotmats[1:, ...] - np.eye(3)).flatten()
-        v_blend = v_tpose + np.einsum("byn,n->by", self.posedirs, pose_delta)
-        v_delta = np.ones((v_blend.shape[0], self.num_joints, 4))
-        v_delta[:, :, :3] = v_blend[:, None, :] - j_tpose[None, :, :]
-        v_posed = np.einsum(
-            "jxy,vj,vjy->vx", T_world_joint[:, :3, :], self.weights, v_delta
-        )
-        return SmplOutputs(v_posed, self.faces, T_world_joint, T_parent_joint)
+        return SmplFkOutputs(T_world_joint, T_parent_joint)
 
 
 def main(model_path: Path) -> None:
     server = viser.ViserServer()
     server.scene.set_up_direction("+y")
-    server.scene.add_grid("/grid", position=(0.0, -1.3, 0.0), plane="xz")
 
     # Main loop. We'll read pose/shape from the GUI elements, compute the mesh,
     # and then send the updated mesh in a loop.
@@ -87,18 +89,18 @@ def main(model_path: Path) -> None:
         num_joints=model.num_joints,
         parent_idx=model.parent_idx,
     )
-    body_handle = server.scene.add_mesh_simple(
+    v_tpose, j_tpose = model.get_tpose(np.zeros((model.num_betas,)))
+    mesh_handle = server.scene.add_mesh_skinned(
         "/human",
-        model.v_template,
+        v_tpose,
         model.faces,
+        bone_wxyzs=tf.SO3.identity(batch_axes=(model.num_joints,)).wxyz,
+        bone_positions=j_tpose,
+        skin_weights=model.weights,
         wireframe=gui_elements.gui_wireframe.value,
         color=gui_elements.gui_rgb.value,
     )
-
-    # Add a vertex selector to the mesh. This will allow us to click on
-    # vertices to get indices.
-    red_sphere = trimesh.creation.icosphere(radius=0.001, subdivisions=1)
-    red_sphere.visual.vertex_colors = (255, 0, 0, 255)  # type: ignore
+    server.scene.add_grid("/grid", position=(0.0, -1.3, 0.0), plane="xz")
 
     while True:
         # Do nothing if no change.
@@ -106,40 +108,56 @@ def main(model_path: Path) -> None:
         if not gui_elements.changed:
             continue
 
-        gui_elements.changed = False
+        # Shapes changed: update vertices / joint positions.
+        if gui_elements.betas_changed:
+            v_tpose, j_tpose = model.get_tpose(
+                np.array([gui_beta.value for gui_beta in gui_elements.gui_betas])
+            )
+            mesh_handle.vertices = v_tpose
+            mesh_handle.bone_positions = j_tpose
 
-        # If anything has changed, re-compute SMPL outputs.
+        gui_elements.changed = False
+        gui_elements.betas_changed = False
+
+        # Render as wireframe?
+        mesh_handle.wireframe = gui_elements.gui_wireframe.value
+
+        # Compute SMPL outputs.
         smpl_outputs = model.get_outputs(
             betas=np.array([x.value for x in gui_elements.gui_betas]),
-            joint_rotmats=tf.SO3.exp(
-                # (num_joints, 3)
-                np.array([x.value for x in gui_elements.gui_joints])
-            ).as_matrix(),
+            joint_rotmats=np.stack(
+                [
+                    tf.SO3.exp(np.array(x.value)).as_matrix()
+                    for x in gui_elements.gui_joints
+                ],
+                axis=0,
+            ),
         )
-
-        # Update the mesh properties based on the SMPL model output + GUI
-        # elements.
-        body_handle.vertices = smpl_outputs.vertices
-        body_handle.wireframe = gui_elements.gui_wireframe.value
-        body_handle.color = gui_elements.gui_rgb.value
 
         # Match transform control gizmos to joint positions.
         for i, control in enumerate(gui_elements.transform_controls):
             control.position = smpl_outputs.T_parent_joint[i, :3, 3]
+            mesh_handle.bones[i].wxyz = tf.SO3.from_matrix(
+                smpl_outputs.T_world_joint[i, :3, :3]
+            ).wxyz
+            mesh_handle.bones[i].position = smpl_outputs.T_world_joint[i, :3, 3]
 
 
 @dataclass
 class GuiElements:
     """Structure containing handles for reading from GUI elements."""
 
-    gui_rgb: viser.GuiInputHandle[tuple[int, int, int]]
+    gui_rgb: viser.GuiInputHandle[Tuple[int, int, int]]
     gui_wireframe: viser.GuiInputHandle[bool]
-    gui_betas: list[viser.GuiInputHandle[float]]
-    gui_joints: list[viser.GuiInputHandle[tuple[float, float, float]]]
-    transform_controls: list[viser.TransformControlsHandle]
+    gui_betas: List[viser.GuiInputHandle[float]]
+    gui_joints: List[viser.GuiInputHandle[Tuple[float, float, float]]]
+    transform_controls: List[viser.TransformControlsHandle]
 
     changed: bool
-    """This flag will be flipped to True whenever the mesh needs to be re-generated."""
+    """This flag will be flipped to True whenever any input is changed."""
+
+    betas_changed: bool
+    """This flag will be flipped to True whenever the shape changes."""
 
 
 def make_gui_elements(
@@ -153,13 +171,20 @@ def make_gui_elements(
     tab_group = server.gui.add_tab_group()
 
     def set_changed(_) -> None:
-        out.changed = True  # out is define later!
+        out.changed = True  # out is defined later!
+
+    def set_betas_changed(_) -> None:
+        out.betas_changed = True
+        out.changed = True
 
     # GUI elements: mesh settings + visibility.
     with tab_group.add_tab("View", viser.Icon.VIEWFINDER):
         gui_rgb = server.gui.add_rgb("Color", initial_value=(90, 200, 255))
         gui_wireframe = server.gui.add_checkbox("Wireframe", initial_value=False)
         gui_show_controls = server.gui.add_checkbox("Handles", initial_value=True)
+        gui_control_size = server.gui.add_slider(
+            "Handle size", min=0.0, max=10.0, step=0.01, initial_value=1.0
+        )
 
         gui_rgb.on_update(set_changed)
         gui_wireframe.on_update(set_changed)
@@ -168,6 +193,16 @@ def make_gui_elements(
         def _(_):
             for control in transform_controls:
                 control.visible = gui_show_controls.value
+
+        @gui_control_size.on_update
+        def _(_):
+            for control in transform_controls:
+                prefixed_joint_name = control.name
+                control.scale = (
+                    0.2
+                    * (0.75 ** prefixed_joint_name.count("/"))
+                    * gui_control_size.value
+                )
 
     # GUI elements: shape parameters.
     with tab_group.add_tab("Shape", viser.Icon.BOX):
@@ -190,7 +225,7 @@ def make_gui_elements(
                 f"beta{i}", min=-5.0, max=5.0, step=0.01, initial_value=0.0
             )
             gui_betas.append(beta)
-            beta.on_update(set_changed)
+            beta.on_update(set_betas_changed)
 
     # GUI elements: joint angles.
     with tab_group.add_tab("Joints", viser.Icon.ANGLE):
@@ -208,7 +243,7 @@ def make_gui_elements(
             for joint in gui_joints:
                 joint.value = tf.SO3.sample_uniform(rng).log()
 
-        gui_joints: list[viser.GuiInputHandle[tuple[float, float, float]]] = []
+        gui_joints: List[viser.GuiInputHandle[Tuple[float, float, float]]] = []
         for i in range(num_joints):
             gui_joint = server.gui.add_vector3(
                 label=f"Joint {i}",
@@ -228,7 +263,7 @@ def make_gui_elements(
             set_callback_in_closure(i)
 
     # Transform control gizmos on joints.
-    transform_controls: list[viser.TransformControlsHandle] = []
+    transform_controls: List[viser.TransformControlsHandle] = []
     prefixed_joint_names = []  # Joint names, but prefixed with parents.
     for i in range(num_joints):
         prefixed_joint_name = f"joint_{i}"
@@ -262,6 +297,7 @@ def make_gui_elements(
         gui_joints,
         transform_controls=transform_controls,
         changed=True,
+        betas_changed=False,
     )
     return out
 

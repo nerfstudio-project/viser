@@ -76,6 +76,7 @@ examples = [
 viser-build-client = "viser._client_autobuild:build_client_entrypoint"
 
 [tool.pyright]
+extraPaths = []
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]
 
 [tool.ruff]

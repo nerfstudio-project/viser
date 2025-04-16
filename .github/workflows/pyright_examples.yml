@@ -1,8 +1,13 @@
-name: pyright
+# Check that pyright passes on the examples when using the latest release. We
+# want to avoid breaking examples.
 
+name: pyright (examples)
+
+# Let's only run on pull requests. We'd expect this check to fail when making
+# pushes for new releases.
 on:
-  push:
-    branches: [main]
+  # push:
+  #   branches: [main]
   pull_request:
     branches: [main]
 
@@ -11,7 +16,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.12"]
 
     steps:
       - uses: actions/checkout@v2
@@ -22,8 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install uv
-          uv pip install --system -e ".[dev,examples]"
+          uv pip install --system "viser[dev,examples]"
       - name: Run pyright
         run: |
-          pyright ./src
-          pyright ./examples_dev
+          pyright examples
