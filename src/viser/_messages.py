@@ -402,7 +402,7 @@ class PointCloudProps:
 
     def __post_init__(self):
         # Check shapes.
-        assert self.points.shape == self.colors.shape
+        # assert self.points.shape == self.colors.shape
         assert self.points.shape[-1] == 3
 
         # Check dtypes.

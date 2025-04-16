@@ -121,9 +121,9 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
       } else {
         material.vertexColors = false;
         material.uniforms.uniformColor.value = new THREE.Color(
-          props.colors[0],
-          props.colors[1],
-          props.colors[2],
+          props.colors[0] / 255.0,
+          props.colors[1] / 255.0,
+          props.colors[2] / 255.0,
         );
       }
 
