@@ -47,8 +47,5 @@ Example showing how we can detect new clients and read camera poses from them.
                 print(f"\tfov: {client.camera.fov}")
                 print(f"\taspect: {client.camera.aspect}")
                 print(f"\tlast update: {client.camera.update_timestamp}")
-                print(
-                    f"\tcanvas size: {client.camera.image_width}x{client.camera.image_height}"
-                )
 
             time.sleep(2.0)

@@ -3,9 +3,11 @@
 
 name: pyright (examples)
 
+# Let's only run on pull requests. We'd expect this check to fail when making
+# pushes for new releases.
 on:
-  push:
-    branches: [main]
+  # push:
+  #   branches: [main]
   pull_request:
     branches: [main]
 
