@@ -8,15 +8,15 @@ import { shaderMaterial } from "@react-three/drei";
 const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   {
     numGaussians: 0,
-    focal: 100.0,
+    focal: [1.0, 1.0],
     viewport: [640, 480],
     near: 1.0,
     far: 100.0,
     depthTest: true,
     depthWrite: false,
     transparent: true,
-    textureBuffer: null,
-    textureT_camera_groups: null,
+    textureBuffer: null as THREE.DataTexture | null,
+    textureT_camera_groups: null as THREE.DataTexture | null,
     transitionInState: 0.0,
   },
   `precision highp usampler2D; // Most important: ints must be 32-bit.
@@ -223,13 +223,11 @@ export function useGaussianMeshProps(
   textureT_camera_groups.internalFormat = "RGBA32F";
   textureT_camera_groups.needsUpdate = true;
 
-  const material = new GaussianSplatMaterial({
-    // @ts-ignore
-    textureBuffer: textureBuffer,
-    textureT_camera_groups: textureT_camera_groups,
-    numGaussians: 0,
-    transitionInState: 0.0,
-  });
+  const material = new GaussianSplatMaterial();
+  material.textureBuffer = textureBuffer;
+  material.textureT_camera_groups = textureT_camera_groups;
+  material.numGaussians = numGaussians;
+  material.focal = [640, 480];
 
   return {
     geometry,
