@@ -49,7 +49,7 @@ Example adding lights and enabling shadow rendering.
                 wxyz=tf.SO3.from_x_radians(np.pi / 2).wxyz,
                 position=(0.0, -2.0, 0.0),
             )
-            grid = server.scene.add_grid(
+            server.scene.add_grid(
                 "grid",
                 width=20.0,
                 height=20.0,
