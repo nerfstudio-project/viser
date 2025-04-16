@@ -25,4 +25,5 @@ jobs:
           uv pip install --system -e ".[dev,examples]"
       - name: Run pyright
         run: |
-          pyright .
+          pyright ./src
+          pyright ./examples_dev
