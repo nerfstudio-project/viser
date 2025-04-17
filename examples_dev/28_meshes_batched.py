@@ -100,7 +100,6 @@ def main():
     )
     mesh_handle = server.scene.add_batched_meshes_simple(
         name="dragon",
-        # mesh=dragon_mesh,
         vertices=dragon_mesh.vertices,
         faces=dragon_mesh.faces,
         batched_positions=positions,
