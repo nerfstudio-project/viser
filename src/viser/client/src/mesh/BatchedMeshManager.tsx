@@ -8,6 +8,7 @@ function getAutoLodSettings(
   scale: number = 1,
 ): { ratios: number[]; distances: number[] } {
   // Heuristics for automatic LOD parameters.
+  mesh.geometry.computeBoundingSphere();
   const geometry = mesh.geometry;
   const boundingRadius = geometry.boundingSphere!.radius * scale;
   const vertexCount = geometry.attributes.position.count;
@@ -43,14 +44,18 @@ export class BatchedMeshManager {
 
   constructor(
     geometry: THREE.BufferGeometry,
-    material: THREE.Material,
+    material: THREE.Material | THREE.Material[],
     lodSetting: "off" | "auto" | [number, number][],
+    initialCount: number,
     scale?: number,
     castShadow: boolean = true,
     receiveShadow: boolean = true,
   ) {
-    this.geometry = geometry.clone();
-    this.instancedMesh = new InstancedMesh2(this.geometry, material);
+    this.geometry = geometry;
+    this.instancedMesh = new InstancedMesh2(this.geometry, material, {
+      capacity: initialCount,
+    });
+    this.instancedMesh.resizeBuffers(initialCount);
     this.instancedMesh.castShadow = castShadow;
     this.instancedMesh.receiveShadow = receiveShadow;
 
@@ -69,7 +74,7 @@ export class BatchedMeshManager {
 
   private setupLODs(
     geometry: THREE.BufferGeometry,
-    material: THREE.Material,
+    material: THREE.Material | THREE.Material[],
     lodSetting: "auto" | [number, number][],
     castShadow: boolean,
     receiveShadow: boolean,
@@ -126,31 +131,9 @@ export class BatchedMeshManager {
       lodGeometry.setDrawRange(0, dstIndexArray.length);
 
       // Create a cloned material for this LOD level
-      let lodMaterial: THREE.Material;
-      if (mesh.material instanceof THREE.MeshToonMaterial) {
-        // For toon materials, determine if it's toon3 or toon5
-        const shades =
-          mesh.material.gradientMap &&
-          mesh.material.gradientMap.image &&
-          mesh.material.gradientMap.image.width === 5
-            ? 5
-            : 3;
-
-        // Create a new toon material with the same properties
-        lodMaterial = new THREE.MeshToonMaterial({
-          gradientMap: this.getGradientMap(shades),
-          color: mesh.material.color.clone(),
-          wireframe: mesh.material.wireframe,
-          transparent: mesh.material.transparent,
-          opacity: mesh.material.opacity,
-          side: mesh.material.side,
-        });
-      } else {
-        // For other material types, just clone the material
-        lodMaterial = (
-          Array.isArray(mesh.material) ? mesh.material[0] : mesh.material
-        ).clone();
-      }
+      const lodMaterial = (
+        Array.isArray(mesh.material) ? mesh.material[0] : mesh.material
+      ).clone();
 
       // Add this LOD level to the instanced mesh
       this.instancedMesh.addLOD(lodGeometry, lodMaterial, distances[index]);

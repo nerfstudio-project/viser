@@ -5,6 +5,7 @@ import { useGlbLoader } from "./GlbLoaderUtils";
 import { BatchedMeshManager } from "./BatchedMeshManager";
 import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
 import { ViewerContext } from "../ViewerContext";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils";
 
 /**
  * Component for rendering batched/instanced GLB models
@@ -30,48 +31,30 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
     const meshState = React.useMemo(() => {
       if (!gltf) return null;
 
-      // Create a new group to hold our instanced meshes.
-      const instancedGroup = new THREE.Group();
-      const managers: BatchedMeshManager[] = [];
-      const transforms: {
-        position: THREE.Vector3;
-        rotation: THREE.Quaternion;
-        scale: THREE.Vector3;
-      }[] = [];
-
       // Collect meshes and their transforms from the original scene.
+      const geometries: THREE.BufferGeometry[] = [];
+      const materials: THREE.Material[] = [];
       gltf.scene.traverse((node) => {
         if (node instanceof THREE.Mesh && node.parent) {
-          // Store transform info.
-          const position = new THREE.Vector3();
-          const scale = new THREE.Vector3();
-          const quat = new THREE.Quaternion();
-          node.getWorldPosition(position);
-          node.getWorldScale(scale);
-          node.getWorldQuaternion(quat);
-
-          const transform = {
-            position: position.clone(),
-            rotation: quat.clone(),
-            scale: scale.clone(),
-          };
-          transforms.push(transform);
-
-          // Create manager without shadow settings to avoid recreation - we'll set them in useEffect
-          const manager = new BatchedMeshManager(
-            node.geometry,
-            node.material,
-            message.props.lod,
-            Math.max(scale.x, scale.y, scale.z),
+          (node.geometry as THREE.BufferGeometry).applyMatrix4(
+            node.matrixWorld,
           );
-
-          // Add the instanced mesh to our group.
-          managers.push(manager);
-          instancedGroup.add(manager.getMesh());
+          geometries.push(node.geometry);
+          materials.push(node.material);
         }
       });
 
-      return { instancedGroup, managers, transforms };
+      // Create manager without shadow settings to avoid recreation - we'll set them in useEffect
+      console.log(geometries.length, materials.length);
+      const manager = new BatchedMeshManager(
+        geometries.length == 1 ? geometries[0] : mergeGeometries(geometries),
+        materials.length == 1 ? materials[0] : materials,
+        message.props.lod,
+        message.props.batched_positions.byteLength /
+          (3 * Float32Array.BYTES_PER_ELEMENT),
+      );
+
+      return { manager };
     }, [gltf, message.props.lod]);
 
     // 0. Update instance count.
@@ -81,22 +64,16 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       const numInstances =
         message.props.batched_positions.byteLength /
         (3 * Float32Array.BYTES_PER_ELEMENT);
-      meshState.managers.forEach((manager) => {
-        manager.setInstanceCount(numInstances);
-      });
+      meshState.manager.setInstanceCount(numInstances);
     }, [meshState, message.props.batched_positions.byteLength]);
 
     // 1. Update instance transforms (positions and orientations)
     React.useEffect(() => {
       if (meshState === null) return;
-      meshState.managers.forEach((manager, index) => {
-        // Pass buffer views directly to avoid creating new arrays.
-        manager.updateInstances(
-          message.props.batched_positions,
-          message.props.batched_wxyzs,
-          meshState.transforms[index],
-        );
-      });
+      meshState.manager.updateInstances(
+        message.props.batched_positions,
+        message.props.batched_wxyzs,
+      );
     }, [
       meshState,
       message.props.batched_positions,
@@ -106,12 +83,10 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
     // 2. Update shadow settings - separate effect for better performance
     React.useEffect(() => {
       if (meshState === null) return;
-      meshState.managers.forEach((manager) => {
-        manager.updateShadowSettings(
-          message.props.cast_shadow,
-          message.props.receive_shadow,
-        );
-      });
+      meshState.manager.updateShadowSettings(
+        message.props.cast_shadow,
+        message.props.receive_shadow,
+      );
     }, [meshState, message.props.cast_shadow, message.props.receive_shadow]);
 
     // Clean up resources when dependencies change or component unmounts.
@@ -119,50 +94,31 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       return () => {
         if (meshState === null) return;
         // Dispose all batch managers.
-        meshState.managers.forEach((manager) => {
-          manager.dispose();
-        });
-
-        // Clear the instanced group.
-        if (meshState.instancedGroup) {
-          meshState.instancedGroup.clear();
-        }
+        meshState.manager.dispose();
       };
     }, [meshState]);
 
     if (!gltf || !meshState) return null;
-
+    const mesh = meshState.manager.getMesh();
     return (
       <group ref={ref}>
         <primitive
-          object={meshState.instancedGroup}
+          object={meshState.manager.getMesh()}
           scale={message.props.scale}
         />
 
         {/* Add outlines for each mesh in the GLB asset */}
-        {clickable &&
-          meshState.transforms.map((transform, index) => {
-            // Get the mesh's geometry from the manager.
-            const manager = meshState.managers[index];
-            if (!manager) return null;
-
-            const mesh = manager.getMesh();
-            if (!mesh || !mesh.geometry) return null;
-
-            return (
-              <BatchedMeshHoverOutlines
-                key={index}
-                geometry={mesh.geometry}
-                batched_positions={
-                  message.props.batched_positions
-                } /* Raw bytes containing float32 position values */
-                batched_wxyzs={
-                  message.props.batched_wxyzs
-                } /* Raw bytes containing float32 quaternion values */
-                meshTransform={transform}
-              />
-            );
-          })}
+        {clickable && mesh.geometry && (
+          <BatchedMeshHoverOutlines
+            geometry={mesh.geometry}
+            batched_positions={
+              message.props.batched_positions
+            } /* Raw bytes containing float32 position values */
+            batched_wxyzs={
+              message.props.batched_wxyzs
+            } /* Raw bytes containing float32 quaternion values */
+          />
+        )}
       </group>
     );
   },
