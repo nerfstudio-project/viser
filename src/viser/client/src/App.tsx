@@ -66,6 +66,7 @@ export type ViewerContextContents = {
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
   sendCameraRef: React.MutableRefObject<(() => void) | null>;
   resetCameraViewRef: React.MutableRefObject<(() => void) | null>;
+  setCameraPose?: (position: THREE.Vector3Tuple, quaternion: number[]) => void;
   // Scene node attributes.
   // This is intentionally placed outside of the Zustand state to reduce overhead.
   nodeAttributesFromName: React.MutableRefObject<{
