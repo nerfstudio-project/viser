@@ -1,7 +1,7 @@
 import { ViewerContext } from "./App";
-import { PointerLockControls } from "@react-three/drei";
+import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
 import { useFrame, useThree } from "@react-three/fiber";
-import React, { useContext, useEffect, useRef, useCallback } from "react";
+import React, { useContext, useEffect, useRef, useCallback, useState } from "react";
 import { PerspectiveCamera } from "three";
 import * as THREE from "three";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
@@ -10,7 +10,24 @@ import { useThrottledMessageSender } from "./WebsocketFunctions";
 export function SynchronizedCameraControls() {
   const viewer = useContext(ViewerContext)!;
   const { camera, gl } = useThree();
-  const controlsRef = useRef<any>();
+  const controlsRef = useRef<PointerLockControls | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
+
+  useEffect(() => {
+    const controls = new PointerLockControls(camera, gl.domElement);
+    controlsRef.current = controls;
+
+    const handleLock = () => setIsLocked(true);
+    const handleUnlock = () => setIsLocked(false);
+    controls.addEventListener('lock', handleLock);
+    controls.addEventListener('unlock', handleUnlock);
+
+    return () => {
+      controls.removeEventListener('lock', handleLock);
+      controls.removeEventListener('unlock', handleUnlock);
+      controlsRef.current = null;
+    };
+  }, [camera, gl.domElement]);
 
   const sendCameraThrottled = useThrottledMessageSender(20);
 
@@ -108,7 +125,9 @@ export function SynchronizedCameraControls() {
     if (!controls) return;
 
     const handleChange = () => {
-      sendCamera();
+      if (controls.isLocked) {
+        sendCamera();
+      }
     };
 
     controls.addEventListener("change", handleChange);
@@ -127,6 +146,11 @@ export function SynchronizedCameraControls() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.tagName === 'BUTTON')) {
+          return;
+      }
+
       switch (event.code) {
         case 'KeyW': moveForward.current = true; break;
         case 'KeyS': moveBackward.current = true; break;
@@ -134,6 +158,11 @@ export function SynchronizedCameraControls() {
         case 'KeyD': moveRight.current = true; break;
         case 'KeyE': moveUp.current = true; break;
         case 'KeyQ': moveDown.current = true; break;
+        case 'KeyL':
+          if (controlsRef.current && !controlsRef.current.isLocked) {
+            controlsRef.current.lock();
+          }
+          break;
       }
     };
 
@@ -204,26 +233,5 @@ export function SynchronizedCameraControls() {
     }
   });
 
-  // Add useEffect to handle locking pointer on click directly on the canvas
-  useEffect(() => {
-    const canvasElement = gl.domElement;
-    const lockControls = () => {
-      controlsRef.current?.lock();
-    };
-
-    // Add a style to indicate the canvas is clickable for pointer lock
-    canvasElement.style.cursor = 'pointer';
-
-    canvasElement.addEventListener('click', lockControls);
-
-    // Cleanup function to remove listener and cursor style
-    return () => {
-      canvasElement.removeEventListener('click', lockControls);
-      canvasElement.style.cursor = 'auto'; // Reset cursor on cleanup
-    };
-  }, [gl, controlsRef]); // Dependencies: gl.domElement and the controls ref
-
-  return (
-    <PointerLockControls ref={controlsRef} args={[camera, gl.domElement]} />
-  );
+  return null;
 }
