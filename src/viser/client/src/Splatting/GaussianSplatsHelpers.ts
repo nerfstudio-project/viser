@@ -18,6 +18,12 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     textureBuffer: null as THREE.DataTexture | null,
     textureT_camera_groups: null as THREE.DataTexture | null,
     transitionInState: 0.0,
+    visualizeGroupId: 0.0,
+    groupColorShuffleSeed: parseInt(
+      new URLSearchParams(window.location.search).get(
+        "gaussianGroupColorShuffleSeed",
+      ) ?? "0",
+    ),
   },
   `precision highp usampler2D; // Most important: ints must be 32-bit.
   precision mediump float;
@@ -39,6 +45,9 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   uniform vec2 viewport;
   uniform float near;
   uniform float far;
+  uniform float visualizeGroupId;
+  uniform uint groupColorShuffleSeed;
+
 
   // Fade in state between [0, 1].
   uniform float transitionInState;
@@ -130,12 +139,44 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec2 v1 = min(sqrt(2.0 * lambda1), 1024.0) * diagonalVector;
     vec2 v2 = min(sqrt(2.0 * lambda2), 1024.0) * vec2(diagonalVector.y, -diagonalVector.x);
 
-    vRgba = vec4(
+
+    const uint groupColors[60] = uint[60](
+      92u, 232u, 167u,
+      239u, 148u, 95u,
+      129u, 95u, 239u,
+      235u, 211u, 94u,
+      231u, 90u, 160u,
+      217u, 86u, 86u,
+      236u, 93u, 102u,
+      92u, 231u, 106u,
+      231u, 91u, 217u,
+      144u, 234u, 92u,
+      190u, 217u, 85u,
+      219u, 139u, 85u,
+      191u, 95u, 239u,
+      184u, 220u, 88u,
+      93u, 122u, 237u,
+      92u, 232u, 227u,
+      92u, 177u, 233u,
+      87u, 218u, 96u,
+      136u, 236u, 93u,
+      221u, 194u, 88u
+    );
+    uint groupId = floatBufferData.w;  // Unfortunate naming...
+    uint shuffledGroupId = (groupId ^ groupColorShuffleSeed) % 20u;
+    vec4 actualRgba = vec4(
       float(rgbaUint32 & uint(0xFF)) / 255.0,
       float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
       float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
       float(rgbaUint32 >> uint(24)) / 255.0
     );
+    vec4 groupRgba = vec4(
+      float(groupColors[shuffledGroupId * 3u + 0u]) / 255.0,
+      float(groupColors[shuffledGroupId * 3u + 1u]) / 255.0,
+      float(groupColors[shuffledGroupId * 3u + 2u]) / 255.0,
+      actualRgba.a
+    );
+    vRgba = (1.0 - visualizeGroupId) * actualRgba + visualizeGroupId * groupRgba;
 
     // Throw the Gaussian off the screen if it's too close, too far, or too small.
     float weightedDeterminant = vRgba.a * (diag1 * diag2 - offDiag * offDiag);
@@ -244,6 +285,7 @@ interface SplatState {
   nodeRefFromId: React.MutableRefObject<{
     [name: string]: undefined | Object3D;
   }>;
+  visualizeGroupId: boolean;
   setBuffer: (id: string, buffer: Uint32Array) => void;
   removeBuffer: (id: string) => void;
 }
@@ -255,6 +297,7 @@ export function useGaussianSplatStore() {
     create<SplatState>((set) => ({
       groupBufferFromId: {},
       nodeRefFromId: nodeRefFromId,
+      visualizeGroupId: false,
       setBuffer: (id, buffer) => {
         return set((state) => ({
           groupBufferFromId: { ...state.groupBufferFromId, [id]: buffer },

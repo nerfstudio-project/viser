@@ -42,7 +42,7 @@ import { ndcFromPointerXy, opencvXyFromPointerXy } from "./ClickUtils";
 import { theme } from "./AppTheme";
 import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
-import { SplatRenderContext } from "./Splatting/GaussianSplats";
+import { SplatRenderContext, SplatRenderer } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
 import { MacWindowWrapper } from "./MacWindowWrapper";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
@@ -126,17 +126,19 @@ function ViewerRoot() {
   if (darkMode) viewer.useGui.getState().theme.dark_mode = darkMode;
 
   return (
-    <ViewerContext.Provider value={viewer}>
-      <ViewerContents>
-        {viewer.messageSource === "websocket" ? (
-          <WebsocketMessageProducer />
-        ) : null}
-        {viewer.messageSource === "file_playback" ? (
-          <PlaybackFromFile fileUrl={playbackPath!} />
-        ) : null}
-        {showStats ? <Stats className="stats-panel" /> : null}
-      </ViewerContents>
-    </ViewerContext.Provider>
+    <SplatRenderContext>
+      <ViewerContext.Provider value={viewer}>
+        <ViewerContents>
+          {viewer.messageSource === "websocket" ? (
+            <WebsocketMessageProducer />
+          ) : null}
+          {viewer.messageSource === "file_playback" ? (
+            <PlaybackFromFile fileUrl={playbackPath!} />
+          ) : null}
+          {showStats ? <Stats className="stats-panel" /> : null}
+        </ViewerContents>
+      </ViewerContext.Provider>
+    </SplatRenderContext>
   );
 }
 
@@ -209,6 +211,7 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
             >
               <Viewer2DCanvas />
               <ViewerCanvas>
+                <SplatRenderer />
                 <FrameSynchronizedMessageHandler />
               </ViewerCanvas>
               {viewer.useGui((state) => state.theme.show_logo) &&
@@ -414,11 +417,9 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           <BackgroundImage />
           <SceneContextSetter />
           {memoizedCameraControls}
-          <SplatRenderContext>
-            <AdaptiveDpr />
-            {children}
-            <SceneNodeThreeObject name="" parent={null} />
-          </SplatRenderContext>
+          <AdaptiveDpr />
+          {children}
+          <SceneNodeThreeObject name="" parent={null} />
           <DefaultLights />
         </Bvh>
       </Canvas>

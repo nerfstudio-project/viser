@@ -52,7 +52,6 @@ export function SplatRenderContext({
         meshPropsRef: React.useRef(null),
       }}
     >
-      <SplatRenderer />
       {children}
     </GaussianSplatsContext.Provider>
   );
@@ -103,7 +102,7 @@ export const SplatObject = React.forwardRef<
 });
 
 /** External interface. Component should be added to the root of canvas.  */
-function SplatRenderer() {
+export function SplatRenderer() {
   const splatContext = React.useContext(GaussianSplatsContext)!;
   const groupBufferFromId = splatContext.useGaussianSplatStore(
     (state) => state.groupBufferFromId,
@@ -310,6 +309,13 @@ function SplatRendererImpl() {
       uniforms.transitionInState.value + delta * 2.0,
       1.0,
     );
+    if (splatContext.useGaussianSplatStore.getState().visualizeGroupId) {
+      uniforms.visualizeGroupId.value +=
+        (1.0 - uniforms.visualizeGroupId.value) * 0.3;
+    } else {
+      uniforms.visualizeGroupId.value +=
+        (0.0 - uniforms.visualizeGroupId.value) * 0.3;
+    }
 
     updateCamera(
       state.camera as THREE.PerspectiveCamera,
