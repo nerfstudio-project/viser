@@ -102,7 +102,6 @@ def main():
         name="dragon",
         vertices=dragon_mesh.vertices,
         faces=dragon_mesh.faces,
-        # material="toon5",
         batched_positions=positions,
         batched_wxyzs=rotations,
         lod="auto" if lod_checkbox.value else "off",
