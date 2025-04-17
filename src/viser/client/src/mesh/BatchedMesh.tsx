@@ -19,9 +19,9 @@ export const BatchedMesh = React.forwardRef<
       (state) => state.nodeFromName[message.name]?.clickable,
     ) ?? false;
 
-  // Create a material based on the message props
+  // Create a material based on the message props.
   const material = useMemo(() => {
-    // Create the material with properties from the message
+    // Create the material with properties from the message.
     const mat = createStandardMaterial({
       material: message.props.material,
       color: message.props.color,
@@ -31,7 +31,7 @@ export const BatchedMesh = React.forwardRef<
       side: message.props.side,
     });
 
-    // Set additional properties
+    // Set additional properties.
     if (message.props.opacity !== null && message.props.opacity < 1.0) {
       mat.transparent = true;
     }
@@ -46,7 +46,7 @@ export const BatchedMesh = React.forwardRef<
     message.props.side,
   ]);
 
-  // Setup geometry using memoization
+  // Setup geometry using memoization.
   const geometry = useMemo(() => {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(

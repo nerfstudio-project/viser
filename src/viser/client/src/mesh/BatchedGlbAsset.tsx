@@ -25,16 +25,16 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
     // Note: We don't support animations for batched meshes.
     const { gltf } = useGlbLoader(message.props.glb_data);
 
-    // Extract geometry and materials from the GLB
+    // Extract geometry and materials from the GLB.
     const { geometry, material } = useMemo(() => {
       if (!gltf) return { geometry: null, material: null };
 
-      // Collect meshes and their transforms from the original scene
+      // Collect meshes and their transforms from the original scene.
       const geometries: THREE.BufferGeometry[] = [];
       const materials: THREE.Material[] = [];
       gltf.scene.traverse((node) => {
         if (node instanceof THREE.Mesh && node.parent) {
-          // Apply any transforms from the model hierarchy to the geometry
+          // Apply any transforms from the model hierarchy to the geometry.
           (node.geometry as THREE.BufferGeometry).applyMatrix4(
             node.matrixWorld,
           );
@@ -43,13 +43,13 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
         }
       });
 
-      // Merge geometries if needed
+      // Merge geometries if needed.
       const mergedGeometry =
         geometries.length === 1
           ? geometries[0].clone()
           : mergeGeometries(geometries, true);
 
-      // Use either a single material or an array
+      // Use either a single material or an array.
       const finalMaterial = materials.length === 1 ? materials[0] : materials;
 
       return {
