@@ -83,7 +83,15 @@ class ViserUrdf:
             mesh.apply_transform(T_parent_child)
 
             if mesh_color_override is None:
-                self._meshes.append(target.scene.add_mesh_trimesh(name, mesh))
+                # self._meshes.append(target.scene.add_mesh_trimesh(name, mesh))
+                self._meshes.append(
+                    target.scene.add_batched_meshes_trimesh(
+                        name,
+                        mesh,
+                        batched_wxyzs=np.array([1.0, 0.0, 0.0, 0.0])[None],
+                        batched_positions=np.zeros((1, 3)),
+                    )
+                )
             else:
                 self._meshes.append(
                     target.scene.add_mesh_simple(

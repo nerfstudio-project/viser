@@ -100,9 +100,9 @@ def main():
     )
     mesh_handle = server.scene.add_batched_meshes_simple(
         name="dragon",
-        # mesh=dragon_mesh,
         vertices=dragon_mesh.vertices,
         faces=dragon_mesh.faces,
+        # material="toon5",
         batched_positions=positions,
         batched_wxyzs=rotations,
         lod="auto" if lod_checkbox.value else "off",
