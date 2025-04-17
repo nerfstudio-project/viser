@@ -1,11 +1,11 @@
 Development
-==========
+===========
 
 In this note, we outline current practices, tools, and workflows for ``viser``
 development. We assume that the repository is cloned to ``~/viser``.
 
 Python install
--------------
+--------------
 
 We recommend an editable install for Python development, ideally in a virtual
 environment (eg via conda).
@@ -44,30 +44,56 @@ For code quality, rely primarily on ``pyright`` and ``ruff``:
    ruff check --fix .
    ruff format .
 
-Message updates
---------------
+Client-Server Synchronization
+-----------------------------
 
-The ``viser`` frontend and backend communicate via a shared set of message
-definitions:
+The ``viser`` frontend and backend communicate via a shared set of message definitions and enforce
+version compatibility to prevent security issues and crashes from mismatched versions.
 
-- On the server, these are defined as Python dataclasses in
+Message Definitions
+^^^^^^^^^^^^^^^^^^^
+
+- On the server, messages are defined as Python dataclasses in
   ``~/viser/src/viser/_messages.py``.
 - On the client, these are defined as TypeScript interfaces in
-  ``~/viser/src/viser/client/src/WebsocketMessages.tsx``.
+  ``~/viser/src/viser/client/src/WebsocketMessages.ts``.
 
-Note that there is a 1:1 correspondence between the dataclasses message types
-and the TypeScript ones.
+There is a 1:1 correspondence between the Python dataclasses and the TypeScript interfaces.
 
-The TypeScript definitions should not be manually modified. Instead, changes
-should be made in Python and synchronized via the ``sync_message_defs.py`` script:
+Version Compatibility
+^^^^^^^^^^^^^^^^^^^^^
+
+Viser implements strict version compatibility checking between client and server:
+
+1. The client includes its version in the WebSocket subprotocol name (e.g., ``viser-v0.2.23``)
+2. The server extracts the client version from the subprotocol and compares it with its own version
+3. If versions don't match, the connection is rejected with code 1002 (protocol error) and an informative message
+4. This ensures that client and server components always operate with compatible functionality
+
+Synchronization Script
+^^^^^^^^^^^^^^^^^^^^^^
+
+To synchronize message definitions and version information between the Python backend and TypeScript frontend,
+use the ``sync_client_server.py`` script:
 
 .. code-block:: bash
 
    cd ~/viser
-   python sync_message_defs.py
+   python sync_client_server.py
+
+This script:
+
+1. Generates TypeScript interfaces from Python dataclasses
+2. Creates the VersionInfo.ts file with the current server version
+3. Formats the generated files using prettier
+
+Always run this script after:
+
+- Changing message definitions in ``_messages.py``
+- Updating the version in ``__init__.py``
 
 Client development
-----------------
+------------------
 
 For client development, we can start by launching a relevant Python script. The
 examples are a good place to start:
@@ -96,9 +122,9 @@ steps.
 1. `Install nodejs. <https://nodejs.dev/en/download/package-manager>`_
 2. `Install yarn. <https://yarnpkg.com/getting-started/install>`_
 3. Install dependencies.
-   
+
    .. code-block:: bash
-   
+
       cd ~/viser/src/viser/client
       yarn install
 

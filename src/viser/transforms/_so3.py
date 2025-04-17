@@ -310,7 +310,7 @@ class SO3(
         return (self @ SO3(wxyz=padded_target) @ self.inverse()).wxyz[..., 1:]
 
     @override
-    def multiply(self, other: SO3) -> SO3:
+    def multiply(self, other: SO3) -> SO3:  # type: ignore
         w0, x0, y0, z0 = onp.moveaxis(self.wxyz, -1, 0)
         w1, x1, y1, z1 = onp.moveaxis(other.wxyz, -1, 0)
         return SO3(

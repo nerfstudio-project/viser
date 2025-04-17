@@ -1,5 +1,6 @@
 import WebsocketServerWorker from "./WebsocketServerWorker?worker";
 import React, { useContext } from "react";
+import { notifications } from "@mantine/notifications";
 
 import { ViewerContext } from "./ViewerContext";
 import { syncSearchParamServer } from "./SearchParamsUtils";
@@ -35,6 +36,18 @@ export function WebsocketMessageProducer() {
             `Tried to send ${message.type} but websocket is not connected!`,
           );
         };
+
+        // Show notification for version mismatch.
+        if (data.versionMismatch) {
+          notifications.show({
+            id: "version-mismatch",
+            title: "Connection rejected",
+            message: `${data.closeReason}.`,
+            color: "red",
+            autoClose: 5000,
+            withCloseButton: true,
+          });
+        }
       } else if (data.type === "message_batch") {
         messageQueueRef.current.push(...data.messages);
       }

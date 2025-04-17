@@ -76,8 +76,6 @@ class SmplHelper:
 def main(model_path: Path) -> None:
     server = viser.ViserServer()
     server.scene.set_up_direction("+y")
-    server.gui.configure_theme(control_layout="collapsible")
-
     server.scene.add_grid("/grid", position=(0.0, -1.3, 0.0), plane="xz")
 
     # Main loop. We'll read pose/shape from the GUI elements, compute the mesh,
@@ -101,20 +99,6 @@ def main(model_path: Path) -> None:
     # vertices to get indices.
     red_sphere = trimesh.creation.icosphere(radius=0.001, subdivisions=1)
     red_sphere.visual.vertex_colors = (255, 0, 0, 255)  # type: ignore
-    vertex_selector = server.scene.add_batched_meshes_trimesh(
-        "/selector",
-        red_sphere,
-        batched_positions=model.v_template,
-        batched_wxyzs=((1.0, 0.0, 0.0, 0.0),) * model.v_template.shape[0],
-    )
-
-    @vertex_selector.on_click
-    def _(event: viser.SceneNodePointerEvent) -> None:
-        event.client.add_notification(
-            "Clicked on vertex!",
-            body=f"index={event.instance_index}",
-            auto_close=3000,
-        )
 
     while True:
         # Do nothing if no change.
@@ -138,7 +122,6 @@ def main(model_path: Path) -> None:
         body_handle.vertices = smpl_outputs.vertices
         body_handle.wireframe = gui_elements.gui_wireframe.value
         body_handle.color = gui_elements.gui_rgb.value
-        vertex_selector.batched_positions = smpl_outputs.vertices
 
         # Match transform control gizmos to joint positions.
         for i, control in enumerate(gui_elements.transform_controls):

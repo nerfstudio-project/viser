@@ -1,11 +1,10 @@
-import React from "react";
+import React, { useMemo } from "react";
 import * as THREE from "three";
 import { createStandardMaterial } from "./MeshUtils";
 import { BatchedMeshesMessage } from "../WebsocketMessages";
-import { BatchedMeshManager } from "./BatchedMeshManager";
 import { InstancedMesh2 } from "@three.ez/instanced-mesh";
-import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
 import { ViewerContext } from "../ViewerContext";
+import { BatchedMeshBase } from "./BatchedMeshBase";
 
 /**
  * Component for rendering batched/instanced meshes
@@ -20,28 +19,35 @@ export const BatchedMesh = React.forwardRef<
       (state) => state.nodeFromName[message.name]?.clickable,
     ) ?? false;
 
-  // Setup a basic material just once - we'll update all properties via direct methods
-  // This dramatically improves performance by avoiding material recreation
-  const material = React.useMemo(
-    () => {
-      // Create a basic material with neutral properties - all will be updated in useEffect
-      return createStandardMaterial({
-        material: "standard", // Will be updated if different
-        color: [128, 128, 128], // Will be updated immediately
-        wireframe: false, // Will be updated
-        opacity: null, // Will be updated
-        flat_shading: false, // Will be updated
-        side: "front", // Will be updated
-      });
-    },
-    [
-      // No dependencies - we never want to recreate the material
-      // All properties will be updated via updateMaterialProperties
-    ],
-  );
+  // Create a material based on the message props.
+  const material = useMemo(() => {
+    // Create the material with properties from the message.
+    const mat = createStandardMaterial({
+      material: message.props.material,
+      color: message.props.color,
+      wireframe: message.props.wireframe,
+      opacity: message.props.opacity,
+      flat_shading: message.props.flat_shading,
+      side: message.props.side,
+    });
+
+    // Set additional properties.
+    if (message.props.opacity !== null && message.props.opacity < 1.0) {
+      mat.transparent = true;
+    }
+
+    return mat;
+  }, [
+    message.props.material,
+    message.props.color,
+    message.props.wireframe,
+    message.props.opacity,
+    message.props.flat_shading,
+    message.props.side,
+  ]);
 
   // Setup geometry using memoization.
-  const geometry = React.useMemo(() => {
+  const geometry = useMemo(() => {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
@@ -72,109 +78,17 @@ export const BatchedMesh = React.forwardRef<
     return geometry;
   }, [message.props.vertices.buffer, message.props.faces.buffer]);
 
-  // Create Float32Arrays once for positions and orientations.
-  const batched_positions = React.useMemo(
-    () =>
-      new Float32Array(
-        message.props.batched_positions.buffer.slice(
-          message.props.batched_positions.byteOffset,
-          message.props.batched_positions.byteOffset +
-            message.props.batched_positions.byteLength,
-        ),
-      ),
-    [message.props.batched_positions],
-  );
-
-  const batched_wxyzs = React.useMemo(
-    () =>
-      new Float32Array(
-        message.props.batched_wxyzs.buffer.slice(
-          message.props.batched_wxyzs.byteOffset,
-          message.props.batched_wxyzs.byteOffset +
-            message.props.batched_wxyzs.byteLength,
-        ),
-      ),
-    [message.props.batched_wxyzs],
-  );
-
-  // Create mesh manager with useMemo for better performance.
-  const meshManager = React.useMemo(() => {
-    const numInstances =
-      message.props.batched_positions.byteLength /
-      (3 * Float32Array.BYTES_PER_ELEMENT);
-
-    // Create new manager without shadow settings to reduce dependencies
-    return new BatchedMeshManager(
-      geometry,
-      material,
-      numInstances,
-      message.props.lod,
-    );
-  }, [
-    geometry,
-    material,
-    message.props.lod,
-    message.props.batched_positions.byteLength, // Keep this to handle instance count changes
-  ]);
-
-  // Effects for properties that can be updated without recreating the mesh
-
-  // 1. Update instance transforms (positions and orientations)
-  React.useEffect(() => {
-    meshManager.updateInstances(batched_positions, batched_wxyzs);
-  }, [meshManager, batched_positions, batched_wxyzs]);
-
-  // 2. Update shadow settings
-  React.useEffect(() => {
-    meshManager.updateShadowSettings(
-      message.props.cast_shadow,
-      message.props.receive_shadow,
-    );
-  }, [meshManager, message.props.cast_shadow, message.props.receive_shadow]);
-
-  // 3. Update material properties.
-  React.useEffect(() => {
-    meshManager.updateMaterialProperties({
-      color: message.props.color,
-      wireframe: message.props.wireframe,
-      opacity: message.props.opacity,
-      flatShading: message.props.flat_shading,
-      side: {
-        front: THREE.FrontSide,
-        back: THREE.BackSide,
-        double: THREE.DoubleSide,
-      }[message.props.side],
-      transparent: message.props.opacity !== null,
-      materialType: message.props.material,
-    });
-  }, [
-    meshManager,
-    message.props.color,
-    message.props.wireframe,
-    message.props.opacity,
-    message.props.flat_shading,
-    message.props.side,
-    message.props.material, // Added material type to dependencies
-  ]);
-
-  // Handle cleanup when dependencies change or component unmounts.
-  React.useEffect(() => {
-    return () => {
-      meshManager.dispose();
-    };
-  }, [meshManager]);
-
   return (
-    <>
-      <primitive ref={ref} object={meshManager.getMesh()} />
-      {/* Add hover outline component for highlighting hovered instances */}
-      {clickable && geometry && (
-        <BatchedMeshHoverOutlines
-          geometry={geometry}
-          batched_positions={batched_positions}
-          batched_wxyzs={batched_wxyzs}
-        />
-      )}
-    </>
+    <BatchedMeshBase
+      ref={ref}
+      geometry={geometry}
+      material={material}
+      batched_positions={message.props.batched_positions}
+      batched_wxyzs={message.props.batched_wxyzs}
+      lod={message.props.lod}
+      cast_shadow={message.props.cast_shadow}
+      receive_shadow={message.props.receive_shadow}
+      clickable={clickable}
+    />
   );
 });

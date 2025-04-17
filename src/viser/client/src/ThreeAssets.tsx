@@ -121,9 +121,9 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
       } else {
         material.vertexColors = false;
         material.uniforms.uniformColor.value = new THREE.Color(
-          props.colors[0],
-          props.colors[1],
-          props.colors[2],
+          props.colors[0] / 255.0,
+          props.colors[1] / 255.0,
+          props.colors[2] / 255.0,
         );
       }
 
@@ -240,8 +240,10 @@ export const CoordinateFrame = React.forwardRef<
 export const InstancedAxes = React.forwardRef<
   THREE.Group,
   {
-    batched_wxyzs: Float32Array;
-    batched_positions: Float32Array;
+    /** Raw bytes containing float32 quaternion values (wxyz) */
+    batched_wxyzs: Uint8Array;
+    /** Raw bytes containing float32 position values (xyz) */
+    batched_positions: Uint8Array;
     axes_length?: number;
     axes_radius?: number;
   }
@@ -299,19 +301,41 @@ export const InstancedAxes = React.forwardRef<
     const { T_frame_framex, T_frame_framey, T_frame_framez, red, green, blue } =
       axesTransformations;
 
-    for (let i = 0; i < batched_wxyzs.length / 4; i++) {
+    // Create DataViews to read float values directly.
+    const positionsView = new DataView(
+      batched_positions.buffer,
+      batched_positions.byteOffset,
+      batched_positions.byteLength,
+    );
+
+    const wxyzsView = new DataView(
+      batched_wxyzs.buffer,
+      batched_wxyzs.byteOffset,
+      batched_wxyzs.byteLength,
+    );
+
+    // Calculate number of instances.
+    const numInstances = batched_wxyzs.byteLength / (4 * 4); // 4 floats, 4 bytes per float
+
+    for (let i = 0; i < numInstances; i++) {
+      // Calculate byte offsets for reading float values.
+      const posOffset = i * 3 * 4; // 3 floats, 4 bytes per float
+      const wxyzOffset = i * 4 * 4; // 4 floats, 4 bytes per float
+
+      // Set position from DataView.
       T_world_frame.makeRotationFromQuaternion(
         tmpQuat.set(
-          batched_wxyzs[i * 4 + 1],
-          batched_wxyzs[i * 4 + 2],
-          batched_wxyzs[i * 4 + 3],
-          batched_wxyzs[i * 4 + 0],
+          wxyzsView.getFloat32(wxyzOffset + 4, true), // x
+          wxyzsView.getFloat32(wxyzOffset + 8, true), // y
+          wxyzsView.getFloat32(wxyzOffset + 12, true), // z
+          wxyzsView.getFloat32(wxyzOffset, true), // w (first value)
         ),
       ).setPosition(
-        batched_positions[i * 3 + 0],
-        batched_positions[i * 3 + 1],
-        batched_positions[i * 3 + 2],
+        positionsView.getFloat32(posOffset, true), // x
+        positionsView.getFloat32(posOffset + 4, true), // y
+        positionsView.getFloat32(posOffset + 8, true), // z
       );
+
       T_world_framex.copy(T_world_frame).multiply(T_frame_framex);
       T_world_framey.copy(T_world_frame).multiply(T_frame_framey);
       T_world_framez.copy(T_world_frame).multiply(T_frame_framez);
@@ -366,11 +390,14 @@ export const InstancedAxes = React.forwardRef<
     [axes_length],
   );
 
+  // Calculate number of instances for args.
+  const numInstances = (batched_wxyzs.byteLength / (4 * 4)) * 3; // 4 floats per WXYZ * 4 bytes per float * 3 axes
+
   return (
     <group ref={ref}>
       <instancedMesh
         ref={axesRef}
-        args={[cylinderGeom, material, (batched_wxyzs.length / 4) * 3]}
+        args={[cylinderGeom, material, numInstances]}
       />
 
       {/* Create hover outlines for each axis */}

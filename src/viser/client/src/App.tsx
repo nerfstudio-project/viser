@@ -46,6 +46,7 @@ import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
 import { MacWindowWrapper } from "./MacWindowWrapper";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
+import { VISER_VERSION } from "./VersionInfo";
 
 function ViewerRoot() {
   // What websocket server should we connect to?
@@ -161,9 +162,17 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
           position="top-left"
           limit={10}
           containerWidth="20em"
+          withinPortal={false}
           styles={{
             root: {
               boxShadow: "0.1em 0 1em 0 rgba(0,0,0,0.1) !important",
+              position: "absolute",
+              top: "1em",
+              left: "1em",
+              pointerEvents: "none",
+            },
+            notification: {
+              pointerEvents: "all",
             },
           }}
         />
@@ -742,7 +751,7 @@ function ViserLogo() {
     useDisclosure(false);
   return (
     <>
-      <Tooltip label="About Viser">
+      <Tooltip label={`Viser ${VISER_VERSION}`}>
         <Box
           style={{
             position: "absolute",

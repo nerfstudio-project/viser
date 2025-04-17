@@ -68,7 +68,7 @@ class MatrixLieGroup(abc.ABC):
             return self.apply(target=other)
         elif isinstance(other, MatrixLieGroup):
             assert self.space_dim == other.space_dim
-            return self.multiply(other=other)
+            return self.multiply(other=other)  # type: ignore
         else:
             assert False, f"Invalid argument type for `@` operator: {type(other)}"
 
@@ -284,7 +284,7 @@ class SEBase(Generic[ContainedSOType], MatrixLieGroup):
 
     @final
     @override
-    def multiply(self, other: Self) -> Self:
+    def multiply(self, other: Self) -> Self:  # type: ignore
         return type(self).from_rotation_and_translation(
             rotation=self.rotation() @ other.rotation(),
             translation=(self.rotation() @ other.translation()) + self.translation(),

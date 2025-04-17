@@ -1,6 +1,7 @@
 import { encode, decode } from "@msgpack/msgpack";
 import { Message } from "./WebsocketMessages";
 import AwaitLock from "await-lock";
+import { VISER_VERSION } from "./VersionInfo";
 
 export type WsWorkerIncoming =
   | { type: "send"; message: Message }
@@ -9,7 +10,12 @@ export type WsWorkerIncoming =
 
 export type WsWorkerOutgoing =
   | { type: "connected" }
-  | { type: "closed" }
+  | {
+      type: "closed";
+      versionMismatch?: boolean;
+      clientVersion?: string;
+      closeReason?: string;
+    }
   | { type: "message_batch"; messages: Message[] };
 
 // Helper function to collect all ArrayBuffer objects. This is used for postMessage() move semantics.
@@ -42,7 +48,11 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
 
   const tryConnect = () => {
     if (ws !== null) ws.close();
-    ws = new WebSocket(server!);
+
+    // Use a single protocol that includes both client identification and version.
+    const protocol = `viser-v${VISER_VERSION}`;
+    console.log(`Connecting to: ${server!} with protocol: ${protocol}`);
+    ws = new WebSocket(server!, [protocol]);
 
     // Timeout is necessary when we're connecting to an SSH/tunneled port.
     const retryTimeout = setTimeout(() => {
@@ -50,14 +60,37 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
     }, 5000);
 
     ws.onopen = () => {
-      postOutgoing({ type: "connected" });
       clearTimeout(retryTimeout);
       console.log(`Connected! ${server}`);
+
+      // Just indicate that we're connected.
+      postOutgoing({
+        type: "connected",
+      });
     };
 
     ws.onclose = (event) => {
-      postOutgoing({ type: "closed" });
-      console.log(`Disconnected! ${server} code=${event.code}`);
+      // Check for explicit close (code 1002 = protocol error, which we use for version mismatch).
+      const versionMismatch = event.code === 1002;
+
+      // Send close notification.
+      postOutgoing({
+        type: "closed",
+        versionMismatch: versionMismatch,
+        clientVersion: VISER_VERSION,
+        closeReason: event.reason || "Connection closed",
+      });
+
+      console.log(
+        `Disconnected! ${server} code=${event.code}, reason: ${event.reason}`,
+      );
+
+      if (versionMismatch) {
+        console.warn(
+          `Connection rejected due to version mismatch. Client version: ${VISER_VERSION}`,
+        );
+      }
+
       clearTimeout(retryTimeout);
 
       // Try to reconnect on next repaint.
