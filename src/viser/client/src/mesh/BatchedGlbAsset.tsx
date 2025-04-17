@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { BatchedGlbMessage } from "../WebsocketMessages";
 import { useGlbLoader } from "./GlbLoaderUtils";
 import { ViewerContext } from "../ViewerContext";
-import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { BatchedMeshBase } from "./BatchedMeshBase";
 
 /**
@@ -47,7 +47,7 @@ export const BatchedGlbAsset = React.forwardRef<THREE.Group, BatchedGlbMessage>(
       const mergedGeometry =
         geometries.length === 1
           ? geometries[0].clone()
-          : mergeGeometries(geometries);
+          : mergeGeometries(geometries, true);
 
       // Use either a single material or an array
       const finalMaterial = materials.length === 1 ? materials[0] : materials;

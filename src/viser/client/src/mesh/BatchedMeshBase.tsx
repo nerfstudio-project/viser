@@ -230,9 +230,9 @@ export const BatchedMeshBase = React.forwardRef<
       lodGeometry.setDrawRange(0, dstIndexArray.length);
 
       // Create a cloned material for this LOD level
-      const lodMaterial = (
-        Array.isArray(props.material) ? props.material[0] : props.material
-      ).clone();
+      const lodMaterial = Array.isArray(props.material)
+        ? props.material.map((x) => x.clone())
+        : props.material.clone();
 
       // Add this LOD level to the instanced mesh
       mesh.addLOD(lodGeometry, lodMaterial, distances[index]);
