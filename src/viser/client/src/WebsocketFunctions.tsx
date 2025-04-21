@@ -19,10 +19,11 @@ export function makeThrottledMessageSender(
   let latestMessage: Message | null = null;
 
   function send(message: Message) {
-    if (viewer.sendMessageRef.current === null) return;
+    const viewerRefs = viewer.refs.current;
+    if (viewerRefs.sendMessage === null) return;
     latestMessage = message;
     if (readyToSend) {
-      viewer.sendMessageRef.current(message);
+      viewerRefs.sendMessage(message);
       stale = false;
       readyToSend = false;
 

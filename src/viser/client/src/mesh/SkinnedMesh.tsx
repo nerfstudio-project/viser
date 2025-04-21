@@ -257,23 +257,26 @@ export const SkinnedMesh = React.forwardRef<
   ]);
 
   // Handle initialization and cleanup
+  // Get refs once
+  const viewerRefs = viewer.refs.current;
+
   React.useEffect(() => {
     // Return cleanup function
     return () => {
       if (skeleton) skeleton.dispose();
       if (geometry) geometry.dispose();
       if (material) material.dispose();
-      const state = viewer.skinnedMeshState.current[message.name];
+      const state = viewerRefs.skinnedMeshState[message.name];
       state.initialized = false;
     };
-  }, [skeleton, geometry, material, message.name, viewer.skinnedMeshState]);
+  }, [skeleton, geometry, material, message.name, viewerRefs.skinnedMeshState]);
 
   // Update bone transforms for animation
   useFrame(() => {
-    const parentNode = viewer.nodeRefFromName.current[message.name];
+    const parentNode = viewerRefs.nodeRefFromName[message.name];
     if (parentNode === undefined) return;
 
-    const state = viewer.skinnedMeshState.current[message.name];
+    const state = viewerRefs.skinnedMeshState[message.name];
     const bones = bonesRef.current;
     if (skeleton !== undefined && bones !== undefined) {
       if (!state.initialized) {

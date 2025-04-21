@@ -12,9 +12,9 @@ export function ndcFromPointerXy(
 ): THREE.Vector2 | null {
   const mouseVector = new THREE.Vector2();
   mouseVector.x =
-    2 * ((xy[0] + 0.5) / viewer.canvasRef.current!.clientWidth) - 1;
+    2 * ((xy[0] + 0.5) / viewer.refs.current.canvas!.clientWidth) - 1;
   mouseVector.y =
-    1 - 2 * ((xy[1] + 0.5) / viewer.canvasRef.current!.clientHeight);
+    1 - 2 * ((xy[1] + 0.5) / viewer.refs.current.canvas!.clientHeight);
   return mouseVector.x < 1 &&
     mouseVector.x > -1 &&
     mouseVector.y < 1 &&
@@ -33,7 +33,7 @@ export function opencvXyFromPointerXy(
   xy: [number, number],
 ): THREE.Vector2 {
   const mouseVector = new THREE.Vector2();
-  mouseVector.x = (xy[0] + 0.5) / viewer.canvasRef.current!.clientWidth;
-  mouseVector.y = (xy[1] + 0.5) / viewer.canvasRef.current!.clientHeight;
+  mouseVector.x = (xy[0] + 0.5) / viewer.refs.current.canvas!.clientWidth;
+  mouseVector.y = (xy[1] + 0.5) / viewer.refs.current.canvas!.clientHeight;
   return mouseVector;
 }

@@ -62,11 +62,9 @@ const worldAxesNodeTemplate: SceneNode = {
 
 /** Declare a scene state, and return a hook for accessing it. Note that we put
 effort into avoiding a global state! */
-export function useSceneTreeState(
-  nodeRefFromName: React.MutableRefObject<{
-    [name: string]: undefined | THREE.Object3D;
-  }>,
-) {
+export function useSceneTreeState(nodeRefFromName: {
+  [name: string]: undefined | THREE.Object3D;
+}) {
   return React.useState(() =>
     create(
       immer<SceneTreeState & SceneTreeActions>((set) => ({
@@ -97,7 +95,7 @@ export function useSceneTreeState(
             const existingNode = state.nodeFromName[message.name];
             if (existingNode !== undefined) {
               // Node already exists.
-              delete nodeRefFromName.current[message.name];
+              delete nodeRefFromName[message.name];
               state.nodeFromName[message.name] = {
                 ...existingNode,
                 message: message,
@@ -128,7 +126,7 @@ export function useSceneTreeState(
 
             removeNames.forEach((removeName) => {
               delete state.nodeFromName[removeName];
-              delete nodeRefFromName.current[removeName];
+              delete nodeRefFromName[removeName];
             });
 
             // Remove node from parent's children list.

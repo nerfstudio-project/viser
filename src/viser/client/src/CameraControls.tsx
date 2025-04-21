@@ -94,7 +94,7 @@ export function SynchronizedCameraControls() {
 
   const pivotRef = useRef<THREE.Group>(null);
 
-  const cameraControlRef = viewer.cameraControlRef;
+  const viewerRefs = viewer.refs.current;
 
   // Animation state interface
   interface CameraAnimation {
@@ -113,8 +113,8 @@ export function SynchronizedCameraControls() {
   const ANIMATION_DURATION = 0.5; // seconds
 
   useFrame((state) => {
-    if (cameraAnimation && cameraControlRef.current) {
-      const cameraControls = cameraControlRef.current;
+    if (cameraAnimation && viewerRefs.cameraControl) {
+      const cameraControls = viewerRefs.cameraControl;
       const camera = cameraControls.camera;
 
       const elapsed = state.clock.getElapsedTime() - cameraAnimation.startTime;
@@ -170,13 +170,13 @@ export function SynchronizedCameraControls() {
   const { clock } = useThree();
 
   const updateCameraLookAtAndUpFromPivotControl = (matrix: THREE.Matrix4) => {
-    if (!cameraControlRef.current) return;
+    if (!viewerRefs.cameraControl) return;
 
     const targetPosition = new THREE.Vector3();
     targetPosition.setFromMatrixPosition(matrix);
 
-    const cameraControls = cameraControlRef.current;
-    const camera = cameraControlRef.current.camera;
+    const cameraControls = viewerRefs.cameraControl;
+    const camera = viewerRefs.cameraControl.camera;
 
     // Get target up vector from matrix
     const targetUp = new THREE.Vector3().setFromMatrixColumn(matrix, 1);
@@ -197,10 +197,10 @@ export function SynchronizedCameraControls() {
 
   const updatePivotControlFromCameraLookAtAndup = () => {
     if (cameraAnimation !== null) return;
-    if (!cameraControlRef.current) return;
+    if (!viewerRefs.cameraControl) return;
     if (!pivotRef.current) return;
 
-    const cameraControls = cameraControlRef.current;
+    const cameraControls = viewerRefs.cameraControl;
     const lookAt = cameraControls.getTarget(new THREE.Vector3());
 
     // Rotate matrix s.t. it's y-axis aligns with the camera's up vector.
@@ -236,14 +236,14 @@ export function SynchronizedCameraControls() {
     pivotRef.current.updateMatrixWorld(true);
   };
 
-  viewer.resetCameraViewRef.current = () => {
-    viewer.cameraRef.current!.up.set(
+  viewerRefs.resetCameraView = () => {
+    camera.up.set(
       initialCameraRef.current!.camera.up.x,
       initialCameraRef.current!.camera.up.y,
       initialCameraRef.current!.camera.up.z,
     );
-    viewer.cameraControlRef.current!.updateCameraUp();
-    viewer.cameraControlRef.current!.setLookAt(
+    viewerRefs.cameraControl!.updateCameraUp();
+    viewerRefs.cameraControl!.setLookAt(
       initialCameraRef.current!.camera.position.x,
       initialCameraRef.current!.camera.position.y,
       initialCameraRef.current!.camera.position.z,
@@ -270,8 +270,8 @@ export function SynchronizedCameraControls() {
     updatePivotControlFromCameraLookAtAndup();
 
     const three_camera = camera;
-    const camera_control = viewer.cameraControlRef.current;
-    const canvas = viewer.canvasRef.current!;
+    const camera_control = viewerRefs.cameraControl;
+    const canvas = viewerRefs.canvas!;
 
     if (camera_control === null) {
       // Camera controls not yet ready, let's re-try later.
@@ -385,14 +385,10 @@ export function SynchronizedCameraControls() {
       initialCameraUp.applyMatrix4(computeT_threeworld_world(viewer));
       initialCameraUp.normalize();
 
-      viewer.cameraRef.current!.up.set(
-        initialCameraUp.x,
-        initialCameraUp.y,
-        initialCameraUp.z,
-      );
-      viewer.cameraControlRef.current!.updateCameraUp();
+      camera.up.set(initialCameraUp.x, initialCameraUp.y, initialCameraUp.z);
+      viewer.refs.current.cameraControl!.updateCameraUp();
 
-      viewer.cameraControlRef.current!.setLookAt(
+      viewer.refs.current.cameraControl!.setLookAt(
         initialCameraPos.x,
         initialCameraPos.y,
         initialCameraPos.z,
@@ -404,13 +400,13 @@ export function SynchronizedCameraControls() {
       initialCameraPositionSet.current = true;
     }
 
-    viewer.sendCameraRef.current = sendCamera;
+    viewerRefs.sendCamera = sendCamera;
     if (!connected) return;
     setTimeout(() => sendCamera(), 50);
   }, [connected, sendCamera]);
 
   // Send camera for 3D viewport changes.
-  const canvas = viewer.canvasRef.current!; // R3F canvas.
+  const canvas = viewerRefs.canvas!; // R3F canvas.
   React.useEffect(() => {
     // Create a resize observer to resize the CSS canvas when the window is resized.
     const resizeObserver = new ResizeObserver(() => {
@@ -424,7 +420,7 @@ export function SynchronizedCameraControls() {
 
   // Keyboard controls.
   React.useEffect(() => {
-    const cameraControls = viewer.cameraControlRef.current!;
+    const cameraControls = viewerRefs.cameraControl!;
 
     const wKey = new holdEvent.KeyboardKeyHold("KeyW", 20);
     const aKey = new holdEvent.KeyboardKeyHold("KeyA", 20);
@@ -498,7 +494,7 @@ export function SynchronizedCameraControls() {
   return (
     <>
       <CameraControls
-        ref={viewer.cameraControlRef}
+        ref={(controls) => (viewerRefs.cameraControl = controls)}
         minDistance={0.01}
         dollySpeed={0.3}
         smoothTime={0.05}

@@ -332,6 +332,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   indentCount: number;
 }) {
   const viewer = React.useContext(ViewerContext)!;
+  const viewerRefs = viewer.refs.current; // Get refs once
   const { paintingRef, paintValueRef, startPainting } = React.useContext(
     VisibilityPaintContext,
   )!;
@@ -342,7 +343,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
     startPainting(newValue);
 
     // Update visibility
-    const attr = viewer.nodeAttributesFromName.current;
+    const attr = viewerRefs.nodeAttributesFromName;
     attr[props.nodeName]!.overrideVisibility = newValue;
     setIsVisible(newValue);
   };
@@ -351,7 +352,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
     if (!paintingRef.current) return;
 
     // Update visibility to match paint value
-    const attr = viewer.nodeAttributesFromName.current;
+    const attr = viewerRefs.nodeAttributesFromName;
     attr[props.nodeName]!.overrideVisibility = paintValueRef.current;
     setIsVisible(paintValueRef.current);
   };
@@ -368,7 +369,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   );
 
   const pollIsVisible = React.useCallback(() => {
-    const attrs = viewer.nodeAttributesFromName.current[props.nodeName];
+    const attrs = viewerRefs.nodeAttributesFromName[props.nodeName];
     return (
       (attrs?.overrideVisibility === undefined
         ? attrs?.visibility

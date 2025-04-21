@@ -9,7 +9,8 @@ import { Notifications } from "@mantine/notifications";
 import { Environment, PerformanceMonitor, Stats, Bvh } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { ViewerRefs } from "./ViewerContext";
 import {
   Anchor,
   Box,
@@ -46,136 +47,195 @@ import { MacWindowWrapper } from "./MacWindowWrapper";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
 import { VISER_VERSION } from "./VersionInfo";
 
-function getDefaultServerFromUrl() {
+// ======= Utility functions =======
+
+/** Gets default WebSocket server URL based on current window location. */
+const getDefaultServerFromUrl = () => {
   let server = window.location.href;
   server = server.replace("http://", "ws://");
   server = server.replace("https://", "wss://");
   server = server.split("?")[0];
   if (server.endsWith("/")) server = server.slice(0, -1);
   return server;
+};
+
+/** Disables rendering when component is not in view. */
+const DisableRender = () => useFrame(() => null, 1000);
+
+// ======= Main component tree =======
+
+/**
+ * Root application component - handles dummy window wrapper if needed.
+ */
+export function Root() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const dummyWindowParam = searchParams.get("dummyWindowDimensions");
+  const dummyWindowTitle =
+    searchParams.get("dummyWindowTitle") ?? "localhost:8080";
+
+  const content = (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <ViewerRoot />
+    </div>
+  );
+
+  // If dummy window dimensions are specified, wrap content in MacWindowWrapper
+  if (!dummyWindowParam) return content;
+
+  const [width, height] = dummyWindowParam.split("x").map(Number);
+  if (isNaN(width) || isNaN(height)) return content;
+
+  return (
+    <MacWindowWrapper title={dummyWindowTitle} width={width} height={height}>
+      {content}
+    </MacWindowWrapper>
+  );
 }
 
+/**
+ * Main viewer context provider component.
+ */
 function ViewerRoot() {
-  // What websocket server should we connect to?
+  // Server configuration and URL parameters.
   const servers = new URLSearchParams(window.location.search).getAll(
     searchParamKey,
   );
   const initialServer =
     servers.length >= 1 ? servers[0] : getDefaultServerFromUrl();
 
-  // Playback mode for embedding viser
   const searchParams = new URLSearchParams(window.location.search);
   const playbackPath = searchParams.get("playbackPath");
   const darkMode = searchParams.get("darkMode") !== null;
   const showStats = searchParams.get("showStats") !== null;
 
-  // Values that can be globally accessed by components in a viewer
-  const nodeRefFromName = React.useRef<{
-    [name: string]: undefined | THREE.Object3D;
-  }>({});
+  // Create a message source string.
+  const messageSource = playbackPath === null ? "websocket" : "file_playback";
 
-  const viewer: ViewerContextContents = {
-    messageSource: playbackPath === null ? "websocket" : "file_playback",
-    useSceneTree: useSceneTreeState(nodeRefFromName),
-    useGui: useGuiState(initialServer),
-    sendMessageRef: React.useRef(
+  // Create a default quaternion for the world frame.
+  const defaultQuat = (() => {
+    const quat = new THREE.Quaternion().setFromEuler(
+      new THREE.Euler(Math.PI / 2, Math.PI, -Math.PI / 2),
+    );
+    return [quat.w, quat.x, quat.y, quat.z] as [number, number, number, number];
+  })();
+
+  // Create a single ref with all mutable state.
+  const nodeRefFromName = {};
+  const refs = React.useRef<ViewerRefs>({
+    // Function references with default implementations.
+    sendMessage:
       playbackPath == null
-        ? (message) =>
+        ? (message: any) =>
             console.log(
               `Tried to send ${message.type} but websocket is not connected!`,
             )
         : () => null,
-    ),
-    canvasRef: React.useRef(null),
-    sceneRef: React.useRef(null),
-    cameraRef: React.useRef(null),
-    backgroundMaterialRef: React.useRef(null),
-    cameraControlRef: React.useRef(null),
-    sendCameraRef: React.useRef(null),
-    resetCameraViewRef: React.useRef(null),
-    // Scene node attributes that aren't placed in the zustand state for performance reasons
-    nodeAttributesFromName: React.useRef({
+    sendCamera: null,
+    resetCameraView: null,
+
+    // DOM/Three.js references.
+    canvas: null,
+    canvas2d: null,
+    scene: null,
+    camera: null,
+    backgroundMaterial: null,
+    cameraControl: null,
+
+    // Scene management.
+    nodeAttributesFromName: {
       "": {
-        wxyz: (() => {
-          const quat = new THREE.Quaternion().setFromEuler(
-            new THREE.Euler(Math.PI / 2, Math.PI, -Math.PI / 2),
-          );
-          return [quat.w, quat.x, quat.y, quat.z];
-        })(),
+        wxyz: defaultQuat,
       },
-    }),
-    nodeRefFromName: nodeRefFromName,
-    messageQueueRef: React.useRef([]),
-    getRenderRequestState: React.useRef("ready"),
-    getRenderRequest: React.useRef(null),
-    scenePointerInfo: React.useRef({
+    },
+    nodeRefFromName,
+
+    // Message and rendering state.
+    messageQueue: [],
+    getRenderRequestState: "ready",
+    getRenderRequest: null,
+
+    // Interaction state.
+    scenePointerInfo: {
       enabled: false,
       dragStart: [0, 0],
       dragEnd: [0, 0],
       isDragging: false,
-    }),
-    canvas2dRef: React.useRef(null),
-    skinnedMeshState: React.useRef({}),
-    hoveredElementsCount: React.useRef(0),
+    },
+
+    // Skinned mesh state.
+    skinnedMeshState: {},
+
+    // Global hover state tracking.
+    hoveredElementsCount: 0,
+  });
+
+  // Create the context value with hooks and single ref.
+  const viewer: ViewerContextContents = {
+    messageSource,
+    useSceneTree: useSceneTreeState(refs.current.nodeRefFromName),
+    useGui: useGuiState(initialServer),
+    refs,
   };
 
-  // Set dark default if specified in URL
+  // Apply URL dark mode setting if provided.
   if (darkMode) viewer.useGui.getState().theme.dark_mode = darkMode;
 
   return (
     <ViewerContext.Provider value={viewer}>
       <ViewerContents>
-        {viewer.messageSource === "websocket" ? (
-          <WebsocketMessageProducer />
-        ) : null}
-        {viewer.messageSource === "file_playback" ? (
+        {messageSource === "websocket" && <WebsocketMessageProducer />}
+        {messageSource === "file_playback" && (
           <PlaybackFromFile fileUrl={playbackPath!} />
-        ) : null}
-        {showStats ? <Stats className="stats-panel" /> : null}
+        )}
+        {showStats && <Stats className="stats-panel" />}
       </ViewerContents>
     </ViewerContext.Provider>
   );
 }
 
+/**
+ * Main content wrapper with theme and layout.
+ */
 function ViewerContents({ children }: { children: React.ReactNode }) {
   const viewer = React.useContext(ViewerContext)!;
   const darkMode = viewer.useGui((state) => state.theme.dark_mode);
   const colors = viewer.useGui((state) => state.theme.colors);
   const controlLayout = viewer.useGui((state) => state.theme.control_layout);
+  const showLogo = viewer.useGui((state) => state.theme.show_logo);
+  const { messageSource } = viewer;
+
+  // Create Mantine theme with custom colors if provided.
+  const mantineTheme = useMemo(
+    () =>
+      createTheme({
+        ...theme,
+        ...(colors === null
+          ? {}
+          : { colors: { custom: colors }, primaryColor: "custom" }),
+      }),
+    [colors],
+  );
 
   return (
     <>
       <ColorSchemeScript forceColorScheme={darkMode ? "dark" : "light"} />
       <MantineProvider
-        theme={createTheme({
-          ...theme,
-          ...(colors === null
-            ? {}
-            : { colors: { custom: colors }, primaryColor: "custom" }),
-        })}
+        theme={mantineTheme}
         forceColorScheme={darkMode ? "dark" : "light"}
       >
         {children}
-        <Notifications
-          position="top-left"
-          limit={10}
-          containerWidth="20em"
-          withinPortal={false}
-          styles={{
-            root: {
-              boxShadow: "0.1em 0 1em 0 rgba(0,0,0,0.1) !important",
-              position: "absolute",
-              top: "1em",
-              left: "1em",
-              pointerEvents: "none",
-            },
-            notification: {
-              pointerEvents: "all",
-            },
-          }}
-        />
+        <NotificationsPanel />
         <BrowserWarning />
         <ViserModal />
+        {/* App layout */}
         <Box
           style={{
             width: "100%",
@@ -207,14 +267,11 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
               <ViewerCanvas>
                 <FrameSynchronizedMessageHandler />
               </ViewerCanvas>
-              {viewer.useGui((state) => state.theme.show_logo) &&
-              viewer.messageSource == "websocket" ? (
-                <ViserLogo />
-              ) : null}
+              {showLogo && messageSource === "websocket" && <ViserLogo />}
             </Box>
-            {viewer.messageSource == "websocket" ? (
+            {messageSource === "websocket" && (
               <ControlPanel control_layout={controlLayout} />
-            ) : null}
+            )}
           </Box>
         </Box>
       </MantineProvider>
@@ -222,69 +279,96 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
   );
 }
 
-const DisableRender = () => useFrame(() => null, 1000);
+/**
+ * Notifications panel with fixed styling.
+ */
+function NotificationsPanel() {
+  return (
+    <Notifications
+      position="top-left"
+      limit={10}
+      containerWidth="20em"
+      withinPortal={false}
+      styles={{
+        root: {
+          boxShadow: "0.1em 0 1em 0 rgba(0,0,0,0.1) !important",
+          position: "absolute",
+          top: "1em",
+          left: "1em",
+          pointerEvents: "none",
+        },
+        notification: {
+          pointerEvents: "all",
+        },
+      }}
+    />
+  );
+}
 
+/**
+ * Main 3D canvas component.
+ */
 function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const viewer = React.useContext(ViewerContext)!;
   const sendClickThrottled = useThrottledMessageSender(20);
   const theme = useMantineTheme();
   const { ref: inViewRef, inView } = useInView();
 
-  // Make sure we don't re-mount the camera controls, since that will reset the camera position
-  const memoizedCameraControls = React.useMemo(
+  // Memoize camera controls to prevent unnecessary re-creation.
+  const memoizedCameraControls = useMemo(
     () => <SynchronizedCameraControls />,
     [],
   );
 
+  // Handle pointer down event. I don't think we need useCallback here, since
+  // remounts should be very rare.
   const handlePointerDown = (e: React.PointerEvent) => {
-    const pointerInfo = viewer.scenePointerInfo.current!;
+    const { refs } = viewer;
+    const pointerInfo = refs.current.scenePointerInfo;
     if (pointerInfo.enabled === false) return;
 
-    // Keep track of the first click position
-    const canvasBbox = viewer.canvasRef.current!.getBoundingClientRect();
+    const canvasBbox = refs.current.canvas!.getBoundingClientRect();
     pointerInfo.dragStart = [
       e.clientX - canvasBbox.left,
       e.clientY - canvasBbox.top,
     ];
     pointerInfo.dragEnd = pointerInfo.dragStart;
 
-    // Check if pointer position is in bounds
     if (ndcFromPointerXy(viewer, pointerInfo.dragEnd) === null) return;
-
-    // Only allow one drag event at a time
     if (pointerInfo.isDragging) return;
+
     pointerInfo.isDragging = true;
+    refs.current.cameraControl!.enabled = false;
 
-    // Disable camera controls -- we don't want the camera to move while we're dragging
-    viewer.cameraControlRef.current!.enabled = false;
-
-    const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
+    const ctx = refs.current.canvas2d!.getContext("2d")!;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   };
 
+  // Handle pointer move event.
   const handlePointerMove = (e: React.PointerEvent) => {
-    const pointerInfo = viewer.scenePointerInfo.current!;
+    const { refs } = viewer;
+    const pointerInfo = refs.current.scenePointerInfo;
     if (pointerInfo.enabled === false || !pointerInfo.isDragging) return;
 
-    // Check if pointer position is in bounds
-    const canvasBbox = viewer.canvasRef.current!.getBoundingClientRect();
+    const canvasBbox = refs.current.canvas!.getBoundingClientRect();
     const pointerXy: [number, number] = [
       e.clientX - canvasBbox.left,
       e.clientY - canvasBbox.top,
     ];
-    if (ndcFromPointerXy(viewer, pointerXy) === null) return;
 
-    // Check if mouse position has changed sufficiently from last position
+    if (ndcFromPointerXy(viewer, pointerXy) === null) return;
     pointerInfo.dragEnd = pointerXy;
+
+    // Check if pointer moved enough to be considered a drag
     if (
       Math.abs(pointerInfo.dragEnd[0] - pointerInfo.dragStart[0]) <= 3 &&
       Math.abs(pointerInfo.dragEnd[1] - pointerInfo.dragStart[1]) <= 3
     )
       return;
 
-    // If we're listening for scene box events, draw the box on the 2D canvas for user feedback
+    // Draw selection rectangle if in rect-select mode
     if (pointerInfo.enabled === "rect-select") {
-      const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
+      const ctx = refs.current.canvas2d!.getContext("2d")!;
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.beginPath();
       ctx.fillStyle = theme.primaryColor;
@@ -301,89 +385,45 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Handle pointer up event.
   const handlePointerUp = () => {
-    const pointerInfo = viewer.scenePointerInfo.current!;
+    const { refs } = viewer;
+    const pointerInfo = refs.current.scenePointerInfo;
 
-    // Re-enable camera controls
-    viewer.cameraControlRef.current!.enabled = true;
-
+    // Re-enable camera controls.
+    refs.current.cameraControl!.enabled = true;
     if (pointerInfo.enabled === false || !pointerInfo.isDragging) return;
 
-    const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
+    const ctx = refs.current.canvas2d!.getContext("2d")!;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
+    // Handle click or rect-select based on mode.
     if (pointerInfo.enabled === "click") {
-      const raycaster = new THREE.Raycaster();
-      const mouseVector = ndcFromPointerXy(viewer, pointerInfo.dragEnd);
-      if (mouseVector === null) return;
-
-      raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
-      const ray = rayToViserCoords(viewer, raycaster.ray);
-      const mouseVectorOpenCV = opencvXyFromPointerXy(
-        viewer,
-        pointerInfo.dragEnd,
-      );
-
-      sendClickThrottled({
-        type: "ScenePointerMessage",
-        event_type: "click",
-        ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
-        ray_direction: [ray.direction.x, ray.direction.y, ray.direction.z],
-        screen_pos: [[mouseVectorOpenCV.x, mouseVectorOpenCV.y]],
-      });
+      sendClickMessage(viewer, pointerInfo.dragEnd, sendClickThrottled);
     } else if (pointerInfo.enabled === "rect-select") {
-      const firstMouseVector = opencvXyFromPointerXy(
-        viewer,
-        pointerInfo.dragStart,
-      );
-      const lastMouseVector = opencvXyFromPointerXy(
-        viewer,
-        pointerInfo.dragEnd,
-      );
-
-      const x_min = Math.min(firstMouseVector.x, lastMouseVector.x);
-      const x_max = Math.max(firstMouseVector.x, lastMouseVector.x);
-      const y_min = Math.min(firstMouseVector.y, lastMouseVector.y);
-      const y_max = Math.max(firstMouseVector.y, lastMouseVector.y);
-
-      sendClickThrottled({
-        type: "ScenePointerMessage",
-        event_type: "rect-select",
-        ray_origin: null,
-        ray_direction: null,
-        screen_pos: [
-          [x_min, y_min],
-          [x_max, y_max],
-        ],
-      });
+      sendRectSelectMessage(viewer, pointerInfo, sendClickThrottled);
     }
 
-    // Release drag lock
     pointerInfo.isDragging = false;
   };
 
   return (
     <div
       ref={inViewRef}
-      style={{
-        position: "relative",
-        zIndex: 0,
-        width: "100%",
-        height: "100%",
-      }}
+      style={{ position: "relative", zIndex: 0, width: "100%", height: "100%" }}
     >
       <Canvas
         camera={{ position: [-3.0, 3.0, -3.0], near: 0.01, far: 1000.0 }}
         gl={{ preserveDrawingBuffer: true }}
         style={{ width: "100%", height: "100%" }}
-        ref={viewer.canvasRef}
+        ref={(el) => (viewer.refs.current.canvas = el)}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         shadows
       >
         <Bvh firstHitOnly>
-          {inView ? null : <DisableRender />}
+          {!inView && <DisableRender />}
           <BackgroundImage />
           <SceneContextSetter />
           {memoizedCameraControls}
@@ -399,6 +439,64 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ======= Helper functions for pointer events. =======
+
+/**
+ * Send a click message based on the pointer position.
+ */
+function sendClickMessage(
+  viewer: ViewerContextContents,
+  pointerPos: [number, number],
+  sendClickThrottled: (message: any) => void,
+) {
+  const raycaster = new THREE.Raycaster();
+  const mouseVector = ndcFromPointerXy(viewer, pointerPos);
+  if (mouseVector === null) return;
+
+  raycaster.setFromCamera(mouseVector, viewer.refs.current.camera!);
+  const ray = rayToViserCoords(viewer, raycaster.ray);
+  const mouseVectorOpenCV = opencvXyFromPointerXy(viewer, pointerPos);
+
+  sendClickThrottled({
+    type: "ScenePointerMessage",
+    event_type: "click",
+    ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
+    ray_direction: [ray.direction.x, ray.direction.y, ray.direction.z],
+    screen_pos: [[mouseVectorOpenCV.x, mouseVectorOpenCV.y]],
+  });
+}
+
+/**
+ * Send a rectangle selection message based on drag start/end positions.
+ */
+function sendRectSelectMessage(
+  viewer: ViewerContextContents,
+  pointerInfo: { dragStart: [number, number]; dragEnd: [number, number] },
+  sendClickThrottled: (message: any) => void,
+) {
+  const firstMouseVector = opencvXyFromPointerXy(viewer, pointerInfo.dragStart);
+  const lastMouseVector = opencvXyFromPointerXy(viewer, pointerInfo.dragEnd);
+
+  const x_min = Math.min(firstMouseVector.x, lastMouseVector.x);
+  const x_max = Math.max(firstMouseVector.x, lastMouseVector.x);
+  const y_min = Math.min(firstMouseVector.y, lastMouseVector.y);
+  const y_max = Math.max(firstMouseVector.y, lastMouseVector.y);
+
+  sendClickThrottled({
+    type: "ScenePointerMessage",
+    event_type: "rect-select",
+    ray_origin: null,
+    ray_direction: null,
+    screen_pos: [
+      [x_min, y_min],
+      [x_max, y_max],
+    ],
+  });
+}
+
+/**
+ * DefaultLights component - handles environment map and lights.
+ */
 function DefaultLights() {
   const viewer = React.useContext(ViewerContext)!;
   const enableDefaultLights = viewer.useSceneTree(
@@ -409,52 +507,25 @@ function DefaultLights() {
   );
   const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
 
-  // Environment map frames handling
-  const [R_threeworld_world, setR_threeworld_world] = React.useState(
-    viewer.nodeAttributesFromName.current![""]!.wxyz!,
+  // Track environment rotation state.
+  const [worldRotation, setWorldRotation] = useState(
+    viewer.refs.current.nodeAttributesFromName[""]!.wxyz!,
   );
 
+  // Update rotation when changed.
   useFrame(() => {
-    const currentR_threeworld_world =
-      viewer.nodeAttributesFromName.current![""]!.wxyz!;
-    if (currentR_threeworld_world !== R_threeworld_world) {
-      setR_threeworld_world(currentR_threeworld_world);
+    const currentRotation =
+      viewer.refs.current.nodeAttributesFromName[""]!.wxyz!;
+    if (currentRotation !== worldRotation) {
+      setWorldRotation(currentRotation);
     }
   });
 
-  const Rquat_threeworld_world = new THREE.Quaternion(
-    R_threeworld_world[1],
-    R_threeworld_world[2],
-    R_threeworld_world[3],
-    R_threeworld_world[0],
-  );
-  const Rquat_world_threeworld = Rquat_threeworld_world.clone().invert();
+  // Calculate environment map.
+  const envMapNode = useMemo(() => {
+    if (environmentMap.hdri === null) return null;
 
-  const backgroundRotation = new THREE.Euler().setFromQuaternion(
-    new THREE.Quaternion(
-      environmentMap.background_wxyz[1],
-      environmentMap.background_wxyz[2],
-      environmentMap.background_wxyz[3],
-      environmentMap.background_wxyz[0],
-    )
-      .premultiply(Rquat_threeworld_world)
-      .multiply(Rquat_world_threeworld),
-  );
-
-  const environmentRotation = new THREE.Euler().setFromQuaternion(
-    new THREE.Quaternion(
-      environmentMap.environment_wxyz[1],
-      environmentMap.environment_wxyz[2],
-      environmentMap.environment_wxyz[3],
-      environmentMap.environment_wxyz[0],
-    )
-      .premultiply(Rquat_threeworld_world)
-      .multiply(Rquat_world_threeworld),
-  );
-
-  // Environment map configuration
-  let envMapNode = null;
-  if (environmentMap.hdri !== null) {
+    // HDRI presets mapping.
     const presetsObj = {
       apartment: "lebombo_1k.hdr",
       city: "potsdamer_platz_1k.hdr",
@@ -468,7 +539,40 @@ function DefaultLights() {
       warehouse: "empty_warehouse_01_1k.hdr",
     };
 
-    envMapNode = (
+    // Calculate quaternions for world transformation.
+    const Rquat_threeworld_world = new THREE.Quaternion(
+      worldRotation[1],
+      worldRotation[2],
+      worldRotation[3],
+      worldRotation[0],
+    );
+    const Rquat_world_threeworld = Rquat_threeworld_world.clone().invert();
+
+    // Calculate background rotation.
+    const backgroundRotation = new THREE.Euler().setFromQuaternion(
+      new THREE.Quaternion(
+        environmentMap.background_wxyz[1],
+        environmentMap.background_wxyz[2],
+        environmentMap.background_wxyz[3],
+        environmentMap.background_wxyz[0],
+      )
+        .premultiply(Rquat_threeworld_world)
+        .multiply(Rquat_world_threeworld),
+    );
+
+    // Calculate environment rotation.
+    const environmentRotation = new THREE.Euler().setFromQuaternion(
+      new THREE.Quaternion(
+        environmentMap.environment_wxyz[1],
+        environmentMap.environment_wxyz[2],
+        environmentMap.environment_wxyz[3],
+        environmentMap.environment_wxyz[0],
+      )
+        .premultiply(Rquat_threeworld_world)
+        .multiply(Rquat_world_threeworld),
+    );
+
+    return (
       <Environment
         files={`hdri/${presetsObj[environmentMap.hdri]}`}
         background={environmentMap.background}
@@ -479,10 +583,12 @@ function DefaultLights() {
         environmentRotation={environmentRotation}
       />
     );
-  }
+  }, [environmentMap, worldRotation]);
 
+  // Return environment map only if lights are disabled.
   if (!enableDefaultLights) return envMapNode;
 
+  // Return lights and environment map.
   return (
     <>
       <CsmDirectionalLight
@@ -507,6 +613,9 @@ function DefaultLights() {
   );
 }
 
+/**
+ * Adaptive DPR component for performance optimization.
+ */
 function AdaptiveDpr() {
   const setDpr = useThree((state) => state.setDpr);
 
@@ -530,26 +639,29 @@ function AdaptiveDpr() {
   );
 }
 
+/**
+ * 2D canvas overlay for drawing selection rectangles.
+ */
 function Viewer2DCanvas() {
   const viewer = React.useContext(ViewerContext)!;
 
   useEffect(() => {
-    // Create a resize observer to resize the CSS canvas when the window is resized
+    const canvas = viewer.refs.current.canvas2d!;
+
+    // Create a resize observer to update canvas dimensions.
     const resizeObserver = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
       canvas.width = width;
       canvas.height = height;
     });
 
-    const canvas = viewer.canvas2dRef.current!;
     resizeObserver.observe(canvas);
-
     return () => resizeObserver.disconnect();
   }, []);
 
   return (
     <canvas
-      ref={viewer.canvas2dRef}
+      ref={(el) => (viewer.refs.current.canvas2d = el)}
       style={{
         position: "absolute",
         zIndex: 1,
@@ -561,103 +673,104 @@ function Viewer2DCanvas() {
   );
 }
 
+/**
+ * Background image component with depth support.
+ */
 function BackgroundImage() {
-  const vertShader = `
-  varying vec2 vUv;
-
-  void main() {
-    vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-  `.trim();
-
-  const fragShader = `
-  #include <packing>
-  precision highp float;
-  precision highp int;
-
-  varying vec2 vUv;
-  uniform sampler2D colorMap;
-  uniform sampler2D depthMap;
-  uniform float cameraNear;
-  uniform float cameraFar;
-  uniform bool enabled;
-  uniform bool hasDepth;
-
-  float readDepth(sampler2D depthMap, vec2 coord) {
-    vec4 rgbPacked = texture(depthMap, coord);
-
-    // For the k-th channel, coefficients are calculated as: 255 * 1e-5 * 2^(8 * k).
-    // Note that: [0, 255] channels are scaled to [0, 1], and we multiply by 1e5 on the server side.
-    float depth = rgbPacked.r * 0.00255 + rgbPacked.g * 0.6528 + rgbPacked.b * 167.1168;
-    return depth;
-  }
-
-  void main() {
-    if (!enabled) {
-      // discard the pixel if we're not enabled
-      discard;
+  // Shader for background image with depth.
+  const shaders = useMemo(
+    () => ({
+      vert: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
-    vec4 color = texture(colorMap, vUv);
-    gl_FragColor = vec4(color.rgb, 1.0);
+    `,
+      frag: `
+    #include <packing>
+    precision highp float;
+    precision highp int;
 
-    float bufDepth;
-    if(hasDepth){
-      float depth = readDepth(depthMap, vUv);
-      bufDepth = viewZToPerspectiveDepth(-depth, cameraNear, cameraFar);
-    } else {
-      // If no depth enabled, set depth to 1.0 (infinity) to treat it like a background image.
-      bufDepth = 1.0;
+    varying vec2 vUv;
+    uniform sampler2D colorMap;
+    uniform sampler2D depthMap;
+    uniform float cameraNear;
+    uniform float cameraFar;
+    uniform bool enabled;
+    uniform bool hasDepth;
+
+    float readDepth(sampler2D depthMap, vec2 coord) {
+      vec4 rgbPacked = texture(depthMap, coord);
+      float depth = rgbPacked.r * 0.00255 + rgbPacked.g * 0.6528 + rgbPacked.b * 167.1168;
+      return depth;
     }
-    gl_FragDepth = bufDepth;
-  }`.trim();
 
-  // Initialize the background material
-  const backgroundMaterial = new THREE.ShaderMaterial({
-    fragmentShader: fragShader,
-    vertexShader: vertShader,
-    uniforms: {
-      enabled: { value: false },
-      depthMap: { value: null },
-      colorMap: { value: null },
-      cameraNear: { value: null },
-      cameraFar: { value: null },
-      hasDepth: { value: false },
-    },
-  });
+    void main() {
+      if (!enabled) {
+        discard;
+      }
+      vec4 color = texture(colorMap, vUv);
+      gl_FragColor = vec4(color.rgb, 1.0);
 
-  const { backgroundMaterialRef } = React.useContext(ViewerContext)!;
-  backgroundMaterialRef.current = backgroundMaterial;
+      float bufDepth;
+      if(hasDepth){
+        float depth = readDepth(depthMap, vUv);
+        bufDepth = viewZToPerspectiveDepth(-depth, cameraNear, cameraFar);
+      } else {
+        bufDepth = 1.0;
+      }
+      gl_FragDepth = bufDepth;
+    }
+    `,
+    }),
+    [],
+  );
+
+  // Create material.
+  const backgroundMaterial = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        fragmentShader: shaders.frag,
+        vertexShader: shaders.vert,
+        uniforms: {
+          enabled: { value: false },
+          depthMap: { value: null },
+          colorMap: { value: null },
+          cameraNear: { value: null },
+          cameraFar: { value: null },
+          hasDepth: { value: false },
+        },
+      }),
+    [shaders],
+  );
+
+  // Store material in viewer context.
+  const { refs } = React.useContext(ViewerContext)!;
+  refs.current.backgroundMaterial = backgroundMaterial;
   const backgroundMesh = React.useRef<THREE.Mesh>(null);
 
+  // Update position and rotation in render loop.
   useFrame(({ camera }) => {
-    // Logic relies on perspective camera assumption
     if (!(camera instanceof THREE.PerspectiveCamera)) {
       console.error(
-        "Camera is not a perspective camera, cannot render background image",
+        "Camera is not a perspective camera, cannot render background image.",
       );
       return;
     }
 
-    // Update the position of the mesh based on the camera position
+    const mesh = backgroundMesh.current!;
+
+    // Position behind camera.
     const lookdir = camera.getWorldDirection(new THREE.Vector3());
-    backgroundMesh.current!.position.set(
-      camera.position.x,
-      camera.position.y,
-      camera.position.z,
-    );
-    backgroundMesh.current!.position.addScaledVector(lookdir, 1.0);
-    backgroundMesh.current!.quaternion.copy(camera.quaternion);
+    mesh.position.copy(camera.position).addScaledVector(lookdir, 1.0);
+    mesh.quaternion.copy(camera.quaternion);
 
-    // Resize the mesh based on focal length
+    // Size based on camera parameters.
     const f = camera.getFocalLength();
-    backgroundMesh.current!.scale.set(
-      camera.getFilmWidth() / f,
-      camera.getFilmHeight() / f,
-      1.0,
-    );
+    mesh.scale.set(camera.getFilmWidth() / f, camera.getFilmHeight() / f, 1.0);
 
-    // Set near/far uniforms
+    // Update shader uniforms.
     backgroundMaterial.uniforms.cameraNear.value = camera.near;
     backgroundMaterial.uniforms.cameraFar.value = camera.far;
   });
@@ -669,15 +782,21 @@ function BackgroundImage() {
   );
 }
 
+/**
+ * Helper component to sync scene and camera refs.
+ */
 function SceneContextSetter() {
-  const { sceneRef, cameraRef } = React.useContext(ViewerContext)!;
-  sceneRef.current = useThree((state) => state.scene);
-  cameraRef.current = useThree(
+  const { refs } = React.useContext(ViewerContext)!;
+  refs.current.scene = useThree((state) => state.scene);
+  refs.current.camera = useThree(
     (state) => state.camera as THREE.PerspectiveCamera,
   );
-  return <></>;
+  return null;
 }
 
+/**
+ * Viser logo with about modal.
+ */
 function ViserLogo() {
   const [aboutModalOpened, { open: openAbout, close: closeAbout }] =
     useDisclosure(false);
@@ -740,44 +859,4 @@ function ViserLogo() {
       </Modal>
     </>
   );
-}
-
-export function Root() {
-  // Parse dummy window dimensions from URL if present
-  const searchParams = new URLSearchParams(window.location.search);
-  const dummyWindowParam = searchParams.get("dummyWindowDimensions");
-  const dummyWindowTitle =
-    searchParams.get("dummyWindowTitle") ?? "localhost:8080";
-
-  const content = (
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <ViewerRoot />
-    </div>
-  );
-
-  // If dummy window dimensions are specified, wrap content in MacWindowWrapper
-  if (dummyWindowParam) {
-    const [width, height] = dummyWindowParam.split("x").map(Number);
-    if (!isNaN(width) && !isNaN(height)) {
-      return (
-        <MacWindowWrapper
-          title={dummyWindowTitle}
-          width={width}
-          height={height}
-        >
-          {content}
-        </MacWindowWrapper>
-      );
-    }
-  }
-
-  return content;
 }
