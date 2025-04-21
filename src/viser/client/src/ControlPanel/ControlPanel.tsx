@@ -1,6 +1,6 @@
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import GeneratedGuiContainer from "./Generated";
-import { ViewerContext } from "../ViewerContext";
+import { ViewerContext, ViewerMutable } from "../ViewerContext";
 
 import QRCode from "react-qr-code";
 import ServerControls from "./ServerControls";
@@ -193,7 +193,7 @@ function ConnectionStatus() {
 
 function ShareButton() {
   const viewer = React.useContext(ViewerContext)!;
-  const viewerRefs = viewer.refs.current; // Get refs once
+  const viewerMutable = viewer.mutable.current; // Get mutable once
   const connected = viewer.useGui((state) => state.websocketConnected);
   const shareUrl = viewer.useGui((state) => state.shareUrl);
   const setShareUrl = viewer.useGui((state) => state.setShareUrl);
@@ -273,7 +273,7 @@ function ShareButton() {
                 <Button
                   fullWidth
                   onClick={() => {
-                    viewerRefs.sendMessage({
+                    viewerMutable.sendMessage({
                       type: "ShareUrlRequest",
                     });
                     setDoingSomething(true); // Loader state will help with debouncing.
@@ -319,7 +319,7 @@ function ShareButton() {
                   <Button
                     color="red"
                     onClick={() => {
-                      viewerRefs.sendMessage({
+                      viewerMutable.sendMessage({
                         type: "ShareUrlDisconnect",
                       });
                       setShareUrl(null);

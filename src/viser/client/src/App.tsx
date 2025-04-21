@@ -10,7 +10,7 @@ import { Environment, PerformanceMonitor, Stats, Bvh } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import React, { useEffect, useMemo, useState } from "react";
-import { ViewerRefs } from "./ViewerContext";
+import { ViewerMutable } from "./ViewerContext";
 import {
   Anchor,
   Box,
@@ -129,7 +129,7 @@ function ViewerRoot() {
 
   // Create a single ref with all mutable state.
   const nodeRefFromName = {};
-  const refs = React.useRef<ViewerRefs>({
+  const mutable = React.useRef<ViewerMutable>({
     // Function references with default implementations.
     sendMessage:
       playbackPath == null
@@ -180,9 +180,9 @@ function ViewerRoot() {
   // Create the context value with hooks and single ref.
   const viewer: ViewerContextContents = {
     messageSource,
-    useSceneTree: useSceneTreeState(refs.current.nodeRefFromName),
+    useSceneTree: useSceneTreeState(mutable.current.nodeRefFromName),
     useGui: useGuiState(initialServer),
-    refs,
+    mutable,
   };
 
   // Apply URL dark mode setting if provided.
@@ -323,11 +323,11 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   // Handle pointer down event. I don't think we need useCallback here, since
   // remounts should be very rare.
   const handlePointerDown = (e: React.PointerEvent) => {
-    const { refs } = viewer;
-    const pointerInfo = refs.current.scenePointerInfo;
+    const { mutable } = viewer;
+    const pointerInfo = mutable.current.scenePointerInfo;
     if (pointerInfo.enabled === false) return;
 
-    const canvasBbox = refs.current.canvas!.getBoundingClientRect();
+    const canvasBbox = mutable.current.canvas!.getBoundingClientRect();
     pointerInfo.dragStart = [
       e.clientX - canvasBbox.left,
       e.clientY - canvasBbox.top,
@@ -338,19 +338,19 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     if (pointerInfo.isDragging) return;
 
     pointerInfo.isDragging = true;
-    refs.current.cameraControl!.enabled = false;
+    mutable.current.cameraControl!.enabled = false;
 
-    const ctx = refs.current.canvas2d!.getContext("2d")!;
+    const ctx = mutable.current.canvas2d!.getContext("2d")!;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   };
 
   // Handle pointer move event.
   const handlePointerMove = (e: React.PointerEvent) => {
-    const { refs } = viewer;
-    const pointerInfo = refs.current.scenePointerInfo;
+    const { mutable } = viewer;
+    const pointerInfo = mutable.current.scenePointerInfo;
     if (pointerInfo.enabled === false || !pointerInfo.isDragging) return;
 
-    const canvasBbox = refs.current.canvas!.getBoundingClientRect();
+    const canvasBbox = mutable.current.canvas!.getBoundingClientRect();
     const pointerXy: [number, number] = [
       e.clientX - canvasBbox.left,
       e.clientY - canvasBbox.top,
@@ -368,7 +368,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
 
     // Draw selection rectangle if in rect-select mode
     if (pointerInfo.enabled === "rect-select") {
-      const ctx = refs.current.canvas2d!.getContext("2d")!;
+      const ctx = mutable.current.canvas2d!.getContext("2d")!;
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.beginPath();
       ctx.fillStyle = theme.primaryColor;
@@ -387,14 +387,14 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
 
   // Handle pointer up event.
   const handlePointerUp = () => {
-    const { refs } = viewer;
-    const pointerInfo = refs.current.scenePointerInfo;
+    const { mutable } = viewer;
+    const pointerInfo = mutable.current.scenePointerInfo;
 
     // Re-enable camera controls.
-    refs.current.cameraControl!.enabled = true;
+    mutable.current.cameraControl!.enabled = true;
     if (pointerInfo.enabled === false || !pointerInfo.isDragging) return;
 
-    const ctx = refs.current.canvas2d!.getContext("2d")!;
+    const ctx = mutable.current.canvas2d!.getContext("2d")!;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     // Handle click or rect-select based on mode.
@@ -416,7 +416,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         camera={{ position: [-3.0, 3.0, -3.0], near: 0.01, far: 1000.0 }}
         gl={{ preserveDrawingBuffer: true }}
         style={{ width: "100%", height: "100%" }}
-        ref={(el) => (viewer.refs.current.canvas = el)}
+        ref={(el) => (viewer.mutable.current.canvas = el)}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -453,7 +453,7 @@ function sendClickMessage(
   const mouseVector = ndcFromPointerXy(viewer, pointerPos);
   if (mouseVector === null) return;
 
-  raycaster.setFromCamera(mouseVector, viewer.refs.current.camera!);
+  raycaster.setFromCamera(mouseVector, viewer.mutable.current.camera!);
   const ray = rayToViserCoords(viewer, raycaster.ray);
   const mouseVectorOpenCV = opencvXyFromPointerXy(viewer, pointerPos);
 
@@ -509,13 +509,13 @@ function DefaultLights() {
 
   // Track environment rotation state.
   const [worldRotation, setWorldRotation] = useState(
-    viewer.refs.current.nodeAttributesFromName[""]!.wxyz!,
+    viewer.mutable.current.nodeAttributesFromName[""]!.wxyz!,
   );
 
   // Update rotation when changed.
   useFrame(() => {
     const currentRotation =
-      viewer.refs.current.nodeAttributesFromName[""]!.wxyz!;
+      viewer.mutable.current.nodeAttributesFromName[""]!.wxyz!;
     if (currentRotation !== worldRotation) {
       setWorldRotation(currentRotation);
     }
@@ -646,7 +646,7 @@ function Viewer2DCanvas() {
   const viewer = React.useContext(ViewerContext)!;
 
   useEffect(() => {
-    const canvas = viewer.refs.current.canvas2d!;
+    const canvas = viewer.mutable.current.canvas2d!;
 
     // Create a resize observer to update canvas dimensions.
     const resizeObserver = new ResizeObserver((entries) => {
@@ -661,7 +661,7 @@ function Viewer2DCanvas() {
 
   return (
     <canvas
-      ref={(el) => (viewer.refs.current.canvas2d = el)}
+      ref={(el) => (viewer.mutable.current.canvas2d = el)}
       style={{
         position: "absolute",
         zIndex: 1,
@@ -746,8 +746,8 @@ function BackgroundImage() {
   );
 
   // Store material in viewer context.
-  const { refs } = React.useContext(ViewerContext)!;
-  refs.current.backgroundMaterial = backgroundMaterial;
+  const { mutable } = React.useContext(ViewerContext)!;
+  mutable.current.backgroundMaterial = backgroundMaterial;
   const backgroundMesh = React.useRef<THREE.Mesh>(null);
 
   // Update position and rotation in render loop.
@@ -783,12 +783,12 @@ function BackgroundImage() {
 }
 
 /**
- * Helper component to sync scene and camera refs.
+ * Helper component to sync scene and camera state.
  */
 function SceneContextSetter() {
-  const { refs } = React.useContext(ViewerContext)!;
-  refs.current.scene = useThree((state) => state.scene);
-  refs.current.camera = useThree(
+  const { mutable } = React.useContext(ViewerContext)!;
+  mutable.current.scene = useThree((state) => state.scene);
+  mutable.current.camera = useThree(
     (state) => state.camera as THREE.PerspectiveCamera,
   );
   return null;

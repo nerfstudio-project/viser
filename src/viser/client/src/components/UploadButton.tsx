@@ -4,7 +4,11 @@ import { Box, Progress } from "@mantine/core";
 
 import { Button } from "@mantine/core";
 import React, { useContext } from "react";
-import { ViewerContext, ViewerContextContents } from "../ViewerContext";
+import {
+  ViewerContext,
+  ViewerContextContents,
+  ViewerMutable,
+} from "../ViewerContext";
 import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { htmlIconWrapper } from "./ComponentStyles.css";
@@ -132,8 +136,8 @@ function useFileUpload({
     uploadState.uploadedBytes < uploadState.totalBytes;
 
   async function upload(file: File) {
-    // Get viewer refs once
-    const viewerRefs = viewer.refs.current;
+    // Get viewer mutable once
+    const viewerMutable = viewer.mutable.current;
 
     const chunkSize = 512 * 1024; // bytes
     const numChunks = Math.ceil(file.size / chunkSize);
@@ -149,7 +153,7 @@ function useFileUpload({
       notificationId,
     });
 
-    viewerRefs.sendMessage({
+    viewerMutable.sendMessage({
       type: "FileTransferStartUpload",
       source_component_uuid: componentUuid,
       transfer_uuid: transferUuid,
@@ -165,7 +169,7 @@ function useFileUpload({
       const chunk = file.slice(start, end);
       const buffer = await chunk.arrayBuffer();
 
-      viewerRefs.sendMessage({
+      viewerMutable.sendMessage({
         type: "FileTransferPart",
         source_component_uuid: componentUuid,
         transfer_uuid: transferUuid,

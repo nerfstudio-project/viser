@@ -2,14 +2,14 @@ import WebsocketServerWorker from "./WebsocketServerWorker?worker";
 import React, { useContext } from "react";
 import { notifications } from "@mantine/notifications";
 
-import { ViewerContext } from "./ViewerContext";
+import { ViewerContext, ViewerMutable } from "./ViewerContext";
 import { syncSearchParamServer } from "./SearchParamsUtils";
 import { WsWorkerIncoming, WsWorkerOutgoing } from "./WebsocketServerWorker";
 
 /** Component for handling websocket connections. */
 export function WebsocketMessageProducer() {
   const viewer = useContext(ViewerContext)!;
-  const viewerRefs = viewer.refs.current;
+  const viewerMutable = viewer.mutable.current;
   const server = viewer.useGui((state) => state.server);
   const resetGui = viewer.useGui((state) => state.resetGui);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
@@ -25,13 +25,13 @@ export function WebsocketMessageProducer() {
         resetGui();
         resetScene();
         viewer.useGui.setState({ websocketConnected: true });
-        viewerRefs.sendMessage = (message) => {
+        viewerMutable.sendMessage = (message) => {
           postToWorker({ type: "send", message: message });
         };
       } else if (data.type === "closed") {
         resetGui();
         viewer.useGui.setState({ websocketConnected: false });
-        viewerRefs.sendMessage = (message) => {
+        viewerMutable.sendMessage = (message) => {
           console.log(
             `Tried to send ${message.type} but websocket is not connected!`,
           );
@@ -49,7 +49,7 @@ export function WebsocketMessageProducer() {
           });
         }
       } else if (data.type === "message_batch") {
-        viewerRefs.messageQueue.push(...data.messages);
+        viewerMutable.messageQueue.push(...data.messages);
       }
     };
     function postToWorker(data: WsWorkerIncoming) {
@@ -58,7 +58,7 @@ export function WebsocketMessageProducer() {
     postToWorker({ type: "set_server", server: server });
     return () => {
       postToWorker({ type: "close" });
-      viewerRefs.sendMessage = (message) =>
+      viewerMutable.sendMessage = (message) =>
         console.log(
           `Tried to send ${message.type} but websocket is not connected!`,
         );

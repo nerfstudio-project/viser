@@ -17,7 +17,7 @@ import {
 } from "./SceneTreeTable.css";
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
-import { ViewerContext } from "../ViewerContext";
+import { ViewerContext, ViewerMutable } from "../ViewerContext";
 import {
   Box,
   Flex,
@@ -332,7 +332,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   indentCount: number;
 }) {
   const viewer = React.useContext(ViewerContext)!;
-  const viewerRefs = viewer.refs.current; // Get refs once
+  const viewerMutable = viewer.mutable.current; // Get mutable once
   const { paintingRef, paintValueRef, startPainting } = React.useContext(
     VisibilityPaintContext,
   )!;
@@ -343,7 +343,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
     startPainting(newValue);
 
     // Update visibility
-    const attr = viewerRefs.nodeAttributesFromName;
+    const attr = viewerMutable.nodeAttributesFromName;
     attr[props.nodeName]!.overrideVisibility = newValue;
     setIsVisible(newValue);
   };
@@ -352,7 +352,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
     if (!paintingRef.current) return;
 
     // Update visibility to match paint value
-    const attr = viewerRefs.nodeAttributesFromName;
+    const attr = viewerMutable.nodeAttributesFromName;
     attr[props.nodeName]!.overrideVisibility = paintValueRef.current;
     setIsVisible(paintValueRef.current);
   };
@@ -369,7 +369,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   );
 
   const pollIsVisible = React.useCallback(() => {
-    const attrs = viewerRefs.nodeAttributesFromName[props.nodeName];
+    const attrs = viewerMutable.nodeAttributesFromName[props.nodeName];
     return (
       (attrs?.overrideVisibility === undefined
         ? attrs?.visibility

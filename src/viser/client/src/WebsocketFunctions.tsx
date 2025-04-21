@@ -1,7 +1,11 @@
 import React from "react";
 import * as THREE from "three";
 import { Message } from "./WebsocketMessages";
-import { ViewerContext, ViewerContextContents } from "./ViewerContext";
+import {
+  ViewerContext,
+  ViewerContextContents,
+  ViewerMutable,
+} from "./ViewerContext";
 
 /** Easier, hook version of makeThrottledMessageSender. */
 export function useThrottledMessageSender(throttleMilliseconds: number) {
@@ -19,11 +23,11 @@ export function makeThrottledMessageSender(
   let latestMessage: Message | null = null;
 
   function send(message: Message) {
-    const viewerRefs = viewer.refs.current;
-    if (viewerRefs.sendMessage === null) return;
+    const viewerMutable = viewer.mutable.current;
+    if (viewerMutable.sendMessage === null) return;
     latestMessage = message;
     if (readyToSend) {
-      viewerRefs.sendMessage(message);
+      viewerMutable.sendMessage(message);
       stale = false;
       readyToSend = false;
 

@@ -3,7 +3,7 @@ import { Message } from "./WebsocketMessages";
 import { decompress } from "fflate";
 
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { ViewerContext } from "./ViewerContext";
+import { ViewerContext, ViewerMutable } from "./ViewerContext";
 import {
   ActionIcon,
   NumberInput,
@@ -76,7 +76,7 @@ interface SerializedMessages {
 
 export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
   const viewer = useContext(ViewerContext)!;
-  const viewerRefs = viewer.refs.current; // Get refs once
+  const viewerMutable = viewer.mutable.current; // Get mutable once
 
   const darkMode = viewer.useGui((state) => state.theme.dark_mode);
   const [status, setStatus] = useState({ downloaded: 0.0, total: 0.0 });
@@ -87,7 +87,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
   // Instead of removing all of the existing scene nodes, we're just going to hide them.
   // This will prevent unnecessary remounting when messages are looped.
   function resetScene() {
-    const attrs = viewerRefs.nodeAttributesFromName;
+    const attrs = viewerMutable.nodeAttributesFromName;
     Object.keys(attrs).forEach((key) => {
       if (key === "") return;
       const nodeMessage =
@@ -147,7 +147,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
       mutable.currentIndex++
     ) {
       const message = recording.messages[mutable.currentIndex][1];
-      viewerRefs.messageQueue.push(message);
+      viewerMutable.messageQueue.push(message);
     }
 
     if (mutable.currentTime >= recording.durationSeconds) {
@@ -182,7 +182,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     recording,
     paused,
     playbackSpeed,
-    viewerRefs.messageQueue,
+    viewerMutable.messageQueue,
     setCurrentTime,
   ]);
 

@@ -1,4 +1,4 @@
-import { ViewerContext } from "../ViewerContext";
+import { ViewerContext, ViewerMutable } from "../ViewerContext";
 import {
   Box,
   Button,
@@ -19,7 +19,7 @@ const MemoizedTable = React.memo(SceneTreeTable);
 
 export default function ServerControls() {
   const viewer = React.useContext(ViewerContext)!;
-  const viewerRefs = viewer.refs.current; // Get refs once
+  const viewerMutable = viewer.mutable.current; // Get mutable once
   const [showStats, setShowStats] = React.useState(false);
 
   function triggerBlur(event: React.KeyboardEvent<HTMLInputElement>) {
@@ -69,7 +69,7 @@ export default function ServerControls() {
                   },
                 ],
               });
-              viewerRefs.canvas?.toBlob(async (blob) => {
+              viewerMutable.canvas?.toBlob(async (blob) => {
                 if (blob === null) {
                   console.error("Export failed");
                   return;
@@ -82,7 +82,7 @@ export default function ServerControls() {
               });
             } else {
               // File System Access API is not supported. (eg Firefox)
-              viewerRefs.canvas?.toBlob((blob) => {
+              viewerMutable.canvas?.toBlob((blob) => {
                 if (blob === null) {
                   console.error("Export failed");
                   return;
@@ -109,7 +109,7 @@ export default function ServerControls() {
         </Button>
         <Button
           onClick={() => {
-            viewerRefs.resetCameraView!();
+            viewerMutable.resetCameraView!();
           }}
           fullWidth
           leftSection={<IconHomeMove size="1rem" />}

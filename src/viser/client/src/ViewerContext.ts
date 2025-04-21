@@ -11,8 +11,8 @@ import { UseSceneTree } from "./SceneTree";
 import { UseGui } from "./ControlPanel/GuiState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 
-// Type definitions for all mutable references.
-export type ViewerRefs = {
+// Type definitions for all mutable state.
+export type ViewerMutable = {
   // Function references.
   sendMessage: (message: Message) => void;
   sendCamera: (() => void) | null;
@@ -79,7 +79,7 @@ export type ViewerContextContents = {
   useGui: UseGui;
 
   // Single reference to all mutable state.
-  refs: React.MutableRefObject<ViewerRefs>;
+  mutable: React.MutableRefObject<ViewerMutable>;
 };
 
 export const ViewerContext = React.createContext<null | ViewerContextContents>(

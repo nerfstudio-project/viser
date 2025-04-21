@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { createStandardMaterial, rgbToInt } from "./MeshUtils";
 import { SkinnedMeshMessage } from "../WebsocketMessages";
 import { OutlinesIfHovered } from "../OutlinesIfHovered";
-import { ViewerContext } from "../ViewerContext";
+import { ViewerContext, ViewerMutable } from "../ViewerContext";
 import { useFrame } from "@react-three/fiber";
 
 /**
@@ -257,8 +257,8 @@ export const SkinnedMesh = React.forwardRef<
   ]);
 
   // Handle initialization and cleanup
-  // Get refs once
-  const viewerRefs = viewer.refs.current;
+  // Get mutable once
+  const viewerMutable = viewer.mutable.current;
 
   React.useEffect(() => {
     // Return cleanup function
@@ -266,17 +266,23 @@ export const SkinnedMesh = React.forwardRef<
       if (skeleton) skeleton.dispose();
       if (geometry) geometry.dispose();
       if (material) material.dispose();
-      const state = viewerRefs.skinnedMeshState[message.name];
+      const state = viewerMutable.skinnedMeshState[message.name];
       state.initialized = false;
     };
-  }, [skeleton, geometry, material, message.name, viewerRefs.skinnedMeshState]);
+  }, [
+    skeleton,
+    geometry,
+    material,
+    message.name,
+    viewerMutable.skinnedMeshState,
+  ]);
 
   // Update bone transforms for animation
   useFrame(() => {
-    const parentNode = viewerRefs.nodeRefFromName[message.name];
+    const parentNode = viewerMutable.nodeRefFromName[message.name];
     if (parentNode === undefined) return;
 
-    const state = viewerRefs.skinnedMeshState[message.name];
+    const state = viewerMutable.skinnedMeshState[message.name];
     const bones = bonesRef.current;
     if (skeleton !== undefined && bones !== undefined) {
       if (!state.initialized) {

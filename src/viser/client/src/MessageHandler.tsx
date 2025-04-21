@@ -4,7 +4,7 @@ import React, { useContext } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
 
-import { ViewerContext } from "./ViewerContext";
+import { ViewerContext, ViewerMutable } from "./ViewerContext";
 import {
   FileTransferPart,
   FileTransferStartDownload,
@@ -44,7 +44,7 @@ function useMessageHandler() {
   // frame if it doesn't exist yet.
   function addSceneNodeMakeParents(message: SceneNodeMessage) {
     // Make sure scene node is in attributes.
-    const attrs = viewer.refs.current.nodeAttributesFromName;
+    const attrs = viewer.mutable.current.nodeAttributesFromName;
     attrs[message.name] = {
       overrideVisibility: attrs[message.name]?.overrideVisibility,
     };
@@ -83,7 +83,7 @@ function useMessageHandler() {
     if (isSceneNodeMessage(message)) {
       // Initialize skinned mesh state.
       if (message.type === "SkinnedMeshMessage") {
-        viewer.refs.current.skinnedMeshState[message.name] = {
+        viewer.mutable.current.skinnedMeshState[message.name] = {
           initialized: false,
           poses: [],
         };
@@ -103,7 +103,7 @@ function useMessageHandler() {
           ),
         );
         for (let i = 0; i < message.props.bone_wxyzs!.length; i++) {
-          viewer.refs.current.skinnedMeshState[message.name].poses.push({
+          viewer.mutable.current.skinnedMeshState[message.name].poses.push({
             wxyz: [
               bone_wxyzs[4 * i],
               bone_wxyzs[4 * i + 1],
@@ -136,8 +136,8 @@ function useMessageHandler() {
       }
       // Request a render.
       case "GetRenderRequestMessage": {
-        viewer.refs.current.getRenderRequest = message;
-        viewer.refs.current.getRenderRequestState = "triggered";
+        viewer.mutable.current.getRenderRequest = message;
+        viewer.mutable.current.getRenderRequestState = "triggered";
         return;
       }
       // Set the GUI panel label.
@@ -181,12 +181,12 @@ function useMessageHandler() {
       // Enable/disable whether scene pointer events are sent.
       case "ScenePointerEnableMessage": {
         // Update scene click enable state.
-        viewer.refs.current.scenePointerInfo.enabled = message.enable
+        viewer.mutable.current.scenePointerInfo.enabled = message.enable
           ? message.event_type
           : false;
 
         // Update cursor to indicate whether the scene can be clicked.
-        viewer.refs.current.canvas!.style.cursor = message.enable
+        viewer.mutable.current.canvas!.style.cursor = message.enable
           ? "pointer"
           : "auto";
         return;
@@ -219,18 +219,18 @@ function useMessageHandler() {
 
       // Set the bone poses.
       case "SetBoneOrientationMessage": {
-        const state = viewer.refs.current.skinnedMeshState;
+        const state = viewer.mutable.current.skinnedMeshState;
         state[message.name].poses[message.bone_index].wxyz = message.wxyz;
         break;
       }
       case "SetBonePositionMessage": {
-        const state = viewer.refs.current.skinnedMeshState;
+        const state = viewer.mutable.current.skinnedMeshState;
         state[message.name].poses[message.bone_index].position =
           message.position;
         break;
       }
       case "SetCameraLookAtMessage": {
-        const cameraControls = viewer.refs.current.cameraControl!;
+        const cameraControls = viewer.mutable.current.cameraControl!;
 
         const T_threeworld_world = computeT_threeworld_world(viewer);
         const target = new THREE.Vector3(
@@ -243,8 +243,8 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraUpDirectionMessage": {
-        const camera = viewer.refs.current.camera!;
-        const cameraControls = viewer.refs.current.cameraControl!;
+        const camera = viewer.mutable.current.camera!;
+        const cameraControls = viewer.mutable.current.cameraControl!;
         const T_threeworld_world = computeT_threeworld_world(viewer);
         const updir = new THREE.Vector3(
           message.position[0],
@@ -273,7 +273,7 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraPositionMessage": {
-        const cameraControls = viewer.refs.current.cameraControl!;
+        const cameraControls = viewer.mutable.current.cameraControl!;
 
         // Set the camera position. Due to the look-at, note that this will
         // shift the orientation as-well.
@@ -294,30 +294,30 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraFovMessage": {
-        const camera = viewer.refs.current.camera!;
+        const camera = viewer.mutable.current.camera!;
         // tan(fov / 2.0) = 0.5 * film height / focal length
         // focal length = 0.5 * film height / tan(fov / 2.0)
         camera.setFocalLength(
           (0.5 * camera.getFilmHeight()) / Math.tan(message.fov / 2.0),
         );
-        viewer.refs.current.sendCamera !== null &&
-          viewer.refs.current.sendCamera();
+        viewer.mutable.current.sendCamera !== null &&
+          viewer.mutable.current.sendCamera();
         return;
       }
       case "SetCameraNearMessage": {
-        const camera = viewer.refs.current.camera!;
+        const camera = viewer.mutable.current.camera!;
         camera.near = message.near;
         camera.updateProjectionMatrix();
         return;
       }
       case "SetCameraFarMessage": {
-        const camera = viewer.refs.current.camera!;
+        const camera = viewer.mutable.current.camera!;
         camera.far = message.far;
         camera.updateProjectionMatrix();
         return;
       }
       case "SetOrientationMessage": {
-        const attr = viewer.refs.current.nodeAttributesFromName;
+        const attr = viewer.mutable.current.nodeAttributesFromName;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.wxyz = message.wxyz;
         if (attr[message.name]!.poseUpdateState != "waitForMakeObject")
@@ -325,7 +325,7 @@ function useMessageHandler() {
         break;
       }
       case "SetPositionMessage": {
-        const attr = viewer.refs.current.nodeAttributesFromName;
+        const attr = viewer.mutable.current.nodeAttributesFromName;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.position = message.position;
         if (attr[message.name]!.poseUpdateState != "waitForMakeObject")
@@ -333,7 +333,7 @@ function useMessageHandler() {
         break;
       }
       case "SetSceneNodeVisibilityMessage": {
-        const attr = viewer.refs.current.nodeAttributesFromName;
+        const attr = viewer.mutable.current.nodeAttributesFromName;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.visibility = message.visible;
         break;
@@ -349,28 +349,30 @@ function useMessageHandler() {
           new TextureLoader().load(rgb_url, (texture) => {
             URL.revokeObjectURL(rgb_url);
             const oldBackgroundTexture =
-              viewer.refs.current.backgroundMaterial!.uniforms.colorMap.value;
-            viewer.refs.current.backgroundMaterial!.uniforms.colorMap.value =
+              viewer.mutable.current.backgroundMaterial!.uniforms.colorMap
+                .value;
+            viewer.mutable.current.backgroundMaterial!.uniforms.colorMap.value =
               texture;
 
             // Dispose the old background texture.
             if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
           });
 
-          viewer.refs.current.backgroundMaterial!.uniforms.enabled.value = true;
+          viewer.mutable.current.backgroundMaterial!.uniforms.enabled.value =
+            true;
         } else {
           // Dispose the old background texture.
           const oldBackgroundTexture =
-            viewer.refs.current.backgroundMaterial!.uniforms.colorMap.value;
+            viewer.mutable.current.backgroundMaterial!.uniforms.colorMap.value;
           if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
 
           // Disable the background.
-          viewer.refs.current.backgroundMaterial!.uniforms.enabled.value =
+          viewer.mutable.current.backgroundMaterial!.uniforms.enabled.value =
             false;
         }
 
         // Set the depth texture.
-        viewer.refs.current.backgroundMaterial!.uniforms.hasDepth.value =
+        viewer.mutable.current.backgroundMaterial!.uniforms.hasDepth.value =
           message.depth_data !== null;
         if (message.depth_data !== null) {
           // If depth is available set the texture
@@ -382,8 +384,9 @@ function useMessageHandler() {
           new TextureLoader().load(depth_url, (texture) => {
             URL.revokeObjectURL(depth_url);
             const oldDepthTexture =
-              viewer.refs.current.backgroundMaterial?.uniforms.depthMap.value;
-            viewer.refs.current.backgroundMaterial!.uniforms.depthMap.value =
+              viewer.mutable.current.backgroundMaterial?.uniforms.depthMap
+                .value;
+            viewer.mutable.current.backgroundMaterial!.uniforms.depthMap.value =
               texture;
             if (isTexture(oldDepthTexture)) oldDepthTexture.dispose();
           });
@@ -399,11 +402,11 @@ function useMessageHandler() {
           return;
         }
         removeSceneNode(message.name);
-        const attrs = viewer.refs.current.nodeAttributesFromName;
+        const attrs = viewer.mutable.current.nodeAttributesFromName;
         delete attrs[message.name];
 
-        if (viewer.refs.current.skinnedMeshState[message.name] !== undefined)
-          delete viewer.refs.current.skinnedMeshState[message.name];
+        if (viewer.mutable.current.skinnedMeshState[message.name] !== undefined)
+          delete viewer.mutable.current.skinnedMeshState[message.name];
         return;
       }
       // Set the clickability of a particular scene node.
@@ -570,21 +573,22 @@ function useFileDownloadHandler() {
 export function FrameSynchronizedMessageHandler() {
   const handleMessage = useMessageHandler();
   const viewer = useContext(ViewerContext)!;
-  const messageQueue = viewer.refs.current.messageQueue;
+  const messageQueue = viewer.mutable.current.messageQueue;
   const splatContext = React.useContext(GaussianSplatsContext)!;
 
   useFrame(
     () => {
       // Send a render along if it was requested!
-      if (viewer.refs.current.getRenderRequestState === "triggered") {
-        viewer.refs.current.getRenderRequestState = "pause";
-      } else if (viewer.refs.current.getRenderRequestState === "pause") {
-        const cameraPosition = viewer.refs.current.getRenderRequest!.position;
-        const cameraWxyz = viewer.refs.current.getRenderRequest!.wxyz;
-        const cameraFov = viewer.refs.current.getRenderRequest!.fov;
+      if (viewer.mutable.current.getRenderRequestState === "triggered") {
+        viewer.mutable.current.getRenderRequestState = "pause";
+      } else if (viewer.mutable.current.getRenderRequestState === "pause") {
+        const cameraPosition =
+          viewer.mutable.current.getRenderRequest!.position;
+        const cameraWxyz = viewer.mutable.current.getRenderRequest!.wxyz;
+        const cameraFov = viewer.mutable.current.getRenderRequest!.fov;
 
-        const targetWidth = viewer.refs.current.getRenderRequest!.width;
-        const targetHeight = viewer.refs.current.getRenderRequest!.height;
+        const targetWidth = viewer.mutable.current.getRenderRequest!.width;
+        const targetHeight = viewer.mutable.current.getRenderRequest!.height;
 
         // Render the scene using the virtual camera
         const T_threeworld_world = computeT_threeworld_world(viewer);
@@ -649,7 +653,7 @@ export function FrameSynchronizedMessageHandler() {
         ); // Set clear color to transparent
 
         // Render the scene.
-        renderer.render(viewer.refs.current.scene!, camera);
+        renderer.render(viewer.mutable.current.scene!, camera);
 
         // Restore splatting indices.
         if (sortedIndicesOrig !== null && splatMeshProps !== null) {
@@ -658,21 +662,21 @@ export function FrameSynchronizedMessageHandler() {
         }
 
         // Get the rendered image.
-        viewer.refs.current.getRenderRequestState = "in_progress";
+        viewer.mutable.current.getRenderRequestState = "in_progress";
         renderer.domElement.toBlob(async (blob) => {
           renderer.dispose();
           renderer.forceContextLoss();
 
-          viewer.refs.current.sendMessage({
+          viewer.mutable.current.sendMessage({
             type: "GetRenderResponseMessage",
             payload: new Uint8Array(await blob!.arrayBuffer()),
           });
-          viewer.refs.current.getRenderRequestState = "ready";
-        }, viewer.refs.current.getRenderRequest!.format);
+          viewer.mutable.current.getRenderRequestState = "ready";
+        }, viewer.mutable.current.getRenderRequest!.format);
       }
 
       // Handle messages, but only if we're not trying to render something.
-      if (viewer.refs.current.getRenderRequestState === "ready") {
+      if (viewer.mutable.current.getRenderRequestState === "ready") {
         // Handle messages before every frame.
         // Place this directly in ws.onmessage can cause race conditions!
         //
