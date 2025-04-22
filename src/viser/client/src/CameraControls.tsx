@@ -1,4 +1,4 @@
-import { ViewerContext, ViewerMutable } from "./ViewerContext";
+import { ViewerContext } from "./ViewerContext";
 import { CameraControls } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import * as holdEvent from "hold-event";

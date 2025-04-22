@@ -1,4 +1,4 @@
-import { ViewerContext, ViewerMutable } from "../ViewerContext";
+import { ViewerContext } from "../ViewerContext";
 import {
   Box,
   Button,

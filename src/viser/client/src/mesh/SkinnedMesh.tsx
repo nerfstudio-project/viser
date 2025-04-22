@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { createStandardMaterial, rgbToInt } from "./MeshUtils";
 import { SkinnedMeshMessage } from "../WebsocketMessages";
 import { OutlinesIfHovered } from "../OutlinesIfHovered";
-import { ViewerContext, ViewerMutable } from "../ViewerContext";
+import { ViewerContext } from "../ViewerContext";
 import { useFrame } from "@react-three/fiber";
 
 /**

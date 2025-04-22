@@ -9,7 +9,7 @@ import { createPortal, useFrame } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
 
-import { ViewerContext, ViewerMutable } from "./ViewerContext";
+import { ViewerContext } from "./ViewerContext";
 import {
   makeThrottledMessageSender,
   useThrottledMessageSender,
