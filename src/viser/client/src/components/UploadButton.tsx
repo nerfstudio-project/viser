@@ -132,6 +132,9 @@ function useFileUpload({
     uploadState.uploadedBytes < uploadState.totalBytes;
 
   async function upload(file: File) {
+    // Get viewer mutable once
+    const viewerMutable = viewer.mutable.current;
+
     const chunkSize = 512 * 1024; // bytes
     const numChunks = Math.ceil(file.size / chunkSize);
     const transferUuid = uuid();
@@ -146,7 +149,7 @@ function useFileUpload({
       notificationId,
     });
 
-    viewer.sendMessageRef.current({
+    viewerMutable.sendMessage({
       type: "FileTransferStartUpload",
       source_component_uuid: componentUuid,
       transfer_uuid: transferUuid,
@@ -162,7 +165,7 @@ function useFileUpload({
       const chunk = file.slice(start, end);
       const buffer = await chunk.arrayBuffer();
 
-      viewer.sendMessageRef.current({
+      viewerMutable.sendMessage({
         type: "FileTransferPart",
         source_component_uuid: componentUuid,
         transfer_uuid: transferUuid,

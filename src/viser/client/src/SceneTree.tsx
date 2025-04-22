@@ -308,7 +308,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
               depthTest={message.props.depth_test}
               opacity={message.props.opacity}
               onDrag={(l) => {
-                const attrs = viewer.nodeAttributesFromName.current;
+                const attrs = viewer.mutable.current.nodeAttributesFromName;
                 if (attrs[message.name] === undefined) {
                   attrs[message.name] = {};
                 }
@@ -632,10 +632,13 @@ export function SceneNodeThreeObject(props: {
     false;
   const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
 
+  // Get viewer mutable once
+  const viewerMutable = viewer.mutable.current;
+
   // Update global registry of node objects.
   // This is used for updating bone transforms in skinned meshes.
   React.useEffect(() => {
-    if (obj !== null) viewer.nodeRefFromName.current[props.name] = obj;
+    if (obj !== null) viewerMutable.nodeRefFromName[props.name] = obj;
   }, [obj]);
 
   // Create object + children.
@@ -647,7 +650,7 @@ export function SceneNodeThreeObject(props: {
     if (makeObject === undefined) return null;
 
     // Pose will need to be updated.
-    const attrs = viewer.nodeAttributesFromName.current;
+    const attrs = viewerMutable.nodeAttributesFromName;
     if (!(props.name in attrs)) {
       attrs[props.name] = {};
     }
@@ -668,7 +671,7 @@ export function SceneNodeThreeObject(props: {
   function isDisplayed() {
     // We avoid checking obj.visible because obj may be unmounted when
     // unmountWhenInvisible=true.
-    const attrs = viewer.nodeAttributesFromName.current[props.name];
+    const attrs = viewerMutable.nodeAttributesFromName[props.name];
     const visibility =
       (attrs?.overrideVisibility === undefined
         ? attrs?.visibility
@@ -688,7 +691,7 @@ export function SceneNodeThreeObject(props: {
 
   // Pose needs to be updated whenever component is remounted.
   React.useEffect(() => {
-    const attrs = viewer.nodeAttributesFromName.current[props.name];
+    const attrs = viewerMutable.nodeAttributesFromName[props.name];
     if (attrs !== undefined) attrs.poseUpdateState = "needsUpdate";
   });
 
@@ -696,7 +699,7 @@ export function SceneNodeThreeObject(props: {
   // although this shouldn't be a bottleneck.
   useFrame(
     () => {
-      const attrs = viewer.nodeAttributesFromName.current[props.name];
+      const attrs = viewerMutable.nodeAttributesFromName[props.name];
 
       // Unmount when invisible.
       // Examples: <Html /> components, PivotControls.
@@ -761,8 +764,8 @@ export function SceneNodeThreeObject(props: {
   // Handle case where clickable is toggled to false while still hovered.
   if (!clickable && hoveredRef.current.isHovered) {
     hoveredRef.current.isHovered = false;
-    viewer.hoveredElementsCount.current--;
-    if (viewer.hoveredElementsCount.current === 0) {
+    viewerMutable.hoveredElementsCount--;
+    if (viewerMutable.hoveredElementsCount === 0) {
       document.body.style.cursor = "auto";
     }
   }
@@ -793,7 +796,7 @@ export function SceneNodeThreeObject(props: {
                   e.stopPropagation();
                   const state = dragInfo.current;
                   const canvasBbox =
-                    viewer.canvasRef.current!.getBoundingClientRect();
+                    viewerMutable.canvas!.getBoundingClientRect();
                   state.startClientX = e.clientX - canvasBbox.left;
                   state.startClientY = e.clientY - canvasBbox.top;
                   state.dragging = false;
@@ -807,7 +810,7 @@ export function SceneNodeThreeObject(props: {
                   e.stopPropagation();
                   const state = dragInfo.current;
                   const canvasBbox =
-                    viewer.canvasRef.current!.getBoundingClientRect();
+                    viewerMutable.canvas!.getBoundingClientRect();
                   const deltaX =
                     e.clientX - canvasBbox.left - state.startClientX;
                   const deltaY =
@@ -830,7 +833,7 @@ export function SceneNodeThreeObject(props: {
 
                   // Send OpenCV image coordinates to the server (normalized).
                   const canvasBbox =
-                    viewer.canvasRef.current!.getBoundingClientRect();
+                    viewerMutable.canvas!.getBoundingClientRect();
                   const mouseVectorOpenCV = opencvXyFromPointerXy(viewer, [
                     e.clientX - canvasBbox.left,
                     e.clientY - canvasBbox.top,
@@ -867,8 +870,8 @@ export function SceneNodeThreeObject(props: {
                   hoveredRef.current.instanceId = e.instanceId ?? null;
 
                   // Increment global hover count and update cursor
-                  viewer.hoveredElementsCount.current++;
-                  if (viewer.hoveredElementsCount.current === 1) {
+                  viewerMutable.hoveredElementsCount++;
+                  if (viewerMutable.hoveredElementsCount === 1) {
                     document.body.style.cursor = "pointer";
                   }
                 }
@@ -885,8 +888,8 @@ export function SceneNodeThreeObject(props: {
                   hoveredRef.current.instanceId = null;
 
                   // Decrement global hover count and update cursor if needed
-                  viewer.hoveredElementsCount.current--;
-                  if (viewer.hoveredElementsCount.current === 0) {
+                  viewerMutable.hoveredElementsCount--;
+                  if (viewerMutable.hoveredElementsCount === 0) {
                     document.body.style.cursor = "auto";
                   }
                 }
