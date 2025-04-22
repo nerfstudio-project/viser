@@ -4,7 +4,7 @@ import React, { useContext } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
 
-import { ViewerContext, ViewerMutable } from "./ViewerContext";
+import { ViewerContext } from "./ViewerContext";
 import {
   FileTransferPart,
   FileTransferStartDownload,
@@ -24,6 +24,7 @@ import { GaussianSplatsContext } from "./Splatting/GaussianSplatsHelpers";
 /** Returns a handler for all incoming messages. */
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
+  const viewerMutable = viewer.mutable.current;
 
   // We could reduce the redundancy here if we wanted to.
   // https://github.com/nerfstudio-project/viser/issues/39
@@ -44,7 +45,7 @@ function useMessageHandler() {
   // frame if it doesn't exist yet.
   function addSceneNodeMakeParents(message: SceneNodeMessage) {
     // Make sure scene node is in attributes.
-    const attrs = viewer.mutable.current.nodeAttributesFromName;
+    const attrs = viewerMutable.nodeAttributesFromName;
     attrs[message.name] = {
       overrideVisibility: attrs[message.name]?.overrideVisibility,
     };
@@ -83,7 +84,7 @@ function useMessageHandler() {
     if (isSceneNodeMessage(message)) {
       // Initialize skinned mesh state.
       if (message.type === "SkinnedMeshMessage") {
-        viewer.mutable.current.skinnedMeshState[message.name] = {
+        viewerMutable.skinnedMeshState[message.name] = {
           initialized: false,
           poses: [],
         };
@@ -103,7 +104,7 @@ function useMessageHandler() {
           ),
         );
         for (let i = 0; i < message.props.bone_wxyzs!.length; i++) {
-          viewer.mutable.current.skinnedMeshState[message.name].poses.push({
+          viewerMutable.skinnedMeshState[message.name].poses.push({
             wxyz: [
               bone_wxyzs[4 * i],
               bone_wxyzs[4 * i + 1],
@@ -136,8 +137,8 @@ function useMessageHandler() {
       }
       // Request a render.
       case "GetRenderRequestMessage": {
-        viewer.mutable.current.getRenderRequest = message;
-        viewer.mutable.current.getRenderRequestState = "triggered";
+        viewerMutable.getRenderRequest = message;
+        viewerMutable.getRenderRequestState = "triggered";
         return;
       }
       // Set the GUI panel label.
@@ -181,12 +182,12 @@ function useMessageHandler() {
       // Enable/disable whether scene pointer events are sent.
       case "ScenePointerEnableMessage": {
         // Update scene click enable state.
-        viewer.mutable.current.scenePointerInfo.enabled = message.enable
+        viewerMutable.scenePointerInfo.enabled = message.enable
           ? message.event_type
           : false;
 
         // Update cursor to indicate whether the scene can be clicked.
-        viewer.mutable.current.canvas!.style.cursor = message.enable
+        viewerMutable.canvas!.style.cursor = message.enable
           ? "pointer"
           : "auto";
         return;
@@ -219,18 +220,18 @@ function useMessageHandler() {
 
       // Set the bone poses.
       case "SetBoneOrientationMessage": {
-        const state = viewer.mutable.current.skinnedMeshState;
+        const state = viewerMutable.skinnedMeshState;
         state[message.name].poses[message.bone_index].wxyz = message.wxyz;
         break;
       }
       case "SetBonePositionMessage": {
-        const state = viewer.mutable.current.skinnedMeshState;
+        const state = viewerMutable.skinnedMeshState;
         state[message.name].poses[message.bone_index].position =
           message.position;
         break;
       }
       case "SetCameraLookAtMessage": {
-        const cameraControls = viewer.mutable.current.cameraControl!;
+        const cameraControls = viewerMutable.cameraControl!;
 
         const T_threeworld_world = computeT_threeworld_world(viewer);
         const target = new THREE.Vector3(
@@ -243,8 +244,8 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraUpDirectionMessage": {
-        const camera = viewer.mutable.current.camera!;
-        const cameraControls = viewer.mutable.current.cameraControl!;
+        const camera = viewerMutable.camera!;
+        const cameraControls = viewerMutable.cameraControl!;
         const T_threeworld_world = computeT_threeworld_world(viewer);
         const updir = new THREE.Vector3(
           message.position[0],
@@ -273,7 +274,7 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraPositionMessage": {
-        const cameraControls = viewer.mutable.current.cameraControl!;
+        const cameraControls = viewerMutable.cameraControl!;
 
         // Set the camera position. Due to the look-at, note that this will
         // shift the orientation as-well.
@@ -294,30 +295,29 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraFovMessage": {
-        const camera = viewer.mutable.current.camera!;
+        const camera = viewerMutable.camera!;
         // tan(fov / 2.0) = 0.5 * film height / focal length
         // focal length = 0.5 * film height / tan(fov / 2.0)
         camera.setFocalLength(
           (0.5 * camera.getFilmHeight()) / Math.tan(message.fov / 2.0),
         );
-        viewer.mutable.current.sendCamera !== null &&
-          viewer.mutable.current.sendCamera();
+        viewerMutable.sendCamera !== null && viewerMutable.sendCamera();
         return;
       }
       case "SetCameraNearMessage": {
-        const camera = viewer.mutable.current.camera!;
+        const camera = viewerMutable.camera!;
         camera.near = message.near;
         camera.updateProjectionMatrix();
         return;
       }
       case "SetCameraFarMessage": {
-        const camera = viewer.mutable.current.camera!;
+        const camera = viewerMutable.camera!;
         camera.far = message.far;
         camera.updateProjectionMatrix();
         return;
       }
       case "SetOrientationMessage": {
-        const attr = viewer.mutable.current.nodeAttributesFromName;
+        const attr = viewerMutable.nodeAttributesFromName;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.wxyz = message.wxyz;
         if (attr[message.name]!.poseUpdateState != "waitForMakeObject")
@@ -325,7 +325,7 @@ function useMessageHandler() {
         break;
       }
       case "SetPositionMessage": {
-        const attr = viewer.mutable.current.nodeAttributesFromName;
+        const attr = viewerMutable.nodeAttributesFromName;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.position = message.position;
         if (attr[message.name]!.poseUpdateState != "waitForMakeObject")
@@ -333,7 +333,7 @@ function useMessageHandler() {
         break;
       }
       case "SetSceneNodeVisibilityMessage": {
-        const attr = viewer.mutable.current.nodeAttributesFromName;
+        const attr = viewerMutable.nodeAttributesFromName;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.visibility = message.visible;
         break;
@@ -349,30 +349,26 @@ function useMessageHandler() {
           new TextureLoader().load(rgb_url, (texture) => {
             URL.revokeObjectURL(rgb_url);
             const oldBackgroundTexture =
-              viewer.mutable.current.backgroundMaterial!.uniforms.colorMap
-                .value;
-            viewer.mutable.current.backgroundMaterial!.uniforms.colorMap.value =
-              texture;
+              viewerMutable.backgroundMaterial!.uniforms.colorMap.value;
+            viewerMutable.backgroundMaterial!.uniforms.colorMap.value = texture;
 
             // Dispose the old background texture.
             if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
           });
 
-          viewer.mutable.current.backgroundMaterial!.uniforms.enabled.value =
-            true;
+          viewerMutable.backgroundMaterial!.uniforms.enabled.value = true;
         } else {
           // Dispose the old background texture.
           const oldBackgroundTexture =
-            viewer.mutable.current.backgroundMaterial!.uniforms.colorMap.value;
+            viewerMutable.backgroundMaterial!.uniforms.colorMap.value;
           if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
 
           // Disable the background.
-          viewer.mutable.current.backgroundMaterial!.uniforms.enabled.value =
-            false;
+          viewerMutable.backgroundMaterial!.uniforms.enabled.value = false;
         }
 
         // Set the depth texture.
-        viewer.mutable.current.backgroundMaterial!.uniforms.hasDepth.value =
+        viewerMutable.backgroundMaterial!.uniforms.hasDepth.value =
           message.depth_data !== null;
         if (message.depth_data !== null) {
           // If depth is available set the texture
@@ -384,10 +380,8 @@ function useMessageHandler() {
           new TextureLoader().load(depth_url, (texture) => {
             URL.revokeObjectURL(depth_url);
             const oldDepthTexture =
-              viewer.mutable.current.backgroundMaterial?.uniforms.depthMap
-                .value;
-            viewer.mutable.current.backgroundMaterial!.uniforms.depthMap.value =
-              texture;
+              viewerMutable.backgroundMaterial?.uniforms.depthMap.value;
+            viewerMutable.backgroundMaterial!.uniforms.depthMap.value = texture;
             if (isTexture(oldDepthTexture)) oldDepthTexture.dispose();
           });
         }
@@ -402,11 +396,11 @@ function useMessageHandler() {
           return;
         }
         removeSceneNode(message.name);
-        const attrs = viewer.mutable.current.nodeAttributesFromName;
+        const attrs = viewerMutable.nodeAttributesFromName;
         delete attrs[message.name];
 
-        if (viewer.mutable.current.skinnedMeshState[message.name] !== undefined)
-          delete viewer.mutable.current.skinnedMeshState[message.name];
+        if (viewerMutable.skinnedMeshState[message.name] !== undefined)
+          delete viewerMutable.skinnedMeshState[message.name];
         return;
       }
       // Set the clickability of a particular scene node.
@@ -573,22 +567,22 @@ function useFileDownloadHandler() {
 export function FrameSynchronizedMessageHandler() {
   const handleMessage = useMessageHandler();
   const viewer = useContext(ViewerContext)!;
-  const messageQueue = viewer.mutable.current.messageQueue;
+  const viewerMutable = viewer.mutable.current;
+  const messageQueue = viewerMutable.messageQueue;
   const splatContext = React.useContext(GaussianSplatsContext)!;
 
   useFrame(
     () => {
       // Send a render along if it was requested!
-      if (viewer.mutable.current.getRenderRequestState === "triggered") {
-        viewer.mutable.current.getRenderRequestState = "pause";
-      } else if (viewer.mutable.current.getRenderRequestState === "pause") {
-        const cameraPosition =
-          viewer.mutable.current.getRenderRequest!.position;
-        const cameraWxyz = viewer.mutable.current.getRenderRequest!.wxyz;
-        const cameraFov = viewer.mutable.current.getRenderRequest!.fov;
+      if (viewerMutable.getRenderRequestState === "triggered") {
+        viewerMutable.getRenderRequestState = "pause";
+      } else if (viewerMutable.getRenderRequestState === "pause") {
+        const cameraPosition = viewerMutable.getRenderRequest!.position;
+        const cameraWxyz = viewerMutable.getRenderRequest!.wxyz;
+        const cameraFov = viewerMutable.getRenderRequest!.fov;
 
-        const targetWidth = viewer.mutable.current.getRenderRequest!.width;
-        const targetHeight = viewer.mutable.current.getRenderRequest!.height;
+        const targetWidth = viewerMutable.getRenderRequest!.width;
+        const targetHeight = viewerMutable.getRenderRequest!.height;
 
         // Render the scene using the virtual camera
         const T_threeworld_world = computeT_threeworld_world(viewer);
@@ -647,13 +641,11 @@ export function FrameSynchronizedMessageHandler() {
         renderer.setSize(targetWidth, targetHeight);
         renderer.setClearColor(
           0xffffff,
-          viewer.refs.current.getRenderRequest!.format == "image/png"
-            ? 0.0
-            : 1.0,
+          viewerMutable.getRenderRequest!.format == "image/png" ? 0.0 : 1.0,
         ); // Set clear color to transparent
 
         // Render the scene.
-        renderer.render(viewer.mutable.current.scene!, camera);
+        renderer.render(viewerMutable.scene!, camera);
 
         // Restore splatting indices.
         if (sortedIndicesOrig !== null && splatMeshProps !== null) {
@@ -662,21 +654,21 @@ export function FrameSynchronizedMessageHandler() {
         }
 
         // Get the rendered image.
-        viewer.mutable.current.getRenderRequestState = "in_progress";
+        viewerMutable.getRenderRequestState = "in_progress";
         renderer.domElement.toBlob(async (blob) => {
           renderer.dispose();
           renderer.forceContextLoss();
 
-          viewer.mutable.current.sendMessage({
+          viewerMutable.sendMessage({
             type: "GetRenderResponseMessage",
             payload: new Uint8Array(await blob!.arrayBuffer()),
           });
-          viewer.mutable.current.getRenderRequestState = "ready";
-        }, viewer.mutable.current.getRenderRequest!.format);
+          viewerMutable.getRenderRequestState = "ready";
+        }, viewerMutable.getRenderRequest!.format);
       }
 
       // Handle messages, but only if we're not trying to render something.
-      if (viewer.mutable.current.getRenderRequestState === "ready") {
+      if (viewerMutable.getRenderRequestState === "ready") {
         // Handle messages before every frame.
         // Place this directly in ws.onmessage can cause race conditions!
         //
