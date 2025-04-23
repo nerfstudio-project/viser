@@ -44,7 +44,6 @@ const PointCloudMaterial = /* @__PURE__ */ shaderMaterial(
   `varying vec3 vPosition;
   varying vec3 vColor;
   uniform float point_ball_norm;
-  uniform vec3 uniformColor;
 
   void main() {
       if (point_ball_norm < 1000.0) {
