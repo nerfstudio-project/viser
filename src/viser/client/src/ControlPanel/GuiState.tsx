@@ -152,6 +152,7 @@ export function useGuiState(initialServer: string) {
             // state.label = cleanGuiState.label;
 
             // This feels brittle, could be cleaned up...
+            state.theme = cleanGuiState.theme;
             state.shareUrl = null;
             state.guiUuidSetFromContainerUuid = {};
             state.modals = [];
