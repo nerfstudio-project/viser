@@ -153,12 +153,13 @@ export function useGuiState(initialServer: string) {
 
             // This feels brittle, could be cleaned up...
             state.theme = cleanGuiState.theme;
-            state.shareUrl = null;
-            state.guiUuidSetFromContainerUuid = {};
-            state.modals = [];
-            state.guiOrderFromUuid = {};
-            state.guiConfigFromUuid = {};
-            state.uploadsInProgress = {};
+            state.shareUrl = cleanGuiState.shareUrl;
+            state.guiUuidSetFromContainerUuid =
+              cleanGuiState.guiUuidSetFromContainerUuid;
+            state.modals = cleanGuiState.modals;
+            state.guiOrderFromUuid = cleanGuiState.guiOrderFromUuid;
+            state.guiConfigFromUuid = cleanGuiState.guiConfigFromUuid;
+            state.uploadsInProgress = cleanGuiState.uploadsInProgress;
           }),
         updateUploadState: (state) =>
           set((globalState) => {
