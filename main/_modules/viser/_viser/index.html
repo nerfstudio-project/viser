@@ -410,7 +410,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_client_autobuild</span><span class="p">,</span> <span class="n">_messages</span><span class="p">,</span> <span class="n">infra</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">transforms</span> <span class="k">as</span> <span class="n">tf</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._gui_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">Color</span><span class="p">,</span> <span class="n">GuiApi</span><span class="p">,</span> <span class="n">_make_uuid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._gui_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">GuiApi</span><span class="p">,</span> <span class="n">LiteralColor</span><span class="p">,</span> <span class="n">_make_uuid</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._notification_handle</span><span class="w"> </span><span class="kn">import</span> <span class="n">NotificationHandle</span><span class="p">,</span> <span class="n">_NotificationHandleState</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._scene_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">SceneApi</span><span class="p">,</span> <span class="n">cast_vector</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._threadpool_exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_threadpool_errors</span>
@@ -862,7 +862,7 @@
         <span class="n">loading</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">with_close_button</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">auto_close</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">color</span><span class="p">:</span> <span class="n">Color</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">color</span><span class="p">:</span> <span class="n">LiteralColor</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NotificationHandle</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a notification to the client&#39;s interface.</span>
 
