@@ -451,6 +451,7 @@ export interface GuiProgressBarMessage {
       | "yellow"
       | "orange"
       | "teal"
+      | [number, number, number]
       | null;
     visible: boolean;
   };
@@ -532,6 +533,7 @@ export interface GuiButtonMessage {
       | "yellow"
       | "orange"
       | "teal"
+      | [number, number, number]
       | null;
     _icon_html: string | null;
   };
@@ -565,6 +567,7 @@ export interface GuiUploadButtonMessage {
       | "yellow"
       | "orange"
       | "teal"
+      | [number, number, number]
       | null;
     _icon_html: string | null;
     mime_type: string;
@@ -831,6 +834,7 @@ export interface NotificationMessage {
       | "yellow"
       | "orange"
       | "teal"
+      | [number, number, number]
       | null;
   };
 }

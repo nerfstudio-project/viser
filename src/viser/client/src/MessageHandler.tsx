@@ -3,6 +3,7 @@ import { notifications } from "@mantine/notifications";
 import React, { useContext } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
+import { toMantineColor } from "./utils/colors";
 
 import { ViewerContext } from "./ViewerContext";
 import {
@@ -53,7 +54,7 @@ function useMessageHandler() {
     // If the object is new or changed, we need to wait until it's created
     // before updating its pose. Updating the pose too early can cause
     // flickering when we replace objects (old object will take the pose of the new
-    // object while it's being loaded/mounted)
+    // object while it's being loaded/mounted).
     const oldMessage =
       viewer.useSceneTree.getState().nodeFromName[message.name]?.message;
     if (oldMessage === undefined || message !== oldMessage) {
@@ -169,7 +170,7 @@ function useMessageHandler() {
           withCloseButton: message.props.with_close_button,
           loading: message.props.loading,
           autoClose: message.props.auto_close,
-          color: message.props.color ?? undefined,
+          color: toMantineColor(message.props.color),
         });
         return;
       }
@@ -193,13 +194,13 @@ function useMessageHandler() {
         return;
       }
 
-      // Add an environment map
+      // Add an environment map.
       case "EnvironmentMapMessage": {
         viewer.useSceneTree.setState({ environmentMap: message });
         return;
       }
 
-      // Disable/enable default lighting
+      // Disable/enable default lighting.
       case "EnableLightsMessage": {
         viewer.useSceneTree.setState({
           enableDefaultLights: message.enabled,
