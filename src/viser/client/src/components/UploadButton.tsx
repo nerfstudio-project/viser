@@ -8,6 +8,7 @@ import { ViewerContext, ViewerContextContents } from "../ViewerContext";
 import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { htmlIconWrapper } from "./ComponentStyles.css";
+import { toMantineColor } from "../ColorUtils";
 
 export default function UploadButtonComponent({
   uuid,
@@ -39,7 +40,7 @@ export default function UploadButtonComponent({
       <Button
         id={uuid}
         fullWidth
-        color={color ?? undefined}
+        color={toMantineColor(color)}
         onClick={() => {
           if (fileUploadRef.current === null) return;
           fileUploadRef.current.value = fileUploadRef.current.defaultValue;
@@ -76,7 +77,7 @@ function useFileUpload({
   );
   const totalBytes = uploadState?.totalBytes;
 
-  // Cache total bytes string
+  // Cache total bytes string.
   const totalBytesString = React.useMemo(() => {
     if (totalBytes === undefined) return "";
     let displaySize = totalBytes;
@@ -132,6 +133,9 @@ function useFileUpload({
     uploadState.uploadedBytes < uploadState.totalBytes;
 
   async function upload(file: File) {
+    // Get viewer mutable once
+    const viewerMutable = viewer.mutable.current;
+
     const chunkSize = 512 * 1024; // bytes
     const numChunks = Math.ceil(file.size / chunkSize);
     const transferUuid = uuid();
@@ -146,7 +150,7 @@ function useFileUpload({
       notificationId,
     });
 
-    viewer.sendMessageRef.current({
+    viewerMutable.sendMessage({
       type: "FileTransferStartUpload",
       source_component_uuid: componentUuid,
       transfer_uuid: transferUuid,
@@ -162,7 +166,7 @@ function useFileUpload({
       const chunk = file.slice(start, end);
       const buffer = await chunk.arrayBuffer();
 
-      viewer.sendMessageRef.current({
+      viewerMutable.sendMessage({
         type: "FileTransferPart",
         source_component_uuid: componentUuid,
         transfer_uuid: transferUuid,

@@ -44,7 +44,6 @@ const PointCloudMaterial = /* @__PURE__ */ shaderMaterial(
   `varying vec3 vPosition;
   varying vec3 vColor;
   uniform float point_ball_norm;
-  uniform vec3 uniformColor;
 
   void main() {
       if (point_ball_norm < 1000.0) {
@@ -121,9 +120,9 @@ export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
       } else {
         material.vertexColors = false;
         material.uniforms.uniformColor.value = new THREE.Color(
-          props.colors[0],
-          props.colors[1],
-          props.colors[2],
+          props.colors[0] / 255.0,
+          props.colors[1] / 255.0,
+          props.colors[2] / 255.0,
         );
       }
 

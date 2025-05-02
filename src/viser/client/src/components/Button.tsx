@@ -5,6 +5,7 @@ import { Box } from "@mantine/core";
 import { Button } from "@mantine/core";
 import React from "react";
 import { htmlIconWrapper } from "./ComponentStyles.css";
+import { toMantineColor } from "../ColorUtils";
 
 export default function ButtonComponent({
   uuid,
@@ -18,7 +19,7 @@ export default function ButtonComponent({
       <Button
         id={uuid}
         fullWidth
-        color={color ?? undefined}
+        color={toMantineColor(color)}
         onClick={() =>
           messageSender({
             type: "GuiUpdateMessage",

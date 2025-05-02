@@ -8,8 +8,8 @@ import { WsWorkerIncoming, WsWorkerOutgoing } from "./WebsocketServerWorker";
 
 /** Component for handling websocket connections. */
 export function WebsocketMessageProducer() {
-  const messageQueueRef = useContext(ViewerContext)!.messageQueueRef;
   const viewer = useContext(ViewerContext)!;
+  const viewerMutable = viewer.mutable.current;
   const server = viewer.useGui((state) => state.server);
   const resetGui = viewer.useGui((state) => state.resetGui);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
@@ -25,13 +25,13 @@ export function WebsocketMessageProducer() {
         resetGui();
         resetScene();
         viewer.useGui.setState({ websocketConnected: true });
-        viewer.sendMessageRef.current = (message) => {
+        viewerMutable.sendMessage = (message) => {
           postToWorker({ type: "send", message: message });
         };
       } else if (data.type === "closed") {
         resetGui();
         viewer.useGui.setState({ websocketConnected: false });
-        viewer.sendMessageRef.current = (message) => {
+        viewerMutable.sendMessage = (message) => {
           console.log(
             `Tried to send ${message.type} but websocket is not connected!`,
           );
@@ -49,7 +49,7 @@ export function WebsocketMessageProducer() {
           });
         }
       } else if (data.type === "message_batch") {
-        messageQueueRef.current.push(...data.messages);
+        viewerMutable.messageQueue.push(...data.messages);
       }
     };
     function postToWorker(data: WsWorkerIncoming) {
@@ -58,7 +58,7 @@ export function WebsocketMessageProducer() {
     postToWorker({ type: "set_server", server: server });
     return () => {
       postToWorker({ type: "close" });
-      viewer.sendMessageRef.current = (message) =>
+      viewerMutable.sendMessage = (message) =>
         console.log(
           `Tried to send ${message.type} but websocket is not connected!`,
         );

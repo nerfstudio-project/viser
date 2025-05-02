@@ -81,7 +81,7 @@ TString = TypeVar("TString", bound=str)
 TLiteralString = TypeVar("TLiteralString", bound=LiteralString)
 T = TypeVar("T")
 LengthTenStrTuple: TypeAlias = Tuple[str, str, str, str, str, str, str, str, str, str]
-Color: TypeAlias = Literal[
+LiteralColor: TypeAlias = Literal[
     "dark",
     "gray",
     "red",
@@ -790,7 +790,7 @@ class GuiApi:
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
-        color: Color | None = None,
+        color: LiteralColor | tuple[int, int, int] | None = None,
         icon: IconName | None = None,
         order: float | None = None,
     ) -> GuiButtonHandle:
@@ -840,7 +840,7 @@ class GuiApi:
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
-        color: Color | None = None,
+        color: LiteralColor | tuple[int, int, int] | None = None,
         icon: IconName | None = None,
         mime_type: str = "*/*",
         order: float | None = None,
@@ -1306,7 +1306,7 @@ class GuiApi:
         value: float,
         visible: bool = True,
         animated: bool = False,
-        color: Color | None = None,
+        color: LiteralColor | tuple[int, int, int] | None = None,
         order: float | None = None,
     ) -> GuiProgressBarHandle:
         """Add a progress bar to the GUI.

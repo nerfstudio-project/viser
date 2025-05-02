@@ -1,5 +1,6 @@
 import { Box, Progress } from "@mantine/core";
 import { GuiProgressBarMessage } from "../WebsocketMessages";
+import { toMantineColor } from "../ColorUtils";
 
 export default function ProgressBarComponent({
   value,
@@ -10,7 +11,7 @@ export default function ProgressBarComponent({
     <Box pb="xs" px="xs">
       <Progress
         radius="xs"
-        color={color ?? undefined}
+        color={toMantineColor(color)}
         value={value}
         animated={animated}
         transitionDuration={0}

@@ -193,6 +193,7 @@ function ConnectionStatus() {
 
 function ShareButton() {
   const viewer = React.useContext(ViewerContext)!;
+  const viewerMutable = viewer.mutable.current; // Get mutable once
   const connected = viewer.useGui((state) => state.websocketConnected);
   const shareUrl = viewer.useGui((state) => state.shareUrl);
   const setShareUrl = viewer.useGui((state) => state.setShareUrl);
@@ -272,7 +273,7 @@ function ShareButton() {
                 <Button
                   fullWidth
                   onClick={() => {
-                    viewer.sendMessageRef.current({
+                    viewerMutable.sendMessage({
                       type: "ShareUrlRequest",
                     });
                     setDoingSomething(true); // Loader state will help with debouncing.
@@ -318,7 +319,7 @@ function ShareButton() {
                   <Button
                     color="red"
                     onClick={() => {
-                      viewer.sendMessageRef.current({
+                      viewerMutable.sendMessage({
                         type: "ShareUrlDisconnect",
                       });
                       setShareUrl(null);

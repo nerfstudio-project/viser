@@ -39,7 +39,7 @@ def main() -> None:
         wxyz=tf.SO3.from_x_radians(np.pi / 2).wxyz,
         position=(0.0, -2.0, 0.0),
     )
-    grid = server.scene.add_grid(
+    server.scene.add_grid(
         "grid",
         width=20.0,
         height=20.0,
@@ -59,28 +59,12 @@ def main() -> None:
     directional_light = server.scene.add_light_directional(
         name="/control0/directional_light",
         color=(186, 219, 173),
-        cast_shadow=True,
     )
     point_light = server.scene.add_light_point(
         name="/control1/point_light",
         color=(192, 255, 238),
         intensity=30.0,
-        cast_shadow=True,
     )
-
-    with server.gui.add_folder("Grid Shadows"):
-        # Create grid shadows toggle
-        grid_shadows = server.gui.add_slider(
-            "Intensity",
-            min=0.0,
-            max=1.0,
-            step=0.01,
-            initial_value=grid.shadow_opacity,
-        )
-
-        @grid_shadows.on_update
-        def _(_) -> None:
-            grid.shadow_opacity = grid_shadows.value
 
     # Create default light toggle.
     gui_default_lights = server.gui.add_checkbox("Default lights", initial_value=True)
@@ -89,14 +73,10 @@ def main() -> None:
     )
 
     gui_default_lights.on_update(
-        lambda _: server.scene.configure_default_lights(
-            gui_default_lights.value, gui_default_shadows.value
-        )
+        lambda _: server.scene.enable_default_lights(gui_default_lights.value)
     )
     gui_default_shadows.on_update(
-        lambda _: server.scene.configure_default_lights(
-            gui_default_lights.value, gui_default_shadows.value
-        )
+        lambda _: server.scene.enable_default_lights(gui_default_lights.value)
     )
 
     # Create light control inputs.
@@ -111,7 +91,6 @@ def main() -> None:
             step=0.01,
             initial_value=directional_light.intensity,
         )
-        gui_directional_shadows = server.gui.add_checkbox("Shadows", True)
 
         @gui_directional_color.on_update
         def _(_) -> None:
@@ -120,10 +99,6 @@ def main() -> None:
         @gui_directional_intensity.on_update
         def _(_) -> None:
             directional_light.intensity = gui_directional_intensity.value
-
-        @gui_directional_shadows.on_update
-        def _(_) -> None:
-            directional_light.cast_shadow = gui_directional_shadows.value
 
     with server.gui.add_folder("Point light"):
         gui_point_color = server.gui.add_rgb("Color", initial_value=point_light.color)
@@ -134,7 +109,6 @@ def main() -> None:
             step=0.01,
             initial_value=point_light.intensity,
         )
-        gui_point_shadows = server.gui.add_checkbox("Shadows", True)
 
         @gui_point_color.on_update
         def _(_) -> None:
@@ -143,10 +117,6 @@ def main() -> None:
         @gui_point_intensity.on_update
         def _(_) -> None:
             point_light.intensity = gui_point_intensity.value
-
-        @gui_point_shadows.on_update
-        def _(_) -> None:
-            point_light.cast_shadow = gui_point_shadows.value
 
     # Create GUI elements for controlling environment map.
     with server.gui.add_folder("Environment map"):
@@ -191,7 +161,7 @@ def main() -> None:
         )
 
     def update_environment_map(_) -> None:
-        server.scene.configure_environment_map(
+        server.scene.set_environment_map(
             gui_env_preset.value if gui_env_preset.value != "None" else None,
             background=gui_background.value,
             background_blurriness=gui_bg_blurriness.value,
