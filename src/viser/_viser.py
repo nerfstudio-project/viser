@@ -23,7 +23,7 @@ from typing_extensions import Literal
 
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
-from ._gui_api import Color, GuiApi, _make_uuid
+from ._gui_api import GuiApi, LiteralColor, _make_uuid
 from ._notification_handle import NotificationHandle, _NotificationHandleState
 from ._scene_api import SceneApi, cast_vector
 from ._threadpool_exceptions import print_threadpool_errors
@@ -453,7 +453,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         loading: bool = False,
         with_close_button: bool = True,
         auto_close: int | Literal[False] = False,
-        color: Color | None = None,
+        color: LiteralColor | tuple[int, int, int] | None = None,
     ) -> NotificationHandle:
         """Add a notification to the client's interface.
 

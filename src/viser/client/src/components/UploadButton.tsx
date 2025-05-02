@@ -8,6 +8,7 @@ import { ViewerContext, ViewerContextContents } from "../ViewerContext";
 import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { htmlIconWrapper } from "./ComponentStyles.css";
+import { toMantineColor } from "../ColorUtils";
 
 export default function UploadButtonComponent({
   uuid,
@@ -39,7 +40,7 @@ export default function UploadButtonComponent({
       <Button
         id={uuid}
         fullWidth
-        color={color ?? undefined}
+        color={toMantineColor(color)}
         onClick={() => {
           if (fileUploadRef.current === null) return;
           fileUploadRef.current.value = fileUploadRef.current.defaultValue;
@@ -76,7 +77,7 @@ function useFileUpload({
   );
   const totalBytes = uploadState?.totalBytes;
 
-  // Cache total bytes string
+  // Cache total bytes string.
   const totalBytesString = React.useMemo(() => {
     if (totalBytes === undefined) return "";
     let displaySize = totalBytes;

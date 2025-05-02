@@ -49,12 +49,7 @@ def main() -> None:
                 "Text",
                 initial_value="Hello world",
             )
-            gui_text_multiline = server.gui.add_text(
-                "Text area",
-                initial_value="Hello\nWorld",
-                multiline=True,
-            )
-            gui_button = server.gui.add_button("Button")
+            gui_button = server.gui.add_button("Button", icon=viser.Icon.MOUSE)
             gui_checkbox_disable = server.gui.add_checkbox(
                 "Disable",
                 initial_value=False,
@@ -106,19 +101,16 @@ def main() -> None:
         server.scene.add_point_cloud(
             "/point_cloud",
             points=point_positions * np.array(gui_vector3.value, dtype=np.float32),
-            colors=(
-                np.tile(gui_rgb.value, point_positions.shape[0]).reshape((-1, 3))
-                * color_coeffs[:, None]
-            ).astype(np.uint8),
+            colors=(np.array(gui_rgb.value) * color_coeffs[:, None]).astype(np.uint8),
             position=gui_vector2.value + (0,),
             point_shape="circle",
         )
+        gui_button.color = gui_rgb.value
 
         gui_progress.value = float((counter % 100))
 
         # We can use `.visible` and `.disabled` to toggle GUI elements.
         gui_text.visible = not gui_checkbox_hide.value
-        gui_text_multiline.visible = not gui_checkbox_hide.value
         gui_button.visible = not gui_checkbox_hide.value
         gui_rgb.disabled = gui_checkbox_disable.value
         gui_button.disabled = gui_checkbox_disable.value

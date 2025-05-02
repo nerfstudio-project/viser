@@ -20,7 +20,7 @@ class GuiSliderMark:
     label: Optional[str]
 
 
-Color = Literal[
+LiteralColor = Literal[
     "dark",
     "gray",
     "red",
@@ -158,7 +158,7 @@ class NotificationProps:
     """Whether to show a close button. Synchronized automatically when assigned."""
     auto_close: Union[int, Literal[False]]
     """Time in milliseconds after which the notification should auto-close, or False to disable auto-close. Synchronized automatically when assigned."""
-    color: Optional[Color]
+    color: Union[LiteralColor, Tuple[int, int, int], None]
     """Color of the notification. Synchronized automatically when assigned."""
 
 
@@ -971,7 +971,7 @@ class GuiProgressBarProps:
     """Order value for arranging GUI elements. Synchronized automatically when assigned."""
     animated: bool
     """Whether the progress bar should be animated. Synchronized automatically when assigned."""
-    color: Optional[Color]
+    color: Union[LiteralColor, Tuple[int, int, int], None]
     """Color of the progress bar. Synchronized automatically when assigned."""
     visible: bool
     """Visibility state of the progress bar. Synchronized automatically when assigned."""
@@ -1064,7 +1064,7 @@ class GuiCloseModalMessage(Message):
 
 @dataclasses.dataclass
 class GuiButtonProps(GuiBaseProps):
-    color: Optional[Color]
+    color: Union[LiteralColor, Tuple[int, int, int], None]
     """Color of the button. Synchronized automatically when assigned."""
     _icon_html: Optional[str]
     """(Private) HTML string for the icon to be displayed on the button. Synchronized automatically when assigned."""
@@ -1079,7 +1079,7 @@ class GuiButtonMessage(_CreateGuiComponentMessage):
 
 @dataclasses.dataclass
 class GuiUploadButtonProps(GuiBaseProps):
-    color: Optional[Color]
+    color: Union[LiteralColor, Tuple[int, int, int], None]
     """Color of the upload button. Synchronized automatically when assigned."""
     _icon_html: Optional[str]
     """(Private) HTML string for the icon to be displayed on the upload button. Synchronized automatically when assigned."""
