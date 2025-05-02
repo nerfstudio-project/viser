@@ -1,6 +1,6 @@
 import { Box, Progress } from "@mantine/core";
 import { GuiProgressBarMessage } from "../WebsocketMessages";
-import { toMantineColor } from "../utils/colors";
+import { toMantineColor } from "../ColorUtils";
 
 export default function ProgressBarComponent({
   value,

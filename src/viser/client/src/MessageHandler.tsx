@@ -3,7 +3,7 @@ import { notifications } from "@mantine/notifications";
 import React, { useContext } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
-import { toMantineColor } from "./utils/colors";
+import { toMantineColor } from "./ColorUtils";
 
 import { ViewerContext } from "./ViewerContext";
 import {

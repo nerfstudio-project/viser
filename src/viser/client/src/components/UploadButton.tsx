@@ -8,7 +8,7 @@ import { ViewerContext, ViewerContextContents } from "../ViewerContext";
 import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { htmlIconWrapper } from "./ComponentStyles.css";
-import { toMantineColor } from "../utils/colors";
+import { toMantineColor } from "../ColorUtils";
 
 export default function UploadButtonComponent({
   uuid,

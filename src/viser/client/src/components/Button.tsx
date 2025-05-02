@@ -5,7 +5,7 @@ import { Box } from "@mantine/core";
 import { Button } from "@mantine/core";
 import React from "react";
 import { htmlIconWrapper } from "./ComponentStyles.css";
-import { toMantineColor } from "../utils/colors";
+import { toMantineColor } from "../ColorUtils";
 
 export default function ButtonComponent({
   uuid,
