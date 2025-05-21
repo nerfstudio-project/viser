@@ -485,6 +485,7 @@ export interface GuiImageMessage {
     _data: Uint8Array | null;
     media_type: "image/jpeg" | "image/png";
     visible: boolean;
+    _clickable: boolean;
   };
 }
 /** GuiTabGroupMessage(uuid: 'str', container_uuid: 'str', props: 'GuiTabGroupProps')
