@@ -132,7 +132,7 @@ class SceneNodeHandle(OverridablePropsBase[_SceneNodeHandleState]):
         return out
 
     @property
-    def wxyz(self) -> np.ndarray:
+    def wxyz(self) -> npt.NDArray[np.float32]:
         """Orientation of the scene node. This is the quaternion representation of the R
         in `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """
@@ -152,7 +152,7 @@ class SceneNodeHandle(OverridablePropsBase[_SceneNodeHandleState]):
         )
 
     @property
-    def position(self) -> np.ndarray:
+    def position(self) -> npt.NDArray[np.float32]:
         """Position of the scene node. This is equivalent to the t in
         `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """
@@ -486,7 +486,7 @@ class MeshSkinnedBoneHandle:
     _impl: BoneState
 
     @property
-    def wxyz(self) -> np.ndarray:
+    def wxyz(self) -> npt.NDArray[np.float32]:
         """Orientation of the bone. This is the quaternion representation of the R
         in `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """
@@ -508,7 +508,7 @@ class MeshSkinnedBoneHandle:
         )
 
     @property
-    def position(self) -> np.ndarray:
+    def position(self) -> npt.NDArray[np.float32]:
         """Position of the bone. This is equivalent to the t in
         `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """

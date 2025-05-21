@@ -43,6 +43,7 @@ class OverridablePropsBase(Generic[TImpl]):
         elif hint == npt.NDArray[np.float16]:
             return value.astype(np.float16)
         if hint == npt.NDArray[np.uint8] and "color" in prop_name:
+            # ^TODO: revisit name heuristic here...
             value = colors_to_uint8(value)
         return value
 
@@ -59,39 +60,38 @@ def props_setattr(self, name: str, value: Any) -> None:
     if name == "_impl":
         return object.__setattr__(self, name, value)
 
-    # If it's a property with a setter, use the setter
+    # If it's a property with a setter, use the setter.
     prop = getattr(self.__class__, name, None)
     if isinstance(prop, property) and prop.fset is not None:
         prop.fset(self, value)
         return
 
-    # Try to handle as a props field
+    # Try to handle as a props field.
     if name in self._prop_hints:
-        # Handle array type casting
+        # Handle array type casting.
         if isinstance(value, np.ndarray):
             value = self._cast_array_dtypes(self._prop_hints, name, value)
 
         current_value = getattr(self._impl.props, name)
 
-        # Skip update if value hasn't changed
+        # Skip update if value hasn't changed.
         if isinstance(current_value, np.ndarray):
             if np.array_equal(current_value, value):
                 return
         elif current_value == value:
             return
 
-        # Update the value based on type
+        # Update the value based on type.
         if isinstance(value, np.ndarray):
             if hasattr(current_value, "dtype"):
-                # Ensure consistent dtype
+                # Ensure consistent dtype.
                 if value.dtype != current_value.dtype:
                     value = value.astype(current_value.dtype)
 
+            # In-place update for same shape arrays.
             if hasattr(current_value, "shape") and value.shape == current_value.shape:
-                # In-place update for same shape arrays
                 current_value[:] = value
             else:
-                # Replace for different shape arrays
                 setattr(self._impl.props, name, value.copy())
         else:
             # Non-array properties

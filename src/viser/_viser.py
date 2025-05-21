@@ -168,8 +168,7 @@ class CameraHandle:
 
     @position.setter
     def position(self, position: tuple[float, float, float] | np.ndarray) -> None:
-        position_array = np.asarray(position)
-
+        position_array = np.asarray(position).astype(np.float64)
         if np.allclose(position_array, self._state.position):
             return
         offset = position_array - np.array(self.position)  # type: ignore
@@ -276,7 +275,7 @@ class CameraHandle:
 
     @look_at.setter
     def look_at(self, look_at: tuple[float, float, float] | np.ndarray) -> None:
-        look_at_array = np.asarray(look_at)
+        look_at_array = np.asarray(look_at).astype(np.float64)
         if np.allclose(self._state.look_at, look_at_array):
             return
         self._state.look_at = look_at_array
