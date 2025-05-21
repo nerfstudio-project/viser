@@ -19,7 +19,6 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-import numpy.typing as onpt
 from typing_extensions import Self, override
 
 from . import _messages

@@ -17,6 +17,7 @@ from typing import (
     Literal,
     Tuple,
     TypeVar,
+    override,
 )
 
 import imageio.v3 as iio
@@ -112,7 +113,6 @@ class _GuiHandleState(Generic[T]):
 
 
 class _GuiHandle(Generic[T], OverridablePropsBase[_GuiHandleState]):
-    # Let's shove private implementation details in here...
     def __init__(self, _impl: _GuiHandleState[T]) -> None:
         self._impl = _impl
         parent = self._impl.gui_api._container_handle_from_uuid[
@@ -122,6 +122,12 @@ class _GuiHandle(Generic[T], OverridablePropsBase[_GuiHandleState]):
 
         if isinstance(self, _GuiInputHandle):
             self._impl.gui_api._gui_input_handle_from_uuid[self._impl.uuid] = self
+
+    @override
+    def _queue_update(self, name: str, value: Any) -> None:
+        self._impl.gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(self._impl.uuid, {name: value})
+        )
 
     def remove(self) -> None:
         """Permanently remove this GUI element from the visualizer."""

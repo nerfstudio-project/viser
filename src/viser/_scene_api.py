@@ -108,9 +108,9 @@ TVector = TypeVar("TVector", bound=tuple)
 
 def cast_vector(vector: TVector | np.ndarray, length: int) -> TVector:
     if not isinstance(vector, tuple):
-        assert cast(np.ndarray, vector).shape == (
-            length,
-        ), f"Expected vector of shape {(length,)}, but got {vector.shape} instead"
+        assert cast(np.ndarray, vector).shape == (length,), (
+            f"Expected vector of shape {(length,)}, but got {vector.shape} instead"
+        )
     return cast(TVector, tuple(map(float, vector)))
 
 
@@ -1099,9 +1099,9 @@ class SceneApi:
             Handle for manipulating scene node.
         """
         colors_cast = colors_to_uint8(np.asarray(colors))
-        assert (
-            len(points.shape) == 2 and points.shape[-1] == 3
-        ), "Shape of points should be (N, 3)."
+        assert len(points.shape) == 2 and points.shape[-1] == 3, (
+            "Shape of points should be (N, 3)."
+        )
         assert colors_cast.shape in {
             points.shape,
             (3,),

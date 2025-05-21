@@ -11,7 +11,7 @@ import numpy.typing as npt
 
 
 class HasProps(Protocol):
-    props: Any
+    props: Any  # One of the `*Props` objects in _messages.py.
 
 
 TImpl = TypeVar("TImpl", bound=HasProps)
