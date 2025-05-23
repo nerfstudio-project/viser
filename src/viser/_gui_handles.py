@@ -24,6 +24,7 @@ import imageio.v3 as iio
 import numpy as np
 from typing_extensions import Protocol
 
+from ._assignable_props_api import AssignablePropsBase
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
 from ._messages import (
@@ -51,7 +52,6 @@ from ._messages import (
     GuiVector2Props,
     GuiVector3Props,
 )
-from ._overridable_props_api import OverridablePropsBase
 from ._scene_api import _encode_image_binary
 from .infra import ClientId
 
@@ -112,7 +112,7 @@ class _GuiHandleState(Generic[T]):
     removed: bool = False
 
 
-class _GuiHandle(Generic[T], OverridablePropsBase[_GuiHandleState]):
+class _GuiHandle(Generic[T], AssignablePropsBase[_GuiHandleState]):
     def __init__(self, _impl: _GuiHandleState[T]) -> None:
         self._impl = _impl
         parent = self._impl.gui_api._container_handle_from_uuid[

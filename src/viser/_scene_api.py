@@ -14,7 +14,7 @@ from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
 from . import _messages
 from . import transforms as tf
-from ._overridable_props_api import colors_to_uint8
+from ._assignable_props_api import colors_to_uint8
 from ._scene_handles import (
     AmbientLightHandle,
     BatchedAxesHandle,

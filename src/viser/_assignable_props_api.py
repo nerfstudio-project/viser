@@ -28,8 +28,8 @@ def colors_to_uint8(colors: np.ndarray) -> npt.NDArray[np.uint8]:
     return colors
 
 
-class OverridablePropsBase(Generic[TImpl]):
-    """Base class for all API objects with overridable properties."""
+class AssignablePropsBase(Generic[TImpl]):
+    """Base class for all API objects with assignable properties."""
 
     _impl: TImpl
 
@@ -111,5 +111,5 @@ def props_getattr(self, name: str) -> Any:
         )
 
 
-OverridablePropsBase.__setattr__ = props_setattr  # type: ignore
-OverridablePropsBase.__getattr__ = props_getattr  # type: ignore
+AssignablePropsBase.__setattr__ = props_setattr  # type: ignore
+AssignablePropsBase.__getattr__ = props_getattr  # type: ignore

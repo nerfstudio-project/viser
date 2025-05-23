@@ -20,7 +20,7 @@ class NotificationHandle(NotificationProps):
     def __init__(self, impl: _NotificationHandleState) -> None:
         self._impl = impl
 
-    # Support property-style read/write. Similar to `_OverridableScenePropsApi`.
+    # Support property-style read/write. Similar to `_AssignablePropsApi`.
     if not TYPE_CHECKING:
 
         def __setattr__(self, name: str, value: Any) -> None:

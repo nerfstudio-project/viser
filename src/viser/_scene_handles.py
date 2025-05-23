@@ -22,7 +22,7 @@ import numpy.typing as npt
 from typing_extensions import Self, override
 
 from . import _messages
-from ._overridable_props_api import OverridablePropsBase
+from ._assignable_props_api import AssignablePropsBase
 from .infra._infra import WebsockClientConnection, WebsockServer
 
 if TYPE_CHECKING:
@@ -85,7 +85,7 @@ class _SceneNodeMessage(Protocol):
     props: Any
 
 
-class SceneNodeHandle(OverridablePropsBase[_SceneNodeHandleState]):
+class SceneNodeHandle(AssignablePropsBase[_SceneNodeHandleState]):
     """Handle base class for interacting with scene nodes."""
 
     def __init__(self, impl: _SceneNodeHandleState) -> None:
