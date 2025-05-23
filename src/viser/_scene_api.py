@@ -14,6 +14,7 @@ from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
 from . import _messages
 from . import transforms as tf
+from ._assignable_props_api import colors_to_uint8
 from ._scene_handles import (
     AmbientLightHandle,
     BatchedAxesHandle,
@@ -46,7 +47,6 @@ from ._scene_handles import (
     TransformControlsHandle,
     _ClickableSceneNodeHandle,
     _TransformControlsState,
-    colors_to_uint8,
 )
 from ._threadpool_exceptions import print_threadpool_errors
 

@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any, Literal
+
+from typing_extensions import override
+
+from viser._assignable_props_api import AssignablePropsBase
 
 from ._messages import NotificationMessage, NotificationProps, RemoveNotificationMessage
 from .infra._infra import WebsockClientConnection
@@ -14,29 +18,22 @@ class _NotificationHandleState:
     props: NotificationProps
 
 
-class NotificationHandle(NotificationProps):
+class NotificationHandle(
+    NotificationProps, AssignablePropsBase[_NotificationHandleState]
+):
     """Handle for a notification in our visualizer."""
 
     def __init__(self, impl: _NotificationHandleState) -> None:
         self._impl = impl
 
-    # Support property-style read/write. Similar to `_OverridableScenePropApi`.
-    if not TYPE_CHECKING:
-
-        def __setattr__(self, name: str, value: Any) -> None:
-            if name in NotificationProps.__annotations__:
-                setattr(self._impl.props, name, value)
-                self._sync_with_client("update")
-            else:
-                return object.__setattr__(self, name, value)
-
-        def __getattr__(self, name: str) -> Any:
-            if name in NotificationProps.__annotations__:
-                return getattr(self._impl.props, name)
-            else:
-                raise AttributeError(
-                    f"'{self.__class__.__name__}' object has no attribute '{name}'"
-                )
+    @override
+    def _queue_update(self, name: str, value: Any) -> None:
+        """Queue an update message with the property change."""
+        # For notifications, we'll just send the whole props object when a
+        # property is reassigned. Deduplication in the message buffer will
+        # debounce this when multiple properties are updated in succession.
+        del name, value
+        self._sync_with_client("update")
 
     def _sync_with_client(self, mode: Literal["show", "update"]) -> None:
         msg = NotificationMessage(mode, self._impl.uuid, self._impl.props)

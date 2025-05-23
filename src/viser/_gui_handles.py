@@ -7,27 +7,23 @@ import time
 import uuid
 import warnings
 from collections.abc import Coroutine
-from functools import cached_property
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Dict,
     Generic,
     Iterable,
     Literal,
     Tuple,
     TypeVar,
-    cast,
-    get_type_hints,
 )
 
 import imageio.v3 as iio
 import numpy as np
-from typing_extensions import Protocol
+from typing_extensions import Protocol, override
 
-from . import _messages
+from ._assignable_props_api import AssignablePropsBase
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
 from ._messages import (
@@ -115,51 +111,7 @@ class _GuiHandleState(Generic[T]):
     removed: bool = False
 
 
-class _OverridableGuiPropApi:
-    """Mixin that allows reading/assigning properties defined in each scene node message."""
-
-    def __setattr__(self, name: str, value: Any) -> None:
-        if name == "_impl":
-            return object.__setattr__(self, name, value)
-
-        # If it's a property with a setter, use the setter
-        prop = getattr(self.__class__, name, None)
-        if isinstance(prop, property) and prop.fset is not None:
-            prop.fset(self, value)
-            return
-
-        # Otherwise, look for the field in the general props struct.
-        handle = cast(_GuiInputHandle, self)
-        # Get the value of the T TypeVar.
-        if name in self._prop_hints:
-            if getattr(handle._impl.props, name) == value:
-                # Do nothing. Assumes equality is defined for the prop value.
-                return
-            setattr(handle._impl.props, name, value)
-            handle._impl.gui_api._websock_interface.queue_message(
-                _messages.GuiUpdateMessage(handle._impl.uuid, {name: value})
-            )
-        else:
-            return object.__setattr__(self, name, value)
-
-    def __getattr__(self, name: str) -> Any:
-        if name in self._prop_hints:
-            return getattr(self._impl.props, name)
-        else:
-            raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute '{name}'"
-            )
-
-    @cached_property
-    def _prop_hints(self) -> Dict[str, Any]:
-        return get_type_hints(type(self._impl.props))
-
-
-class _GuiHandle(
-    Generic[T],
-    _OverridableGuiPropApi if not TYPE_CHECKING else object,
-):
-    # Let's shove private implementation details in here...
+class _GuiHandle(Generic[T], AssignablePropsBase[_GuiHandleState]):
     def __init__(self, _impl: _GuiHandleState[T]) -> None:
         self._impl = _impl
         parent = self._impl.gui_api._container_handle_from_uuid[
@@ -169,6 +121,12 @@ class _GuiHandle(
 
         if isinstance(self, _GuiInputHandle):
             self._impl.gui_api._gui_input_handle_from_uuid[self._impl.uuid] = self
+
+    @override
+    def _queue_update(self, name: str, value: Any) -> None:
+        self._impl.gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(self._impl.uuid, {name: value})
+        )
 
     def remove(self) -> None:
         """Permanently remove this GUI element from the visualizer."""
