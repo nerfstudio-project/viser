@@ -17,12 +17,11 @@ from typing import (
     Literal,
     Tuple,
     TypeVar,
-    override,
 )
 
 import imageio.v3 as iio
 import numpy as np
-from typing_extensions import Protocol
+from typing_extensions import Protocol, override
 
 from ._assignable_props_api import AssignablePropsBase
 from ._icons import svg_from_icon
