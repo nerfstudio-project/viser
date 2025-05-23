@@ -391,7 +391,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Coroutine</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">TYPE_CHECKING</span><span class="p">,</span>
     <span class="n">Any</span><span class="p">,</span>
@@ -406,10 +405,11 @@
 <span class="p">)</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">onpt</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Self</span><span class="p">,</span> <span class="n">get_type_hints</span><span class="p">,</span> <span class="n">override</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">npt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Self</span><span class="p">,</span> <span class="n">override</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_messages</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._assignable_props_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">AssignablePropsBase</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.infra._infra</span><span class="w"> </span><span class="kn">import</span> <span class="n">WebsockClientConnection</span><span class="p">,</span> <span class="n">WebsockServer</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
@@ -417,85 +417,6 @@
     <span class="kn">from</span><span class="w"> </span><span class="nn">._scene_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">SceneApi</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">._viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientHandle</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.infra</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientId</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">colors_to_uint8</span><span class="p">(</span><span class="n">colors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert intensity values to uint8. We assume the range [0,1] for floats, and</span>
-<span class="sd">    [0,255] for integers. Accepts any shape.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">colors</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">colors</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
-            <span class="n">colors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">colors</span> <span class="o">*</span> <span class="mf">255.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">colors</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
-            <span class="n">colors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">colors</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">colors</span>
-
-
-<span class="k">class</span><span class="w"> </span><span class="nc">_HasCastArrayDtypes</span><span class="p">:</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_cast_array_dtypes</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">prop_hints</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">prop_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper used by __setattr__, which casts assigned values to the</span>
-<span class="sd">        correct type.&quot;&quot;&quot;</span>
-        <span class="n">hint</span> <span class="o">=</span> <span class="n">prop_hints</span><span class="p">[</span><span class="n">prop_name</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">hint</span> <span class="o">==</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]:</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">hint</span> <span class="o">==</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">]:</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">hint</span> <span class="o">==</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]</span> <span class="ow">and</span> <span class="s2">&quot;color&quot;</span> <span class="ow">in</span> <span class="n">prop_name</span><span class="p">:</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">colors_to_uint8</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">value</span>
-
-
-<span class="k">class</span><span class="w"> </span><span class="nc">_OverridableScenePropApi</span><span class="p">(</span><span class="n">_HasCastArrayDtypes</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mixin that allows reading/assigning properties defined in each scene</span>
-<span class="sd">    node message.&quot;&quot;&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;_impl&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-
-        <span class="n">handle</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">SceneNodeHandle</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
-        <span class="c1"># Get the value of the T TypeVar.</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prop_hints</span><span class="p">:</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cast_array_dtypes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prop_hints</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-
-            <span class="n">current_value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">handle</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">props</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-
-            <span class="c1"># Do nothing if the value hasn&#39;t changed.</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">current_value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">current_value</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="n">value</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-                    <span class="k">return</span>
-            <span class="k">elif</span> <span class="n">current_value</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
-                <span class="k">return</span>
-
-            <span class="c1"># Update the value.</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-                <span class="k">assert</span> <span class="n">value</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">current_value</span><span class="o">.</span><span class="n">dtype</span>
-                <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">current_value</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-                    <span class="n">current_value</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">value</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="nb">setattr</span><span class="p">(</span><span class="n">handle</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">props</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Non-array properties should be immutable, so no need to copy.</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="n">handle</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">props</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-
-            <span class="n">handle</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
-                <span class="n">_messages</span><span class="o">.</span><span class="n">SceneNodeUpdateMessage</span><span class="p">(</span><span class="n">handle</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prop_hints</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">props</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; object has no attribute &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
-            <span class="p">)</span>
-
-    <span class="nd">@cached_property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_prop_hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">props</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="ScenePointerEvent">
@@ -556,11 +477,17 @@
 
 <div class="viewcode-block" id="SceneNodeHandle">
 <a class="viewcode-back" href="../../../scene_handles/#viser.SceneNodeHandle">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">SceneNodeHandle</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SceneNodeHandle</span><span class="p">(</span><span class="n">AssignablePropsBase</span><span class="p">[</span><span class="n">_SceneNodeHandleState</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle base class for interacting with scene nodes.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">impl</span><span class="p">:</span> <span class="n">_SceneNodeHandleState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span> <span class="o">=</span> <span class="n">impl</span>
+
+    <span class="nd">@override</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_queue_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
+            <span class="n">_messages</span><span class="o">.</span><span class="n">SceneNodeUpdateMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+        <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -596,7 +523,7 @@
         <span class="k">return</span> <span class="n">out</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Orientation of the scene node. This is the quaternion representation of the R</span>
 <span class="sd">        in `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -616,7 +543,7 @@
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Position of the scene node. This is equivalent to the t in</span>
 <span class="sd">        `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -762,7 +689,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">CameraFrustumHandle</span><span class="p">(</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">CameraFrustumProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for camera frustums.&quot;&quot;&quot;</span>
 
@@ -832,7 +758,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">DirectionalLightHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">DirectionalLightProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for directional lights.&quot;&quot;&quot;</span></div>
 
@@ -843,7 +768,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">AmbientLightHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">AmbientLightProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for ambient lights.&quot;&quot;&quot;</span></div>
 
@@ -854,7 +778,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">HemisphereLightHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">HemisphereLightProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for hemisphere lights.&quot;&quot;&quot;</span></div>
 
@@ -865,7 +788,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">PointLightHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">PointLightProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for point lights.&quot;&quot;&quot;</span></div>
 
@@ -876,7 +798,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">RectAreaLightHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">RectAreaLightProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for rectangular area lights.&quot;&quot;&quot;</span></div>
 
@@ -887,7 +808,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">SpotLightHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">SpotLightProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for spot lights.&quot;&quot;&quot;</span></div>
 
@@ -898,8 +818,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">PointCloudHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">PointCloudProps</span><span class="p">,</span>
-    <span class="c1"># We need `_HasCastArrayDtypes` here for type checking on `_cast_array_dtypes`.</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="n">_HasCastArrayDtypes</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for point clouds. Does not support click events.&quot;&quot;&quot;</span>
 
@@ -924,7 +842,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">BatchedAxesHandle</span><span class="p">(</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">BatchedAxesProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for batched coordinate frames.&quot;&quot;&quot;</span></div>
 
@@ -935,7 +852,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">FrameHandle</span><span class="p">(</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">FrameProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for coordinate frames.&quot;&quot;&quot;</span></div>
 
@@ -946,7 +862,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">MeshHandle</span><span class="p">(</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">MeshProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for mesh objects.&quot;&quot;&quot;</span></div>
 
@@ -957,7 +872,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">BatchedMeshHandle</span><span class="p">(</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">BatchedMeshesProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for batched mesh objects.&quot;&quot;&quot;</span></div>
 
@@ -968,7 +882,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">BatchedGlbHandle</span><span class="p">(</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">BatchedGlbProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for batched GLB objects.&quot;&quot;&quot;</span></div>
 
@@ -979,7 +892,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">GaussianSplatHandle</span><span class="p">(</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">GaussianSplatsProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for Gaussian splatting objects.</span>
 
@@ -993,7 +905,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">MeshSkinnedHandle</span><span class="p">(</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">SkinnedMeshProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for skinned mesh objects.&quot;&quot;&quot;</span>
 
@@ -1023,7 +934,7 @@
     <span class="n">_impl</span><span class="p">:</span> <span class="n">BoneState</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Orientation of the bone. This is the quaternion representation of the R</span>
 <span class="sd">        in `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1045,7 +956,7 @@
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Position of the bone. This is equivalent to the t in</span>
 <span class="sd">        `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1073,7 +984,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">GridHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">GridProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for grid objects.&quot;&quot;&quot;</span></div>
 
@@ -1082,7 +992,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">LineSegmentsHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">LineSegmentsProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for line segments objects.&quot;&quot;&quot;</span>
 
@@ -1092,7 +1001,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">SplineCatmullRomHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">CatmullRomSplineProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for Catmull-Rom splines.&quot;&quot;&quot;</span></div>
 
@@ -1103,7 +1011,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">SplineCubicBezierHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">CubicBezierSplineProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for cubic Bezier splines.&quot;&quot;&quot;</span></div>
 
@@ -1114,7 +1021,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">GlbHandle</span><span class="p">(</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">GlbProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for GLB objects.&quot;&quot;&quot;</span></div>
 
@@ -1125,7 +1031,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">ImageHandle</span><span class="p">(</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">ImageProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for 2D images, rendered in 3D.&quot;&quot;&quot;</span>
 
@@ -1156,7 +1061,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">LabelHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">LabelProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for 2D label objects. Does not support click events.&quot;&quot;&quot;</span></div>
 
@@ -1174,7 +1078,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">TransformControlsHandle</span><span class="p">(</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">TransformControlsProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for interacting with transform control gizmos.&quot;&quot;&quot;</span>
 
@@ -1236,7 +1139,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">Gui3dContainerHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">Gui3DProps</span><span class="p">,</span>
-    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context to place GUI elements into a 3D GUI container.&quot;&quot;&quot;</span>
 
