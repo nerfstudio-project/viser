@@ -29,6 +29,10 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   // copy quadjr for this.
   uniform usampler2D textureBuffer;
 
+  // Buffer for spherical harmonics; Each Gaussian gets 24 int32s representing
+  // this information (Each coefficient is 16 bits, corr. to 48 coeffs.).
+  uniform usampler2D shTextureBuffer;
+
   // We could also use a uniform to store transforms, but this would be more
   // limiting in terms of the # of groups we can have.
   uniform sampler2D textureT_camera_groups;
@@ -97,6 +101,33 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec2 triu23 = unpackHalf2x16(intBufferData.y);
     vec2 triu45 = unpackHalf2x16(intBufferData.z);
 
+    // Get spherical harmonics terms from int buffer. 48 coefficents per vertex.
+    uint shTexStart = sortedIndex * 6u;
+    ivec2 shTexSize = textureSize(shTextureBuffer, 0);
+    float sh_coeffs_unpacked[48];
+    for (int i = 0; i < 6; i++) {
+        ivec2 shTexPos = ivec2((shTexStart + uint(i)) % uint(shTexSize.x), (shTexStart + uint(i)) / uint(shTexSize.x));
+        uvec4 packedCoeffs = texelFetch(shTextureBuffer, shTexPos, 0);
+
+        // unpack each uint32 directly into two float16 values, we read 4 at a time
+        vec2 unpacked;
+        unpacked = unpackHalf2x16(packedCoeffs.x);
+        sh_coeffs_unpacked[i*8]   = unpacked.x;
+        sh_coeffs_unpacked[i*8+1] = unpacked.y;
+        
+        unpacked = unpackHalf2x16(packedCoeffs.y);
+        sh_coeffs_unpacked[i*8+2] = unpacked.x;
+        sh_coeffs_unpacked[i*8+3] = unpacked.y;
+        
+        unpacked = unpackHalf2x16(packedCoeffs.z);
+        sh_coeffs_unpacked[i*8+4] = unpacked.x;
+        sh_coeffs_unpacked[i*8+5] = unpacked.y;
+        
+        unpacked = unpackHalf2x16(packedCoeffs.w);
+        sh_coeffs_unpacked[i*8+6] = unpacked.x;
+        sh_coeffs_unpacked[i*8+7] = unpacked.y;
+    }
+
     // Transition in.
     float startTime = 0.8 * float(sortedIndex) / float(numGaussians);
     float cov_scale = smoothstep(startTime, startTime + 0.2, transitionInState);
@@ -130,12 +161,112 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec2 v1 = min(sqrt(2.0 * lambda1), 1024.0) * diagonalVector;
     vec2 v2 = min(sqrt(2.0 * lambda2), 1024.0) * vec2(diagonalVector.y, -diagonalVector.x);
 
-    vRgba = vec4(
-      float(rgbaUint32 & uint(0xFF)) / 255.0,
-      float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
-      float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
-      float(rgbaUint32 >> uint(24)) / 255.0
+    // Calculate the spherical harmonics.
+    // According to gsplat implementation, seems that "x" and "y" have opposite direction
+    // of conventional SH directions, so square brackets contains the sign of resulting variable
+    // multiplications.
+    // A comprehensible table of Real SH constants: 
+    // https://en.wikipedia.org/wiki/Table_of_spherical_harmonics
+    vec3 viewDir = normalize(center - cameraPosition);
+    // C0 = 0.5 * sqrt(1.0 / pi)
+    const float C0 = 0.28209479177387814;   
+    // C1[0] = sqrt(3.0 / (4.0 * pi)) * [-1]
+    // C1[1] = sqrt(3.0 / (4.0 * pi)) * [1]
+    // C1[2] = sqrt(3.0 / (4.0 * pi)) * [-1]
+    const float C1[3] = float[3](
+        -0.4886025119029199,
+        0.4886025119029199,
+        -0.4886025119029199
     );
+    // C2[0] = 0.5 * sqrt(15/pi) * [1]
+    // C2[1] = 0.5 * sqrt(15/pi) * [-1]
+    // C2[2] = 0.25 * sqrt(5/pi) * [1]
+    // C2[3] = 0.5 * sqrt(15/pi) * [-1]
+    // C2[4] = 0.25 * sqrt(15/pi) * [1]
+    const float C2[5] = float[5](
+        1.0925484305920792,     
+        -1.0925484305920792,    
+        0.31539156525252005,    
+        -1.0925484305920792,    
+        0.5462742152960396      
+    );
+    // C3[0] = 0.25 * sqrt(35/(2pi)) * [-1]
+    // C3[1] = 0.5 * sqrt(105/pi) * [1]
+    // C3[2] = 0.25 * sqrt(21/(2pi)) * [-1]
+    // C3[3] = 0.25 * sqrt(7/pi) * [1]
+    // C3[4] = 0.25 * sqrt(21/(2pi)) * [-1]
+    // C3[5] = 0.25 * sqrt(105/(pi)) * [1]
+    // C3[6] = 0.25 * sqrt(35/(2pi)) * [-1]
+    const float C3[7] = float[7](
+        -0.5900435899266435,    
+        2.890611442640554,      
+        -0.4570457994644658,    
+        0.3731763325901154,     
+        -0.4570457994644658,    
+        1.445305721320277,      
+        -0.5900435899266435     
+    );
+
+    vec3 sh_coeffs[16];
+    for (int i = 0; i < 16; i++) {
+        sh_coeffs[i] = vec3(sh_coeffs_unpacked[i*3], sh_coeffs_unpacked[i*3+1], sh_coeffs_unpacked[i*3+2]);
+    }
+
+    // View-dependent variables
+
+    float x = viewDir.x;
+    float y = viewDir.y;
+    float z = viewDir.z;
+    float xx = viewDir.x * viewDir.x;
+    float yy = viewDir.y * viewDir.y;
+    float zz = viewDir.z * viewDir.z;
+    float xy = viewDir.x * viewDir.y;
+    float yz = viewDir.y * viewDir.z;
+    float xz = viewDir.x * viewDir.z;
+    
+    // 0th degree
+    vec3 rgb = C0 * sh_coeffs[0];
+    vec3 pointFive = vec3(0.5, 0.5, 0.5);
+
+    // 1st degree
+    // From here, variables are included in multiplication with constants
+    float pSH1 = C1[0] * y;
+    float pSH2 = C1[1] * z;
+    float pSH3 = C1[2] * x;
+    rgb = rgb + pSH1 * sh_coeffs[1] +
+                pSH2 * sh_coeffs[2] + 
+                pSH3 * sh_coeffs[3];
+
+    // 2nd degree
+    float pSH4 = C2[0] * xy;
+    float pSH5 = C2[1] * yz;
+    float pSH6 = C2[2] * (3.0 * zz - 1.0);
+    float pSH7 = C2[3] * xz;
+    float pSH8 = C2[4] * (xx - yy);
+    rgb = rgb + pSH4 * sh_coeffs[4] + 
+                pSH5 * sh_coeffs[5] + 
+                pSH6 * sh_coeffs[6] + 
+                pSH7 * sh_coeffs[7] + 
+                pSH8 * sh_coeffs[8];
+
+    // 3rd degree
+    float pSH9 = C3[0] * y * (3.0 * xx - yy);
+    float pSH10 = C3[1] * x * y * z;
+    float pSH11 = C3[2] * y * (5.0 * zz - 1.0);
+    float pSH12 = C3[3] * z * (5.0 * zz - 3.0);
+    float pSH13 = C3[4] * x * (5.0 * zz - 1.0);
+    float pSH14 = C3[5] * (xx - yy) * z;
+    float pSH15 = C3[6] * x * (xx - 3.0 * yy);
+    rgb = rgb + pSH9 * sh_coeffs[9] + 
+                pSH10 * sh_coeffs[10] + 
+                pSH11 * sh_coeffs[11] + 
+                pSH12 * sh_coeffs[12] + 
+                pSH13 * sh_coeffs[13] + 
+                pSH14 * sh_coeffs[14] + 
+                pSH15 * sh_coeffs[15];
+
+    // Finalize the color
+    vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
 
     // Throw the Gaussian off the screen if it's too close, too far, or too small.
     float weightedDeterminant = vRgba.a * (diag1 * diag2 - offDiag * offDiag);
@@ -169,6 +300,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 /**Hook to generate properties for rendering Gaussians via a three.js mesh.*/
 export function useGaussianMeshProps(
   gaussianBuffer: Uint32Array,
+  combinedSHBuffer: Uint32Array,
   numGroups: number,
 ) {
   const numGaussians = gaussianBuffer.length / 8;
@@ -198,6 +330,8 @@ export function useGaussianMeshProps(
   geometry.setAttribute("sortedIndex", sortedIndexAttribute);
 
   // Create texture buffers.
+  // We store 4 floats and 4 int32s per Gaussian.
+  // One "numGaussians" corresponds to 4 32-bit values.
   const textureWidth = Math.min(numGaussians * 2, maxTextureSize);
   const textureHeight = Math.ceil((numGaussians * 2) / textureWidth);
   const bufferPadded = new Uint32Array(textureWidth * textureHeight * 4);
@@ -223,6 +357,24 @@ export function useGaussianMeshProps(
   textureT_camera_groups.internalFormat = "RGBA32F";
   textureT_camera_groups.needsUpdate = true;
 
+  // Values taken from PR https://github.com/nerfstudio-project/viser/pull/286/files
+  // WIDTH AND HEIGHT ARE MEASURED IN TEXELS
+  // As 48 x float16 = 96 bytes and each texel is 4 uint32s = 16 bytes
+  // We can fit 6 spherical harmonics coefficients in a single texel
+  const shTextureWidth = Math.min(numGaussians * 6, maxTextureSize);
+  const shTextureHeight = Math.ceil((numGaussians * 6) / shTextureWidth);
+  const shBufferPadded = new Uint32Array(shTextureWidth * shTextureHeight * 4);
+  shBufferPadded.set(combinedSHBuffer);
+  const shTextureBuffer = new THREE.DataTexture(
+    shBufferPadded,
+    shTextureWidth,
+    shTextureHeight,
+    THREE.RGBAIntegerFormat,
+    THREE.UnsignedIntType,
+  );
+  shTextureBuffer.internalFormat = "RGBA32UI";
+  shTextureBuffer.needsUpdate = true;
+
   const material = new GaussianSplatMaterial();
   material.textureBuffer = textureBuffer;
   material.textureT_camera_groups = textureT_camera_groups;
@@ -233,6 +385,7 @@ export function useGaussianMeshProps(
     geometry,
     material,
     textureBuffer,
+    shTextureBuffer,
     sortedIndexAttribute,
     textureT_camera_groups,
     rowMajorT_camera_groups,
