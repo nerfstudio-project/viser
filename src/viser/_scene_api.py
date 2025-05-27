@@ -950,7 +950,7 @@ class SceneApi:
                 define a kinematic tree.
             batched_wxyzs: Float array of shape (N,4).
             batched_positions: Float array of shape (N,3).
-            batched_scales: Float array of shape (N,) for uniform scales. None means scale of 1.0.
+            batched_scales: Float array of shape (N,) for uniform scales or (N,3) for per-axis (XYZ) scales. None means scale of 1.0.
             axes_length: Length of each axis.
             axes_radius: Radius of each axis.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
@@ -971,7 +971,7 @@ class SceneApi:
 
         if batched_scales is not None:
             batched_scales = np.asarray(batched_scales).astype(np.float32)
-            assert batched_scales.shape == (num_axes,)
+            assert batched_scales.shape in ((num_axes,), (num_axes, 3))
 
         props = _messages.BatchedAxesProps(
             batched_wxyzs=batched_wxyzs.astype(np.float32),
@@ -1386,7 +1386,7 @@ class SceneApi:
                 vertices. Should have shape (F, 3).
             batched_wxyzs: Float array of shape (N, 4) for orientations.
             batched_positions: Float array of shape (N, 3) for positions.
-            batched_scales: Float array of shape (N,) for uniform scales. None means scale of 1.0.
+            batched_scales: Float array of shape (N,) for uniform scales or (N,3) for per-axis (XYZ) scales. None means scale of 1.0.
             lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
             color: Color of the meshes as an RGB tuple.
             wireframe: Boolean indicating if the meshes should be rendered as wireframes.
@@ -1425,7 +1425,7 @@ class SceneApi:
 
         if batched_scales is not None:
             batched_scales = np.asarray(batched_scales).astype(np.float32)
-            assert batched_scales.shape == (num_instances,)
+            assert batched_scales.shape in ((num_instances,), (num_instances, 3))
 
         message = _messages.BatchedMeshesMessage(
             name=name,
@@ -1478,7 +1478,7 @@ class SceneApi:
             mesh: A trimesh mesh object.
             batched_wxyzs: Float array of shape (N, 4) for orientations.
             batched_positions: Float array of shape (N, 3) for positions.
-            batched_scales: Float array of shape (N,) for uniform scales. None means scale of 1.0.
+            batched_scales: Float array of shape (N,) for uniform scales or (N,3) for per-axis (XYZ) scales. None means scale of 1.0.
             lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
             scale: A scale for resizing the mesh.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
@@ -1499,7 +1499,7 @@ class SceneApi:
 
         if batched_scales is not None:
             batched_scales = np.asarray(batched_scales).astype(np.float32)
-            assert batched_scales.shape == (num_instances,)
+            assert batched_scales.shape in ((num_instances,), (num_instances, 3))
 
         with io.BytesIO() as data_buffer:
             mesh.export(data_buffer, file_type="glb")

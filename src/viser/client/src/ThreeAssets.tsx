@@ -12,6 +12,15 @@ import {
 import { BatchedMeshHoverOutlines } from "./mesh/BatchedMeshHoverOutlines";
 import { rgbToInt } from "./mesh/MeshUtils";
 import { MeshBasicMaterial } from "three";
+import {
+  createDataView,
+  isPerAxisScaling,
+  readPositionFromDataView,
+  readQuaternionFromDataView,
+  readScaleFromDataView,
+  BYTES_PER_FLOAT,
+  QUATERNION_COMPONENTS,
+} from "./utils/BatchedTransformUtils";
 
 const originGeom = new THREE.SphereGeometry(1.0);
 
@@ -243,7 +252,7 @@ export const InstancedAxes = React.forwardRef<
     batched_wxyzs: Uint8Array;
     /** Raw bytes containing float32 position values (xyz) */
     batched_positions: Uint8Array;
-    /** Raw bytes containing float32 scale values (uniform scale) */
+    /** Raw bytes containing float32 scale values (uniform or per-axis XYZ) */
     batched_scales: Uint8Array | null;
     axes_length?: number;
     axes_radius?: number;
@@ -310,58 +319,24 @@ export const InstancedAxes = React.forwardRef<
       axesTransformations;
 
     // Create DataViews to read float values directly.
-    const positionsView = new DataView(
-      batched_positions.buffer,
-      batched_positions.byteOffset,
-      batched_positions.byteLength,
-    );
-
-    const wxyzsView = new DataView(
-      batched_wxyzs.buffer,
-      batched_wxyzs.byteOffset,
-      batched_wxyzs.byteLength,
-    );
-
-    const scalesView = batched_scales
-      ? new DataView(
-          batched_scales.buffer,
-          batched_scales.byteOffset,
-          batched_scales.byteLength,
-        )
-      : null;
+    const positionsView = createDataView(batched_positions);
+    const wxyzsView = createDataView(batched_wxyzs);
+    const scalesView = batched_scales ? createDataView(batched_scales) : null;
+    const isPerAxis = isPerAxisScaling(batched_scales, batched_wxyzs);
 
     // Calculate number of instances.
-    const numInstances = batched_wxyzs.byteLength / (4 * 4); // 4 floats, 4 bytes per float
+    const numInstances = batched_wxyzs.byteLength / (QUATERNION_COMPONENTS * BYTES_PER_FLOAT);
 
     for (let i = 0; i < numInstances; i++) {
-      // Calculate byte offsets for reading float values.
-      const posOffset = i * 3 * 4; // 3 floats, 4 bytes per float
-      const wxyzOffset = i * 4 * 4; // 4 floats, 4 bytes per float
-      const scaleOffset = i * 4; // 1 float, 4 bytes per float
-
-      // Read scale value if available.
-      if (scalesView) {
-        const scale = scalesView.getFloat32(scaleOffset, true);
-        tmpScale.set(scale, scale, scale);
-      } else {
-        tmpScale.set(1, 1, 1);
-      }
+      // Read transform data.
+      readPositionFromDataView(positionsView, i, tmpPosition);
+      readQuaternionFromDataView(wxyzsView, i, tmpQuat);
+      readScaleFromDataView(scalesView, i, isPerAxis, tmpScale);
 
       // Set position from DataView.
-      T_world_frame.makeRotationFromQuaternion(
-        tmpQuat.set(
-          wxyzsView.getFloat32(wxyzOffset + 4, true), // x
-          wxyzsView.getFloat32(wxyzOffset + 8, true), // y
-          wxyzsView.getFloat32(wxyzOffset + 12, true), // z
-          wxyzsView.getFloat32(wxyzOffset, true), // w (first value)
-        ),
-      )
+      T_world_frame.makeRotationFromQuaternion(tmpQuat)
         .scale(tmpScale)
-        .setPosition(
-          positionsView.getFloat32(posOffset, true), // x
-          positionsView.getFloat32(posOffset + 4, true), // y
-          positionsView.getFloat32(posOffset + 8, true), // z
-        );
+        .setPosition(tmpPosition.x, tmpPosition.y, tmpPosition.z);
 
       T_world_framex.copy(T_world_frame).multiply(T_frame_framex);
       T_world_framey.copy(T_world_frame).multiply(T_frame_framey);

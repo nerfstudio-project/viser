@@ -16,7 +16,6 @@ from pathlib import Path
 
 import numpy as np
 import trimesh
-
 import viser
 
 
@@ -74,7 +73,10 @@ def main():
         "# of instances", min=1, max=1000, step=1, initial_value=100
     )
 
-    animate_checkbox = server.gui.add_checkbox("Animate", initial_value=False)
+    animate_checkbox = server.gui.add_checkbox("Animate", initial_value=True)
+    per_axis_scale_checkbox = server.gui.add_checkbox(
+        "Per-axis scale during animation", initial_value=False
+    )
     lod_checkbox = server.gui.add_checkbox("Enable LOD", initial_value=True)
     cast_shadow_checkbox = server.gui.add_checkbox("Cast shadow", initial_value=True)
 
@@ -117,26 +119,41 @@ def main():
             grid_size = int(np.ceil(np.sqrt(n)))
 
             with server.atomic():
-                # Update grid size
+                # Update grid size.
                 grid_handle.width = grid_handle.height = grid_size + 2
                 grid_handle.width_segments = grid_handle.height_segments = grid_size + 2
 
-                # Update all transforms
+                # Update all transforms.
                 mesh_handle.batched_positions = axes_handle.batched_positions = (
                     positions
                 )
                 mesh_handle.batched_wxyzs = axes_handle.batched_wxyzs = rotations
                 mesh_handle.batched_scales = axes_handle.batched_scales = scales
 
-        # Animate if enabled
+        # Animate if enabled.
         elif animate_checkbox.value:
-            # Animate positions
+            # Animate positions.
             positions[:, :2] += np.random.uniform(-0.01, 0.01, (n, 2))
 
-            # Animate scales with wave effect
-            t = time.perf_counter() * 2.0
-            scales = np.linalg.norm(positions, axis=-1)
-            scales = np.sin(scales * 1.5 - t) * 0.5 + 1.0
+            # Animate scales with wave effect.
+            if per_axis_scale_checkbox.value:
+                t = time.perf_counter() * 2.0
+                scales = np.linalg.norm(positions, axis=-1)
+                scales = np.stack(
+                    [
+                        np.sin(scales * 1.5 - t) * 0.5 + 1.0,
+                        np.sin(scales * 1.5 - t + np.pi / 2.0) * 0.5 + 1.0,
+                        np.sin(scales * 1.5 - t + np.pi) * 0.5 + 1.0,
+                    ],
+                    axis=-1,
+                )
+                assert scales.shape == (n, 3)
+            else:
+                t = time.perf_counter() * 2.0
+                scales = np.linalg.norm(positions, axis=-1)
+                scales = np.sin(scales * 1.5 - t) * 0.5 + 1.0
+                assert scales.shape == (n,)
+
             with server.atomic():
                 mesh_handle.batched_positions = positions
                 mesh_handle.batched_scales = scales

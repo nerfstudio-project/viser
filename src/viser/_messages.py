@@ -305,7 +305,7 @@ class BatchedAxesProps:
     batched_positions: npt.NDArray[np.float32]
     """Float array of shape (N,3) representing positions. Synchronized automatically when assigned."""
     batched_scales: Optional[npt.NDArray[np.float32]]
-    """Float array of shape (N,) representing uniform scales. Synchronized automatically when assigned."""
+    """Float array of shape (N,) or (N,3) representing uniform or per-axis (XYZ) scales. Synchronized automatically when assigned."""
     axes_length: float
     """Length of each axis. Synchronized automatically when assigned."""
     axes_radius: float
@@ -662,7 +662,7 @@ class _BatchedMeshExtraProps:
     batched_positions: npt.NDArray[np.float32]
     """Float array of shape (N, 3) representing positions. Synchronized automatically when assigned."""
     batched_scales: Optional[npt.NDArray[np.float32]]
-    """Float array of shape (N,) representing uniform scales. Synchronized automatically when assigned."""
+    """Float array of shape (N,) or (N,3) representing uniform or per-axis (XYZ) scales. Synchronized automatically when assigned."""
     lod: Union[Literal["auto", "off"], Tuple[Tuple[float, float], ...]]
     """LOD settings. Either "auto", "off", or a tuple of (distance, ratio) pairs. Synchronized automatically when assigned."""
 
@@ -672,8 +672,10 @@ class _BatchedMeshExtraProps:
         assert self.batched_positions.shape[-1] == 3
         assert self.batched_wxyzs.shape[0] == self.batched_positions.shape[0]
         if self.batched_scales is not None:
-            assert len(self.batched_scales.shape) == 1
-            assert self.batched_scales.shape[0] == self.batched_wxyzs.shape[0]
+            assert self.batched_scales.shape in (
+                (self.batched_wxyzs.shape[0],),
+                (self.batched_wxyzs.shape[0], 3),
+            )
 
 
 @dataclasses.dataclass

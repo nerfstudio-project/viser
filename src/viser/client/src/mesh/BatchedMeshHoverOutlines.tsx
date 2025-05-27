@@ -13,7 +13,7 @@ interface BatchedMeshHoverOutlinesProps {
   batched_positions: Uint8Array;
   /** Raw bytes containing float32 quaternion values (wxyz) */
   batched_wxyzs: Uint8Array;
-  /** Raw bytes containing float32 scale values (uniform scale) */
+  /** Raw bytes containing float32 scale values (uniform or per-axis XYZ) */
   batched_scales: Uint8Array | null;
   meshTransform?: {
     position: THREE.Vector3;
@@ -171,9 +171,21 @@ export const BatchedMeshHoverOutlines: React.FC<
 
         // Set scale to match the hovered instance
         if (scalesView) {
-          const scaleOffset = batchIndex * 4; // 1 float, 4 bytes per float
-          const scale = scalesView.getFloat32(scaleOffset, true);
-          outlineRef.current.scale.setScalar(scale);
+          // Check if we have per-axis scaling (N,3) or uniform scaling (N,).
+          if (batched_scales!.byteLength === batched_wxyzs.byteLength / 4 * 3) {
+            // Per-axis scaling: read 3 floats.
+            const scaleOffset = batchIndex * 3 * 4; // 3 floats, 4 bytes per float
+            outlineRef.current.scale.set(
+              scalesView.getFloat32(scaleOffset, true), // x scale
+              scalesView.getFloat32(scaleOffset + 4, true), // y scale
+              scalesView.getFloat32(scaleOffset + 8, true), // z scale
+            );
+          } else {
+            // Uniform scaling: read 1 float and apply to all axes.
+            const scaleOffset = batchIndex * 4; // 1 float, 4 bytes per float
+            const scale = scalesView.getFloat32(scaleOffset, true);
+            outlineRef.current.scale.setScalar(scale);
+          }
         } else {
           outlineRef.current.scale.set(1, 1, 1);
         }
