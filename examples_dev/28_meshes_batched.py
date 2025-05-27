@@ -16,6 +16,7 @@ from pathlib import Path
 
 import numpy as np
 import trimesh
+
 import viser
 
 
@@ -75,7 +76,7 @@ def main():
 
     animate_checkbox = server.gui.add_checkbox("Animate", initial_value=True)
     per_axis_scale_checkbox = server.gui.add_checkbox(
-        "Per-axis scale during animation", initial_value=False
+        "Per-axis scale during animation", initial_value=True
     )
     lod_checkbox = server.gui.add_checkbox("Enable LOD", initial_value=True)
     cast_shadow_checkbox = server.gui.add_checkbox("Cast shadow", initial_value=True)
@@ -100,18 +101,13 @@ def main():
         lod="auto",
     )
 
-    # Set up checkbox callbacks
-    @lod_checkbox.on_update
-    def _(_):
-        mesh_handle.lod = "auto" if lod_checkbox.value else "off"
-
-    @cast_shadow_checkbox.on_update
-    def _(_):
-        mesh_handle.cast_shadow = cast_shadow_checkbox.value
-
     # Animation loop.
     while True:
         n = instance_count_slider.value
+
+        # Update props based on GUI controls.
+        mesh_handle.lod = "auto" if lod_checkbox.value else "off"
+        mesh_handle.cast_shadow = cast_shadow_checkbox.value
 
         # Recreate transforms if instance count changed.
         if positions.shape[0] != n:
