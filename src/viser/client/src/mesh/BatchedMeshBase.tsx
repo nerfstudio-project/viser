@@ -56,8 +56,8 @@ function createLODs(
   }
 
   // Create the LOD levels.
-  const newLodGeometries: THREE.BufferGeometry[] = [];
-  const newLodMaterials: THREE.Material[] = [];
+  const geometries: THREE.BufferGeometry[] = [];
+  const materials: THREE.Material[] = [];
 
   ratios.forEach((ratio, index) => {
     // Calculate target triangle count based on the ratio.
@@ -89,15 +89,14 @@ function createLODs(
     mesh.addLOD(lodGeometry, lodMaterial, distances[index]);
 
     // Store the geometry and materials for proper disposal later.
-    newLodGeometries.push(lodGeometry);
+    geometries.push(lodGeometry);
     if (Array.isArray(lodMaterial)) {
-      newLodMaterials.push(...lodMaterial);
+      materials.push(...lodMaterial);
     } else {
-      newLodMaterials.push(lodMaterial);
+      materials.push(lodMaterial);
     }
   });
-
-  return { geometries: newLodGeometries, materials: newLodMaterials };
+  return { geometries, materials };
 }
 
 /**
