@@ -799,6 +799,12 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedAxesHandle.batched_scales">
+<span class="sig-name descname"><span class="pre">batched_scales</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.BatchedAxesHandle.batched_scales" title="Link to this definition">¶</a></dt>
+<dd><p>Float array of shape (N,) or (N,3) representing uniform or per-axis (XYZ) scales. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedAxesHandle.axes_length">
 <span class="sig-name descname"><span class="pre">axes_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#viser.BatchedAxesHandle.axes_length" title="Link to this definition">¶</a></dt>
 <dd><p>Length of each axis. Synchronized automatically when assigned.</p>
@@ -1534,6 +1540,12 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedMeshHandle.batched_scales">
+<span class="sig-name descname"><span class="pre">batched_scales</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.BatchedMeshHandle.batched_scales" title="Link to this definition">¶</a></dt>
+<dd><p>Float array of shape (N,) or (N,3) representing uniform or per-axis (XYZ) scales. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.lod">
 <span class="sig-name descname"><span class="pre">lod</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'auto'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'off'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.lod" title="Link to this definition">¶</a></dt>
 <dd><p>LOD settings. Either “auto”, “off”, or a tuple of (distance, ratio) pairs. Synchronized automatically when assigned.</p>
@@ -1651,6 +1663,12 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dt class="sig sig-object py" id="viser.BatchedGlbHandle.batched_positions">
 <span class="sig-name descname"><span class="pre">batched_positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedGlbHandle.batched_positions" title="Link to this definition">¶</a></dt>
 <dd><p>Float array of shape (N, 3) representing positions. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedGlbHandle.batched_scales">
+<span class="sig-name descname"><span class="pre">batched_scales</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.BatchedGlbHandle.batched_scales" title="Link to this definition">¶</a></dt>
+<dd><p>Float array of shape (N,) or (N,3) representing uniform or per-axis (XYZ) scales. Synchronized automatically when assigned.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2879,6 +2897,7 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <li><a class="reference internal" href="#viser.BatchedAxesHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">BatchedAxesHandle.wxyz</span></code></a></li>
 <li><a class="reference internal" href="#viser.BatchedAxesHandle.batched_wxyzs"><code class="docutils literal notranslate"><span class="pre">BatchedAxesHandle.batched_wxyzs</span></code></a></li>
 <li><a class="reference internal" href="#viser.BatchedAxesHandle.batched_positions"><code class="docutils literal notranslate"><span class="pre">BatchedAxesHandle.batched_positions</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedAxesHandle.batched_scales"><code class="docutils literal notranslate"><span class="pre">BatchedAxesHandle.batched_scales</span></code></a></li>
 <li><a class="reference internal" href="#viser.BatchedAxesHandle.axes_length"><code class="docutils literal notranslate"><span class="pre">BatchedAxesHandle.axes_length</span></code></a></li>
 <li><a class="reference internal" href="#viser.BatchedAxesHandle.axes_radius"><code class="docutils literal notranslate"><span class="pre">BatchedAxesHandle.axes_radius</span></code></a></li>
 </ul>
@@ -2992,6 +3011,7 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <li><a class="reference internal" href="#viser.BatchedMeshHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.receive_shadow</span></code></a></li>
 <li><a class="reference internal" href="#viser.BatchedMeshHandle.batched_wxyzs"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.batched_wxyzs</span></code></a></li>
 <li><a class="reference internal" href="#viser.BatchedMeshHandle.batched_positions"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.batched_positions</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedMeshHandle.batched_scales"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.batched_scales</span></code></a></li>
 <li><a class="reference internal" href="#viser.BatchedMeshHandle.lod"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.lod</span></code></a></li>
 </ul>
 </li>
@@ -3009,6 +3029,7 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <li><a class="reference internal" href="#viser.BatchedGlbHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.receive_shadow</span></code></a></li>
 <li><a class="reference internal" href="#viser.BatchedGlbHandle.batched_wxyzs"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.batched_wxyzs</span></code></a></li>
 <li><a class="reference internal" href="#viser.BatchedGlbHandle.batched_positions"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.batched_positions</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedGlbHandle.batched_scales"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.batched_scales</span></code></a></li>
 <li><a class="reference internal" href="#viser.BatchedGlbHandle.lod"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.lod</span></code></a></li>
 </ul>
 </li>
