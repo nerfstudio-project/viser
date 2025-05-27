@@ -1,44 +1,102 @@
-import React, { useRef, useMemo, useEffect } from "react";
+import React, { useMemo, useEffect } from "react";
 import * as THREE from "three";
-import { extend, ThreeElement } from "@react-three/fiber";
 import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 import { MeshoptSimplifier } from "meshoptimizer";
 import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
 
-// Add InstancedMesh2 to the jsx catalog.
-extend({ InstancedMesh2 });
-
-declare module "@react-three/fiber" {
-  interface ThreeElements {
-    instancedMesh2: ThreeElement<typeof InstancedMesh2>;
-  }
-}
-
 // Define the types of LOD settings.
+// - "off": No LOD.
+// - "auto": Built-in heuristic to compute LOD levels based on geometry
+//   complexity.
+// - [number, number][]: Array of [distance, simplification_ratio] pairs
+//   where distance is the camera distance threshold and simplification_ratio
+//   is the fraction of triangles to keep (0.0 to 1.0).
 type LodSetting = "off" | "auto" | [number, number][];
 
-/**
- * Props for the shared BatchedMeshBase component
- */
-export interface BatchedMeshBaseProps {
-  // Data for instance positions and orientations.
-  batched_positions: Uint8Array;
-  batched_wxyzs: Uint8Array;
+// Helper function to create LODs for the mesh.
+function createLODs(
+  mesh: InstancedMesh2,
+  geometry: THREE.BufferGeometry,
+  material: THREE.Material | THREE.Material[],
+  lod: LodSetting,
+): { geometries: THREE.BufferGeometry[]; materials: THREE.Material[] } {
+  if (!mesh || !geometry || lod === "off") {
+    return { geometries: [], materials: [] };
+  }
 
-  // Geometry info.
-  geometry: THREE.BufferGeometry;
+  // Calculate LOD settings.
+  let ratios: number[] = [];
+  let distances: number[] = [];
 
-  // Material info.
-  material: THREE.Material | THREE.Material[];
+  if (lod === "auto") {
+    // Automatic LOD settings based on geometry complexity.
+    geometry.computeBoundingSphere();
+    const boundingRadius = geometry.boundingSphere!.radius;
+    const vertexCount = geometry.attributes.position.count;
 
-  // Rendering options.
-  lod: LodSetting;
-  cast_shadow: boolean;
-  receive_shadow: boolean;
+    // 1. Compute LOD ratios based on vertex count.
+    if (vertexCount > 10_000) {
+      ratios = [0.2, 0.05, 0.01]; // Very complex
+    } else if (vertexCount > 2_000) {
+      ratios = [0.4, 0.1, 0.03]; // Medium complex
+    } else if (vertexCount > 500) {
+      ratios = [0.6, 0.2, 0.05]; // Light
+    } else {
+      ratios = [0.85, 0.4, 0.1]; // Already simple
+    }
 
-  // Optional props.
-  scale?: THREE.Vector3 | [number, number, number] | number;
-  clickable?: boolean;
+    // 2. Compute LOD distances based on bounding radius.
+    const sizeFactor = Math.sqrt(boundingRadius + 1e-5);
+    const baseMultipliers = [1, 2, 3]; // Distance "steps" for LOD switching.
+    distances = baseMultipliers.map((m) => m * sizeFactor);
+  } else {
+    // Use provided custom LOD settings.
+    ratios = lod.map((pair) => pair[1]);
+    distances = lod.map((pair) => pair[0]);
+  }
+
+  // Create the LOD levels.
+  const geometries: THREE.BufferGeometry[] = [];
+  const materials: THREE.Material[] = [];
+
+  ratios.forEach((ratio, index) => {
+    // Calculate target triangle count based on the ratio.
+    const targetCount =
+      Math.floor((geometry.index!.array.length * ratio) / 3) * 3;
+    const lodGeometry = geometry.clone();
+
+    // Use meshopt to simplify the geometry.
+    const dstIndexArray = MeshoptSimplifier.simplify(
+      new Uint32Array(lodGeometry.index!.array),
+      new Float32Array(lodGeometry.attributes.position.array),
+      3,
+      targetCount,
+      0.01, // Error tolerance.
+      ["LockBorder"], // Prevents triangle flipping artifacts.
+    )[0];
+
+    // Update the geometry with the simplified version.
+    lodGeometry.index!.array.set(dstIndexArray);
+    lodGeometry.index!.needsUpdate = true;
+    lodGeometry.setDrawRange(0, dstIndexArray.length);
+
+    // Create a cloned material for this LOD level.
+    const lodMaterial = Array.isArray(material)
+      ? material.map((x) => x.clone())
+      : material.clone();
+
+    // Add this LOD level to the instanced mesh.
+    mesh.addLOD(lodGeometry, lodMaterial, distances[index]);
+
+    // Store the geometry and materials for proper disposal later.
+    geometries.push(lodGeometry);
+    if (Array.isArray(lodMaterial)) {
+      materials.push(...lodMaterial);
+    } else {
+      materials.push(lodMaterial);
+    }
+  });
+  return { geometries, materials };
 }
 
 /**
@@ -49,47 +107,86 @@ export interface BatchedMeshBaseProps {
  */
 export const BatchedMeshBase = React.forwardRef<
   InstancedMesh2,
-  BatchedMeshBaseProps
+  {
+    // Data for instance positions and orientations.
+    batched_positions: Uint8Array;
+    batched_wxyzs: Uint8Array;
+
+    // Geometry info.
+    geometry: THREE.BufferGeometry;
+
+    // Material info.
+    material: THREE.Material | THREE.Material[];
+
+    // Rendering options.
+    lod: LodSetting;
+    cast_shadow: boolean;
+    receive_shadow: boolean;
+
+    // Optional props.
+    scale?: THREE.Vector3 | [number, number, number] | number;
+    clickable?: boolean;
+  }
 >(function BatchedMeshBase(props, ref) {
-  // Create refs for our meshes.
-  const instancedMeshRef = useRef<InstancedMesh2>(null);
+  // Store the mesh instance in state so effects can depend on it
+  const [mesh, setMesh] = React.useState<InstancedMesh2 | null>(null);
 
   // Forward the ref from the parent.
-  React.useImperativeHandle(ref, () => instancedMeshRef.current!, []);
-
-  // Store LOD meshes.
-  const [lodGeometries, setLodGeometries] = React.useState<
-    THREE.BufferGeometry[]
-  >([]);
+  React.useImperativeHandle(ref, () => mesh!, [mesh]);
 
   // Reusable objects for transform calculations.
   const tempPosition = useMemo(() => new THREE.Vector3(), []);
   const tempQuaternion = useMemo(() => new THREE.Quaternion(), []);
   const tempScale = useMemo(() => new THREE.Vector3(1, 1, 1), []);
 
-  // Set up the initial instances.
+  // Create and manage InstancedMesh2 manually.
   useEffect(() => {
-    const mesh = instancedMeshRef.current;
-    if (!mesh) return;
+    // Create new InstancedMesh2.
+    const newMesh = new InstancedMesh2(props.geometry, props.material, {
+      capacity: 1,
+    });
 
-    // Create LODs if needed.
-    if (props.lod !== "off") {
-      createLODs();
+    // Set initial properties.
+    if (props.scale) {
+      if (typeof props.scale === "number") {
+        newMesh.scale.setScalar(props.scale);
+      } else if (Array.isArray(props.scale)) {
+        newMesh.scale.set(...props.scale);
+      } else {
+        newMesh.scale.copy(props.scale);
+      }
     }
 
-    return () => {
-      // Clean up LOD geometries when component unmounts.
-      lodGeometries.forEach((geometry) => geometry.dispose());
+    // Create LODs if needed.
+    let lodGeometries: THREE.BufferGeometry[] = [];
+    let lodMaterials: THREE.Material[] = [];
 
-      if (mesh) {
-        mesh.disposeBVH();
-      }
+    if (props.lod !== "off") {
+      const lods = createLODs(
+        newMesh,
+        props.geometry,
+        props.material,
+        props.lod,
+      );
+      lodGeometries = lods.geometries;
+      lodMaterials = lods.materials;
+    }
+
+    // Update state with new mesh.
+    setMesh(newMesh);
+
+    return () => {
+      // Cleanup on unmount or when dependencies change.
+      newMesh.disposeBVH();
+      newMesh.dispose();
+      // Dispose LOD resources captured via closure
+      lodGeometries.forEach((geometry) => geometry.dispose());
+      lodMaterials.forEach((material) => material.dispose());
     };
-  }, [props.geometry, props.lod]);
+  }, [props.geometry, props.lod, props.material]); // Recreate when these change.
 
   // Update instances when positions or orientations change.
   useEffect(() => {
-    const mesh = instancedMeshRef.current;
     if (!mesh) return;
 
     const instanceCount =
@@ -110,7 +207,6 @@ export const BatchedMeshBase = React.forwardRef<
       props.batched_positions.byteOffset,
       props.batched_positions.byteLength,
     );
-
     const wxyzsView = new DataView(
       props.batched_wxyzs.buffer,
       props.batched_wxyzs.byteOffset,
@@ -143,11 +239,10 @@ export const BatchedMeshBase = React.forwardRef<
       obj.quaternion.copy(tempQuaternion);
       obj.scale.copy(tempScale);
     });
-  }, [props.batched_positions, props.batched_wxyzs]);
+  }, [props.batched_positions, props.batched_wxyzs, mesh]);
 
   // Update shadow settings.
   useEffect(() => {
-    const mesh = instancedMeshRef.current;
     if (!mesh) return;
 
     mesh.castShadow = props.cast_shadow;
@@ -160,107 +255,13 @@ export const BatchedMeshBase = React.forwardRef<
         obj.receiveShadow = props.receive_shadow;
       });
     }
-  }, [props.cast_shadow, props.receive_shadow]);
+  }, [props.cast_shadow, props.receive_shadow, mesh]);
 
-  // Helper function to create LODs for the mesh.
-  const createLODs = React.useCallback(() => {
-    const mesh = instancedMeshRef.current;
-    if (!mesh || !props.geometry) return;
-
-    // Clear any existing LODs.
-    lodGeometries.forEach((geometry) => geometry.dispose());
-    setLodGeometries([]);
-
-    // Create dummy mesh for LOD calculations.
-
-    // Calculate LOD settings.
-    let ratios: number[] = [];
-    let distances: number[] = [];
-
-    if (props.lod === "auto") {
-      // Automatic LOD settings based on geometry complexity.
-      const geometry = props.geometry;
-      geometry.computeBoundingSphere();
-      const boundingRadius = geometry.boundingSphere!.radius;
-      const vertexCount = geometry.attributes.position.count;
-
-      // 1. Compute LOD ratios based on vertex count.
-      if (vertexCount > 10_000) {
-        ratios = [0.2, 0.05, 0.01]; // Very complex
-      } else if (vertexCount > 2_000) {
-        ratios = [0.4, 0.1, 0.03]; // Medium complex
-      } else if (vertexCount > 500) {
-        ratios = [0.6, 0.2, 0.05]; // Light
-      } else {
-        ratios = [0.85, 0.4, 0.1]; // Already simple
-      }
-
-      // 2. Compute LOD distances based on bounding radius.
-      const sizeFactor = Math.sqrt(boundingRadius + 1e-5);
-      const baseMultipliers = [1, 2, 3]; // Distance "steps" for LOD switching.
-      distances = baseMultipliers.map((m) => m * sizeFactor);
-    } else if (props.lod !== "off") {
-      // Use provided custom LOD settings.
-      ratios = props.lod.map((pair: [number, number]) => pair[1]);
-      distances = props.lod.map((pair: [number, number]) => pair[0]);
-    }
-
-    // Create the LOD levels.
-    const newLodGeometries: THREE.BufferGeometry[] = [];
-
-    ratios.forEach((ratio, index) => {
-      // Calculate target triangle count based on the ratio.
-      const targetCount =
-        Math.floor((props.geometry.index!.array.length * ratio) / 3) * 3;
-      const lodGeometry = props.geometry.clone();
-
-      // Use meshopt to simplify the geometry.
-      const dstIndexArray = MeshoptSimplifier.simplify(
-        new Uint32Array(lodGeometry.index!.array),
-        new Float32Array(lodGeometry.attributes.position.array),
-        3,
-        targetCount,
-        0.01, // Error tolerance.
-        ["LockBorder"], // Prevents triangle flipping artifacts.
-      )[0];
-
-      // Update the geometry with the simplified version.
-      lodGeometry.index!.array.set(dstIndexArray);
-      lodGeometry.index!.needsUpdate = true;
-      lodGeometry.setDrawRange(0, dstIndexArray.length);
-
-      // Create a cloned material for this LOD level.
-      const lodMaterial = Array.isArray(props.material)
-        ? props.material.map((x) => x.clone())
-        : props.material.clone();
-
-      // Add this LOD level to the instanced mesh.
-      mesh.addLOD(lodGeometry, lodMaterial, distances[index]);
-
-      // Store the geometry for proper disposal later.
-      newLodGeometries.push(lodGeometry);
-    });
-
-    setLodGeometries(newLodGeometries);
-  }, [props.lod, props.geometry]);
-
-  // We want to use the same object during each remount to prevent
-  // instancedMesh2 from re-initializing.
-  const [meshParams] = React.useState(() => ({ capacity: 1 }));
-
-  // Handle click events for the instanced mesh.
+  // Return the mesh as a primitive and hover outlines if clickable.
   return (
     <>
-      <instancedMesh2
-        ref={instancedMeshRef}
-        args={[props.geometry, props.material, meshParams]}
-        castShadow={props.cast_shadow}
-        receiveShadow={props.receive_shadow}
-        scale={props.scale}
-      />
-
-      {/* Add hover outline component for highlighting hovered instances */}
-      {props.clickable && props.geometry && (
+      {mesh && <primitive object={mesh} />}
+      {props.clickable && (
         <BatchedMeshHoverOutlines
           geometry={props.geometry}
           batched_positions={props.batched_positions}

@@ -911,10 +911,10 @@
   resolved "https://registry.yarnpkg.com/@tabler/icons/-/icons-3.31.0.tgz#92d39dc336f2e3e312170420b00ffe9ca474925e"
   integrity sha512-dblAdeKY3+GA1U+Q9eziZ0ooVlZMHsE8dqP0RkwvRtEsAULoKOYaCUOcJ4oW1DjWegdxk++UAt2SlQVnmeHv+g==
 
-"@three.ez/instanced-mesh@^0.3.0-alpha.9":
-  version "0.3.0-alpha.10"
-  resolved "https://registry.yarnpkg.com/@three.ez/instanced-mesh/-/instanced-mesh-0.3.0-alpha.10.tgz#ef36617b201fa77fb468a44f9e163a9e25b7943d"
-  integrity sha512-eEcv03uWTXVm8E/uDvnMCH/hPU5To5nZhYdahJt5axEpdet/0eUbsdXpLXNYrxSpX3WgXTTQr88fvv9kTTTJKA==
+"@three.ez/instanced-mesh@0.3.4":
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/@three.ez/instanced-mesh/-/instanced-mesh-0.3.4.tgz#a379e8782f1535479e5588057e7ee3c5102c351b"
+  integrity sha512-iBFdxkLXa2YyfKHnkR+aJMgzIAHUbh95TCeBMDn7OYa2kflhFrNf4NairPXVNWlw0m1IlSS4vZWgJcyjroH2gA==
   dependencies:
     bvh.js "^0.0.13"
 
