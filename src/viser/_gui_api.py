@@ -245,12 +245,15 @@ class GuiApi:
             # when we expect tuples but the Javascript side gives us lists.
             if prop_name == "value":
                 if isinstance(handle_state.value, tuple):
-                    # We currently assume all tuple types have length >0, and
-                    # contents are all the same type.
-                    assert len(handle_state.value) > 0
-                    typ = type(handle_state.value[0])
-                    assert all([type(x) == typ for x in handle_state.value])
-                    prop_value = tuple([typ(new) for new in prop_value])
+                    if len(handle_state.value) > 0:
+                        # We currently assume non-empty tuple types have length
+                        # greater than 0, and contents are all the same type.
+                        typ = type(handle_state.value[0])
+                        assert all([type(x) == typ for x in handle_state.value])
+                        prop_value = tuple([typ(new) for new in prop_value])
+                    else:
+                        # Empty tuple.
+                        prop_value = tuple(prop_value)
                 else:
                     prop_value = type(handle_state.value)(prop_value)
 
@@ -429,9 +432,9 @@ class GuiApi:
         if brand_color is not None:
             assert len(brand_color) in (3, 10)
             if len(brand_color) == 3:
-                assert all(map(lambda val: isinstance(val, int), brand_color)), (
-                    "All channels should be integers."
-                )
+                assert all(
+                    map(lambda val: isinstance(val, int), brand_color)
+                ), "All channels should be integers."
 
                 # RGB => HLS.
                 h, l, s = colorsys.rgb_to_hls(
@@ -741,9 +744,9 @@ class GuiApi:
             plotly_path = (
                 Path(plotly.__file__).parent / "package_data" / "plotly.min.js"
             )
-            assert plotly_path.exists(), (
-                f"Could not find plotly.min.js at {plotly_path}."
-            )
+            assert (
+                plotly_path.exists()
+            ), f"Could not find plotly.min.js at {plotly_path}."
 
             # Send it over!
             plotly_js = plotly_path.read_text(encoding="utf-8")
