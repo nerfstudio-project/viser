@@ -12,15 +12,6 @@ import {
 import { BatchedMeshHoverOutlines } from "./mesh/BatchedMeshHoverOutlines";
 import { rgbToInt } from "./mesh/MeshUtils";
 import { MeshBasicMaterial } from "three";
-import {
-  createDataView,
-  isPerAxisScaling,
-  readPositionFromDataView,
-  readQuaternionFromDataView,
-  readScaleFromDataView,
-  BYTES_PER_FLOAT,
-  QUATERNION_COMPONENTS,
-} from "./utils/BatchedTransformUtils";
 
 const originGeom = new THREE.SphereGeometry(1.0);
 
@@ -319,24 +310,71 @@ export const InstancedAxes = React.forwardRef<
       axesTransformations;
 
     // Create DataViews to read float values directly.
-    const positionsView = createDataView(batched_positions);
-    const wxyzsView = createDataView(batched_wxyzs);
-    const scalesView = batched_scales ? createDataView(batched_scales) : null;
-    const isPerAxis = isPerAxisScaling(batched_scales, batched_wxyzs);
+    const positionsView = new DataView(
+      batched_positions.buffer,
+      batched_positions.byteOffset,
+      batched_positions.byteLength,
+    );
+
+    const wxyzsView = new DataView(
+      batched_wxyzs.buffer,
+      batched_wxyzs.byteOffset,
+      batched_wxyzs.byteLength,
+    );
+
+    const scalesView = batched_scales
+      ? new DataView(
+          batched_scales.buffer,
+          batched_scales.byteOffset,
+          batched_scales.byteLength,
+        )
+      : null;
 
     // Calculate number of instances.
-    const numInstances = batched_wxyzs.byteLength / (QUATERNION_COMPONENTS * BYTES_PER_FLOAT);
+    const numInstances = batched_wxyzs.byteLength / (4 * 4); // 4 floats, 4 bytes per float
 
     for (let i = 0; i < numInstances; i++) {
-      // Read transform data.
-      readPositionFromDataView(positionsView, i, tmpPosition);
-      readQuaternionFromDataView(wxyzsView, i, tmpQuat);
-      readScaleFromDataView(scalesView, i, isPerAxis, tmpScale);
+      // Calculate byte offsets for reading float values.
+      const posOffset = i * 3 * 4; // 3 floats, 4 bytes per float
+      const wxyzOffset = i * 4 * 4; // 4 floats, 4 bytes per float
+      const scaleOffset = batched_scales && batched_scales.byteLength === batched_wxyzs.byteLength / 4 * 3
+        ? i * 3 * 4 // Per-axis scaling: 3 floats, 4 bytes per float
+        : i * 4; // Uniform scaling: 1 float, 4 bytes per float
+
+      // Read scale value if available.
+      if (scalesView) {
+        // Check if we have per-axis scaling (N,3) or uniform scaling (N,).
+        if (batched_scales!.byteLength === batched_wxyzs.byteLength / 4 * 3) {
+          // Per-axis scaling: read 3 floats.
+          tmpScale.set(
+            scalesView.getFloat32(scaleOffset, true), // x scale
+            scalesView.getFloat32(scaleOffset + 4, true), // y scale
+            scalesView.getFloat32(scaleOffset + 8, true), // z scale
+          );
+        } else {
+          // Uniform scaling: read 1 float and apply to all axes.
+          const scale = scalesView.getFloat32(scaleOffset, true);
+          tmpScale.set(scale, scale, scale);
+        }
+      } else {
+        tmpScale.set(1, 1, 1);
+      }
 
       // Set position from DataView.
-      T_world_frame.makeRotationFromQuaternion(tmpQuat)
+      T_world_frame.makeRotationFromQuaternion(
+        tmpQuat.set(
+          wxyzsView.getFloat32(wxyzOffset + 4, true), // x
+          wxyzsView.getFloat32(wxyzOffset + 8, true), // y
+          wxyzsView.getFloat32(wxyzOffset + 12, true), // z
+          wxyzsView.getFloat32(wxyzOffset, true), // w (first value)
+        ),
+      )
         .scale(tmpScale)
-        .setPosition(tmpPosition.x, tmpPosition.y, tmpPosition.z);
+        .setPosition(
+          positionsView.getFloat32(posOffset, true), // x
+          positionsView.getFloat32(posOffset + 4, true), // y
+          positionsView.getFloat32(posOffset + 8, true), // z
+        );
 
       T_world_framex.copy(T_world_frame).multiply(T_frame_framex);
       T_world_framey.copy(T_world_frame).multiply(T_frame_framey);

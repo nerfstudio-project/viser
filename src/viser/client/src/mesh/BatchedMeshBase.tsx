@@ -3,13 +3,6 @@ import * as THREE from "three";
 import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 import { MeshoptSimplifier } from "meshoptimizer";
 import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
-import {
-  createDataView,
-  isPerAxisScaling,
-  readPositionFromDataView,
-  readQuaternionFromDataView,
-  readScaleFromDataView,
-} from "../utils/BatchedTransformUtils";
 
 // Define the types of LOD settings.
 // - "off": No LOD.
@@ -210,17 +203,66 @@ export const BatchedMeshBase = React.forwardRef<
     }
 
     // Create views to efficiently read float values.
-    const positionsView = createDataView(props.batched_positions);
-    const wxyzsView = createDataView(props.batched_wxyzs);
-    const scalesView = props.batched_scales ? createDataView(props.batched_scales) : null;
-    const isPerAxis = isPerAxisScaling(props.batched_scales, props.batched_wxyzs);
+    const positionsView = new DataView(
+      props.batched_positions.buffer,
+      props.batched_positions.byteOffset,
+      props.batched_positions.byteLength,
+    );
+    const wxyzsView = new DataView(
+      props.batched_wxyzs.buffer,
+      props.batched_wxyzs.byteOffset,
+      props.batched_wxyzs.byteLength,
+    );
+    const scalesView = props.batched_scales
+      ? new DataView(
+          props.batched_scales.buffer,
+          props.batched_scales.byteOffset,
+          props.batched_scales.byteLength,
+        )
+      : null;
 
     // Update all instances.
     mesh.updateInstances((obj, index) => {
-      // Read transform data.
-      readPositionFromDataView(positionsView, index, tempPosition);
-      readQuaternionFromDataView(wxyzsView, index, tempQuaternion);
-      readScaleFromDataView(scalesView, index, isPerAxis, tempScale);
+      // Calculate byte offsets for reading float values.
+      const posOffset = index * 3 * 4; // 3 floats, 4 bytes per float.
+      const wxyzOffset = index * 4 * 4; // 4 floats, 4 bytes per float.
+      const scaleOffset = props.batched_scales && props.batched_scales.byteLength === props.batched_wxyzs.byteLength / 4 * 3 
+        ? index * 3 * 4 // Per-axis scaling: 3 floats, 4 bytes per float.
+        : index * 4; // Uniform scaling: 1 float, 4 bytes per float.
+
+      // Read position values.
+      tempPosition.set(
+        positionsView.getFloat32(posOffset, true), // x.
+        positionsView.getFloat32(posOffset + 4, true), // y.
+        positionsView.getFloat32(posOffset + 8, true), // z.
+      );
+
+      // Read quaternion values.
+      tempQuaternion.set(
+        wxyzsView.getFloat32(wxyzOffset + 4, true), // x.
+        wxyzsView.getFloat32(wxyzOffset + 8, true), // y.
+        wxyzsView.getFloat32(wxyzOffset + 12, true), // z.
+        wxyzsView.getFloat32(wxyzOffset, true), // w (first value).
+      );
+
+      // Read scale value if available.
+      if (scalesView) {
+        // Check if we have per-axis scaling (N,3) or uniform scaling (N,).
+        if (props.batched_scales!.byteLength === props.batched_wxyzs.byteLength / 4 * 3) {
+          // Per-axis scaling: read 3 floats.
+          tempScale.set(
+            scalesView.getFloat32(scaleOffset, true), // x scale.
+            scalesView.getFloat32(scaleOffset + 4, true), // y scale.
+            scalesView.getFloat32(scaleOffset + 8, true), // z scale.
+          );
+        } else {
+          // Uniform scaling: read 1 float and apply to all axes.
+          const scale = scalesView.getFloat32(scaleOffset, true);
+          tempScale.setScalar(scale);
+        }
+      } else {
+        tempScale.set(1, 1, 1);
+      }
 
       // Apply to the instance.
       obj.position.copy(tempPosition);
