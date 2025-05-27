@@ -10,7 +10,7 @@ export default function MarkdownComponent({
   return (
     <Box pb="xs" px="sm" style={{ maxWidth: "95%" }}>
       <ErrorBoundary
-        fallback={<Text ta="center">Markdown Failed to Render</Text>}
+        fallback={<Text style={{ textAlign: "center" }}>Markdown Failed to Render</Text>}
       >
         <Markdown>{markdown}</Markdown>
       </ErrorBoundary>

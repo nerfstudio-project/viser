@@ -14,7 +14,6 @@ import { ViewerMutable } from "./ViewerContext";
 import {
   Anchor,
   Box,
-  ColorSchemeScript,
   Image,
   MantineProvider,
   Modal,
@@ -212,6 +211,11 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
   const showLogo = viewer.useGui((state) => state.theme.show_logo);
   const { messageSource } = viewer;
 
+  // Update data attribute for color scheme
+  useEffect(() => {
+    document.documentElement.setAttribute('data-mantine-color-scheme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
+
   // Create Mantine theme with custom colors if provided.
   const mantineTheme = useMemo(
     () =>
@@ -226,10 +230,9 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <ColorSchemeScript forceColorScheme={darkMode ? "dark" : "light"} />
       <MantineProvider
         theme={mantineTheme}
-        forceColorScheme={darkMode ? "dark" : "light"}
+        defaultColorScheme={darkMode ? "dark" : "light"}
       >
         {children}
         <NotificationsPanel />
@@ -823,7 +826,7 @@ function ViserLogo() {
         onClose={closeAbout}
         withCloseButton={false}
         size="xl"
-        ta="center"
+        style={{ textAlign: "center" }}
       >
         <Box>
           <p>Viser is a 3D visualization toolkit developed at UC Berkeley.</p>
@@ -831,8 +834,7 @@ function ViserLogo() {
             <Anchor
               href="https://github.com/nerfstudio-project/"
               target="_blank"
-              fw="600"
-              style={{ "&:focus": { outline: "none" } }}
+              style={{ fontWeight: "600", "&:focus": { outline: "none" } }}
             >
               Nerfstudio
             </Anchor>
@@ -840,8 +842,7 @@ function ViserLogo() {
             <Anchor
               href="https://github.com/nerfstudio-project/viser"
               target="_blank"
-              fw="600"
-              style={{ "&:focus": { outline: "none" } }}
+              style={{ fontWeight: "600", "&:focus": { outline: "none" } }}
             >
               GitHub
             </Anchor>
@@ -849,8 +850,7 @@ function ViserLogo() {
             <Anchor
               href="https://viser.studio/main"
               target="_blank"
-              fw="600"
-              style={{ "&:focus": { outline: "none" } }}
+              style={{ fontWeight: "600", "&:focus": { outline: "none" } }}
             >
               Documentation
             </Anchor>

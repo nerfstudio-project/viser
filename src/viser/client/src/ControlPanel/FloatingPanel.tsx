@@ -5,7 +5,7 @@ import {
   Collapse,
   Paper,
   ScrollArea,
-  useMantineColorScheme,
+  useMantineTheme,
 } from "@mantine/core";
 import React from "react";
 import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
@@ -237,10 +237,12 @@ FloatingPanel.Handle = function FloatingPanelHandle({
   children: string | React.ReactNode;
 }) {
   const panelContext = React.useContext(FloatingPanelContext)!;
+  const theme = useMantineTheme();
+  const isDarkMode = document.documentElement.getAttribute('data-mantine-color-scheme') === 'dark';
 
   return (
     <Box
-      style={(theme) => ({
+      style={{
         borderRadius: "0.2em 0.2em 0 0",
         lineHeight: "1.5em",
         cursor: "pointer",
@@ -253,11 +255,10 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         height: "2.75em",
         borderBottomWidth: panelContext.expanded ? "1px" : 0,
         borderBottomStyle: "solid",
-        borderColor:
-          useMantineColorScheme().colorScheme == "dark"
-            ? theme.colors.dark[4]
-            : theme.colors.gray[3],
-      })}
+        borderColor: isDarkMode
+          ? theme.colors.dark[4]
+          : theme.colors.gray[3],
+      }}
       onClick={() => {
         const state = panelContext.dragInfo.current;
         if (state.dragging) {
@@ -290,7 +291,7 @@ FloatingPanel.Contents = function FloatingPanelContents({
         <Box
           /* Prevent internals from getting too wide. Needs to match the
            * width of the wrapper element above. */
-          w={context.width}
+          style={{ width: context.width }}
         >
           {children}
         </Box>

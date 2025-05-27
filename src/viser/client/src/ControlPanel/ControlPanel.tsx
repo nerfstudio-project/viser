@@ -184,7 +184,7 @@ function ConnectionStatus() {
           />
         )}
       </Transition>
-      <Box px="xs" style={{ flexGrow: 1 }} lts={"-0.5px"} pt="0.1em">
+      <Box px="xs" style={{ flexGrow: 1, letterSpacing: "-0.5px" }} pt="0.1em">
         {label !== "" ? label : connected ? "Connected" : "Connecting..."}
       </Box>
     </>

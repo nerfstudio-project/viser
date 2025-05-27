@@ -24,7 +24,7 @@ function ImageComponent({ props }: GuiImageMessage) {
   return imageUrl === null ? null : (
     <Box px="xs">
       {props.label === null ? null : (
-        <Text fz="sm" display="block">
+        <Text style={{ fontSize: "sm", display: "block" }}>
           {props.label}
         </Text>
       )}

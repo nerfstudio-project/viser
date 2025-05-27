@@ -547,7 +547,7 @@ function useFileDownloadHandler() {
                   variant="light"
                   size="sm"
                   mt="0.05em"
-                  w="100%"
+                  style={{ width: "100%" }}
                 >
                   {`${downloadState.metadata.filename} (${downloadState.displayFilesize})`}
                 </Button>

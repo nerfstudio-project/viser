@@ -168,7 +168,7 @@ export default function ServerControls() {
         </Group>
         <Divider mt="xs" />
         <Box>
-          <Text mb="0.2em" fw={500} fz="sm">
+          <Text mb="0.2em" style={{ fontWeight: 500, fontSize: "sm" }}>
             Scene tree
           </Text>
           <MemoizedTable />
