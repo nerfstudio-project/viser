@@ -85,6 +85,7 @@ export const BatchedMesh = React.forwardRef<
       material={material}
       batched_positions={message.props.batched_positions}
       batched_wxyzs={message.props.batched_wxyzs}
+      batched_scales={message.props.batched_scales}
       lod={message.props.lod}
       cast_shadow={message.props.cast_shadow}
       receive_shadow={message.props.receive_shadow}

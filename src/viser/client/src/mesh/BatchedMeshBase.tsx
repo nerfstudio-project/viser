@@ -111,6 +111,7 @@ export const BatchedMeshBase = React.forwardRef<
     // Data for instance positions and orientations.
     batched_positions: Uint8Array;
     batched_wxyzs: Uint8Array;
+    batched_scales: Uint8Array | null;
 
     // Geometry info.
     geometry: THREE.BufferGeometry;
@@ -212,12 +213,20 @@ export const BatchedMeshBase = React.forwardRef<
       props.batched_wxyzs.byteOffset,
       props.batched_wxyzs.byteLength,
     );
+    const scalesView = props.batched_scales
+      ? new DataView(
+          props.batched_scales.buffer,
+          props.batched_scales.byteOffset,
+          props.batched_scales.byteLength,
+        )
+      : null;
 
     // Update all instances.
     mesh.updateInstances((obj, index) => {
       // Calculate byte offsets for reading float values.
       const posOffset = index * 3 * 4; // 3 floats, 4 bytes per float.
       const wxyzOffset = index * 4 * 4; // 4 floats, 4 bytes per float.
+      const scaleOffset = index * 4; // 1 float, 4 bytes per float.
 
       // Read position values.
       tempPosition.set(
@@ -234,12 +243,25 @@ export const BatchedMeshBase = React.forwardRef<
         wxyzsView.getFloat32(wxyzOffset, true), // w (first value).
       );
 
+      // Read scale value if available.
+      if (scalesView) {
+        const scale = scalesView.getFloat32(scaleOffset, true);
+        tempScale.setScalar(scale);
+      } else {
+        tempScale.set(1, 1, 1);
+      }
+
       // Apply to the instance.
       obj.position.copy(tempPosition);
       obj.quaternion.copy(tempQuaternion);
       obj.scale.copy(tempScale);
     });
-  }, [props.batched_positions, props.batched_wxyzs, mesh]);
+  }, [
+    props.batched_positions,
+    props.batched_wxyzs,
+    props.batched_scales,
+    mesh,
+  ]);
 
   // Update shadow settings.
   useEffect(() => {
@@ -266,6 +288,7 @@ export const BatchedMeshBase = React.forwardRef<
           geometry={props.geometry}
           batched_positions={props.batched_positions}
           batched_wxyzs={props.batched_wxyzs}
+          batched_scales={props.batched_scales}
         />
       )}
     </>

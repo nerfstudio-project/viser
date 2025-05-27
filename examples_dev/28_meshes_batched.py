@@ -18,31 +18,33 @@ import numpy as np
 import trimesh
 
 import viser
-import viser.transforms as tf
 
 
-def create_grid_transforms(num_instances: int) -> tuple[np.ndarray, np.ndarray]:
-    """Create grid positions and rotations for mesh instances.
-
-    Args:
-        num_instances: Number of mesh instances to create transforms for.
-
-    Returns:
-        tuple containing:
-            - positions: (N, 3) float32 array of random positions
-            - rotations: (N, 4) float32 array of quaternions (wxyz format)
-    """
+def create_grid_transforms(
+    num_instances: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Create grid positions, rotations, and scales for mesh instances."""
     grid_size = int(np.ceil(np.sqrt(num_instances)))
-    x = np.arange(grid_size) - 0.5 * (grid_size - 1)
-    y = np.arange(grid_size) - 0.5 * (grid_size - 1)
-    positions = np.stack(np.meshgrid(x, y, 1.0), axis=-1).reshape(-1, 3)
-    positions = positions[:num_instances]
-    rotations = np.array(
-        [tf.SO3.identity().wxyz for _ in range(num_instances)],
-        dtype=np.float32,
-    )
 
-    return positions, rotations
+    # Create grid positions
+    x = np.arange(grid_size) - (grid_size - 1) / 2
+    y = np.arange(grid_size) - (grid_size - 1) / 2
+    xx, yy = np.meshgrid(x, y)
+
+    positions = np.zeros((grid_size * grid_size, 3), dtype=np.float32)
+    positions[:, 0] = xx.flatten()
+    positions[:, 1] = yy.flatten()
+    positions[:, 2] = 1.0
+    positions = positions[:num_instances]
+
+    # All instances have identity rotation
+    rotations = np.zeros((num_instances, 4), dtype=np.float32)
+    rotations[:, 0] = 1.0  # w component = 1
+
+    # Initial scales.
+    scales = np.linalg.norm(positions, axis=-1)
+    scales = np.sin(scales * 1.5) * 0.5 + 1.0
+    return positions, rotations, scales.astype(np.float32)
 
 
 def main():
@@ -72,31 +74,19 @@ def main():
         "# of instances", min=1, max=1000, step=1, initial_value=100
     )
 
-    # Wiggle mesh, to test pose update latency.
-    wiggle_checkbox = server.gui.add_checkbox("Wiggle", initial_value=False)
-
-    # Allow user to toggle LOD.
+    animate_checkbox = server.gui.add_checkbox("Animate", initial_value=False)
     lod_checkbox = server.gui.add_checkbox("Enable LOD", initial_value=True)
-
-    @lod_checkbox.on_update
-    def _(_):
-        mesh_handle.lod = "auto" if lod_checkbox.value else "off"
-
-    # Allow user to toggle cast shadow.
     cast_shadow_checkbox = server.gui.add_checkbox("Cast shadow", initial_value=True)
 
-    @cast_shadow_checkbox.on_update
-    def _(_):
-        mesh_handle.cast_shadow = cast_shadow_checkbox.value
-
     # Initialize transforms.
-    positions, rotations = create_grid_transforms(instance_count_slider.value)
+    positions, rotations, scales = create_grid_transforms(instance_count_slider.value)
 
     # Create batched mesh visualization.
     axes_handle = server.scene.add_batched_axes(
         name="axes",
         batched_positions=positions,
         batched_wxyzs=rotations,
+        batched_scales=scales,
     )
     mesh_handle = server.scene.add_batched_meshes_simple(
         name="dragon",
@@ -104,38 +94,54 @@ def main():
         faces=dragon_mesh.faces,
         batched_positions=positions,
         batched_wxyzs=rotations,
-        lod="auto" if lod_checkbox.value else "off",
+        batched_scales=scales,
+        lod="auto",
     )
+
+    # Set up checkbox callbacks
+    @lod_checkbox.on_update
+    def _(_):
+        mesh_handle.lod = "auto" if lod_checkbox.value else "off"
+
+    @cast_shadow_checkbox.on_update
+    def _(_):
+        mesh_handle.cast_shadow = cast_shadow_checkbox.value
 
     # Animation loop.
     while True:
-        current_instance_count = instance_count_slider.value
-        update_visualization = False
+        n = instance_count_slider.value
 
         # Recreate transforms if instance count changed.
-        if positions.shape[0] != current_instance_count:
-            positions, rotations = create_grid_transforms(current_instance_count)
-            update_visualization = True
+        if positions.shape[0] != n:
+            positions, rotations, scales = create_grid_transforms(n)
+            grid_size = int(np.ceil(np.sqrt(n)))
 
-        # Add small random perturbations, to test the update latency.
-        if wiggle_checkbox.value:
-            delta = np.random.rand(current_instance_count, 2) * 0.02 - 0.01
-            positions[:, :2] = (positions[:, :2] + delta).astype(np.float32)
-            update_visualization = True
+            with server.atomic():
+                # Update grid size
+                grid_handle.width = grid_handle.height = grid_size + 2
+                grid_handle.width_segments = grid_handle.height_segments = grid_size + 2
 
-        # Update visualization -- positions and wxyzs together, to make sure the shapes remain consistent.
-        if update_visualization:
+                # Update all transforms
+                mesh_handle.batched_positions = axes_handle.batched_positions = (
+                    positions
+                )
+                mesh_handle.batched_wxyzs = axes_handle.batched_wxyzs = rotations
+                mesh_handle.batched_scales = axes_handle.batched_scales = scales
+
+        # Animate if enabled
+        elif animate_checkbox.value:
+            # Animate positions
+            positions[:, :2] += np.random.uniform(-0.01, 0.01, (n, 2))
+
+            # Animate scales with wave effect
+            t = time.perf_counter() * 2.0
+            scales = np.linalg.norm(positions, axis=-1)
+            scales = np.sin(scales * 1.5 - t) * 0.5 + 1.0
             with server.atomic():
                 mesh_handle.batched_positions = positions
-                mesh_handle.batched_wxyzs = rotations
+                mesh_handle.batched_scales = scales
                 axes_handle.batched_positions = positions
-                axes_handle.batched_wxyzs = rotations
-
-                grid_size = int(np.ceil(np.sqrt(current_instance_count)))
-                grid_handle.width = grid_size + 2
-                grid_handle.height = grid_size + 2
-                grid_handle.width_segments = grid_size + 2
-                grid_handle.height_segments = grid_size + 2
+                axes_handle.batched_scales = scales
 
         time.sleep(1.0 / 30.0)
 

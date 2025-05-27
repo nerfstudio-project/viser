@@ -243,11 +243,19 @@ export const InstancedAxes = React.forwardRef<
     batched_wxyzs: Uint8Array;
     /** Raw bytes containing float32 position values (xyz) */
     batched_positions: Uint8Array;
+    /** Raw bytes containing float32 scale values (uniform scale) */
+    batched_scales: Uint8Array | null;
     axes_length?: number;
     axes_radius?: number;
   }
 >(function InstancedAxes(
-  { batched_wxyzs, batched_positions, axes_length = 0.5, axes_radius = 0.0125 },
+  {
+    batched_wxyzs,
+    batched_positions,
+    batched_scales,
+    axes_length = 0.5,
+    axes_radius = 0.0125,
+  },
   ref,
 ) {
   const axesRef = React.useRef<THREE.InstancedMesh>(null);
@@ -296,6 +304,7 @@ export const InstancedAxes = React.forwardRef<
     const T_world_framey = new THREE.Matrix4();
     const T_world_framez = new THREE.Matrix4();
     const tmpQuat = new THREE.Quaternion();
+    const tmpScale = new THREE.Vector3();
 
     const { T_frame_framex, T_frame_framey, T_frame_framez, red, green, blue } =
       axesTransformations;
@@ -313,6 +322,14 @@ export const InstancedAxes = React.forwardRef<
       batched_wxyzs.byteLength,
     );
 
+    const scalesView = batched_scales
+      ? new DataView(
+          batched_scales.buffer,
+          batched_scales.byteOffset,
+          batched_scales.byteLength,
+        )
+      : null;
+
     // Calculate number of instances.
     const numInstances = batched_wxyzs.byteLength / (4 * 4); // 4 floats, 4 bytes per float
 
@@ -320,6 +337,15 @@ export const InstancedAxes = React.forwardRef<
       // Calculate byte offsets for reading float values.
       const posOffset = i * 3 * 4; // 3 floats, 4 bytes per float
       const wxyzOffset = i * 4 * 4; // 4 floats, 4 bytes per float
+      const scaleOffset = i * 4; // 1 float, 4 bytes per float
+
+      // Read scale value if available.
+      if (scalesView) {
+        const scale = scalesView.getFloat32(scaleOffset, true);
+        tmpScale.set(scale, scale, scale);
+      } else {
+        tmpScale.set(1, 1, 1);
+      }
 
       // Set position from DataView.
       T_world_frame.makeRotationFromQuaternion(
@@ -329,11 +355,13 @@ export const InstancedAxes = React.forwardRef<
           wxyzsView.getFloat32(wxyzOffset + 12, true), // z
           wxyzsView.getFloat32(wxyzOffset, true), // w (first value)
         ),
-      ).setPosition(
-        positionsView.getFloat32(posOffset, true), // x
-        positionsView.getFloat32(posOffset + 4, true), // y
-        positionsView.getFloat32(posOffset + 8, true), // z
-      );
+      )
+        .scale(tmpScale)
+        .setPosition(
+          positionsView.getFloat32(posOffset, true), // x
+          positionsView.getFloat32(posOffset + 4, true), // y
+          positionsView.getFloat32(posOffset + 8, true), // z
+        );
 
       T_world_framex.copy(T_world_frame).multiply(T_frame_framex);
       T_world_framey.copy(T_world_frame).multiply(T_frame_framey);
@@ -349,7 +377,7 @@ export const InstancedAxes = React.forwardRef<
     }
     axesRef.current.instanceMatrix.needsUpdate = true;
     axesRef.current.instanceColor!.needsUpdate = true;
-  }, [batched_wxyzs, batched_positions, axesTransformations]);
+  }, [batched_wxyzs, batched_positions, batched_scales, axesTransformations]);
 
   // Create cylinder geometries for outlines - one for each axis.
   const outlineCylinderGeom = React.useMemo(
@@ -404,6 +432,7 @@ export const InstancedAxes = React.forwardRef<
         geometry={outlineCylinderGeom}
         batched_positions={batched_positions}
         batched_wxyzs={batched_wxyzs}
+        batched_scales={batched_scales}
         meshTransform={xAxisTransform}
         computeBatchIndexFromInstanceIndex={(instanceId) =>
           Math.floor(instanceId / 3)
@@ -414,6 +443,7 @@ export const InstancedAxes = React.forwardRef<
         geometry={outlineCylinderGeom}
         batched_positions={batched_positions}
         batched_wxyzs={batched_wxyzs}
+        batched_scales={batched_scales}
         meshTransform={yAxisTransform}
         computeBatchIndexFromInstanceIndex={(instanceId) =>
           Math.floor(instanceId / 3)
@@ -424,6 +454,7 @@ export const InstancedAxes = React.forwardRef<
         geometry={outlineCylinderGeom}
         batched_positions={batched_positions}
         batched_wxyzs={batched_wxyzs}
+        batched_scales={batched_scales}
         meshTransform={zAxisTransform}
         computeBatchIndexFromInstanceIndex={(instanceId) =>
           Math.floor(instanceId / 3)

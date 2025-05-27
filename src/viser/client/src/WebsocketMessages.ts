@@ -63,6 +63,7 @@ export interface BatchedAxesMessage {
   props: {
     batched_wxyzs: Uint8Array;
     batched_positions: Uint8Array;
+    batched_scales: Uint8Array | null;
     axes_length: number;
     axes_radius: number;
   };
@@ -264,6 +265,7 @@ export interface BatchedMeshesMessage {
   props: {
     batched_wxyzs: Uint8Array;
     batched_positions: Uint8Array;
+    batched_scales: Uint8Array | null;
     lod: "auto" | "off" | [number, number][];
     vertices: Uint8Array;
     faces: Uint8Array;
@@ -287,6 +289,7 @@ export interface BatchedGlbMessage {
   props: {
     batched_wxyzs: Uint8Array;
     batched_positions: Uint8Array;
+    batched_scales: Uint8Array | null;
     lod: "auto" | "off" | [number, number][];
     glb_data: Uint8Array;
     scale: number;
