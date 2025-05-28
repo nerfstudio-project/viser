@@ -2,6 +2,7 @@ import { ViewerContext } from "../ViewerContext";
 import {
   Box,
   Button,
+  Image,
   Checkbox,
   Divider,
   Group,
@@ -22,31 +23,35 @@ export default function ServerControls() {
   const viewerMutable = viewer.mutable.current; // Get mutable once
   const [showStats, setShowStats] = React.useState(false);
 
-  function triggerBlur(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== "Enter") return;
-    event.currentTarget.blur();
-    event.currentTarget.focus();
-  }
-
   return (
     <>
       {showStats ? <Stats className="stats-panel" /> : null}
-      <Stack gap="xs">
-        <TextInput
-          label="Server"
-          defaultValue={viewer.useGui((state) => state.server)}
-          onBlur={(event) =>
-            viewer.useGui.setState({ server: event.currentTarget.value })
-          }
-          onKeyDown={triggerBlur}
-          styles={{
-            input: {
-              minHeight: "1.75rem",
-              height: "1.75rem",
-              padding: "0 0.5em",
-            },
-          }}
-        />
+      <Stack gap="xs" mt="0.3em">
+        <Tooltip label="Server URL" position="top-start">
+          <TextInput
+            leftSection={
+              <Image
+                src="./logo.svg"
+                style={{
+                  width: "1rem",
+                  height: "auto",
+                  filter: "grayscale(100%) opacity(0.3)",
+                }}
+              />
+            }
+            leftSectionWidth="1.8rem"
+            defaultValue={viewer.useGui((state) => state.server)}
+            onBlur={(event) =>
+              viewer.useGui.setState({ server: event.currentTarget.value })
+            }
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.currentTarget.blur();
+                event.currentTarget.focus();
+              }
+            }}
+          />
+        </Tooltip>
         <Button
           onClick={async () => {
             const supportsFileSystemAccess =
@@ -168,7 +173,7 @@ export default function ServerControls() {
         </Group>
         <Divider mt="xs" />
         <Box>
-          <Text mb="0.2em" style={{ fontWeight: 500, fontSize: "sm" }}>
+          <Text style={{ fontWeight: 500 }} fz="sm">
             Scene tree
           </Text>
           <MemoizedTable />

@@ -48,19 +48,12 @@ export default function SliderComponent({
             position: "relative",
           },
           markLabel: {
-            transform: "translate(-50%, 0.03rem)",
+            transform: "translate(-50%, 0.05rem)",
             fontSize: "0.6rem",
             textAlign: "center",
           },
           mark: {
             transform: "scale(1.95)",
-          },
-          markFilled: {
-            background: disabled
-              ? colorScheme === "dark"
-                ? theme.colors.dark[3]
-                : theme.colors.gray[4]
-              : theme.primaryColor,
           },
         })}
         pt="0.3em"

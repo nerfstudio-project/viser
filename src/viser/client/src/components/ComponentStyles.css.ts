@@ -32,3 +32,24 @@ globalStyle(
     transform: "translate(-85%, 0.03rem) !important",
   },
 );
+
+// Style for filled slider marks - use primary color to match the active segment.
+globalStyle(".mantine-Slider-mark[data-filled]:not([data-disabled])", {
+  background: "var(--mantine-primary-color-filled)",
+  borderColor: "var(--mantine-primary-color-filled)",
+});
+
+// Style for filled slider marks when disabled - use separate rules for light/dark.
+globalStyle(".mantine-Slider-mark[data-filled][data-disabled]", {
+  background: "var(--mantine-color-gray-5)",
+  borderColor: "var(--mantine-color-gray-5)",
+});
+
+// Dark mode styles for filled marks when disabled.
+globalStyle(
+  '[data-mantine-color-scheme="dark"] .mantine-Slider-mark[data-filled][data-disabled]',
+  {
+    background: "var(--mantine-color-dark-3)",
+    borderColor: "var(--mantine-color-dark-3)",
+  },
+);

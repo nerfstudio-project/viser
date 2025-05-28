@@ -19,6 +19,7 @@ import {
   Modal,
   Tooltip,
   createTheme,
+  useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
@@ -211,11 +212,6 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
   const showLogo = viewer.useGui((state) => state.theme.show_logo);
   const { messageSource } = viewer;
 
-  // Update data attribute for color scheme
-  useEffect(() => {
-    document.documentElement.setAttribute('data-mantine-color-scheme', darkMode ? 'dark' : 'light');
-  }, [darkMode]);
-
   // Create Mantine theme with custom colors if provided.
   const mantineTheme = useMemo(
     () =>
@@ -233,8 +229,18 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
       <MantineProvider
         theme={mantineTheme}
         defaultColorScheme={darkMode ? "dark" : "light"}
+        colorSchemeManager={{
+          // Mock external color scheme manager. This prevents multiple Viser
+          // instances from affecting each others' color schemes.
+          get: (defaultValue) => defaultValue,
+          set: () => null,
+          subscribe: () => null,
+          unsubscribe: () => null,
+          clear: () => null,
+        }}
       >
         {children}
+        <ColorSchemeSetter darkMode={darkMode} />
         <NotificationsPanel />
         <BrowserWarning />
         <ViserModal />
@@ -280,6 +286,15 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
       </MantineProvider>
     </>
   );
+}
+
+function ColorSchemeSetter(props: { darkMode: boolean }) {
+  const colorScheme = useMantineColorScheme();
+  // Update data attribute for color scheme.
+  useEffect(() => {
+    colorScheme.setColorScheme(props.darkMode ? "dark" : "light");
+  }, [props.darkMode]);
+  return null;
 }
 
 /**

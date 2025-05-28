@@ -1,5 +1,10 @@
 import React, { useCallback, useRef, useState } from "react";
-import { Box, useMantineTheme, useMantineColorScheme, Tooltip } from "@mantine/core";
+import {
+  Box,
+  useMantineTheme,
+  useMantineColorScheme,
+  Tooltip,
+} from "@mantine/core";
 import "./MultiSliderComponent.css";
 
 interface MultiSliderProps {
@@ -53,7 +58,7 @@ export function MultiSlider({
     const rect = containerRef.current.getBoundingClientRect();
     const percentage = (clientX - rect.left) / rect.width;
     const rawValue = percentage * (max - min) + min;
-    
+
     // Round to step.
     if (step) {
       return Math.round(rawValue / step) * step;
@@ -63,10 +68,10 @@ export function MultiSlider({
 
   const findClosestThumb = (targetValue: number) => {
     if (value.length === 0) return -1;
-    
+
     let minDistance = Infinity;
     let closestIndex = 0;
-    
+
     value.forEach((val, index) => {
       const distance = Math.abs(val - targetValue);
       if (distance < minDistance) {
@@ -74,55 +79,67 @@ export function MultiSlider({
         closestIndex = index;
       }
     });
-    
+
     return closestIndex;
   };
 
-  const updateValue = useCallback((newValue: number, thumbIndex: number) => {
-    const newValues = [...value];
-    newValues[thumbIndex] = clamp(newValue, min, max);
-    
-    // Apply constraints.
-    const _minRange = minRange || step;
-    
-    // Prevent overlapping with next thumb.
-    if (thumbIndex < newValues.length - 1 && newValues[thumbIndex] > newValues[thumbIndex + 1] - _minRange) {
-      newValues[thumbIndex] = newValues[thumbIndex + 1] - _minRange;
-    }
-    
-    // Prevent overlapping with previous thumb.
-    if (thumbIndex > 0 && newValues[thumbIndex] < newValues[thumbIndex - 1] + _minRange) {
-      newValues[thumbIndex] = newValues[thumbIndex - 1] + _minRange;
-    }
-    
-    // Respect fixed endpoints.
-    if (fixedEndpoints && (thumbIndex === 0 || thumbIndex === newValues.length - 1)) {
-      return;
-    }
-    
-    onChange(newValues);
-  }, [value, onChange, min, max, step, minRange, fixedEndpoints]);
+  const updateValue = useCallback(
+    (newValue: number, thumbIndex: number) => {
+      const newValues = [...value];
+      newValues[thumbIndex] = clamp(newValue, min, max);
+
+      // Apply constraints.
+      const _minRange = minRange || step;
+
+      // Prevent overlapping with next thumb.
+      if (
+        thumbIndex < newValues.length - 1 &&
+        newValues[thumbIndex] > newValues[thumbIndex + 1] - _minRange
+      ) {
+        newValues[thumbIndex] = newValues[thumbIndex + 1] - _minRange;
+      }
+
+      // Prevent overlapping with previous thumb.
+      if (
+        thumbIndex > 0 &&
+        newValues[thumbIndex] < newValues[thumbIndex - 1] + _minRange
+      ) {
+        newValues[thumbIndex] = newValues[thumbIndex - 1] + _minRange;
+      }
+
+      // Respect fixed endpoints.
+      if (
+        fixedEndpoints &&
+        (thumbIndex === 0 || thumbIndex === newValues.length - 1)
+      ) {
+        return;
+      }
+
+      onChange(newValues);
+    },
+    [value, onChange, min, max, step, minRange, fixedEndpoints],
+  );
 
   const handleMouseDown = (event: React.MouseEvent) => {
     if (disabled || value.length === 0) return;
-    
+
     const targetValue = getValueFromPosition(event.clientX);
     const thumbIndex = findClosestThumb(targetValue);
     if (thumbIndex === -1) return;
-    
+
     setActiveThumb(thumbIndex);
-    
+
     const handleMouseMove = (e: MouseEvent) => {
       const newValue = getValueFromPosition(e.clientX);
       updateValue(newValue, thumbIndex);
     };
-    
+
     const handleMouseUp = () => {
       setActiveThumb(null);
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-    
+
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
@@ -130,20 +147,20 @@ export function MultiSlider({
   const handleThumbMouseDown = (event: React.MouseEvent, index: number) => {
     event.stopPropagation();
     if (disabled || value.length === 0 || index >= value.length) return;
-    
+
     setActiveThumb(index);
-    
+
     const handleMouseMove = (e: MouseEvent) => {
       const newValue = getValueFromPosition(e.clientX);
       updateValue(newValue, index);
     };
-    
+
     const handleMouseUp = () => {
       setActiveThumb(null);
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-    
+
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
@@ -161,7 +178,7 @@ export function MultiSlider({
         onMouseDown={handleMouseDown}
       >
         <div className="multi-slider-track" />
-        
+
         {/* Render thumbs */}
         {value.map((val, index) => (
           <Tooltip
@@ -170,35 +187,40 @@ export function MultiSlider({
             opened={activeThumb === index}
             position="top"
             offset={10}
-            transitionProps={{ transition: 'fade', duration: 0 }}
+            transitionProps={{ transition: "fade", duration: 0 }}
             withinPortal
           >
             <div
               className={`multi-slider-thumb ${activeThumb === index ? "active" : ""}`}
               style={{
                 left: `${getPercentage(val)}%`,
-                backgroundColor: disabled ? undefined : theme.colors[theme.primaryColor][colorScheme === 'dark' ? 5 : 6],
+                backgroundColor: disabled
+                  ? undefined
+                  : theme.colors[theme.primaryColor][
+                      colorScheme === "dark" ? 5 : 6
+                    ],
               }}
               onMouseDown={(e) => handleThumbMouseDown(e, index)}
             />
           </Tooltip>
         ))}
-        
+
         {/* Render marks */}
-        {marks && marks.map((mark, index) => (
-          <div
-            key={`mark-${index}`}
-            className="multi-slider-mark-wrapper"
-            style={{
-              left: `${getPercentage(mark.value)}%`,
-            }}
-          >
-            <div className="multi-slider-mark" />
-            {mark.label && mark.label !== null && (
-              <div className="multi-slider-mark-label">{mark.label}</div>
-            )}
-          </div>
-        ))}
+        {marks &&
+          marks.map((mark, index) => (
+            <div
+              key={`mark-${index}`}
+              className="multi-slider-mark-wrapper"
+              style={{
+                left: `${getPercentage(mark.value)}%`,
+              }}
+            >
+              <div className="multi-slider-mark" />
+              {mark.label && mark.label !== null && (
+                <div className="multi-slider-mark-label">{mark.label}</div>
+              )}
+            </div>
+          ))}
       </div>
     </Box>
   );

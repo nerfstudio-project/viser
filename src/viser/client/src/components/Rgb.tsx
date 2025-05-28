@@ -44,7 +44,7 @@ export default function RgbComponent({
           setLocalValue(v);
 
           // Only process RGB format during onChange (not hex).
-          if (v.startsWith('rgb(')) {
+          if (v.startsWith("rgb(")) {
             const parsed = parseToRgb(v);
             if (parsed && !rgbEqual(parsed, value)) {
               setValue(uuid, parsed);
@@ -53,7 +53,7 @@ export default function RgbComponent({
         }}
         onKeyDown={(e) => {
           // Handle Enter key for hex color input.
-          if (e.key === 'Enter') {
+          if (e.key === "Enter") {
             const parsed = parseToRgb(localValue);
             if (parsed) {
               setValue(uuid, parsed);

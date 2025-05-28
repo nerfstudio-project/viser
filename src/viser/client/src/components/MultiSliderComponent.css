@@ -48,7 +48,7 @@
 
 .multi-slider-mark-wrapper {
   position: absolute;
-  top: 0;
+  top: 0px;
   transform: translateX(-50%);
   height: 100%;
   display: flex;
@@ -68,7 +68,7 @@
 .multi-slider-mark-label {
   position: absolute;
   top: 100%;
-  margin-top: 0.25rem;
+  margin-top: 0.05rem;
   font-size: 0.6rem;
   color: var(--mantine-color-gray-6);
   white-space: nowrap;

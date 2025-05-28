@@ -115,7 +115,7 @@ function EditNodeProps({
             alignItems: "center",
           }}
         >
-          <Box style={{ fontWeight: "500", flexGrow: "1", fontSize: "sm" }}>
+          <Box style={{ fontWeight: "500", flexGrow: "1" }} fz="sm">
             {node.message.type
               .replace("Message", "")
               .replace(/([A-Z])/g, " $1")
@@ -138,7 +138,7 @@ function EditNodeProps({
             />
           </Tooltip>
         </Box>
-        <Box style={{ fontSize: "xs", opacity: "0.5" }}>
+        <Box style={{ opacity: "0.5" }} fz="xs">
           {nodeName}
         </Box>
       </Box>
@@ -151,7 +151,7 @@ function EditNodeProps({
 
         return (
           <Flex key={key} align="center">
-            <Box style={{ fontSize: "xs", flexGrow: "1" }}>
+            <Box style={{ flexGrow: "1" }} fz="xs">
               {key.charAt(0).toUpperCase() + key.slice(1).split("_").join(" ")}
             </Box>
             <Flex gap="xs" style={{ width: "9em" }}>
@@ -256,7 +256,7 @@ function EditNodeProps({
           </Flex>
         );
       })}
-      <Box style={{ fontSize: "xs", opacity: "0.4" }}>
+      <Box style={{ opacity: "0.4" }} fz="xs">
         Updates from the server will overwrite local changes.
       </Box>
     </Box>

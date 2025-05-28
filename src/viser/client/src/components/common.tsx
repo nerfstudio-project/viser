@@ -60,15 +60,15 @@ function LabeledInput(props: {
       <Box
         // The per-layer offset here is just eyeballed.
         pr="xs"
-        style={{ 
+        style={{
           width: `${7.25 - props.folderDepth * 0.6375}em`,
-          flexShrink: 0, 
-          position: "relative" 
+          flexShrink: 0,
+          position: "relative",
         }}
       >
         <Text
           c="dimmed"
-          style={{ 
+          style={{
             fontSize: "0.875em",
             fontWeight: "450",
             lineHeight: "1.375em",

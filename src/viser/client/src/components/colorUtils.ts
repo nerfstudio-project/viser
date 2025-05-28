@@ -21,7 +21,7 @@ export function parseToRgb(value: string): RgbTuple | null {
     return [
       parseInt(rgbMatch[1]),
       parseInt(rgbMatch[2]),
-      parseInt(rgbMatch[3])
+      parseInt(rgbMatch[3]),
     ];
   }
 
@@ -30,7 +30,7 @@ export function parseToRgb(value: string): RgbTuple | null {
   if (hexMatch) {
     const hex = hexMatch[1];
     let r, g, b;
-    
+
     if (hex.length === 3) {
       // Convert #RGB to full RGB values.
       r = parseInt(hex[0] + hex[0], 16);
@@ -42,7 +42,7 @@ export function parseToRgb(value: string): RgbTuple | null {
       g = parseInt(hex.substring(2, 4), 16);
       b = parseInt(hex.substring(4, 6), 16);
     }
-    
+
     return [r, g, b];
   }
 
@@ -58,7 +58,7 @@ export function parseToRgba(value: string): RgbaTuple | null {
       parseInt(rgbaMatch[1]),
       parseInt(rgbaMatch[2]),
       parseInt(rgbaMatch[3]),
-      parseFloat(rgbaMatch[4])
+      parseFloat(rgbaMatch[4]),
     ];
   }
 
@@ -66,8 +66,11 @@ export function parseToRgba(value: string): RgbaTuple | null {
   const hexMatch = value.match(/^#([0-9A-Fa-f]{3,8})$/);
   if (hexMatch) {
     const hex = hexMatch[1];
-    let r, g, b, a = 1.0;
-    
+    let r,
+      g,
+      b,
+      a = 1.0;
+
     if (hex.length === 3) {
       // Convert #RGB to full RGB values.
       r = parseInt(hex[0] + hex[0], 16);
@@ -93,7 +96,7 @@ export function parseToRgba(value: string): RgbaTuple | null {
     } else {
       return null;
     }
-    
+
     return [r, g, b, a];
   }
 
@@ -113,5 +116,10 @@ export function rgbEqual(a: RgbTuple, b: RgbTuple): boolean {
 
 // Check if two RGBA tuples are equal.
 export function rgbaEqual(a: RgbaTuple, b: RgbaTuple): boolean {
-  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && Math.abs(a[3] - b[3]) < 0.001;
+  return (
+    a[0] === b[0] &&
+    a[1] === b[1] &&
+    a[2] === b[2] &&
+    Math.abs(a[3] - b[3]) < 0.001
+  );
 }

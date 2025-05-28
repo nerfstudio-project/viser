@@ -27,12 +27,10 @@ export default function MultiSliderComponent({
   if (!visible) return <></>;
   const updateValue = (value: number[]) => setValue(uuid, value);
   const input = (
-    <Box mt="0.2em" mb="0.4em">
+    <Box>
       <MultiSlider
         id={uuid}
         className={marks === null ? sliderDefaultMarks : undefined}
-        pt="0.2em"
-        pb="0.4em"
         min={min}
         max={max}
         step={step ?? undefined}

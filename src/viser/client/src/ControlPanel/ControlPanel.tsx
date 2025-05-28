@@ -97,8 +97,10 @@ export default function ControlPanel(props: {
 
   const panelContents = (
     <>
-      <Collapse in={!showGenerated || showSettings} p="xs" pt="0.375em">
-        <ServerControls />
+      <Collapse in={!showGenerated || showSettings}>
+        <Box p="xs" pt="0.375em">
+          <ServerControls />
+        </Box>
       </Collapse>
       <Collapse in={showGenerated && !showSettings}>
         <MemoizedGeneratedGuiContainer containerUuid={ROOT_CONTAINER_ID} />

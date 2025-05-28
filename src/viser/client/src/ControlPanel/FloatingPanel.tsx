@@ -5,6 +5,7 @@ import {
   Collapse,
   Paper,
   ScrollArea,
+  useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
 import React from "react";
@@ -238,44 +239,49 @@ FloatingPanel.Handle = function FloatingPanelHandle({
 }) {
   const panelContext = React.useContext(FloatingPanelContext)!;
   const theme = useMantineTheme();
-  const isDarkMode = document.documentElement.getAttribute('data-mantine-color-scheme') === 'dark';
+  const isDarkMode = useMantineColorScheme().colorScheme === "dark";
 
   return (
-    <Box
-      style={{
-        borderRadius: "0.2em 0.2em 0 0",
-        lineHeight: "1.5em",
-        cursor: "pointer",
-        position: "relative",
-        fontWeight: 400,
-        userSelect: "none",
-        display: "flex",
-        alignItems: "center",
-        padding: "0 0.75em",
-        height: "2.75em",
-        borderBottomWidth: panelContext.expanded ? "1px" : 0,
-        borderBottomStyle: "solid",
-        borderColor: isDarkMode
-          ? theme.colors.dark[4]
-          : theme.colors.gray[3],
-      }}
-      onClick={() => {
-        const state = panelContext.dragInfo.current;
-        if (state.dragging) {
-          state.dragging = false;
-          return;
-        }
-        panelContext.toggleExpanded();
-      }}
-      onTouchStart={(event) => {
-        panelContext.dragHandler(event);
-      }}
-      onMouseDown={(event) => {
-        panelContext.dragHandler(event);
-      }}
-    >
-      {children}
-    </Box>
+    <>
+      <Box
+        style={{
+          borderRadius: "0.2em 0.2em 0 0",
+          lineHeight: "1.5em",
+          cursor: "pointer",
+          position: "relative",
+          fontWeight: 400,
+          userSelect: "none",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 0.75em",
+          height: "2.75em",
+        }}
+        onClick={() => {
+          const state = panelContext.dragInfo.current;
+          if (state.dragging) {
+            state.dragging = false;
+            return;
+          }
+          panelContext.toggleExpanded();
+        }}
+        onTouchStart={(event) => {
+          panelContext.dragHandler(event);
+        }}
+        onMouseDown={(event) => {
+          panelContext.dragHandler(event);
+        }}
+      >
+        {children}
+      </Box>
+      <Box
+        mx="xs"
+        style={{
+          borderBottomWidth: panelContext.expanded ? "1px" : 0,
+          borderBottomStyle: "solid",
+          borderColor: isDarkMode ? theme.colors.dark[4] : theme.colors.gray[3],
+        }}
+      ></Box>
+    </>
   );
 };
 /** Contents of a panel. */
