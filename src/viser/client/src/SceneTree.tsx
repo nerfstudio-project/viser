@@ -180,6 +180,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             ref={ref}
             batched_wxyzs={message.props.batched_wxyzs}
             batched_positions={message.props.batched_positions}
+            batched_scales={message.props.batched_scales}
             axes_length={message.props.axes_length}
             axes_radius={message.props.axes_radius}
           />

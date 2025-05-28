@@ -13,6 +13,8 @@ interface BatchedMeshHoverOutlinesProps {
   batched_positions: Uint8Array;
   /** Raw bytes containing float32 quaternion values (wxyz) */
   batched_wxyzs: Uint8Array;
+  /** Raw bytes containing float32 scale values (uniform or per-axis XYZ) */
+  batched_scales: Uint8Array | null;
   meshTransform?: {
     position: THREE.Vector3;
     rotation: THREE.Quaternion;
@@ -44,6 +46,7 @@ export const BatchedMeshHoverOutlines: React.FC<
   geometry,
   batched_positions,
   batched_wxyzs,
+  batched_scales,
   meshTransform,
   computeBatchIndexFromInstanceIndex,
 }) => {
@@ -137,6 +140,14 @@ export const BatchedMeshHoverOutlines: React.FC<
         batched_wxyzs.byteLength,
       );
 
+      const scalesView = batched_scales
+        ? new DataView(
+            batched_scales.buffer,
+            batched_scales.byteOffset,
+            batched_scales.byteLength,
+          )
+        : null;
+
       // Only show outline if the batch index is valid (check bytes per position = 3 floats * 4 bytes)
       if (batchIndex >= 0 && batchIndex * 12 < batched_positions.byteLength) {
         // Calculate byte offsets.
@@ -158,13 +169,34 @@ export const BatchedMeshHoverOutlines: React.FC<
           wxyzsView.getFloat32(wxyzOffset, true), // w
         );
 
+        // Set scale to match the hovered instance
+        if (scalesView) {
+          // Check if we have per-axis scaling (N,3) or uniform scaling (N,).
+          if (batched_scales!.byteLength === batched_wxyzs.byteLength / 4 * 3) {
+            // Per-axis scaling: read 3 floats.
+            const scaleOffset = batchIndex * 3 * 4; // 3 floats, 4 bytes per float
+            outlineRef.current.scale.set(
+              scalesView.getFloat32(scaleOffset, true), // x scale
+              scalesView.getFloat32(scaleOffset + 4, true), // y scale
+              scalesView.getFloat32(scaleOffset + 8, true), // z scale
+            );
+          } else {
+            // Uniform scaling: read 1 float and apply to all axes.
+            const scaleOffset = batchIndex * 4; // 1 float, 4 bytes per float
+            const scale = scalesView.getFloat32(scaleOffset, true);
+            outlineRef.current.scale.setScalar(scale);
+          }
+        } else {
+          outlineRef.current.scale.set(1, 1, 1);
+        }
+
         // Apply mesh transform if provided (for GLB assets)
         if (meshTransform) {
           // Create instance matrix from batched data.
           _tempObjects.instanceMatrix.compose(
             outlineRef.current.position,
             outlineRef.current.quaternion,
-            _tempObjects.oneVector,
+            outlineRef.current.scale,
           );
 
           // Create mesh transform matrix.
