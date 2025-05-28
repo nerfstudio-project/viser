@@ -10,7 +10,7 @@ export default function TextInputComponent({
   props: { hint, label, disabled, visible, multiline },
 }: GuiTextMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
-  if (!visible) return <></>;
+  if (!visible) return null;
   return (
     <ViserInputComponent {...{ uuid, hint, label }}>
       {multiline ? (

@@ -10,7 +10,7 @@ export default function NumberInputComponent({
   props: { visible, label, hint, disabled, precision, min, max, step },
 }: GuiNumberMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
-  if (!visible) return <></>;
+  if (!visible) return null;
   return (
     <ViserInputComponent {...{ uuid, hint, label }}>
       <NumberInput

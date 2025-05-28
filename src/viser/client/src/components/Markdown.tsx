@@ -6,7 +6,7 @@ import { GuiMarkdownMessage } from "../WebsocketMessages";
 export default function MarkdownComponent({
   props: { visible, _markdown: markdown },
 }: GuiMarkdownMessage) {
-  if (!visible) return <></>;
+  if (!visible) return null;
   return (
     <Box pb="xs" px="sm" style={{ maxWidth: "95%" }}>
       <ErrorBoundary

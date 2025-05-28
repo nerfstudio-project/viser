@@ -128,7 +128,7 @@ export const BatchedMeshBase = React.forwardRef<
     clickable?: boolean;
   }
 >(function BatchedMeshBase(props, ref) {
-  // Store the mesh instance in state so effects can depend on it
+  // Store the mesh instance in state so effects can depend on it.
   const [mesh, setMesh] = React.useState<InstancedMesh2 | null>(null);
 
   // Forward the ref from the parent.
@@ -179,7 +179,7 @@ export const BatchedMeshBase = React.forwardRef<
       // Cleanup on unmount or when dependencies change.
       newMesh.disposeBVH();
       newMesh.dispose();
-      // Dispose LOD resources captured via closure
+      // Dispose LOD resources captured via closure.
       lodGeometries.forEach((geometry) => geometry.dispose());
       lodMaterials.forEach((material) => material.dispose());
     };

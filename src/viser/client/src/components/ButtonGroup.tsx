@@ -9,7 +9,7 @@ export default function ButtonGroupComponent({
   props: { hint, label, visible, disabled, options },
 }: GuiButtonGroupMessage) {
   const { messageSender } = React.useContext(GuiComponentContext)!;
-  if (!visible) return <></>;
+  if (!visible) return null;
   return (
     <ViserInputComponent {...{ uuid, hint, label }}>
       <Flex justify="space-between" columnGap="xs">

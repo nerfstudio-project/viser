@@ -10,7 +10,7 @@ export default function DropdownComponent({
   props: { hint, label, disabled, visible, options },
 }: GuiDropdownMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
-  if (!visible) return <></>;
+  if (!visible) return null;
   return (
     <ViserInputComponent {...{ uuid, hint, label }}>
       <Select

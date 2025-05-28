@@ -20,7 +20,7 @@ export default function FolderComponent({
   const isEmpty = guiIdSet === undefined || Object.keys(guiIdSet).length === 0;
 
   const ToggleIcon = opened ? IconChevronUp : IconChevronDown;
-  if (!visible) return <></>;
+  if (!visible) return null;
   return (
     <Paper withBorder className={folderWrapper}>
       <Paper

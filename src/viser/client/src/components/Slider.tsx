@@ -1,11 +1,6 @@
 import React from "react";
 import { GuiSliderMessage } from "../WebsocketMessages";
-import {
-  Slider,
-  Flex,
-  NumberInput,
-  useMantineColorScheme,
-} from "@mantine/core";
+import { Slider, Flex, NumberInput } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { ViserInputComponent } from "./common";
 import { sliderDefaultMarks } from "./ComponentStyles.css";
@@ -26,7 +21,7 @@ export default function SliderComponent({
   },
 }: GuiSliderMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
-  if (!visible) return <></>;
+  if (!visible) return null;
   const updateValue = (value: number) => setValue(uuid, value);
   const input = (
     <Flex justify="space-between">
@@ -37,10 +32,11 @@ export default function SliderComponent({
         thumbSize={0}
         radius="xs"
         style={{ flexGrow: 1 }}
-        styles={{
+        styles={(theme) => ({
           thumb: {
             height: "0.75rem",
             width: "0.5rem",
+            background: theme.colors[theme.primaryColor][6],
           },
           trackContainer: {
             zIndex: 3,
@@ -52,9 +48,9 @@ export default function SliderComponent({
             textAlign: "center",
           },
           mark: {
-            transform: "scale(1.95)",
+            transform: "scale(2)",
           },
-        }}
+        })}
         pt="0.3em"
         pb="0.2em"
         showLabelOnHover={false}

@@ -3,7 +3,7 @@ import { GuiImageMessage } from "../WebsocketMessages";
 import { Box, Text } from "@mantine/core";
 
 function ImageComponent({ props }: GuiImageMessage) {
-  if (!props.visible) return <></>;
+  if (!props.visible) return null;
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 

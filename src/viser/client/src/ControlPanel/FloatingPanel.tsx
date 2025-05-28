@@ -9,8 +9,22 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import React from "react";
-import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 import { useDisclosure } from "@mantine/hooks";
+
+// Drag Utils
+interface DragEvents {
+  move: "touchmove" | "mousemove";
+  end: "touchend" | "mouseup";
+}
+const touchEvents: DragEvents = { move: "touchmove", end: "touchend" };
+const mouseEvents: DragEvents = { move: "mousemove", end: "mouseup" };
+
+function isTouchEvent(event: TouchEvent | MouseEvent): event is TouchEvent {
+  return event.type === "touchmove";
+}
+function isMouseEvent(event: TouchEvent | MouseEvent): event is MouseEvent {
+  return event.type === "mousemove";
+}
 
 const FloatingPanelContext = React.createContext<null | {
   wrapperRef: React.RefObject<HTMLDivElement>;

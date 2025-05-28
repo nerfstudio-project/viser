@@ -24,10 +24,10 @@ export default function MultiSliderComponent({
   },
 }: GuiMultiSliderMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
-  if (!visible) return <></>;
+  if (!visible) return null;
   const updateValue = (value: number[]) => setValue(uuid, value);
   const input = (
-    <Box>
+    <Box px="0.1em">
       <MultiSlider
         id={uuid}
         className={marks === null ? sliderDefaultMarks : undefined}

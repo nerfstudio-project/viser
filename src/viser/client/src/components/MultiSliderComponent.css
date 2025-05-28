@@ -1,6 +1,8 @@
 .multi-slider {
   position: relative;
   width: 100%;
+  height: 1rem;
+  margin-top: -0.5rem;
 }
 
 .multi-slider-track-container {
@@ -30,6 +32,10 @@
   cursor: pointer;
   transition: transform 0.1s;
   z-index: 2;
+}
+
+.multi-slider-thumb:active {
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 .multi-slider.disabled {
@@ -62,7 +68,7 @@
   height: 0.25rem;
   background-color: var(--mantine-color-gray-3);
   border-radius: 50%;
-  transform: scale(1.95);
+  transform: scale(2);
 }
 
 .multi-slider-mark-label {
@@ -72,7 +78,6 @@
   font-size: 0.6rem;
   color: var(--mantine-color-gray-6);
   white-space: nowrap;
-  transform: translateX(-50%);
 }
 
 /* Support for dark mode. */

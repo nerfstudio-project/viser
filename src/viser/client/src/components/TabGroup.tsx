@@ -13,7 +13,7 @@ export default function TabGroupComponent({
   },
 }: GuiTabGroupMessage) {
   const { GuiContainer } = React.useContext(GuiComponentContext)!;
-  if (!visible) return <></>;
+  if (!visible) return null;
   return (
     <Tabs radius="xs" defaultValue={"0"} style={{ marginTop: "-0.55em" }}>
       <Tabs.List>

@@ -10,7 +10,7 @@ export default function CheckboxComponent({
   props: { disabled, visible, hint, label },
 }: GuiCheckboxMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
-  if (!visible) return <></>;
+  if (!visible) return null;
   let input = (
     <Checkbox
       id={uuid}

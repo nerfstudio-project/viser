@@ -25,7 +25,7 @@ export default function RgbComponent({
     }
   }, [value]);
 
-  if (!visible) return <></>;
+  if (!visible) return null;
 
   return (
     <ViserInputComponent {...{ uuid, hint, label }}>

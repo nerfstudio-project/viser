@@ -66,5 +66,5 @@ export function WebsocketMessageProducer() {
     };
   }, [server, resetGui, resetScene]);
 
-  return <></>;
+  return null;
 }

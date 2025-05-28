@@ -9,15 +9,30 @@ import { createPortal, useFrame } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
 
-import { ViewerContext } from "./ViewerContext";
+import { ViewerContext, ViewerContextContents } from "./ViewerContext";
 import {
   makeThrottledMessageSender,
   useThrottledMessageSender,
-} from "./WebsocketFunctions";
+} from "./WebsocketUtils";
 import { Html } from "@react-three/drei";
 import { useSceneTreeState } from "./SceneTreeState";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { HoverableContext, HoverState } from "./HoverContext";
+
+/** Turn a click event to normalized OpenCV coordinate (NDC) vector.
+ * Normalizes click coordinates to be between (0, 0) as upper-left corner,
+ * and (1, 1) as lower-right corner, with (0.5, 0.5) being the center of the screen.
+ * Uses offsetX/Y, and clientWidth/Height to get the coordinates.
+ */
+function opencvXyFromPointerXy(
+  viewer: ViewerContextContents,
+  xy: [number, number],
+): THREE.Vector2 {
+  const mouseVector = new THREE.Vector2();
+  mouseVector.x = (xy[0] + 0.5) / viewer.mutable.current.canvas!.clientWidth;
+  mouseVector.y = (xy[1] + 0.5) / viewer.mutable.current.canvas!.clientHeight;
+  return mouseVector;
+}
 import {
   CameraFrustum,
   CoordinateFrame,
@@ -25,7 +40,6 @@ import {
   PointCloud,
   ViserImage,
 } from "./ThreeAssets";
-import { opencvXyFromPointerXy } from "./ClickUtils";
 import { SceneNodeMessage } from "./WebsocketMessages";
 import { SplatObject } from "./Splatting/GaussianSplats";
 import { Paper } from "@mantine/core";
@@ -227,7 +241,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
         );
       } else {
         // when opacity = 0.0, no shadowPlane for performance
-        shadowPlane = <></>;
+        shadowPlane = null;
       }
       return {
         makeObject: (ref) => (
@@ -668,7 +682,7 @@ export function SceneNodeThreeObject(props: {
   //
   // This is used for (1) suppressing click events and (2) unmounting when
   // unmountWhenInvisible is true. The latter is used for <Html /> components.
-  function isDisplayed() {
+  function isDisplayed(): boolean {
     // We avoid checking obj.visible because obj may be unmounted when
     // unmountWhenInvisible=true.
     const attrs = viewerMutable.nodeAttributesFromName[props.name];

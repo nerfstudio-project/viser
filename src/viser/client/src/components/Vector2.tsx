@@ -9,7 +9,7 @@ export default function Vector2Component({
   props: { hint, label, visible, disabled, min, max, step, precision },
 }: GuiVector2Message) {
   const { setValue } = React.useContext(GuiComponentContext)!;
-  if (!visible) return <></>;
+  if (!visible) return null;
   return (
     <ViserInputComponent {...{ uuid, hint, label }}>
       <VectorInput
