@@ -9,7 +9,7 @@ import { OutlinesIfHovered } from "../OutlinesIfHovered";
  */
 export const BasicMesh = React.forwardRef<THREE.Mesh, MeshMessage>(
   function BasicMesh(message, ref: React.ForwardedRef<THREE.Mesh>) {
-    // Create material based on props
+    // Create material based on props.
     const material = React.useMemo(() => {
       return createStandardMaterial(message.props);
     }, [

@@ -3,7 +3,7 @@ import { notifications } from "@mantine/notifications";
 import React, { useContext } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
-import { toMantineColor } from "./ColorUtils";
+import { toMantineColor } from "./components/colorUtils";
 
 import { ViewerContext } from "./ViewerContext";
 import {
@@ -14,7 +14,7 @@ import {
   isGuiComponentMessage,
   isSceneNodeMessage,
 } from "./WebsocketMessages";
-import { isTexture } from "./WebsocketFunctions";
+import { isTexture } from "./WebsocketUtils";
 import { useFrame } from "@react-three/fiber";
 import { Button, Progress } from "@mantine/core";
 import { IconCheck, IconDownload } from "@tabler/icons-react";
@@ -23,7 +23,7 @@ import { rootNodeTemplate } from "./SceneTreeState";
 import { GaussianSplatsContext } from "./Splatting/GaussianSplatsHelpers";
 
 /** Returns a handler for all incoming messages. */
-function useMessageHandler() {
+function useMessageHandler(): (message: Message) => void {
   const viewer = useContext(ViewerContext)!;
   const viewerMutable = viewer.mutable.current;
 
@@ -393,7 +393,7 @@ function useMessageHandler() {
         console.log("Removing scene node:", message.name);
         const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
         if (!(message.name in nodeFromName)) {
-          console.log("(OK) Skipping scene node removal for " + name);
+          console.log("(OK) Skipping scene node removal for " + message.name);
           return;
         }
         removeSceneNode(message.name);
@@ -443,7 +443,9 @@ function useMessageHandler() {
   };
 }
 
-function useFileDownloadHandler() {
+function useFileDownloadHandler(): (
+  message: FileTransferStartDownload | FileTransferPart,
+) => void {
   const downloadStatesRef = React.useRef<{
     [uuid: string]: {
       metadata: FileTransferStartDownload;
@@ -547,7 +549,7 @@ function useFileDownloadHandler() {
                   variant="light"
                   size="sm"
                   mt="0.05em"
-                  w="100%"
+                  style={{ width: "100%" }}
                 >
                   {`${downloadState.metadata.filename} (${downloadState.displayFilesize})`}
                 </Button>

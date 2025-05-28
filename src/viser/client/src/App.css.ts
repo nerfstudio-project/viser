@@ -5,10 +5,10 @@ globalStyle(".mantine-ScrollArea-scrollbar", {
 });
 
 globalStyle("html", {
-  fontSize: "100%",
+  fontSize: "92.5%",
   "@media": {
     "(max-width: 767px)": {
-      fontSize: "85%",
+      fontSize: "83%",
     },
   },
 });

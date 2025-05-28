@@ -10,7 +10,7 @@ export default function CheckboxComponent({
   props: { disabled, visible, hint, label },
 }: GuiCheckboxMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
-  if (!visible) return <></>;
+  if (!visible) return null;
   let input = (
     <Checkbox
       id={uuid}
@@ -31,7 +31,7 @@ export default function CheckboxComponent({
         zIndex={100}
         label={hint}
         multiline
-        w="15rem"
+        style={{ width: "15rem" }}
         withArrow
         openDelay={500}
         withinPortal

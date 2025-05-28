@@ -14,17 +14,17 @@ import { ViewerMutable } from "./ViewerContext";
 import {
   Anchor,
   Box,
-  ColorSchemeScript,
   Image,
   MantineProvider,
   Modal,
   Tooltip,
   createTheme,
+  useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 
-// Local imports
+// Local imports.
 import { SynchronizedCameraControls } from "./CameraControls";
 import { SceneNodeThreeObject } from "./SceneTree";
 import { ViewerContext, ViewerContextContents } from "./ViewerContext";
@@ -35,9 +35,8 @@ import { WebsocketMessageProducer } from "./WebsocketInterface";
 import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
-import { useThrottledMessageSender } from "./WebsocketFunctions";
+import { useThrottledMessageSender } from "./WebsocketUtils";
 import { rayToViserCoords } from "./WorldTransformUtils";
-import { ndcFromPointerXy, opencvXyFromPointerXy } from "./ClickUtils";
 import { theme } from "./AppTheme";
 import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
@@ -49,8 +48,45 @@ import { VISER_VERSION } from "./VersionInfo";
 
 // ======= Utility functions =======
 
+/** Turn a click event into a normalized device coordinate (NDC) vector.
+ * Normalizes click coordinates to be between -1 and 1, with (0, 0) being the center of the screen.
+ *
+ * Returns null if input is not valid.
+ */
+function ndcFromPointerXy(
+  viewer: ViewerContextContents,
+  xy: [number, number],
+): THREE.Vector2 | null {
+  const mouseVector = new THREE.Vector2();
+  mouseVector.x =
+    2 * ((xy[0] + 0.5) / viewer.mutable.current.canvas!.clientWidth) - 1;
+  mouseVector.y =
+    1 - 2 * ((xy[1] + 0.5) / viewer.mutable.current.canvas!.clientHeight);
+  return mouseVector.x < 1 &&
+    mouseVector.x > -1 &&
+    mouseVector.y < 1 &&
+    mouseVector.y > -1
+    ? mouseVector
+    : null;
+}
+
+/** Turn a click event to normalized OpenCV coordinate (NDC) vector.
+ * Normalizes click coordinates to be between (0, 0) as upper-left corner,
+ * and (1, 1) as lower-right corner, with (0.5, 0.5) being the center of the screen.
+ * Uses offsetX/Y, and clientWidth/Height to get the coordinates.
+ */
+function opencvXyFromPointerXy(
+  viewer: ViewerContextContents,
+  xy: [number, number],
+): THREE.Vector2 {
+  const mouseVector = new THREE.Vector2();
+  mouseVector.x = (xy[0] + 0.5) / viewer.mutable.current.canvas!.clientWidth;
+  mouseVector.y = (xy[1] + 0.5) / viewer.mutable.current.canvas!.clientHeight;
+  return mouseVector;
+}
+
 /** Gets default WebSocket server URL based on current window location. */
-const getDefaultServerFromUrl = () => {
+const getDefaultServerFromUrl = (): string => {
   let server = window.location.href;
   server = server.replace("http://", "ws://");
   server = server.replace("https://", "wss://");
@@ -60,7 +96,7 @@ const getDefaultServerFromUrl = () => {
 };
 
 /** Disables rendering when component is not in view. */
-const DisableRender = () => useFrame(() => null, 1000);
+const DisableRender = (): null => useFrame(() => null, 1000);
 
 // ======= Main component tree =======
 
@@ -87,7 +123,7 @@ export function Root() {
     </div>
   );
 
-  // If dummy window dimensions are specified, wrap content in MacWindowWrapper
+  // If dummy window dimensions are specified, wrap content in MacWindowWrapper.
   if (!dummyWindowParam) return content;
 
   const [width, height] = dummyWindowParam.split("x").map(Number);
@@ -226,12 +262,21 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <ColorSchemeScript forceColorScheme={darkMode ? "dark" : "light"} />
       <MantineProvider
         theme={mantineTheme}
-        forceColorScheme={darkMode ? "dark" : "light"}
+        defaultColorScheme={darkMode ? "dark" : "light"}
+        colorSchemeManager={{
+          // Mock external color scheme manager. This prevents multiple Viser
+          // instances from affecting each others' color schemes.
+          get: (defaultValue) => defaultValue,
+          set: () => null,
+          subscribe: () => null,
+          unsubscribe: () => null,
+          clear: () => null,
+        }}
       >
         {children}
+        <ColorSchemeSetter darkMode={darkMode} />
         <NotificationsPanel />
         <BrowserWarning />
         <ViserModal />
@@ -277,6 +322,15 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
       </MantineProvider>
     </>
   );
+}
+
+function ColorSchemeSetter(props: { darkMode: boolean }) {
+  const colorScheme = useMantineColorScheme();
+  // Update data attribute for color scheme.
+  useEffect(() => {
+    colorScheme.setColorScheme(props.darkMode ? "dark" : "light");
+  }, [props.darkMode]);
+  return null;
 }
 
 /**
@@ -359,14 +413,14 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     if (ndcFromPointerXy(viewer, pointerXy) === null) return;
     pointerInfo.dragEnd = pointerXy;
 
-    // Check if pointer moved enough to be considered a drag
+    // Check if pointer moved enough to be considered a drag.
     if (
       Math.abs(pointerInfo.dragEnd[0] - pointerInfo.dragStart[0]) <= 3 &&
       Math.abs(pointerInfo.dragEnd[1] - pointerInfo.dragStart[1]) <= 3
     )
       return;
 
-    // Draw selection rectangle if in rect-select mode
+    // Draw selection rectangle if in rect-select mode.
     if (pointerInfo.enabled === "rect-select") {
       const ctx = mutable.current.canvas2d!.getContext("2d")!;
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -823,7 +877,7 @@ function ViserLogo() {
         onClose={closeAbout}
         withCloseButton={false}
         size="xl"
-        ta="center"
+        style={{ textAlign: "center" }}
       >
         <Box>
           <p>Viser is a 3D visualization toolkit developed at UC Berkeley.</p>
@@ -831,8 +885,7 @@ function ViserLogo() {
             <Anchor
               href="https://github.com/nerfstudio-project/"
               target="_blank"
-              fw="600"
-              style={{ "&:focus": { outline: "none" } }}
+              style={{ fontWeight: "600" }}
             >
               Nerfstudio
             </Anchor>
@@ -840,8 +893,7 @@ function ViserLogo() {
             <Anchor
               href="https://github.com/nerfstudio-project/viser"
               target="_blank"
-              fw="600"
-              style={{ "&:focus": { outline: "none" } }}
+              style={{ fontWeight: "600" }}
             >
               GitHub
             </Anchor>
@@ -849,8 +901,7 @@ function ViserLogo() {
             <Anchor
               href="https://viser.studio/main"
               target="_blank"
-              fw="600"
-              style={{ "&:focus": { outline: "none" } }}
+              style={{ fontWeight: "600" }}
             >
               Documentation
             </Anchor>

@@ -84,7 +84,7 @@ const PlotWithAspect = React.memo(function PlotWithAspect({
 export default function PlotlyComponent({
   props: { visible, _plotly_json_str: plotly_json_str, aspect },
 }: GuiPlotlyMessage) {
-  if (!visible) return <></>;
+  if (!visible) return null;
 
   // Create a modal with the plot, and a button to open it.
   const [opened, { open, close }] = useDisclosure(false);

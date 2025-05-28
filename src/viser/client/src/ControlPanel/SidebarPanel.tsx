@@ -7,6 +7,7 @@ import {
   ScrollArea,
   Tooltip,
   useMantineColorScheme,
+  useMantineTheme,
 } from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";
@@ -134,28 +135,34 @@ SidebarPanel.Handle = function SidebarPanelHandle({
       </Tooltip>
     </ActionIcon>
   );
-
+  const theme = useMantineTheme();
+  const isDarkMode = useMantineColorScheme().colorScheme === "dark";
   return (
-    <Box
-      p="xs"
-      style={(theme) => ({
-        borderBottom: "1px solid",
-        borderColor:
-          useMantineColorScheme().colorScheme == "dark"
-            ? theme.colors.dark[4]
-            : theme.colors.gray[3],
-        lineHeight: "1.5em",
-        fontWeight: 400,
-        position: "relative",
-        zIndex: 20,
-        alignItems: "center",
-        display: "flex",
-        flexDirection: "row",
-      })}
-    >
-      {children}
-      {collapsible ? collapseSidebarToggleButton : null}
-    </Box>
+    <>
+      <Box
+        p="xs"
+        style={{
+          lineHeight: "1.5em",
+          fontWeight: 400,
+          position: "relative",
+          zIndex: 20,
+          alignItems: "center",
+          display: "flex",
+          flexDirection: "row",
+        }}
+      >
+        {children}
+        {collapsible ? collapseSidebarToggleButton : null}
+      </Box>
+      <Box
+        mx="xs"
+        style={{
+          borderBottomWidth: "1px",
+          borderBottomStyle: "solid",
+          borderColor: isDarkMode ? theme.colors.dark[4] : theme.colors.gray[3],
+        }}
+      ></Box>
+    </>
   );
 };
 /** Contents of a panel. */

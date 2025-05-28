@@ -1,5 +1,5 @@
 import { ViewerContext } from "../ViewerContext";
-import { useThrottledMessageSender } from "../WebsocketFunctions";
+import { useThrottledMessageSender } from "../WebsocketUtils";
 import { GuiComponentContext } from "./GuiComponentContext";
 
 import { Box } from "@mantine/core";

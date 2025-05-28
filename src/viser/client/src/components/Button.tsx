@@ -5,14 +5,14 @@ import { Box } from "@mantine/core";
 import { Button } from "@mantine/core";
 import React from "react";
 import { htmlIconWrapper } from "./ComponentStyles.css";
-import { toMantineColor } from "../ColorUtils";
+import { toMantineColor } from "./colorUtils";
 
 export default function ButtonComponent({
   uuid,
   props: { visible, disabled, label, color, _icon_html: icon_html },
 }: GuiButtonMessage) {
   const { messageSender } = React.useContext(GuiComponentContext)!;
-  if (!(visible ?? true)) return <></>;
+  if (!(visible ?? true)) return null;
 
   return (
     <Box mx="xs" pb="0.5em">
@@ -28,7 +28,7 @@ export default function ButtonComponent({
           })
         }
         style={{
-          height: "2.125em",
+          height: "2em",
         }}
         disabled={disabled ?? false}
         size="sm"

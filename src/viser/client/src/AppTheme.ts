@@ -62,7 +62,11 @@ export const theme = createTheme({
     Button: Button.extend({
       defaultProps: {
         radius: "xs",
-        fw: 450,
+        styles: {
+          label: {
+            fontWeight: 450,
+          },
+        },
       },
     }),
   },

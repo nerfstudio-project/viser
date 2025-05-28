@@ -21,7 +21,7 @@ export function ViserInputComponent({
           zIndex={100}
           label={hint}
           multiline
-          w="15rem"
+          style={{ width: "15rem" }}
           withArrow
           openDelay={500}
           withinPortal
@@ -59,21 +59,24 @@ function LabeledInput(props: {
     <Flex align="center">
       <Box
         // The per-layer offset here is just eyeballed.
-        w={`${7.25 - props.folderDepth * 0.6375}em`}
         pr="xs"
-        style={{ flexShrink: 0, position: "relative" }}
+        style={{
+          width: `${7.25 - props.folderDepth * 0.6375}em`,
+          flexShrink: 0,
+          position: "relative",
+        }}
       >
         <Text
           c="dimmed"
-          fz="0.875em"
-          fw="450"
-          lh="1.375em"
-          lts="-0.75px"
-          unselectable="off"
           style={{
+            fontSize: "0.875em",
+            fontWeight: "450",
+            lineHeight: "1.375em",
+            letterSpacing: "-0.75px",
             width: "100%",
             boxSizing: "content-box",
           }}
+          unselectable="off"
         >
           <label htmlFor={props.uuid}>{props.label}</label>
         </Text>

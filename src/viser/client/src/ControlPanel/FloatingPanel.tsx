@@ -6,10 +6,25 @@ import {
   Paper,
   ScrollArea,
   useMantineColorScheme,
+  useMantineTheme,
 } from "@mantine/core";
 import React from "react";
-import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 import { useDisclosure } from "@mantine/hooks";
+
+// Drag Utils
+interface DragEvents {
+  move: "touchmove" | "mousemove";
+  end: "touchend" | "mouseup";
+}
+const touchEvents: DragEvents = { move: "touchmove", end: "touchend" };
+const mouseEvents: DragEvents = { move: "mousemove", end: "mouseup" };
+
+function isTouchEvent(event: TouchEvent | MouseEvent): event is TouchEvent {
+  return event.type === "touchmove";
+}
+function isMouseEvent(event: TouchEvent | MouseEvent): event is MouseEvent {
+  return event.type === "mousemove";
+}
 
 const FloatingPanelContext = React.createContext<null | {
   wrapperRef: React.RefObject<HTMLDivElement>;
@@ -237,44 +252,50 @@ FloatingPanel.Handle = function FloatingPanelHandle({
   children: string | React.ReactNode;
 }) {
   const panelContext = React.useContext(FloatingPanelContext)!;
+  const theme = useMantineTheme();
+  const isDarkMode = useMantineColorScheme().colorScheme === "dark";
 
   return (
-    <Box
-      style={(theme) => ({
-        borderRadius: "0.2em 0.2em 0 0",
-        lineHeight: "1.5em",
-        cursor: "pointer",
-        position: "relative",
-        fontWeight: 400,
-        userSelect: "none",
-        display: "flex",
-        alignItems: "center",
-        padding: "0 0.75em",
-        height: "2.75em",
-        borderBottomWidth: panelContext.expanded ? "1px" : 0,
-        borderBottomStyle: "solid",
-        borderColor:
-          useMantineColorScheme().colorScheme == "dark"
-            ? theme.colors.dark[4]
-            : theme.colors.gray[3],
-      })}
-      onClick={() => {
-        const state = panelContext.dragInfo.current;
-        if (state.dragging) {
-          state.dragging = false;
-          return;
-        }
-        panelContext.toggleExpanded();
-      }}
-      onTouchStart={(event) => {
-        panelContext.dragHandler(event);
-      }}
-      onMouseDown={(event) => {
-        panelContext.dragHandler(event);
-      }}
-    >
-      {children}
-    </Box>
+    <>
+      <Box
+        style={{
+          borderRadius: "0.2em 0.2em 0 0",
+          lineHeight: "1.5em",
+          cursor: "pointer",
+          position: "relative",
+          fontWeight: 400,
+          userSelect: "none",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 0.75em",
+          height: "2.75em",
+        }}
+        onClick={() => {
+          const state = panelContext.dragInfo.current;
+          if (state.dragging) {
+            state.dragging = false;
+            return;
+          }
+          panelContext.toggleExpanded();
+        }}
+        onTouchStart={(event) => {
+          panelContext.dragHandler(event);
+        }}
+        onMouseDown={(event) => {
+          panelContext.dragHandler(event);
+        }}
+      >
+        {children}
+      </Box>
+      <Box
+        mx="xs"
+        style={{
+          borderBottomWidth: panelContext.expanded ? "1px" : 0,
+          borderBottomStyle: "solid",
+          borderColor: isDarkMode ? theme.colors.dark[4] : theme.colors.gray[3],
+        }}
+      ></Box>
+    </>
   );
 };
 /** Contents of a panel. */
@@ -290,7 +311,7 @@ FloatingPanel.Contents = function FloatingPanelContents({
         <Box
           /* Prevent internals from getting too wide. Needs to match the
            * width of the wrapper element above. */
-          w={context.width}
+          style={{ width: context.width }}
         >
           {children}
         </Box>

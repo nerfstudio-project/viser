@@ -15,10 +15,10 @@ export const SkinnedMesh = React.forwardRef<
 >(function SkinnedMesh(message, ref: React.ForwardedRef<THREE.SkinnedMesh>) {
   const viewer = React.useContext(ViewerContext)!;
 
-  // Create a basic material once - we'll update properties directly via useEffect
+  // Create a basic material once - we'll update properties directly via useEffect.
   const material = React.useMemo(
     () => {
-      // Create a basic material with default properties - all will be updated in useEffect
+      // Create a basic material with default properties - all will be updated in useEffect.
       return createStandardMaterial({
         material: "standard", // Will be updated if different
         color: [128, 128, 128], // Will be updated immediately
@@ -29,17 +29,17 @@ export const SkinnedMesh = React.forwardRef<
       });
     },
     [
-      // No dependencies - we never want to recreate the material
-      // All properties will be updated via direct mutation in useEffect
+      // No dependencies - we never want to recreate the material.
+      // All properties will be updated via direct mutation in useEffect.
     ],
   );
 
-  // Reference to bones for animation updates
+  // Reference to bones for animation updates.
   const bonesRef = React.useRef<THREE.Bone[]>();
 
-  // Create geometry and skeleton using memoization
+  // Create geometry and skeleton using memoization.
   const { geometry, skeleton } = React.useMemo(() => {
-    // Setup geometry
+    // Setup geometry.
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
@@ -68,7 +68,7 @@ export const SkinnedMesh = React.forwardRef<
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
 
-    // Setup skinned mesh bones
+    // Setup skinned mesh bones.
     const bone_wxyzs = new Float32Array(
       message.props.bone_wxyzs.buffer.slice(
         message.props.bone_wxyzs.byteOffset,
@@ -156,9 +156,9 @@ export const SkinnedMesh = React.forwardRef<
     message.props.bone_positions.buffer,
   ]);
 
-  // Update material properties directly without recreating the material
+  // Update material properties directly without recreating the material.
   React.useEffect(() => {
-    // Generate gradient map for toon materials if needed
+    // Generate gradient map for toon materials if needed.
     const generateGradientMap = (shades: 3 | 5): THREE.DataTexture => {
       const texture = new THREE.DataTexture(
         Uint8Array.from(shades === 3 ? [0, 128, 255] : [0, 64, 128, 192, 255]),

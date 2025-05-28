@@ -20,7 +20,7 @@ export default function FolderComponent({
   const isEmpty = guiIdSet === undefined || Object.keys(guiIdSet).length === 0;
 
   const ToggleIcon = opened ? IconChevronUp : IconChevronDown;
-  if (!visible) return <></>;
+  if (!visible) return null;
   return (
     <Paper withBorder className={folderWrapper}>
       <Paper
@@ -38,15 +38,17 @@ export default function FolderComponent({
           }}
         />
       </Paper>
-      <Collapse in={opened && !isEmpty} pt="0.2em">
-        <GuiComponentContext.Provider
-          value={{
-            ...guiContext,
-            folderDepth: guiContext.folderDepth + 1,
-          }}
-        >
-          <guiContext.GuiContainer containerUuid={uuid} />
-        </GuiComponentContext.Provider>
+      <Collapse in={opened && !isEmpty}>
+        <Box pt="0.2em">
+          <GuiComponentContext.Provider
+            value={{
+              ...guiContext,
+              folderDepth: guiContext.folderDepth + 1,
+            }}
+          >
+            <guiContext.GuiContainer containerUuid={uuid} />
+          </GuiComponentContext.Provider>
+        </Box>
       </Collapse>
       <Collapse in={!(opened && !isEmpty)}>
         <Box p="xs"></Box>

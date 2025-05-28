@@ -12,10 +12,10 @@ import { ViewerContext } from "../ViewerContext";
  */
 export const SingleGlbAsset = React.forwardRef<THREE.Group, GlbMessage>(
   function SingleGlbAsset(message, ref: React.ForwardedRef<THREE.Group>) {
-    // Load model without passing shadow settings - we'll apply them in useEffect
+    // Load model without passing shadow settings - we'll apply them in useEffect.
     const { gltf, meshes, mixerRef } = useGlbLoader(message.props.glb_data);
 
-    // Apply shadow settings directly to the model
+    // Apply shadow settings directly to the model.
     React.useEffect(() => {
       if (!gltf) return;
 

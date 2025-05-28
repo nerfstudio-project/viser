@@ -115,7 +115,7 @@ function EditNodeProps({
             alignItems: "center",
           }}
         >
-          <Box fw="500" style={{ flexGrow: "1" }} fz="sm">
+          <Box style={{ fontWeight: "500", flexGrow: "1" }} fz="sm">
             {node.message.type
               .replace("Message", "")
               .replace(/([A-Z])/g, " $1")
@@ -138,7 +138,7 @@ function EditNodeProps({
             />
           </Tooltip>
         </Box>
-        <Box fz="xs" opacity="0.5">
+        <Box style={{ opacity: "0.5" }} fz="xs">
           {nodeName}
         </Box>
       </Box>
@@ -151,10 +151,10 @@ function EditNodeProps({
 
         return (
           <Flex key={key} align="center">
-            <Box size="sm" fz="xs" style={{ flexGrow: "1" }}>
+            <Box style={{ flexGrow: "1" }} fz="xs">
               {key.charAt(0).toUpperCase() + key.slice(1).split("_").join(" ")}
             </Box>
-            <Flex gap="xs" w="9em">
+            <Flex gap="xs" style={{ width: "9em" }}>
               {(() => {
                 // Check if this is a color property
                 try {
@@ -190,7 +190,7 @@ function EditNodeProps({
                           input: { height: "1.625rem", minHeight: "1.625rem" },
                           // icon: { transform: "scale(0.8)" },
                         }}
-                        w="100%"
+                        style={{ width: "100%" }}
                         value={rgbToHex(
                           parsedValue[0],
                           parsedValue[1],
@@ -226,7 +226,7 @@ function EditNodeProps({
                       },
                       // icon: { transform: "scale(0.8)" },
                     }}
-                    w="100%"
+                    style={{ width: "100%" }}
                     {...form.getInputProps(key)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
@@ -256,7 +256,7 @@ function EditNodeProps({
           </Flex>
         );
       })}
-      <Box fz="xs" opacity="0.4">
+      <Box style={{ opacity: "0.4" }} fz="xs">
         Updates from the server will overwrite local changes.
       </Box>
     </Box>
