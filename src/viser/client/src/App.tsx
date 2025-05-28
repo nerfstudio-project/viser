@@ -849,7 +849,7 @@ function ViserLogo() {
             <Anchor
               href="https://github.com/nerfstudio-project/"
               target="_blank"
-              style={{ fontWeight: "600", "&:focus": { outline: "none" } }}
+              style={{ fontWeight: "600" }}
             >
               Nerfstudio
             </Anchor>
@@ -857,7 +857,7 @@ function ViserLogo() {
             <Anchor
               href="https://github.com/nerfstudio-project/viser"
               target="_blank"
-              style={{ fontWeight: "600", "&:focus": { outline: "none" } }}
+              style={{ fontWeight: "600" }}
             >
               GitHub
             </Anchor>
@@ -865,7 +865,7 @@ function ViserLogo() {
             <Anchor
               href="https://viser.studio/main"
               target="_blank"
-              style={{ fontWeight: "600", "&:focus": { outline: "none" } }}
+              style={{ fontWeight: "600" }}
             >
               Documentation
             </Anchor>
