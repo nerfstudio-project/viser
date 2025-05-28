@@ -28,7 +28,6 @@ export default function SliderComponent({
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   const updateValue = (value: number) => setValue(uuid, value);
-  const colorScheme = useMantineColorScheme().colorScheme;
   const input = (
     <Flex justify="space-between">
       <Slider
@@ -38,7 +37,7 @@ export default function SliderComponent({
         thumbSize={0}
         radius="xs"
         style={{ flexGrow: 1 }}
-        styles={(theme) => ({
+        styles={{
           thumb: {
             height: "0.75rem",
             width: "0.5rem",
@@ -55,7 +54,7 @@ export default function SliderComponent({
           mark: {
             transform: "scale(1.95)",
           },
-        })}
+        }}
         pt="0.3em"
         pb="0.2em"
         showLabelOnHover={false}
