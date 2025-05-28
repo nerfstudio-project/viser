@@ -172,7 +172,10 @@ export const BatchedMeshHoverOutlines: React.FC<
         // Set scale to match the hovered instance
         if (scalesView) {
           // Check if we have per-axis scaling (N,3) or uniform scaling (N,).
-          if (batched_scales!.byteLength === batched_wxyzs.byteLength / 4 * 3) {
+          if (
+            batched_scales!.byteLength ===
+            (batched_wxyzs.byteLength / 4) * 3
+          ) {
             // Per-axis scaling: read 3 floats.
             const scaleOffset = batchIndex * 3 * 4; // 3 floats, 4 bytes per float
             outlineRef.current.scale.set(

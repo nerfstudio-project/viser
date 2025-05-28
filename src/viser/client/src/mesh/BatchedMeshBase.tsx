@@ -226,9 +226,12 @@ export const BatchedMeshBase = React.forwardRef<
       // Calculate byte offsets for reading float values.
       const posOffset = index * 3 * 4; // 3 floats, 4 bytes per float.
       const wxyzOffset = index * 4 * 4; // 4 floats, 4 bytes per float.
-      const scaleOffset = props.batched_scales && props.batched_scales.byteLength === props.batched_wxyzs.byteLength / 4 * 3 
-        ? index * 3 * 4 // Per-axis scaling: 3 floats, 4 bytes per float.
-        : index * 4; // Uniform scaling: 1 float, 4 bytes per float.
+      const scaleOffset =
+        props.batched_scales &&
+        props.batched_scales.byteLength ===
+          (props.batched_wxyzs.byteLength / 4) * 3
+          ? index * 3 * 4 // Per-axis scaling: 3 floats, 4 bytes per float.
+          : index * 4; // Uniform scaling: 1 float, 4 bytes per float.
 
       // Read position values.
       tempPosition.set(
@@ -248,7 +251,10 @@ export const BatchedMeshBase = React.forwardRef<
       // Read scale value if available.
       if (scalesView) {
         // Check if we have per-axis scaling (N,3) or uniform scaling (N,).
-        if (props.batched_scales!.byteLength === props.batched_wxyzs.byteLength / 4 * 3) {
+        if (
+          props.batched_scales!.byteLength ===
+          (props.batched_wxyzs.byteLength / 4) * 3
+        ) {
           // Per-axis scaling: read 3 floats.
           tempScale.set(
             scalesView.getFloat32(scaleOffset, true), // x scale.

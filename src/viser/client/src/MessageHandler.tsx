@@ -443,7 +443,9 @@ function useMessageHandler(): (message: Message) => void {
   };
 }
 
-function useFileDownloadHandler(): (message: FileTransferStartDownload | FileTransferPart) => void {
+function useFileDownloadHandler(): (
+  message: FileTransferStartDownload | FileTransferPart,
+) => void {
   const downloadStatesRef = React.useRef<{
     [uuid: string]: {
       metadata: FileTransferStartDownload;
