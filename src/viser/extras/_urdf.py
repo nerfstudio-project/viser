@@ -6,8 +6,9 @@ from typing import List, Tuple
 
 import numpy as np
 import trimesh
-import viser
 import yourdfpy
+
+import viser
 
 from .. import transforms as tf
 
