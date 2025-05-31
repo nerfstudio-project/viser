@@ -18,52 +18,51 @@ class ViserUrdf:
     that uses only basic Viser features. It can be copied and modified if you
     need more fine-grained control.
 
+    To move or control visibility of the entire robot, you can create a
+    parent frame that the URDF will be attached to. This is because
+    ViserUrdf creates the robot's geometry as children of the specified
+    `root_node_name`, but doesn't create the root node itself.
+
+    .. code-block:: python
+
+        import time
+        import numpy as np
+        import viser
+        from viser.extras import ViserUrdf
+        from robot_descriptions.loaders.yourdfpy import load_robot_description
+
+        server = viser.ViserServer()
+
+        # Create a parent frame for the robot.
+        # ViserUrdf will attach the robot's geometry as children of this frame.
+        robot_base = server.scene.add_frame("/robot", show_axes=False)
+
+        # Load a URDF from robot_descriptions package.
+        urdf = ViserUrdf(
+            server,
+            load_robot_description("panda_description"),
+            root_node_name="/robot"
+        )
+
+        # Move the entire robot by updating the base frame.
+        robot_base.position = (1.0, 0.0, 0.5)  # Move to (x=1, y=0, z=0.5).
+
+        # Update joint configuration.
+        urdf.update_cfg(np.array([0.0, 0.5, -0.5, 0.0, 0.0, 0.0, 0.0, 0.0]))
+
+        # Make the robot blink.
+        while True:
+            robot_base.visible = False
+            time.sleep(0.2)
+            robot_base.visible = True
+            time.sleep(3.0)
+
     Args:
         target: ViserServer or ClientHandle object to add URDF to.
         urdf_or_path: Either a path to a URDF file or a yourdfpy URDF object.
         scale: Scale factor to apply to resize the URDF.
         root_node_name: Viser scene tree name for the root of the URDF geometry.
         mesh_color_override: Optional color to override the URDF's mesh colors.
-
-    Example:
-        To move or control visibility of the entire robot, you can create a
-        parent frame that the URDF will be attached to. This is because
-        ViserUrdf creates the robot's geometry as children of the specified
-        `root_node_name`, but doesn't create the root node itself.
-
-        .. code-block:: python
-
-            import time
-            import numpy as np
-            import viser
-            from viser.extras import ViserUrdf
-            from robot_descriptions.loaders.yourdfpy import load_robot_description
-
-            server = viser.ViserServer()
-
-            # Create a parent frame for the robot.
-            # ViserUrdf will attach the robot's geometry as children of this frame.
-            robot_base = server.scene.add_frame("/robot", show_axes=False)
-
-            # Load a URDF from robot_descriptions package.
-            urdf = ViserUrdf(
-                server,
-                load_robot_description("panda_description"),
-                root_node_name="/robot"
-            )
-
-            # Move the entire robot by updating the base frame.
-            robot_base.position = (1.0, 0.0, 0.5)  # Move to (x=1, y=0, z=0.5).
-
-            # Update joint configuration.
-            urdf.update_cfg(np.array([0.0, 0.5, -0.5, 0.0, 0.0, 0.0, 0.0, 0.0]))
-
-            # Make the robot blink.
-            while True:
-                robot_base.visible = False
-                time.sleep(0.2)
-                robot_base.visible = True
-                time.sleep(3.0)
     """
 
     def __init__(
