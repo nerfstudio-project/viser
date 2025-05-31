@@ -706,7 +706,7 @@
         <span class="k">assert</span> <span class="n">message</span><span class="o">.</span><span class="n">source_component_uuid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_input_handle_from_uuid</span>
 
         <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_file_upload_states</span><span class="p">[</span><span class="n">message</span><span class="o">.</span><span class="n">transfer_uuid</span><span class="p">]</span>
-        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;parts&quot;</span><span class="p">][</span><span class="n">message</span><span class="o">.</span><span class="n">part</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">content</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;parts&quot;</span><span class="p">][</span><span class="n">message</span><span class="o">.</span><span class="n">part_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">content</span>
         <span class="n">total_bytes</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;total_bytes&quot;</span><span class="p">]</span>
 
         <span class="k">with</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;lock&quot;</span><span class="p">]:</span>
