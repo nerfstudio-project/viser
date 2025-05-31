@@ -170,7 +170,7 @@ function useFileUpload({
         type: "FileTransferPart",
         source_component_uuid: componentUuid,
         transfer_uuid: transferUuid,
-        part: i,
+        part_index: i,
         content: new Uint8Array(buffer),
       });
     }

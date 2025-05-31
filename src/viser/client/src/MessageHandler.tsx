@@ -450,7 +450,7 @@ function useFileDownloadHandler(): (
     [uuid: string]: {
       metadata: FileTransferStartDownload;
       notificationId: string;
-      parts: Uint8Array[];
+      parts: FileTransferPart[];
       bytesDownloaded: number;
       displayFilesize: string;
     };
@@ -485,12 +485,10 @@ function useFileDownloadHandler(): (
       }
       case "FileTransferPart": {
         const downloadState = downloadStatesRef.current[message.transfer_uuid];
-        if (message.part != downloadState.parts.length) {
-          console.error(
-            "A file download message was dropped; this should never happen!",
-          );
+        if (message.part_index != downloadState.parts.length) {
+          console.error("A file download message was received out of order!");
         }
-        downloadState.parts.push(message.content);
+        downloadState.parts.push(message);
         downloadState.bytesDownloaded += message.content.length;
         break;
       }
@@ -521,9 +519,15 @@ function useFileDownloadHandler(): (
     // If done: download file and clear state.
     if (isDone) {
       const url = window.URL.createObjectURL(
-        new Blob(downloadState.parts, {
-          type: downloadState.metadata.mime_type,
-        }),
+        new Blob(
+          // Blob contains the file part contents, sorted by the part index.
+          downloadState.parts
+            .sort((a, b) => a.part_index - b.part_index)
+            .map((part) => part.content),
+          {
+            type: downloadState.metadata.mime_type,
+          },
+        ),
       );
 
       // If save_immediately is true, download the file immediately.

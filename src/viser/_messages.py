@@ -1488,12 +1488,14 @@ class FileTransferPart(Message):
 
     source_component_uuid: Optional[str]
     transfer_uuid: str
-    part: int
+    part_index: int
     content: bytes
 
     @override
     def redundancy_key(self) -> str:
-        return type(self).__name__ + "-" + self.transfer_uuid + "-" + str(self.part)
+        return (
+            type(self).__name__ + "-" + self.transfer_uuid + "-" + str(self.part_index)
+        )
 
 
 @dataclasses.dataclass

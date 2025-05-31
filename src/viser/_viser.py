@@ -439,7 +439,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
                 _messages.FileTransferPart(
                     None,
                     transfer_uuid=uuid,
-                    part=i,
+                    part_index=i,
                     content=part,
                 )
             )

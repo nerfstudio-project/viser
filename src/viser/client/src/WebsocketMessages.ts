@@ -1216,7 +1216,7 @@ export interface FileTransferPart {
   type: "FileTransferPart";
   source_component_uuid: string | null;
   transfer_uuid: string;
-  part: number;
+  part_index: number;
   content: Uint8Array;
 }
 /** Send a file for clients to download or upload files from client.

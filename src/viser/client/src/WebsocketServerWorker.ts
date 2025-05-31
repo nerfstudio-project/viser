@@ -112,7 +112,7 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
       });
 
       // Try our best to handle messages in order. If this takes more than 1 second, we give up. :)
-      await orderLock.acquireAsync({ timeout: 1000 }).catch(() => {
+      await orderLock.acquireAsync({ timeout: 10000 }).catch(() => {
         console.log("Order lock timed out.");
         orderLock.release();
       });
