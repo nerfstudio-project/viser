@@ -31,6 +31,48 @@ To include example dependencies:
 After an example script is running, you can connect by navigating to the printed
 URL (default: ``http://localhost:8080``).
 
+Get Started
+-----------
+
+New to viser? Start here:
+
+- :doc:`getting_started` - Complete introduction and learning path
+- :doc:`quickstart` - Get running in 5 minutes  
+- :doc:`core_concepts` - Understand how viser works
+
+Examples Gallery
+----------------
+
+Explore what you can build with viser:
+
+.. include:: examples/_example_gallery.rst
+
+.. toctree::
+   :caption: Getting Started
+   :hidden:
+   :maxdepth: 1
+   :titlesonly:
+
+   ./getting_started.rst
+   ./quickstart.rst
+   ./core_concepts.rst
+
+.. toctree::
+   :caption: User Guides
+   :hidden:
+   :maxdepth: 1
+   :titlesonly:
+
+   ./user_guides/index.rst
+
+.. toctree::
+   :caption: Help & Resources
+   :hidden:
+   :maxdepth: 1
+   :titlesonly:
+
+   ./troubleshooting.rst
+
 .. toctree::
    :caption: Notes
    :hidden:
@@ -82,9 +124,8 @@ URL (default: ``http://localhost:8080``).
    :hidden:
    :maxdepth: 1
    :titlesonly:
-   :glob:
 
-   examples/*
+   examples/index
 
 
 .. |pyright| image:: https://github.com/nerfstudio-project/viser/actions/workflows/pyright.yml/badge.svg

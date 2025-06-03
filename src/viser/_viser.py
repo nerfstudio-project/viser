@@ -4,6 +4,7 @@ import asyncio
 import dataclasses
 import io
 import mimetypes
+import os
 import threading
 import time
 import warnings
@@ -612,6 +613,16 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         verbose: bool = True,
         **_deprecated_kwargs,
     ):
+        # Check for port override environment variable
+        port_override = os.environ.get("_VISER_PORT_OVERRIDE")
+        if port_override is not None:
+            try:
+                port = int(port_override)
+            except ValueError:
+                warnings.warn(
+                    f"Invalid _VISER_PORT_OVERRIDE value: {port_override}. Using default port {port}."
+                )
+        
         # Create server.
         server = infra.WebsockServer(
             host=host,

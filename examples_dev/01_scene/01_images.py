@@ -1,6 +1,6 @@
 """Images
 
-Example for sending images to the viewer.
+Display background images and 3D image textures in the viewer.
 
 We can send backgrond images to display behind the viewer (useful for visualizing
 NeRFs), or images to render as 3D textures.

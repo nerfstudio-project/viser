@@ -1,6 +1,6 @@
 """GUI basics
 
-Examples of basic GUI elements that we can create, read from, and write to."""
+Create interactive controls like sliders, buttons, and text inputs."""
 
 import time
 

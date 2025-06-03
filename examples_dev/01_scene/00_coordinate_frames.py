@@ -1,4 +1,4 @@
-"""Coordinate frames
+"""Visualize 3D coordinate frames and transformations.
 
 In this basic example, we visualize a set of coordinate frames.
 

@@ -1,7 +1,6 @@
 """GUI callbacks
 
-Asynchronous usage of GUI elements: we can attach callbacks that are called as soon as
-we get updates."""
+Attach event handlers to GUI elements for real-time interaction."""
 
 import time
 
