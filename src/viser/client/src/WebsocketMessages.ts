@@ -231,6 +231,45 @@ export interface MeshMessage {
     receive_shadow: boolean;
   };
 }
+/** Box message.
+ *
+ * (automatically generated)
+ */
+export interface BoxMessage {
+  type: "BoxMessage";
+  name: string;
+  props: {
+    dimensions: [number, number, number];
+    color: [number, number, number];
+    wireframe: boolean;
+    opacity: number | null;
+    flat_shading: boolean;
+    side: "front" | "back" | "double";
+    material: "standard" | "toon3" | "toon5";
+    cast_shadow: boolean;
+    receive_shadow: boolean;
+  };
+}
+/** Icosphere message.
+ *
+ * (automatically generated)
+ */
+export interface IcosphereMessage {
+  type: "IcosphereMessage";
+  name: string;
+  props: {
+    radius: number;
+    subdivisions: number;
+    color: [number, number, number];
+    wireframe: boolean;
+    opacity: number | null;
+    flat_shading: boolean;
+    side: "front" | "back" | "double";
+    material: "standard" | "toon3" | "toon5";
+    cast_shadow: boolean;
+    receive_shadow: boolean;
+  };
+}
 /** Skinned mesh message.
  *
  * (automatically generated)
@@ -1277,6 +1316,8 @@ export type Message =
   | RectAreaLightMessage
   | SpotLightMessage
   | MeshMessage
+  | BoxMessage
+  | IcosphereMessage
   | SkinnedMeshMessage
   | BatchedMeshesMessage
   | BatchedGlbMessage
@@ -1363,6 +1404,8 @@ export type SceneNodeMessage =
   | RectAreaLightMessage
   | SpotLightMessage
   | MeshMessage
+  | BoxMessage
+  | IcosphereMessage
   | SkinnedMeshMessage
   | BatchedMeshesMessage
   | BatchedGlbMessage
@@ -1409,6 +1452,8 @@ const typeSetSceneNodeMessage = new Set([
   "RectAreaLightMessage",
   "SpotLightMessage",
   "MeshMessage",
+  "BoxMessage",
+  "IcosphereMessage",
   "SkinnedMeshMessage",
   "BatchedMeshesMessage",
   "BatchedGlbMessage",

@@ -432,6 +432,20 @@ class MeshHandle(
     """Handle for mesh objects."""
 
 
+class BoxHandle(
+    _ClickableSceneNodeHandle,
+    _messages.BoxProps,
+):
+    """Handle for box objects."""
+
+
+class IcosphereHandle(
+    _ClickableSceneNodeHandle,
+    _messages.IcosphereProps,
+):
+    """Handle for icosphere objects."""
+
+
 class BatchedMeshHandle(
     _ClickableSceneNodeHandle,
     _messages.BatchedMeshesProps,
