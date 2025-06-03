@@ -3,325 +3,343 @@
 
 
 👋 Getting Started
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 .. raw:: html
 
    <style>
-   .example-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+   .example-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
    </style>
    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin: 20px 0;">
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/00_hello_world.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/00_hello_world.png" alt="Hello world example for viser." style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_getting_started/00_getting_started_00_hello_world/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/00_getting_started_00_hello_world.png" alt="Hello world" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Hello world example for viser.</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">The simplest possible viser program - creates a server and adds a red sphere.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Hello world</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">The simplest possible viser program - creates a server and adds a red sphere.</p>
+               </div>
+           </a>
+       </div>
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_getting_started/00_getting_started_01_core_concepts/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/00_getting_started_01_core_concepts.png" alt="Core concepts" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+               <div style="padding: 15px;">
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Core concepts</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">This example demonstrates the fundamental concepts of viser: creating a server, adding 3D objects to the scene, and building interactive GUI controls.</p>
                </div>
            </a>
        </div>
    </div>
 
 🎯 Scene Fundamentals
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. raw:: html
 
    <style>
-   .example-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+   .example-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
    </style>
    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin: 20px 0;">
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/01_scene_00_coordinate_frames.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/01_scene_00_coordinate_frames.png" alt="Visualize 3D coordinate frames and transformations." style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_scene/coordinate_frames/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/01_scene_00_coordinate_frames.png" alt="Coordinate frames" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Visualize 3D coordinate frames and transformations.</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">In this basic example, we visualize a set of coordinate frames.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Coordinate frames</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Visualize 3D coordinate systems and hierarchical transformations.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/01_scene_01_images.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/01_scene_01_images.png" alt="Images" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_scene/point_clouds/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/01_scene_01_point_clouds.png" alt="Point cloud visualization" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Images</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Display background images and 3D image textures in the viewer.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Point cloud visualization</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Visualize 3D point clouds with colors.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/01_scene_02_meshes.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/01_scene_02_meshes.png" alt="Meshes" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_scene/meshes/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/01_scene_02_meshes.png" alt="3D mesh visualization" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Meshes</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Visualize a mesh.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">3D mesh visualization</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Load and display 3D meshes from common file formats.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/01_scene_03_lines.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/01_scene_03_lines.png" alt="Lines" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_scene/lines/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/01_scene_03_lines.png" alt="Line visualization" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Lines</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Make a ball with some random line segments and splines.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Line visualization</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Create line segments and smooth splines for wireframe and path visualization.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/01_scene_04_meshes_batched.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/01_scene_04_meshes_batched.png" alt="Batched Meshes" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_scene/images/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/01_scene_04_images.png" alt="Image overlays" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Batched Meshes</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Visualize batched meshes.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Image overlays</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Display background images and 3D image textures in the scene.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/01_scene_05_camera_poses.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/01_scene_05_camera_poses.png" alt="Camera poses" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_scene/meshes_batched/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/01_scene_05_meshes_batched.png" alt="Batched mesh rendering" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Camera poses</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Example showing how we can detect new clients and read camera poses from them.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Batched mesh rendering</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Efficiently render many instances of the same mesh with different transforms.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/01_scene_06_camera_commands.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/01_scene_06_camera_commands.png" alt="Camera commands" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_scene/lighting/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/01_scene_06_lighting.png" alt="Lighting and shadows" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Camera commands</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">In addition to reads, camera parameters also support writes.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Lighting and shadows</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Add directional lights and ambient lighting to illuminate 3D meshes with realistic shadows.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/01_scene_07_lighting.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/01_scene_07_lighting.png" alt="Lighting and Shadows" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_scene/background_composite/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/01_scene_07_background_composite.png" alt="Depth compositing" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Lighting and Shadows</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Example adding lights and enabling shadow rendering.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Depth compositing</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Display background images that can occlude 3D geometry based on depth values.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/01_scene_08_background_composite.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/01_scene_08_background_composite.png" alt="Depth compositing" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_scene/set_up_direction/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/01_scene_08_set_up_direction.png" alt="Set up direction" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Depth compositing</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">In this example, we show how to use a background image with depth compositing.</p>
-               </div>
-           </a>
-       </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/01_scene_09_set_up_direction.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/01_scene_09_set_up_direction.png" alt="Set up direction" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
-               <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Set up direction</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">`.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Set up direction</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Control the global up direction for camera navigation and scene orientation.</p>
                </div>
            </a>
        </div>
    </div>
 
 🎛️ GUI Controls
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 .. raw:: html
 
    <style>
-   .example-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+   .example-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
    </style>
    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin: 20px 0;">
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/02_gui_00_basic_controls.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/02_gui_00_basic_controls.png" alt="GUI basics" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_gui/basic_controls/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/02_gui_00_basic_controls.png" alt="Basic GUI controls" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">GUI basics</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Create interactive controls like sliders, buttons, and text inputs.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Basic GUI controls</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Create interactive controls like sliders, buttons, and text inputs.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/02_gui_01_callbacks.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/02_gui_01_callbacks.png" alt="GUI callbacks" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_gui/callbacks/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/02_gui_01_callbacks.png" alt="GUI callbacks" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">GUI callbacks</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Attach event handlers to GUI elements for real-time interaction.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">GUI callbacks</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Attach event handlers to GUI elements for real-time interaction.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/02_gui_02_layouts.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/02_gui_02_layouts.png" alt="GUI layouts and organization" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_gui/layouts/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/02_gui_02_layouts.png" alt="GUI layouts" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">GUI layouts and organization</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Demonstrates how to organize GUI elements using folders, tabs, and nested structures.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">GUI layouts</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Organize GUI controls using folders, tabs, and nested structures for better user experience.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/02_gui_03_markdown.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/02_gui_03_markdown.png" alt="Markdown demonstration" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_gui/markdown/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/02_gui_03_markdown.png" alt="Markdown support" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Markdown demonstration</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Viser GUI has MDX 2 support.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Markdown support</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Display rich text content with markdown support.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/02_gui_04_modals.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/02_gui_04_modals.png" alt="Modal basics" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_gui/modals/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/02_gui_04_modals.png" alt="Modal dialogs" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Modal basics</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Examples of using modals in Viser.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Modal dialogs</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Create popup modal dialogs for user input, confirmations, or detailed information display.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/02_gui_05_theming.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/02_gui_05_theming.png" alt="Theming" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_gui/theming/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/02_gui_05_theming.png" alt="Theming" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Theming</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Viser includes support for light theming.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Theming</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Customize the appearance with custom titles, logos, and navigation buttons.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/02_gui_06_gui_in_scene.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/02_gui_06_gui_in_scene.png" alt="3D GUI elements" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_gui/gui_in_scene/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/02_gui_06_gui_in_scene.png" alt="3D GUI elements" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">3D GUI elements</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">`add_3d_gui_container()` allows standard GUI elements to be incorporated directly into a.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">3D GUI elements</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Embed GUI controls directly in the 3D scene positioned relative to scene objects.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/02_gui_07_notifications.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/02_gui_07_notifications.png" alt="Notifications" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_gui/notifications/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/02_gui_07_notifications.png" alt="Notifications" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Notifications</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Examples of adding notifications per client in Viser.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Notifications</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Display different types of notifications to users including persistent, timed, and loading indicators.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/02_gui_08_plotly_integration.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/02_gui_08_plotly_integration.png" alt="Plotly" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_gui/plotly_integration/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/02_gui_08_plotly_integration.png" alt="Plotly integration" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Plotly</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Examples of visualizing plotly plots in Viser.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Plotly integration</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Embed interactive Plotly charts and graphs directly in the GUI interface.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/02_gui_09_plots_as_images.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/02_gui_09_plots_as_images.png" alt="Plots as Images" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_gui/plots_as_images/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/02_gui_09_plots_as_images.png" alt="Plots as images" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Plots as Images</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Examples of sending plots as images to Viser's GUI panel.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Plots as images</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Display matplotlib and OpenCV-generated plots as images in the GUI for better performance.</p>
                </div>
            </a>
        </div>
    </div>
 
 🖱️ User Interaction
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. raw:: html
 
    <style>
-   .example-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+   .example-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
    </style>
    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin: 20px 0;">
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/03_interaction_00_click_meshes.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/03_interaction_00_click_meshes.png" alt="Mesh click events" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_interaction/click_meshes/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/03_interaction_00_click_meshes.png" alt="Mesh click events" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Mesh click events</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Click on meshes to select them.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Mesh click events</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Click on meshes to select them.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/03_interaction_01_scene_pointer.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/03_interaction_01_scene_pointer.png" alt="Scene pointer events." style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_interaction/scene_pointer/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/03_interaction_01_scene_pointer.png" alt="Scene pointer events" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Scene pointer events.</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">This example shows how to use scene pointer events to specify rays, and how they can be.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Scene pointer events</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Capture mouse pointer events to create rays for 3D scene interaction and ray-mesh intersections.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/03_interaction_02_get_renders.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/03_interaction_02_get_renders.png" alt="Get renders" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_interaction/get_renders/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/03_interaction_02_get_renders.png" alt="Get renders" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Get renders</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Example for getting renders from a client's viewport to the Python API.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Get renders</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Capture rendered images from client viewports for processing or saving.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/03_interaction_03_games.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/03_interaction_03_games.png" alt="Games" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_interaction/camera_poses/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/03_interaction_03_camera_poses.png" alt="Camera pose tracking" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Games</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Some two-player games implemented using scene click events.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Camera pose tracking</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Monitor and read camera poses from connected clients in real-time.</p>
+               </div>
+           </a>
+       </div>
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_interaction/camera_commands/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/03_interaction_04_camera_commands.png" alt="Programmatic camera control" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+               <div style="padding: 15px;">
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Programmatic camera control</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Control camera position, orientation, and parameters programmatically.</p>
                </div>
            </a>
        </div>
    </div>
 
-🚀 Complete Applications
-~~~~~~~~~~~~~~~~~~~~~~~
+🚀 Demos
+~~~~~~~~~~
 
 .. raw:: html
 
    <style>
-   .example-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+   .example-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
    </style>
    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin: 20px 0;">
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/04_demos_00_record3d_visualizer.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/04_demos_00_record3d_visualizer.png" alt="Record3D visualizer" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_demos/record3d_visualizer/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/04_demos_00_record3d_visualizer.png" alt="Record3D" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Record3D visualizer</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Parse and stream record3d captures.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Record3D</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Parse and stream Record3D captures.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/04_demos_02_colmap_visualizer.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/04_demos_02_colmap_visualizer.png" alt="COLMAP visualizer" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_demos/colmap_visualizer/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/04_demos_01_colmap_visualizer.png" alt="COLMAP" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">COLMAP visualizer</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Visualize COLMAP sparse reconstruction outputs.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">COLMAP</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Visualize COLMAP sparse reconstruction outputs.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/04_demos_03_urdf_visualizer.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/04_demos_03_urdf_visualizer.png" alt="Robot URDF visualizer" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_demos/urdf_visualizer/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/04_demos_02_urdf_visualizer.png" alt="URDF robot visualizer" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">Robot URDF visualizer</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Requires yourdfpy and robot_descriptions.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">URDF robot visualizer</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Visualize robot models from URDF files with interactive joint controls.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/04_demos_04_smpl_visualizer.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/04_demos_04_smpl_visualizer.png" alt="SMPL model visualizer" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_demos/smpl_visualizer/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/04_demos_03_smpl_visualizer.png" alt="SMPL human model" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">SMPL model visualizer</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Visualizer for SMPL human body models.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">SMPL human model</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Visualize SMPL human body models with pose and shape parameter controls.</p>
                </div>
            </a>
        </div>
-       <div class="example-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="generated/04_demos_05_smpl_skinned.html" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/04_demos_05_smpl_skinned.png" alt="SMPL visualizer (Skinned Mesh)" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_demos/smpl_skinned/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/04_demos_04_smpl_skinned.png" alt="SMPL skinned mesh" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">SMPL visualizer (Skinned Mesh)</h4>
-                   <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Requires a.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">SMPL skinned mesh</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Visualize SMPL human body models using GPU-accelerated skinned mesh deformation.</p>
+               </div>
+           </a>
+       </div>
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples_demos/games/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/04_demos_05_games.png" alt="Games" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+               <div style="padding: 15px;">
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Games</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Two-player games demonstrating click interactions and game state management.</p>
                </div>
            </a>
        </div>

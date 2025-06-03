@@ -7,17 +7,17 @@ Example Code
    :hidden:
    :maxdepth: 1
 
-   00_hello_world
+   00_getting_started_00_hello_world
+   00_getting_started_01_core_concepts
    01_scene_00_coordinate_frames
-   01_scene_01_images
+   01_scene_01_point_clouds
    01_scene_02_meshes
    01_scene_03_lines
-   01_scene_04_meshes_batched
-   01_scene_05_camera_poses
-   01_scene_06_camera_commands
-   01_scene_07_lighting
-   01_scene_08_background_composite
-   01_scene_09_set_up_direction
+   01_scene_04_images
+   01_scene_05_meshes_batched
+   01_scene_06_lighting
+   01_scene_07_background_composite
+   01_scene_08_set_up_direction
    02_gui_00_basic_controls
    02_gui_01_callbacks
    02_gui_02_layouts
@@ -31,9 +31,11 @@ Example Code
    03_interaction_00_click_meshes
    03_interaction_01_scene_pointer
    03_interaction_02_get_renders
-   03_interaction_03_games
+   03_interaction_03_camera_poses
+   03_interaction_04_camera_commands
    04_demos_00_record3d_visualizer
-   04_demos_02_colmap_visualizer
-   04_demos_03_urdf_visualizer
-   04_demos_04_smpl_visualizer
-   04_demos_05_smpl_skinned
+   04_demos_01_colmap_visualizer
+   04_demos_02_urdf_visualizer
+   04_demos_03_smpl_visualizer
+   04_demos_04_smpl_skinned
+   04_demos_05_games

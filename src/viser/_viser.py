@@ -622,7 +622,7 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                 warnings.warn(
                     f"Invalid _VISER_PORT_OVERRIDE value: {port_override}. Using default port {port}."
                 )
-        
+
         # Create server.
         server = infra.WebsockServer(
             host=host,

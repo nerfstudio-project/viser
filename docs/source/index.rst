@@ -13,65 +13,35 @@ Features include:
 - Programmatic camera control and rendering
 - An entirely web-based client, for easy use over SSH!
 
-Installation
------------
-
-You can install ``viser`` with ``pip``:
-
-.. code-block:: bash
-
-   pip install viser
-
-To include example dependencies:
-
-.. code-block:: bash
-
-   pip install viser[examples]
-
-After an example script is running, you can connect by navigating to the printed
-URL (default: ``http://localhost:8080``).
-
-Get Started
------------
-
-New to viser? Start here:
-
-- :doc:`getting_started` - Complete introduction and learning path
-- :doc:`quickstart` - Get running in 5 minutes  
-- :doc:`core_concepts` - Understand how viser works
-
 Examples Gallery
 ----------------
 
-Explore what you can build with viser:
+Install with: ``pip install viser[examples]``
 
 .. include:: examples/_example_gallery.rst
 
+
 .. toctree::
-   :caption: Getting Started
+   :caption: Examples
    :hidden:
    :maxdepth: 1
    :titlesonly:
 
-   ./getting_started.rst
-   ./quickstart.rst
-   ./core_concepts.rst
+   examples_getting_started/index
+   examples_scene/index
+   examples_gui/index
+   examples_interaction/index
+   examples_demos/index
 
 .. toctree::
-   :caption: User Guides
+   :caption: API
    :hidden:
    :maxdepth: 1
    :titlesonly:
 
-   ./user_guides/index.rst
-
-.. toctree::
-   :caption: Help & Resources
-   :hidden:
-   :maxdepth: 1
-   :titlesonly:
-
-   ./troubleshooting.rst
+   api_core/index
+   api_advanced/index
+   api_auxiliary/index
 
 .. toctree::
    :caption: Notes
@@ -82,50 +52,6 @@ Explore what you can build with viser:
    ./conventions.rst
    ./development.rst
    ./embedded_visualizations.rst
-
-.. toctree::
-   :caption: API (Basics)
-   :hidden:
-   :maxdepth: 1
-   :titlesonly:
-
-   ./server.rst
-   ./scene_api.rst
-   ./gui_api.rst
-   ./state_serializer.rst
-
-
-.. toctree::
-   :caption: API (Advanced)
-   :hidden:
-   :maxdepth: 1
-   :titlesonly:
-
-   ./client_handles.rst
-   ./camera_handles.rst
-   ./gui_handles.rst
-   ./scene_handles.rst
-   ./events.rst
-   ./icons.rst
-
-
-.. toctree::
-   :caption: API (Auxiliary)
-   :hidden:
-   :maxdepth: 1
-   :titlesonly:
-
-   ./transforms.rst
-   ./infrastructure.rst
-   ./extras.rst
-
-.. toctree::
-   :caption: Examples
-   :hidden:
-   :maxdepth: 1
-   :titlesonly:
-
-   examples/index
 
 
 .. |pyright| image:: https://github.com/nerfstudio-project/viser/actions/workflows/pyright.yml/badge.svg
