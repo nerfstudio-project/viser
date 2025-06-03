@@ -3,19 +3,21 @@ export function MacWindowWrapper({
   title,
   width,
   height,
+  fill = false,
 }: {
   children: React.ReactNode;
   title: string;
   width: number;
   height: number;
+  fill?: boolean;
 }) {
   const TITLEBAR_HEIGHT = 36; // px
 
   return (
     <div
       style={{
-        width: `${width}px`,
-        height: `${height}px`,
+        width: fill ? "100vw" : `${width}px`,
+        height: fill ? "100vh" : `${height}px`,
         borderRadius: "10px",
         overflow: "hidden",
         // boxShadow: "0 3px 10px rgba(0,0,0,0.1)",

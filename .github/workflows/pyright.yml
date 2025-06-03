@@ -26,4 +26,4 @@ jobs:
       - name: Run pyright
         run: |
           pyright ./src
-          pyright ./examples_dev
+          pyright ./examples
