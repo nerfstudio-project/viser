@@ -21,6 +21,7 @@ from ._scene_handles import (
     BatchedGlbHandle,
     BatchedMeshHandle,
     BoneState,
+    BoxHandle,
     CameraFrustumHandle,
     DirectionalLightHandle,
     FrameHandle,
@@ -29,6 +30,7 @@ from ._scene_handles import (
     GridHandle,
     Gui3dContainerHandle,
     HemisphereLightHandle,
+    IcosphereHandle,
     ImageHandle,
     LabelHandle,
     LineSegmentsHandle,
@@ -1597,7 +1599,14 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> MeshHandle:
+        wireframe: bool = False,
+        opacity: float | None = None,
+        material: Literal["standard", "toon3", "toon5"] = "standard",
+        flat_shading: bool = True,
+        side: Literal["front", "back", "double"] = "front",
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
+    ) -> BoxHandle:
         """Add a box to the scene.
 
         Args:
@@ -1608,24 +1617,50 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this box is initially visible.
+            wireframe: Boolean indicating if the box should be rendered as a wireframe.
+            opacity: Opacity of the box. None means opaque.
+            material: Material type of the box ('standard', 'toon3', 'toon5').
+            flat_shading: Whether to do flat shading.
+            side: Side of the surface to render ('front', 'back', 'double').
+            cast_shadow: Whether this box should cast shadows.
+            receive_shadow: Whether this box should receive shadows.
 
         Returns:
             Handle for manipulating scene node.
         """
-        import trimesh.creation
+        if isinstance(dimensions, np.ndarray):
+            dimensions_list = dimensions.tolist()
+            assert len(dimensions_list) == 3, (
+                f"Expected 3 dimensions, got {len(dimensions_list)}"
+            )
+            dimensions_tuple = (
+                float(dimensions_list[0]),
+                float(dimensions_list[1]),
+                float(dimensions_list[2]),
+            )
+        else:
+            assert len(dimensions) == 3, f"Expected 3 dimensions, got {len(dimensions)}"
+            dimensions_tuple = (
+                float(dimensions[0]),
+                float(dimensions[1]),
+                float(dimensions[2]),
+            )
 
-        mesh = trimesh.creation.box(dimensions)
-
-        return self.add_mesh_simple(
+        message = _messages.BoxMessage(
             name=name,
-            vertices=mesh.vertices,
-            faces=mesh.faces,
-            color=color,
-            flat_shading=True,
-            position=position,
-            wxyz=wxyz,
-            visible=visible,
+            props=_messages.BoxProps(
+                dimensions=dimensions_tuple,
+                color=_encode_rgb(color),
+                wireframe=wireframe,
+                opacity=opacity,
+                flat_shading=flat_shading,
+                side=side,
+                material=material,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
+            ),
         )
+        return BoxHandle._make(self, message, name, wxyz, position, visible)
 
     def add_icosphere(
         self,
@@ -1636,7 +1671,14 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> MeshHandle:
+        wireframe: bool = False,
+        opacity: float | None = None,
+        material: Literal["standard", "toon3", "toon5"] = "standard",
+        flat_shading: bool = False,
+        side: Literal["front", "back", "double"] = "front",
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
+    ) -> IcosphereHandle:
         """Add an icosphere to the scene.
 
         Args:
@@ -1648,26 +1690,33 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this icosphere is initially visible.
+            wireframe: Boolean indicating if the icosphere should be rendered as a wireframe.
+            opacity: Opacity of the icosphere. None means opaque.
+            material: Material type of the icosphere ('standard', 'toon3', 'toon5').
+            flat_shading: Whether to do flat shading.
+            side: Side of the surface to render ('front', 'back', 'double').
+            cast_shadow: Whether this icosphere should cast shadows.
+            receive_shadow: Whether this icosphere should receive shadows.
 
         Returns:
             Handle for manipulating scene node.
         """
-        import trimesh.creation
-
-        mesh = trimesh.creation.icosphere(subdivisions=subdivisions, radius=radius)
-
-        # We use add_mesh_simple() because it lets us do smooth shading;
-        # add_mesh_trimesh() currently does not.
-        return self.add_mesh_simple(
+        message = _messages.IcosphereMessage(
             name=name,
-            vertices=mesh.vertices,
-            faces=mesh.faces,
-            color=color,
-            flat_shading=False,
-            position=position,
-            wxyz=wxyz,
-            visible=visible,
+            props=_messages.IcosphereProps(
+                radius=radius,
+                subdivisions=subdivisions,
+                color=_encode_rgb(color),
+                wireframe=wireframe,
+                opacity=opacity,
+                flat_shading=flat_shading,
+                side=side,
+                material=material,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
+            ),
         )
+        return IcosphereHandle._make(self, message, name, wxyz, position, visible)
 
     def set_background_image(
         self,

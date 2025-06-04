@@ -1,14 +1,14 @@
 import React from "react";
 import * as THREE from "three";
 import { createStandardMaterial } from "./MeshUtils";
-import { MeshMessage } from "../WebsocketMessages";
+import { IcosphereMessage } from "../WebsocketMessages";
 import { OutlinesIfHovered } from "../OutlinesIfHovered";
 
 /**
- * Component for rendering basic THREE.js meshes
+ * Component for rendering icosphere meshes
  */
-export const BasicMesh = React.forwardRef<THREE.Mesh, MeshMessage>(
-  function BasicMesh(message, ref: React.ForwardedRef<THREE.Mesh>) {
+export const IcosphereMesh = React.forwardRef<THREE.Mesh, IcosphereMessage>(
+  function IcosphereMesh(message, ref: React.ForwardedRef<THREE.Mesh>) {
     // Create material based on props.
     const material = React.useMemo(() => {
       return createStandardMaterial(message.props);
@@ -23,35 +23,11 @@ export const BasicMesh = React.forwardRef<THREE.Mesh, MeshMessage>(
 
     // Setup geometry using memoization.
     const geometry = React.useMemo(() => {
-      const geometry = new THREE.BufferGeometry();
-      geometry.setAttribute(
-        "position",
-        new THREE.BufferAttribute(
-          new Float32Array(
-            message.props.vertices.buffer.slice(
-              message.props.vertices.byteOffset,
-              message.props.vertices.byteOffset +
-                message.props.vertices.byteLength,
-            ),
-          ),
-          3,
-        ),
+      return new THREE.IcosahedronGeometry(
+        message.props.radius,
+        message.props.subdivisions,
       );
-      geometry.setIndex(
-        new THREE.BufferAttribute(
-          new Uint32Array(
-            message.props.faces.buffer.slice(
-              message.props.faces.byteOffset,
-              message.props.faces.byteOffset + message.props.faces.byteLength,
-            ),
-          ),
-          1,
-        ),
-      );
-      geometry.computeVertexNormals();
-      geometry.computeBoundingSphere();
-      return geometry;
-    }, [message.props.vertices.buffer, message.props.faces.buffer]);
+    }, [message.props.radius, message.props.subdivisions]);
 
     // Clean up geometry when it changes.
     React.useEffect(() => {

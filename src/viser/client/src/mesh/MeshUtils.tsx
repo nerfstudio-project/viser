@@ -106,8 +106,6 @@ export function createStandardMaterial(props: {
     wireframe: props.wireframe,
     transparent: props.opacity !== null,
     opacity: props.opacity ?? 1.0,
-    // Flat shading only makes sense for non-wireframe materials.
-    flatShading: props.flat_shading && !props.wireframe,
     side: {
       front: THREE.FrontSide,
       back: THREE.BackSide,
@@ -116,7 +114,11 @@ export function createStandardMaterial(props: {
   };
 
   if (props.material == "standard" || props.wireframe) {
-    return new THREE.MeshStandardMaterial(standardArgs);
+    return new THREE.MeshStandardMaterial({
+      // Flat shading only makes sense for standard + non-wireframe materials.
+      flatShading: props.flat_shading && !props.wireframe,
+      ...standardArgs,
+    });
   } else if (props.material == "toon3") {
     return new THREE.MeshToonMaterial({
       gradientMap: generateGradientMap(3),

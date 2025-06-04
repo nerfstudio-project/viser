@@ -48,6 +48,8 @@ import { Line } from "./Line";
 import { shadowArgs } from "./ShadowArgs";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
 import { BasicMesh } from "./mesh/BasicMesh";
+import { BoxMesh } from "./mesh/BoxMesh";
+import { IcosphereMesh } from "./mesh/IcosphereMesh";
 import { SkinnedMesh } from "./mesh/SkinnedMesh";
 import { BatchedMesh } from "./mesh/BatchedMesh";
 import { SingleGlbAsset } from "./mesh/SingleGlbAsset";
@@ -285,6 +287,16 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     case "MeshMessage": {
       return {
         makeObject: (ref) => <BasicMesh ref={ref} {...message} />,
+      };
+    }
+    case "BoxMessage": {
+      return {
+        makeObject: (ref) => <BoxMesh ref={ref} {...message} />,
+      };
+    }
+    case "IcosphereMessage": {
+      return {
+        makeObject: (ref) => <IcosphereMesh ref={ref} {...message} />,
       };
     }
     case "BatchedMeshesMessage": {
