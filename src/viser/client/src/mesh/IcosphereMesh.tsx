@@ -29,13 +29,19 @@ export const IcosphereMesh = React.forwardRef<THREE.Mesh, IcosphereMessage>(
       );
     }, [message.props.radius, message.props.subdivisions]);
 
-    // Clean up resources when component unmounts.
+    // Clean up geometry when it changes.
+    React.useEffect(() => {
+      return () => {
+        if (geometry) geometry.dispose();
+      };
+    }, [geometry]);
+
+    // Clean up material when it changes.
     React.useEffect(() => {
       return () => {
         if (material) material.dispose();
-        if (geometry) geometry.dispose();
       };
-    }, [material, geometry]);
+    }, [material]);
 
     return (
       <mesh

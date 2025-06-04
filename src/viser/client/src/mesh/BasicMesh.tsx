@@ -53,13 +53,19 @@ export const BasicMesh = React.forwardRef<THREE.Mesh, MeshMessage>(
       return geometry;
     }, [message.props.vertices.buffer, message.props.faces.buffer]);
 
-    // Clean up resources when component unmounts.
+    // Clean up geometry when it changes.
+    React.useEffect(() => {
+      return () => {
+        if (geometry) geometry.dispose();
+      };
+    }, [geometry]);
+
+    // Clean up material when it changes.
     React.useEffect(() => {
       return () => {
         if (material) material.dispose();
-        if (geometry) geometry.dispose();
       };
-    }, [material, geometry]);
+    }, [material]);
 
     return (
       <mesh
