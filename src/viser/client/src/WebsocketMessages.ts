@@ -487,6 +487,28 @@ export interface GuiImageMessage {
     visible: boolean;
   };
 }
+/** GuiLinePlotMessage(uuid: 'str', container_uuid: 'str', props: 'GuiLinePlotProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiLinePlotMessage {
+  type: "GuiLinePlotMessage";
+  uuid: string;
+  container_uuid: string;
+  props: {
+    order: number;
+    title: string | null;
+    x_label: string | null;
+    y_label: string | null;
+    _series_data: {
+      name: string;
+      data: { x: number; y: number }[];
+      color: string | null;
+    }[];
+    height: number;
+    visible: boolean;
+  };
+}
 /** GuiTabGroupMessage(uuid: 'str', container_uuid: 'str', props: 'GuiTabGroupProps')
  *
  * (automatically generated)
@@ -1290,6 +1312,7 @@ export type Message =
   | GuiProgressBarMessage
   | GuiPlotlyMessage
   | GuiImageMessage
+  | GuiLinePlotMessage
   | GuiTabGroupMessage
   | GuiButtonMessage
   | GuiUploadButtonMessage
@@ -1376,6 +1399,7 @@ export type GuiComponentMessage =
   | GuiProgressBarMessage
   | GuiPlotlyMessage
   | GuiImageMessage
+  | GuiLinePlotMessage
   | GuiTabGroupMessage
   | GuiButtonMessage
   | GuiUploadButtonMessage
@@ -1428,6 +1452,7 @@ const typeSetGuiComponentMessage = new Set([
   "GuiProgressBarMessage",
   "GuiPlotlyMessage",
   "GuiImageMessage",
+  "GuiLinePlotMessage",
   "GuiTabGroupMessage",
   "GuiButtonMessage",
   "GuiUploadButtonMessage",

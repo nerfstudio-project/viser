@@ -43,6 +43,7 @@ from ._gui_handles import (
     GuiFolderHandle,
     GuiHtmlHandle,
     GuiImageHandle,
+    GuiLinePlotHandle,
     GuiMarkdownHandle,
     GuiModalHandle,
     GuiMultiSliderHandle,
@@ -783,6 +784,79 @@ class GuiApi:
         handle.figure = figure
         handle.aspect = aspect
         return handle
+
+    def add_mantine_lineplot(
+        self,
+        x_data: Sequence[float],
+        y_data: Sequence[float],
+        title: str | None = None,
+        x_label: str | None = None,
+        y_label: str | None = None,
+        series_name: str = "Series 1",
+        color: str | None = None,
+        height: int = 300,
+        visible: bool = True,
+        order: float | None = None,
+    ) -> GuiLinePlotHandle:
+        """Add a Mantine line plot to the GUI.
+
+        Args:
+            x_data: X-axis data points.
+            y_data: Y-axis data points.
+            title: Optional title for the plot.
+            x_label: Optional label for the x-axis.
+            y_label: Optional label for the y-axis.
+            series_name: Name for the data series.
+            color: Optional color for the line (CSS color string).
+            height: Height of the plot in pixels.
+            visible: Whether the plot is visible.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the line plot.
+        """
+        if len(x_data) != len(y_data):
+            raise ValueError("x_data and y_data must have the same length")
+
+        # Create data points
+        data_points = tuple(_messages.GuiLinePlotDataPoint(x=float(x), y=float(y)) 
+                          for x, y in zip(x_data, y_data))
+        
+        # Create series
+        series = _messages.GuiLinePlotSeries(
+            name=series_name,
+            data=data_points,
+            color=color
+        )
+
+        # Create message
+        uuid = _make_uuid()
+        order = _apply_default_order(order)
+        message = _messages.GuiLinePlotMessage(
+            uuid=uuid,
+            container_uuid=self._get_container_uuid(),
+            props=_messages.GuiLinePlotProps(
+                order=order,
+                title=title,
+                x_label=x_label,
+                y_label=y_label,
+                _series_data=(series,),
+                height=height,
+                visible=visible,
+            ),
+        )
+        self._websock_interface.queue_message(message)
+
+        return GuiLinePlotHandle(
+            _GuiHandleState(
+                uuid=message.uuid,
+                gui_api=self,
+                value=None,
+                props=message.props,
+                parent_container_id=message.container_uuid,
+            ),
+            _series_data=(series,),
+        )
 
     def add_button(
         self,

@@ -851,3 +851,45 @@ class GuiImageHandle(_GuiHandle[None], GuiImageProps):
         )
         self._data = data
         del media_type
+
+
+class GuiLinePlotHandle(_GuiHandle[None], _messages.GuiLinePlotProps):
+    """Handle for updating and removing Mantine line plots."""
+
+    def __init__(self, _impl: _GuiHandleState, _series_data: tuple[_messages.GuiLinePlotSeries, ...]):
+        super().__init__(_impl=_impl)
+        self._series_data_internal = _series_data
+
+    @property
+    def series_data(self) -> tuple[_messages.GuiLinePlotSeries, ...]:
+        """Current series data of this line plot. Synchronized automatically when assigned."""
+        return self._series_data_internal
+
+    @series_data.setter
+    def series_data(self, series_data: tuple[_messages.GuiLinePlotSeries, ...]) -> None:
+        self._series_data_internal = series_data
+        self._series_data = series_data
+
+    def update_series(self, series_name: str, x_data: list[float], y_data: list[float], color: str | None = None) -> None:
+        """Update a single data series."""
+        if len(x_data) != len(y_data):
+            raise ValueError("x_data and y_data must have the same length")
+        
+        # Create new data points
+        new_data_points = tuple(_messages.GuiLinePlotDataPoint(x=x, y=y) for x, y in zip(x_data, y_data))
+        new_series = _messages.GuiLinePlotSeries(name=series_name, data=new_data_points, color=color)
+        
+        # Update or add the series
+        updated_series = []
+        series_found = False
+        for series in self._series_data_internal:
+            if series.name == series_name:
+                updated_series.append(new_series)
+                series_found = True
+            else:
+                updated_series.append(series)
+        
+        if not series_found:
+            updated_series.append(new_series)
+        
+        self.series_data = tuple(updated_series)

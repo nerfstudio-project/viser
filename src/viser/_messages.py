@@ -1023,6 +1023,45 @@ class GuiImageMessage(_CreateGuiComponentMessage):
 
 
 @dataclasses.dataclass
+class GuiLinePlotDataPoint:
+    """Single data point for line plot."""
+    x: float
+    y: float
+
+
+@dataclasses.dataclass
+class GuiLinePlotSeries:
+    """Data series for line plot."""
+    name: str
+    data: Tuple[GuiLinePlotDataPoint, ...]
+    color: Optional[str] = None
+
+
+@dataclasses.dataclass
+class GuiLinePlotProps:
+    order: float
+    """Order value for arranging GUI elements. Synchronized automatically when assigned."""
+    title: Optional[str]
+    """Title of the line plot. Synchronized automatically when assigned."""
+    x_label: Optional[str]
+    """X-axis label. Synchronized automatically when assigned."""
+    y_label: Optional[str]
+    """Y-axis label. Synchronized automatically when assigned."""
+    _series_data: Tuple[GuiLinePlotSeries, ...]
+    """(Private) Plot data series. Synchronized automatically when assigned."""
+    height: int
+    """Height of the plot in pixels. Synchronized automatically when assigned."""
+    visible: bool
+    """Visibility state of the plot. Synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class GuiLinePlotMessage(_CreateGuiComponentMessage):
+    container_uuid: str
+    props: GuiLinePlotProps
+
+
+@dataclasses.dataclass
 class GuiTabGroupProps:
     _tab_labels: Tuple[str, ...]
     """(Private) Tuple of labels for each tab. Synchronized automatically when assigned."""
