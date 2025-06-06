@@ -22,17 +22,25 @@ def main():
     
     print("📋 Setting up camera stream callback...")
     
-    @server.on_camera_stream_frame
-    def handle_frame(client, frame_message):
-        nonlocal frame_count
-        frame_count += 1
-        print(f"🎯 FRAME RECEIVED #{frame_count} from client {client.client_id}")
-        print(f"    Size: {len(frame_message.frame_data)} bytes")
-        print(f"    Dimensions: {frame_message.width}x{frame_message.height}")
-        print(f"    Format: {frame_message.format}")
-        print(f"    Timestamp: {frame_message.timestamp}")
-        
-        status.content = f"**Status:** Received {frame_count} frames"
+    from PIL import Image
+    import io
+    import numpy as np
+    @server.on_client_connect
+    def client_connected(client: viser.ClientHandle):
+        print("🔗 Client connected")
+        image_handle = client.gui.add_image(np.zeros((100, 100, 3), dtype=np.uint8))
+        @client.on_camera_stream_frame
+        def handle_frame(client, frame_message):
+            nonlocal frame_count
+            frame_count += 1
+            print(f"🎯 FRAME RECEIVED #{frame_count} from client {client.client_id}")
+            print(f"    Size: {len(frame_message.frame_data)} bytes")
+            print(f"    Dimensions: {frame_message.width}x{frame_message.height}")
+            print(f"    Format: {frame_message.format}")
+            print(f"    Timestamp: {frame_message.timestamp}")
+            image = Image.open(io.BytesIO(frame_message.frame_data))
+            image_handle.image = np.array(image)
+            status.content = f"**Status:** Received {frame_count} frames"
     
     print("📋 Camera stream callback registered!")
     
