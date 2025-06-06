@@ -1299,6 +1299,29 @@ export interface SetGuiPanelLabelMessage {
   type: "SetGuiPanelLabelMessage";
   label: string | null;
 }
+/** Message from server->client to configure camera streaming.
+ *
+ * (automatically generated)
+ */
+export interface CameraStreamConfigMessage {
+  type: "CameraStreamConfigMessage";
+  enabled: boolean;
+  video_constraints: { [key: string]: any } | null;
+  capture_fps: number | null;
+  capture_resolution: [number, number] | null;
+}
+/** Message from client->server carrying a camera frame.
+ *
+ * (automatically generated)
+ */
+export interface CameraStreamFrameMessage {
+  type: "CameraStreamFrameMessage";
+  frame_data: Uint8Array;
+  timestamp: number;
+  width: number;
+  height: number;
+  format: "image/jpeg" | "image/png";
+}
 
 export type Message =
   | CameraFrustumMessage
@@ -1387,7 +1410,9 @@ export type Message =
   | ShareUrlRequest
   | ShareUrlUpdated
   | ShareUrlDisconnect
-  | SetGuiPanelLabelMessage;
+  | SetGuiPanelLabelMessage
+  | CameraStreamConfigMessage
+  | CameraStreamFrameMessage;
 export type SceneNodeMessage =
   | CameraFrustumMessage
   | GlbMessage

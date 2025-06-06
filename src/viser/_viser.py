@@ -378,6 +378,8 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         """Unique ID for this client."""
         self.camera: CameraHandle = CameraHandle(self)
         """Handle for reading from and manipulating the client's viewport camera."""
+        self._camera_stream_cb: list[Callable[[ClientHandle, _messages.CameraStreamFrameMessage], None | Coroutine]] = []
+        """Callbacks for camera stream frame events."""
 
     def flush(self) -> None:
         """Flush the outgoing message buffer. Any buffered messages will immediately be
@@ -444,6 +446,61 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
                 )
             )
             self.flush()
+
+    def configure_camera_stream(
+        self,
+        enabled: bool,
+        video_constraints: dict[str, Any] | None = None,
+        capture_fps: float | None = None,
+        capture_resolution: tuple[int, int] | None = None,
+    ) -> None:
+        """Configure camera streaming from this client.
+
+        Args:
+            enabled: Whether to enable camera streaming.
+            video_constraints: WebRTC video constraints for camera access.
+            capture_fps: Frame rate for capturing frames.
+            capture_resolution: Resolution for captured frames as (width, height).
+        """
+        self._websock_connection.queue_message(
+            _messages.CameraStreamConfigMessage(
+                enabled=enabled,
+                video_constraints=video_constraints,
+                capture_fps=capture_fps,
+                capture_resolution=capture_resolution,
+            )
+        )
+
+    def on_camera_stream_frame(
+        self, cb: Callable[[ClientHandle, _messages.CameraStreamFrameMessage], NoneOrCoroutine]
+    ) -> Callable[[ClientHandle, _messages.CameraStreamFrameMessage], NoneOrCoroutine]:
+        """Attach a callback to run when camera stream frames are received from this client.
+
+        The callback can be either a standard function or an async function:
+        - Standard functions (def) will be executed in a threadpool.
+        - Async functions (async def) will be executed in the event loop.
+
+        Args:
+            cb: Callback function that receives the client handle and camera frame message.
+
+        Returns:
+            The callback function (for method chaining).
+        """
+        print(f"📋 Adding camera stream callback to client {self.client_id}: {cb}")
+        self._camera_stream_cb.append(cb)
+        print(f"📋 Client {self.client_id} now has {len(self._camera_stream_cb)} camera stream callbacks")
+        return cb
+
+    def remove_camera_stream_callback(
+        self, cb: Callable[[ClientHandle, _messages.CameraStreamFrameMessage], NoneOrCoroutine]
+    ) -> None:
+        """Remove a camera stream callback.
+
+        Args:
+            cb: Callback function to remove.
+        """
+        if cb in self._camera_stream_cb:
+            self._camera_stream_cb.remove(cb)
 
     def add_notification(
         self,
@@ -675,6 +732,15 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                     first = False
                     with self._client_lock:
                         self._connected_clients[conn.client_id] = client
+                        
+                        # Add server-level camera stream callbacks to the new client.
+                        if hasattr(self, '_server_camera_stream_cb'):
+                            print(f"🔗 Adding {len(self._server_camera_stream_cb)} server-level callbacks to new client {client.client_id}")
+                            for camera_stream_cb in self._server_camera_stream_cb:
+                                client.on_camera_stream_frame(camera_stream_cb)
+                        else:
+                            print(f"🔗 No server-level camera stream callbacks to add to client {client.client_id}")
+                        
                         for cb in self._client_connect_cb:
                             if asyncio.iscoroutinefunction(cb):
                                 await cb(client)
@@ -692,6 +758,28 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                         ).add_done_callback(print_threadpool_errors)
 
             conn.register_handler(_messages.ViewerCameraMessage, handle_camera_message)
+
+            # Handle camera stream frames.
+            async def handle_camera_stream_frame(
+                client_id: infra.ClientId, message: _messages.CameraStreamFrameMessage
+            ) -> None:
+                print(f"🎥 Received camera stream frame message from client {client_id}")
+                print(f"    Frame size: {len(message.frame_data)} bytes, {message.width}x{message.height}")
+                
+                assert client_id == client.client_id
+
+                # Execute camera stream callbacks.
+                print(f"    Executing {len(client._camera_stream_cb)} camera stream callbacks")
+                for camera_stream_cb in client._camera_stream_cb:
+                    if asyncio.iscoroutinefunction(camera_stream_cb):
+                        await camera_stream_cb(client, message)
+                    else:
+                        self._thread_executor.submit(
+                            camera_stream_cb, client, message
+                        ).add_done_callback(print_threadpool_errors)
+
+            print(f"🔧 Registering camera stream handler for client {client.client_id}")
+            conn.register_handler(_messages.CameraStreamFrameMessage, handle_camera_stream_frame)
 
         # Remove clients when they disconnect.
         @server.on_client_disconnect
@@ -978,6 +1066,63 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         Using async functions can be useful for reducing race conditions.
         """
         self._client_disconnect_cb.append(cb)
+        return cb
+
+    def configure_camera_stream_all_clients(
+        self,
+        enabled: bool,
+        video_constraints: dict[str, Any] | None = None,
+        capture_fps: float | None = None,
+        capture_resolution: tuple[int, int] | None = None,
+    ) -> None:
+        """Configure camera streaming for all connected clients.
+
+        Args:
+            enabled: Whether to enable camera streaming.
+            video_constraints: WebRTC video constraints for camera access.
+            capture_fps: Frame rate for capturing frames.
+            capture_resolution: Resolution for captured frames as (width, height).
+        """
+        clients = self.get_clients().values()
+        print(f"🔧 Configuring camera stream for {len(clients)} clients: enabled={enabled}")
+        
+        for client in clients:
+            print(f"🔧 Sending camera config to client {client.client_id}")
+            client.configure_camera_stream(
+                enabled=enabled,
+                video_constraints=video_constraints,
+                capture_fps=capture_fps,
+                capture_resolution=capture_resolution,
+            )
+
+    def on_camera_stream_frame(
+        self, cb: Callable[[ClientHandle, _messages.CameraStreamFrameMessage], NoneOrCoroutine]
+    ) -> Callable[[ClientHandle, _messages.CameraStreamFrameMessage], NoneOrCoroutine]:
+        """Attach a callback to run when camera stream frames are received from any client.
+
+        The callback can be either a standard function or an async function:
+        - Standard functions (def) will be executed in a threadpool.
+        - Async functions (async def) will be executed in the event loop.
+
+        Args:
+            cb: Callback function that receives the client handle and camera frame message.
+
+        Returns:
+            The callback function (for method chaining).
+        """
+        print(f"🌍 Adding server-level camera stream callback: {cb}")
+        
+        # Add the callback to all current and future clients.
+        current_clients = self.get_clients().values()
+        print(f"🌍 Adding callback to {len(current_clients)} current clients")
+        for client in current_clients:
+            client.on_camera_stream_frame(cb)
+        
+        # Store the callback to add to future clients.
+        if not hasattr(self, '_server_camera_stream_cb'):
+            self._server_camera_stream_cb: list[Callable[[ClientHandle, _messages.CameraStreamFrameMessage], NoneOrCoroutine]] = []
+        self._server_camera_stream_cb.append(cb)
+        print(f"🌍 Server now has {len(self._server_camera_stream_cb)} camera stream callbacks")
         return cb
 
     def flush(self) -> None:

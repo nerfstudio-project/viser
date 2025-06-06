@@ -45,6 +45,7 @@ import { BrowserWarning } from "./BrowserWarning";
 import { MacWindowWrapper } from "./MacWindowWrapper";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
 import { VISER_VERSION } from "./VersionInfo";
+import { CameraStream } from "./CameraStream";
 
 // ======= Utility functions =======
 
@@ -211,6 +212,11 @@ function ViewerRoot() {
 
     // Global hover state tracking.
     hoveredElementsCount: 0,
+
+    // Camera stream state.
+    cameraStreamConfig: {
+      enabled: false,
+    },
   });
 
   // Create the context value with hooks and single ref.
@@ -231,6 +237,7 @@ function ViewerRoot() {
         {messageSource === "file_playback" && (
           <PlaybackFromFile fileUrl={playbackPath!} />
         )}
+        <CameraStream />
         {showStats && <Stats className="stats-panel" />}
       </ViewerContents>
     </ViewerContext.Provider>

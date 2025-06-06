@@ -1600,3 +1600,32 @@ class SetGuiPanelLabelMessage(Message):
     """Message from server->client to set the label of the GUI panel."""
 
     label: Optional[str]
+
+
+@dataclasses.dataclass
+class CameraStreamConfigMessage(Message):
+    """Message from server->client to configure camera streaming."""
+
+    enabled: bool
+    video_constraints: Optional[Dict[str, Any]]
+    capture_fps: Optional[float]
+    capture_resolution: Optional[Tuple[int, int]]
+
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__
+
+
+@dataclasses.dataclass
+class CameraStreamFrameMessage(Message):
+    """Message from client->server carrying a camera frame."""
+
+    frame_data: bytes
+    timestamp: float
+    width: int
+    height: int
+    format: Literal["image/jpeg", "image/png"]
+
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + str(int(self.timestamp * 1000))

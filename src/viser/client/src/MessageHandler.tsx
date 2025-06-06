@@ -147,6 +147,18 @@ function useMessageHandler(): (message: Message) => void {
         viewer.useGui.setState({ label: message.label ?? "" });
         return;
       }
+      // Configure camera streaming.
+      case "CameraStreamConfigMessage": {
+        console.log("📩 Received CameraStreamConfigMessage:", message);
+        viewerMutable.cameraStreamConfig = {
+          enabled: message.enabled,
+          videoConstraints: message.video_constraints || undefined,
+          captureFps: message.capture_fps || undefined,
+          captureResolution: message.capture_resolution || undefined,
+        };
+        console.log("📩 Updated camera config:", viewerMutable.cameraStreamConfig);
+        return;
+      }
       // Configure the theme.
       case "ThemeConfigurationMessage": {
         setTheme(message);
