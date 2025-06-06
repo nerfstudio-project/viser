@@ -449,25 +449,28 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
 
     def configure_camera_stream(
         self,
-        enabled: bool,
-        video_constraints: dict[str, Any] | None = None,
-        capture_fps: float | None = None,
-        capture_resolution: tuple[int, int] | None = None,
+        enabled: bool = True,
+        width: int = 800,
+        height: int = 600,
+        frame_rate: int = 30,
+        facing_mode: Literal["user", "environment"] | None = None,
     ) -> None:
         """Configure camera streaming from this client.
 
         Args:
             enabled: Whether to enable camera streaming.
-            video_constraints: WebRTC video constraints for camera access.
-            capture_fps: Frame rate for capturing frames.
-            capture_resolution: Resolution for captured frames as (width, height).
+            width: Capture image width in pixels.
+            height: Capture image height in pixels.
+            frame_rate: Camera frame rate constraint.
+            facing_mode: Camera facing mode constraint; the client will use the default facing mode if not provided.
         """
         self._websock_connection.queue_message(
             _messages.CameraStreamConfigMessage(
                 enabled=enabled,
-                video_constraints=video_constraints,
-                capture_fps=capture_fps,
-                capture_resolution=capture_resolution,
+                width=width,
+                height=height,
+                frame_rate=frame_rate,
+                facing_mode=facing_mode,
             )
         )
 
@@ -1067,33 +1070,6 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         """
         self._client_disconnect_cb.append(cb)
         return cb
-
-    def configure_camera_stream_all_clients(
-        self,
-        enabled: bool,
-        video_constraints: dict[str, Any] | None = None,
-        capture_fps: float | None = None,
-        capture_resolution: tuple[int, int] | None = None,
-    ) -> None:
-        """Configure camera streaming for all connected clients.
-
-        Args:
-            enabled: Whether to enable camera streaming.
-            video_constraints: WebRTC video constraints for camera access.
-            capture_fps: Frame rate for capturing frames.
-            capture_resolution: Resolution for captured frames as (width, height).
-        """
-        clients = self.get_clients().values()
-        print(f"🔧 Configuring camera stream for {len(clients)} clients: enabled={enabled}")
-        
-        for client in clients:
-            print(f"🔧 Sending camera config to client {client.client_id}")
-            client.configure_camera_stream(
-                enabled=enabled,
-                video_constraints=video_constraints,
-                capture_fps=capture_fps,
-                capture_resolution=capture_resolution,
-            )
 
     def on_camera_stream_frame(
         self, cb: Callable[[ClientHandle, _messages.CameraStreamFrameMessage], NoneOrCoroutine]

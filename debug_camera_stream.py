@@ -51,13 +51,10 @@ def main():
         
         server.configure_camera_stream_all_clients(
             enabled=True,
-            video_constraints={
-                "width": 640,
-                "height": 480,
-                "facingMode": "user"
-            },
-            capture_fps=5.0,  # Low FPS for debugging
-            capture_resolution=(640, 480),
+            width=640,
+            height=480,
+            frame_rate=5.0,  # Low FPS for debugging
+            facing_mode="user",
         )
         status.content = "**Status:** Camera stream enabled - waiting for frames..."
         print("🔛 Camera stream enabled!")

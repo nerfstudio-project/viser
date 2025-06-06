@@ -1607,9 +1607,10 @@ class CameraStreamConfigMessage(Message):
     """Message from server->client to configure camera streaming."""
 
     enabled: bool
-    video_constraints: Optional[Dict[str, Any]]
-    capture_fps: Optional[float]
-    capture_resolution: Optional[Tuple[int, int]]
+    width: int
+    height: int
+    frame_rate: float
+    facing_mode: Optional[Literal["user", "environment"]]
 
     @override
     def redundancy_key(self) -> str:

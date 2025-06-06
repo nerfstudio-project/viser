@@ -19,9 +19,7 @@ def main():
     # Attach a camera stream handler to each client.
     @server.on_client_connect
     def _(client: viser.ClientHandle):
-        camera_enabled_handle = client.gui.add_checkbox(
-            "Camera Enabled", initial_value=False
-        )
+        enable_cam_handle = client.gui.add_button("Enable Camera")
 
         client_id = client.client_id
 
@@ -30,20 +28,9 @@ def main():
         server_image_handle = server.scene.add_image(
             name=f"/camera_frame_{client_id}",
             image=dummy_image,
-            render_width=100,
-            render_height=CAPTURE_RES[1] / CAPTURE_RES[0] * 100,
-            position=(0, 0, 0.5 * client_id),
-        )
-
-        client.configure_camera_stream(
-            enabled=camera_enabled_handle.value,
-            video_constraints={
-                "width": CAPTURE_RES[0],
-                "height": CAPTURE_RES[1],
-                "facingMode": "user",
-            },
-            capture_fps=5.0,
-            capture_resolution=CAPTURE_RES,
+            render_width=CAPTURE_RES[0] / CAPTURE_RES[1] * 0.5,
+            render_height=0.5,
+            position=(client_id, 0, 0),
         )
 
         @client.on_camera_stream_frame
@@ -52,10 +39,10 @@ def main():
             client_image_handle.image = np.array(image)
             server_image_handle.image = np.array(image)
 
-        @camera_enabled_handle.on_update
+        @enable_cam_handle.on_click
         def _(_):
-            enabled = camera_enabled_handle.value
-            server.configure_camera_stream_all_clients(enabled=enabled)
+            client.configure_camera_stream()
+            enable_cam_handle.disabled = True
 
     server.sleep_forever()
 
