@@ -818,22 +818,19 @@ class GuiApi:
         if len(x_data) != len(y_data):
             raise ValueError("x_data and y_data must have the same length")
 
-        # Create data points
+        # Create data points and series to send to the client
         data_points = tuple(_messages.GuiLinePlotDataPoint(x=float(x), y=float(y)) 
                           for x, y in zip(x_data, y_data))
-        
-        # Create series
         series = _messages.GuiLinePlotSeries(
             name=series_name,
             data=data_points,
             color=color
         )
 
-        # Create message
-        uuid = _make_uuid()
+        # this is very similar to Plotly
         order = _apply_default_order(order)
         message = _messages.GuiLinePlotMessage(
-            uuid=uuid,
+            uuid=_make_uuid(),
             container_uuid=self._get_container_uuid(),
             props=_messages.GuiLinePlotProps(
                 order=order,
