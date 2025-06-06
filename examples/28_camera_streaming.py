@@ -3,10 +3,7 @@
 Demonstrates how to capture camera frames from the client, and send it to the server.
 """
 
-import io
-
 import numpy as np
-from PIL import Image
 
 import viser
 
@@ -33,11 +30,10 @@ def main():
             position=(client_id, 0, 0),
         )
 
-        @client.on_camera_stream_frame
-        def _(client: viser.ClientHandle, frame_message):
-            image = Image.open(io.BytesIO(frame_message.frame_data))
-            client_image_handle.image = np.array(image)
-            server_image_handle.image = np.array(image)
+        @client.gui.on_camera_stream_frame
+        def _(event: viser.CameraStreamFrameEvent):
+            client_image_handle.image = np.array(event.image)
+            server_image_handle.image = np.array(event.image)
 
         @enable_cam_handle.on_click
         def _(_):

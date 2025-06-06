@@ -5,6 +5,7 @@ import builtins
 import colorsys
 import dataclasses
 import functools
+import io
 import threading
 import time
 from asyncio import AbstractEventLoop
@@ -13,15 +14,19 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
+    Coroutine,
     Protocol,
     Sequence,
     Tuple,
     TypeVar,
+    Union,
     cast,
     overload,
 )
 
 import numpy as np
+from PIL import Image
 from typing_extensions import (
     Literal,
     LiteralString,
@@ -34,6 +39,7 @@ from viser import theme
 
 from . import _messages
 from ._gui_handles import (
+    CameraStreamFrameEvent,
     GuiButtonGroupHandle,
     GuiButtonHandle,
     GuiCheckboxHandle,
@@ -97,6 +103,7 @@ LiteralColor: TypeAlias = Literal[
     "orange",
     "teal",
 ]
+NoneOrCoroutine = TypeVar("NoneOrCoroutine", None, Coroutine)
 
 
 def _hex_from_hls(h: float, l: float, s: float) -> str:
@@ -210,6 +217,9 @@ class GuiApi:
         }
         self._modal_handle_from_uuid: dict[str, GuiModalHandle] = {}
         self._current_file_upload_states: dict[str, _FileUploadState] = {}
+        self._camera_stream_cb: list[
+            Callable[[CameraStreamFrameEvent], Union[None, Coroutine]]
+        ] = []
 
         # Set to True when plotly.min.js has been sent to client.
         self._setup_plotly_js: bool = False
@@ -223,6 +233,9 @@ class GuiApi:
         self._websock_interface.register_handler(
             _messages.FileTransferPart,
             self._handle_file_transfer_part,
+        )
+        self._websock_interface.register_handler(
+            _messages.CameraStreamFrameMessage, self._handle_camera_stream_frame
         )
 
     async def _handle_gui_updates(
@@ -378,6 +391,40 @@ class GuiApi:
                     cb, GuiEvent(client, client_id, handle)
                 ).add_done_callback(print_threadpool_errors)
 
+    def _handle_camera_stream_frame(
+        self, client_id: ClientId, message: _messages.CameraStreamFrameMessage
+    ) -> None:
+        """Callback for handling camera stream frame messages."""
+        # Get the handle of the client that triggered this event.
+        from ._viser import ClientHandle, ViserServer
+
+        if isinstance(self._owner, ClientHandle):
+            client = self._owner
+        elif isinstance(self._owner, ViserServer):
+            client = self._owner._connected_clients.get(client_id, None)
+            if client is None:
+                return
+        else:
+            assert False
+
+        # Create the camera stream frame event.
+        event = CameraStreamFrameEvent(
+            client=client,
+            client_id=client_id,
+            image=Image.open(io.BytesIO(message.frame_data)),
+            timestamp=message.timestamp,
+            width=message.width,
+            height=message.height,
+        )
+
+        for camera_stream_cb in self._camera_stream_cb:
+            if asyncio.iscoroutinefunction(camera_stream_cb):
+                self._event_loop.create_task(camera_stream_cb(event))
+            else:
+                self._thread_executor.submit(camera_stream_cb, event).add_done_callback(
+                    print_threadpool_errors
+                )
+
     def _get_container_uuid(self) -> str:
         """Get container ID associated with the current thread."""
         return self._target_container_from_thread_id.get(threading.get_ident(), "root")
@@ -432,9 +479,9 @@ class GuiApi:
         if brand_color is not None:
             assert len(brand_color) in (3, 10)
             if len(brand_color) == 3:
-                assert all(map(lambda val: isinstance(val, int), brand_color)), (
-                    "All channels should be integers."
-                )
+                assert all(
+                    map(lambda val: isinstance(val, int), brand_color)
+                ), "All channels should be integers."
 
                 # RGB => HLS.
                 h, l, s = colorsys.rgb_to_hls(
@@ -744,9 +791,9 @@ class GuiApi:
             plotly_path = (
                 Path(plotly.__file__).parent / "package_data" / "plotly.min.js"
             )
-            assert plotly_path.exists(), (
-                f"Could not find plotly.min.js at {plotly_path}."
-            )
+            assert (
+                plotly_path.exists()
+            ), f"Could not find plotly.min.js at {plotly_path}."
 
             # Send it over!
             plotly_js = plotly_path.read_text(encoding="utf-8")
@@ -1418,14 +1465,18 @@ class GuiApi:
                         precision=_compute_precision_digits(step),
                         visible=visible,
                         disabled=disabled,
-                        _marks=tuple(
-                            GuiSliderMark(value=float(x[0]), label=x[1])
-                            if isinstance(x, tuple)
-                            else GuiSliderMark(value=x, label=None)
-                            for x in marks
-                        )
-                        if marks is not None
-                        else None,
+                        _marks=(
+                            tuple(
+                                (
+                                    GuiSliderMark(value=float(x[0]), label=x[1])
+                                    if isinstance(x, tuple)
+                                    else GuiSliderMark(value=x, label=None)
+                                )
+                                for x in marks
+                            )
+                            if marks is not None
+                            else None
+                        ),
                     ),
                 ),
                 is_button=False,
@@ -1505,14 +1556,18 @@ class GuiApi:
                         disabled=disabled,
                         fixed_endpoints=fixed_endpoints,
                         precision=_compute_precision_digits(step),
-                        _marks=tuple(
-                            GuiSliderMark(value=float(x[0]), label=x[1])
-                            if isinstance(x, tuple)
-                            else GuiSliderMark(value=x, label=None)
-                            for x in marks
-                        )
-                        if marks is not None
-                        else None,
+                        _marks=(
+                            tuple(
+                                (
+                                    GuiSliderMark(value=float(x[0]), label=x[1])
+                                    if isinstance(x, tuple)
+                                    else GuiSliderMark(value=x, label=None)
+                                )
+                                for x in marks
+                            )
+                            if marks is not None
+                            else None
+                        ),
                     ),
                 ),
                 is_button=False,
@@ -1649,3 +1704,32 @@ class GuiApi:
             handle_state.sync_cb = sync_other_clients
 
         return handle_state
+
+    def on_camera_stream_frame(
+        self, cb: Callable[[CameraStreamFrameEvent], NoneOrCoroutine]
+    ) -> Callable[[CameraStreamFrameEvent], NoneOrCoroutine]:
+        """Attach a callback to run when camera stream frames are received from this client.
+
+        The callback can be either a standard function or an async function:
+        - Standard functions (def) will be executed in a threadpool.
+        - Async functions (async def) will be executed in the event loop.
+
+        Args:
+            cb: Callback function that receives a camera stream frame event.
+
+        Returns:
+            The callback function (for method chaining).
+        """
+        self._camera_stream_cb.append(cb)
+        return cb
+
+    def remove_camera_stream_callback(
+        self, cb: Callable[[CameraStreamFrameEvent], NoneOrCoroutine]
+    ) -> None:
+        """Remove a camera stream callback.
+
+        Args:
+            cb: Callback function to remove.
+        """
+        if cb in self._camera_stream_cb:
+            self._camera_stream_cb.remove(cb)
