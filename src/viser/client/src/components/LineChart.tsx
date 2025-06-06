@@ -1,7 +1,7 @@
 import React from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Box, Paper, Text } from "@mantine/core";
-import { GuiLinePlotMessage } from "../WebsocketMessages";
+import { GuiLineChartMessage } from "../WebsocketMessages";
 import { folderWrapper } from "./Folder.css";
 
 interface DataPoint {
@@ -10,7 +10,7 @@ interface DataPoint {
   [key: string]: number;
 }
 
-function processSeriesData(seriesData: GuiLinePlotMessage["props"]["_series_data"]): DataPoint[] {
+function processSeriesData(seriesData: GuiLineChartMessage["props"]["_series_data"]): DataPoint[] {
   if (seriesData.length === 0) return [];
 
   // Create a map of x values to data points
@@ -31,9 +31,9 @@ function processSeriesData(seriesData: GuiLinePlotMessage["props"]["_series_data
   return Array.from(xValueMap.values()).sort((a, b) => a.x - b.x);
 }
 
-export default function LinePlotComponent({
+export default function LineChartComponent({
   props: { visible, title, x_label, y_label, _series_data, height },
-}: GuiLinePlotMessage) {
+}: GuiLineChartMessage) {
   if (!visible) return <></>;
 
   const data = processSeriesData(_series_data);

@@ -1023,42 +1023,42 @@ class GuiImageMessage(_CreateGuiComponentMessage):
 
 
 @dataclasses.dataclass
-class GuiLinePlotDataPoint:
-    """Single data point for line plot."""
+class GuiLineChartDataPoint:
+    """Single data point for line chart."""
     x: float
     y: float
 
 
 @dataclasses.dataclass
-class GuiLinePlotSeries:
-    """Data series for line plot."""
+class GuiLineChartSeries:
+    """Data series for line chart."""
     name: str
-    data: Tuple[GuiLinePlotDataPoint, ...]
+    data: Tuple[GuiLineChartDataPoint, ...]
     color: Optional[str] = None
 
 
 @dataclasses.dataclass
-class GuiLinePlotProps:
+class GuiLineChartProps:
     order: float
     """Order value for arranging GUI elements. Synchronized automatically when assigned."""
     title: Optional[str]
-    """Title of the line plot. Synchronized automatically when assigned."""
+    """Title of the line chart. Synchronized automatically when assigned."""
     x_label: Optional[str]
     """X-axis label. Synchronized automatically when assigned."""
     y_label: Optional[str]
     """Y-axis label. Synchronized automatically when assigned."""
-    _series_data: Tuple[GuiLinePlotSeries, ...]
-    """(Private) Plot data series. Synchronized automatically when assigned."""
+    _series_data: Tuple[GuiLineChartSeries, ...]
+    """(Private) Chart data series. Synchronized automatically when assigned."""
     height: int
-    """Height of the plot in pixels. Synchronized automatically when assigned."""
+    """Height of the chart in pixels. Synchronized automatically when assigned."""
     visible: bool
-    """Visibility state of the plot. Synchronized automatically when assigned."""
+    """Visibility state of the chart. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
-class GuiLinePlotMessage(_CreateGuiComponentMessage):
+class GuiLineChartMessage(_CreateGuiComponentMessage):
     container_uuid: str
-    props: GuiLinePlotProps
+    props: GuiLineChartProps
 
 
 @dataclasses.dataclass

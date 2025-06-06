@@ -17,7 +17,7 @@ import RgbaComponent from "../components/Rgba";
 import ButtonGroupComponent from "../components/ButtonGroup";
 import MarkdownComponent from "../components/Markdown";
 import PlotlyComponent from "../components/PlotlyComponent";
-import LinePlotComponent from "../components/LinePlot";
+import LineChartComponent from "../components/LineChart";
 import TabGroupComponent from "../components/TabGroup";
 import FolderComponent from "../components/Folder";
 import MultiSliderComponent from "../components/MultiSlider";
@@ -107,8 +107,8 @@ function GeneratedInput(props: { guiUuid: string }) {
       return <HtmlComponent {...conf} />;
     case "GuiPlotlyMessage":
       return <PlotlyComponent {...conf} />;
-    case "GuiLinePlotMessage":
-      return <LinePlotComponent {...conf} />;
+    case "GuiLineChartMessage":
+      return <LineChartComponent {...conf} />;
     case "GuiImageMessage":
       return <ImageComponent {...conf} />;
     case "GuiButtonMessage":

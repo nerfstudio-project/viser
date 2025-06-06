@@ -487,12 +487,12 @@ export interface GuiImageMessage {
     visible: boolean;
   };
 }
-/** GuiLinePlotMessage(uuid: 'str', container_uuid: 'str', props: 'GuiLinePlotProps')
+/** GuiLineChartMessage(uuid: 'str', container_uuid: 'str', props: 'GuiLineChartProps')
  *
  * (automatically generated)
  */
-export interface GuiLinePlotMessage {
-  type: "GuiLinePlotMessage";
+export interface GuiLineChartMessage {
+  type: "GuiLineChartMessage";
   uuid: string;
   container_uuid: string;
   props: {
@@ -1312,7 +1312,7 @@ export type Message =
   | GuiProgressBarMessage
   | GuiPlotlyMessage
   | GuiImageMessage
-  | GuiLinePlotMessage
+  | GuiLineChartMessage
   | GuiTabGroupMessage
   | GuiButtonMessage
   | GuiUploadButtonMessage
@@ -1399,7 +1399,7 @@ export type GuiComponentMessage =
   | GuiProgressBarMessage
   | GuiPlotlyMessage
   | GuiImageMessage
-  | GuiLinePlotMessage
+  | GuiLineChartMessage
   | GuiTabGroupMessage
   | GuiButtonMessage
   | GuiUploadButtonMessage
@@ -1452,7 +1452,7 @@ const typeSetGuiComponentMessage = new Set([
   "GuiProgressBarMessage",
   "GuiPlotlyMessage",
   "GuiImageMessage",
-  "GuiLinePlotMessage",
+  "GuiLineChartMessage",
   "GuiTabGroupMessage",
   "GuiButtonMessage",
   "GuiUploadButtonMessage",

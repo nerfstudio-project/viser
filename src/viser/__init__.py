@@ -8,6 +8,7 @@ from ._gui_handles import GuiFolderHandle as GuiFolderHandle
 from ._gui_handles import GuiHtmlHandle as GuiHtmlHandle
 from ._gui_handles import GuiImageHandle as GuiImageHandle
 from ._gui_handles import GuiInputHandle as GuiInputHandle
+from ._gui_handles import GuiLineChartHandle as GuiLineChartHandle
 from ._gui_handles import GuiMarkdownHandle as GuiMarkdownHandle
 from ._gui_handles import GuiMultiSliderHandle as GuiMultiSliderHandle
 from ._gui_handles import GuiNumberHandle as GuiNumberHandle

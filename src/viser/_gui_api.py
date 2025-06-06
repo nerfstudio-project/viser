@@ -43,7 +43,7 @@ from ._gui_handles import (
     GuiFolderHandle,
     GuiHtmlHandle,
     GuiImageHandle,
-    GuiLinePlotHandle,
+    GuiLineChartHandle,
     GuiMarkdownHandle,
     GuiModalHandle,
     GuiMultiSliderHandle,
@@ -785,7 +785,7 @@ class GuiApi:
         handle.aspect = aspect
         return handle
 
-    def add_mantine_lineplot(
+    def add_mantine_linechart(
         self,
         x_data: Sequence[float],
         y_data: Sequence[float],
@@ -797,8 +797,8 @@ class GuiApi:
         height: int = 300,
         visible: bool = True,
         order: float | None = None,
-    ) -> GuiLinePlotHandle:
-        """Add a Mantine line plot to the GUI.
+    ) -> GuiLineChartHandle:
+        """Add a Mantine line chart to the GUI.
 
         Args:
             x_data: X-axis data points.
@@ -813,15 +813,15 @@ class GuiApi:
             order: Optional ordering, smallest values will be displayed first.
 
         Returns:
-            A handle that can be used to interact with the line plot.
+            A handle that can be used to interact with the line chart.
         """
         if len(x_data) != len(y_data):
             raise ValueError("x_data and y_data must have the same length")
 
         # Create data points and series to send to the client
-        data_points = tuple(_messages.GuiLinePlotDataPoint(x=float(x), y=float(y)) 
+        data_points = tuple(_messages.GuiLineChartDataPoint(x=float(x), y=float(y)) 
                           for x, y in zip(x_data, y_data))
-        series = _messages.GuiLinePlotSeries(
+        series = _messages.GuiLineChartSeries(
             name=series_name,
             data=data_points,
             color=color
@@ -829,10 +829,10 @@ class GuiApi:
 
         # this is very similar to Plotly
         order = _apply_default_order(order)
-        message = _messages.GuiLinePlotMessage(
+        message = _messages.GuiLineChartMessage(
             uuid=_make_uuid(),
             container_uuid=self._get_container_uuid(),
-            props=_messages.GuiLinePlotProps(
+            props=_messages.GuiLineChartProps(
                 order=order,
                 title=title,
                 x_label=x_label,
@@ -844,7 +844,7 @@ class GuiApi:
         )
         self._websock_interface.queue_message(message)
 
-        return GuiLinePlotHandle(
+        return GuiLineChartHandle(
             _GuiHandleState(
                 uuid=message.uuid,
                 gui_api=self,

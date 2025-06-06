@@ -853,20 +853,20 @@ class GuiImageHandle(_GuiHandle[None], GuiImageProps):
         del media_type
 
 
-class GuiLinePlotHandle(_GuiHandle[None], _messages.GuiLinePlotProps):
-    """Handle for updating and removing Mantine line plots."""
+class GuiLineChartHandle(_GuiHandle[None], _messages.GuiLineChartProps):
+    """Handle for updating and removing Mantine line charts."""
 
-    def __init__(self, _impl: _GuiHandleState, _series_data: tuple[_messages.GuiLinePlotSeries, ...]):
+    def __init__(self, _impl: _GuiHandleState, _series_data: tuple[_messages.GuiLineChartSeries, ...]):
         super().__init__(_impl=_impl)
         self._series_data_internal = _series_data
 
     @property
-    def series_data(self) -> tuple[_messages.GuiLinePlotSeries, ...]:
-        """Current series data of this line plot. Synchronized automatically when assigned."""
+    def series_data(self) -> tuple[_messages.GuiLineChartSeries, ...]:
+        """Current series data of this line chart. Synchronized automatically when assigned."""
         return self._series_data_internal
 
     @series_data.setter
-    def series_data(self, series_data: tuple[_messages.GuiLinePlotSeries, ...]) -> None:
+    def series_data(self, series_data: tuple[_messages.GuiLineChartSeries, ...]) -> None:
         self._series_data_internal = series_data
         self._series_data = series_data
 
@@ -876,8 +876,8 @@ class GuiLinePlotHandle(_GuiHandle[None], _messages.GuiLinePlotProps):
             raise ValueError("x_data and y_data must have the same length")
         
         # Create new data points
-        new_data_points = tuple(_messages.GuiLinePlotDataPoint(x=x, y=y) for x, y in zip(x_data, y_data))
-        new_series = _messages.GuiLinePlotSeries(name=series_name, data=new_data_points, color=color)
+        new_data_points = tuple(_messages.GuiLineChartDataPoint(x=x, y=y) for x, y in zip(x_data, y_data))
+        new_series = _messages.GuiLineChartSeries(name=series_name, data=new_data_points, color=color)
         
         # Update or add the series
         updated_series = []
