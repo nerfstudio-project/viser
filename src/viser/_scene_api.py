@@ -1532,6 +1532,7 @@ class SceneApi:
         covariances: np.ndarray,
         rgbs: np.ndarray,
         opacities: np.ndarray,
+        sh_coeffs: np.ndarray | None = None,
         wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1547,6 +1548,7 @@ class SceneApi:
             covariances: Second moment for each Gaussian. (N, 3, 3).
             rgbs: Color for each Gaussian. (N, 3).
             opacities: Opacity for each Gaussian. (N, 1).
+            sh_coeffs: Spherical harmonics coefficients for each Gaussian. (N, 48).
             wxyz: R_parent_local transformation.
             position: t_parent_local transformation.
             visible: Initial visibility of scene node.
@@ -1580,10 +1582,33 @@ class SceneApi:
         ).view(np.uint32)
         assert buffer.shape == (num_gaussians, 8)
 
+        if sh_coeffs is not None:
+            assert sh_coeffs.shape == (num_gaussians, 48)
+            sh_buffer = np.concatenate(
+                [
+                    sh_coeffs.astype(np.float16).copy().view(np.uint8)
+                ],
+            ).view(np.uint32)
+        else:
+            # To ensure backwards compatibility, we'll compute SH coefficients from
+            # the RGB values.
+            # However, this is not efficient as packets sent to client
+            # will be larger. TODO: Permanently incorporate colors with SH coefficients.
+            SH_C0 = 0.28209479177387814
+            dc_coeffs = (rgbs - 0.5) / SH_C0
+            sh_buffer = np.concatenate(
+                [
+                    dc_coeffs, np.zeros((num_gaussians, 45))
+                ],
+                axis=1,
+                dtype=np.float16,
+            ).view(np.uint32)
+
         message = _messages.GaussianSplatsMessage(
             name=name,
             props=_messages.GaussianSplatsProps(
                 buffer=buffer,
+                sh_buffer=sh_buffer,
             ),
         )
         node_handle = GaussianSplatHandle._make(

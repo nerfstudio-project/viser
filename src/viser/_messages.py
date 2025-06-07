@@ -1469,6 +1469,7 @@ class GaussianSplatsProps:
     # Memory layout is borrowed from:
     # https://github.com/antimatter15/splat
     buffer: npt.NDArray[np.uint32]
+    sh_buffer: npt.NDArray[np.uint32]
     """Our buffer will contain:
     - x as f32
     - y as f32
