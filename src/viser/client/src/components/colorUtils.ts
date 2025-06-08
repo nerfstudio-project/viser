@@ -30,12 +30,16 @@ export function toMantineColor(
 
 // Convert RGB tuple to rgb() string.
 export function rgbToString(rgb: RgbTuple): string {
-  return `rgb(${Math.round(rgb[0])}, ${Math.round(rgb[1])}, ${Math.round(rgb[2])})`;
+  return `rgb(${Math.round(rgb[0])}, ${Math.round(rgb[1])}, ${Math.round(
+    rgb[2],
+  )})`;
 }
 
 // Convert RGBA tuple to rgba() string.
 export function rgbaToString(rgba: RgbaTuple): string {
-  return `rgba(${Math.round(rgba[0])}, ${Math.round(rgba[1])}, ${Math.round(rgba[2])}, ${rgba[3].toFixed(2)})`;
+  return `rgba(${Math.round(rgba[0])}, ${Math.round(rgba[1])}, ${Math.round(
+    rgba[2],
+  )}, ${rgba[3].toFixed(2)})`;
 }
 
 // Parse any string to RGB tuple.

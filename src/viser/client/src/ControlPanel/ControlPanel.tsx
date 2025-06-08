@@ -64,10 +64,10 @@ export default function ControlPanel(props: {
     controlWidthString == "small"
       ? "16em"
       : controlWidthString == "medium"
-        ? "20em"
-        : controlWidthString == "large"
-          ? "24em"
-          : null
+      ? "20em"
+      : controlWidthString == "large"
+      ? "24em"
+      : null
   )!;
 
   const generatedServerToggleButton = (
