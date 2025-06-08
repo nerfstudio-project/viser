@@ -458,7 +458,7 @@ class GuiApi:
                 )
                 colors_cast = cast(
                     LengthTenStrTuple,
-                    tuple(_hex_from_hls(h, ls[i], s) for i in range(10)),
+                    tuple(_hex_from_hls(h, float(ls[i]), s) for i in range(10)),
                 )
 
         assert colors_cast is None or all(
