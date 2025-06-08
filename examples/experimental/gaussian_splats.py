@@ -129,7 +129,10 @@ def main(splat_paths: tuple[Path, ...]) -> None:
         else:
             raise SystemExit("Please provide a filepath to a .splat or .ply file.")
 
-        server.scene.add_transform_controls(f"/{i}")
+        control = server.scene.add_transform_controls(f"/{i}")
+        @control.on_click
+        def _(_) -> None:
+            print("hi")
         gs_handle = server.scene.add_gaussian_splats(
             f"/{i}/gaussian_splats",
             centers=splat_data["centers"],

@@ -5,7 +5,7 @@ import {
   PivotControls,
 } from "@react-three/drei";
 import { ContextBridge, useContextBridge } from "its-fine";
-import { createPortal, useFrame } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
 
@@ -62,30 +62,6 @@ function rgbToInt(rgb: [number, number, number]): number {
 /** Type corresponding to a zustand-style useSceneTree hook. */
 export type UseSceneTree = ReturnType<typeof useSceneTreeState>;
 
-function SceneNodeThreeChildren(props: {
-  name: string;
-  parent: THREE.Object3D;
-}) {
-  const viewer = React.useContext(ViewerContext)!;
-  const children = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.children,
-  );
-  return createPortal(
-    <group>
-      {children &&
-        children.map((child_id) => (
-          <SceneNodeThreeObject
-            key={child_id}
-            name={child_id}
-            parent={props.parent}
-          />
-        ))}
-      <SceneNodeLabel name={props.name} />
-    </group>,
-    props.parent,
-  );
-}
-
 /** Component for updating attributes of a scene node. */
 function SceneNodeLabel(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
@@ -108,7 +84,10 @@ function SceneNodeLabel(props: { name: string }) {
   ) : null;
 }
 
-export type MakeObject = (ref: React.Ref<any>) => React.ReactNode;
+export type MakeObject = (
+  ref: React.Ref<any>,
+  children: React.ReactNode,
+) => React.ReactNode;
 
 function createObjectFactory(
   message: SceneNodeMessage | undefined,
@@ -127,7 +106,7 @@ function createObjectFactory(
     // Add a coordinate frame.
     case "FrameMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <CoordinateFrame
             ref={ref}
             showAxes={message.props.show_axes}
@@ -135,7 +114,9 @@ function createObjectFactory(
             axesRadius={message.props.axes_radius}
             originRadius={message.props.origin_radius}
             originColor={rgbToInt(message.props.origin_color)}
-          />
+          >
+            {children}
+          </CoordinateFrame>
         ),
       };
     }
@@ -143,7 +124,7 @@ function createObjectFactory(
     // Add axes to visualize.
     case "BatchedAxesMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <InstancedAxes
             ref={ref}
             batched_wxyzs={message.props.batched_wxyzs}
@@ -151,7 +132,9 @@ function createObjectFactory(
             batched_scales={message.props.batched_scales}
             axes_length={message.props.axes_length}
             axes_radius={message.props.axes_radius}
-          />
+          >
+            {children}
+          </InstancedAxes>
         ),
         // Compute click instance index from instance ID. Each visualized
         // frame has 1 instance for each of 3 line segments.
@@ -213,7 +196,7 @@ function createObjectFactory(
         shadowPlane = null;
       }
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <group ref={ref}>
             <Grid
               args={[
@@ -232,6 +215,7 @@ function createObjectFactory(
               quaternion={gridQuaternion}
             />
             {shadowPlane}
+            {children}
           </group>
         ),
       };
@@ -240,34 +224,58 @@ function createObjectFactory(
     // Add a point cloud.
     case "PointCloudMessage": {
       return {
-        makeObject: (ref) => <PointCloud ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <PointCloud ref={ref} {...message}>
+            {children}
+          </PointCloud>
+        ),
       };
     }
 
     // Add mesh
     case "SkinnedMeshMessage": {
       return {
-        makeObject: (ref) => <SkinnedMesh ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <SkinnedMesh ref={ref} {...message}>
+            {children}
+          </SkinnedMesh>
+        ),
       };
     }
     case "MeshMessage": {
       return {
-        makeObject: (ref) => <BasicMesh ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <BasicMesh ref={ref} {...message}>
+            {children}
+          </BasicMesh>
+        ),
       };
     }
     case "BoxMessage": {
       return {
-        makeObject: (ref) => <BoxMesh ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <BoxMesh ref={ref} {...message}>
+            {children}
+          </BoxMesh>
+        ),
       };
     }
     case "IcosphereMessage": {
       return {
-        makeObject: (ref) => <IcosphereMesh ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <IcosphereMesh ref={ref} {...message}>
+            {children}
+          </IcosphereMesh>
+        ),
       };
     }
     case "BatchedMeshesMessage": {
       return {
-        makeObject: (ref) => <BatchedMesh ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <BatchedMesh ref={ref} {...message}>
+            {children}
+          </BatchedMesh>
+        ),
         computeClickInstanceIndexFromInstanceId:
           message.type === "BatchedMeshesMessage"
             ? (instanceId) => instanceId!
@@ -277,51 +285,55 @@ function createObjectFactory(
     // Add a camera frustum.
     case "CameraFrustumMessage": {
       return {
-        makeObject: (ref) => <CameraFrustum ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <CameraFrustum ref={ref} {...message}>
+            {children}
+          </CameraFrustum>
+        ),
       };
     }
     case "TransformControlsMessage": {
       const name = message.name;
       const sendDragMessage = makeThrottledMessageSender(viewer, 50);
       return {
-        makeObject: (ref) => (
-          <group onClick={(e) => e.stopPropagation()}>
-            <PivotControls
-              ref={ref}
-              scale={message.props.scale}
-              lineWidth={message.props.line_width}
-              fixed={message.props.fixed}
-              activeAxes={message.props.active_axes}
-              disableAxes={message.props.disable_axes}
-              disableSliders={message.props.disable_sliders}
-              disableRotations={message.props.disable_rotations}
-              disableScaling={true}
-              translationLimits={message.props.translation_limits}
-              rotationLimits={message.props.rotation_limits}
-              depthTest={message.props.depth_test}
-              opacity={message.props.opacity}
-              onDrag={(l) => {
-                const attrs = viewer.mutable.current.nodeAttributesFromName;
-                if (attrs[message.name] === undefined) {
-                  attrs[message.name] = {};
-                }
+        makeObject: (ref, children) => (
+          <PivotControls
+            ref={ref}
+            scale={message.props.scale}
+            lineWidth={message.props.line_width}
+            fixed={message.props.fixed}
+            activeAxes={message.props.active_axes}
+            disableAxes={message.props.disable_axes}
+            disableSliders={message.props.disable_sliders}
+            disableRotations={message.props.disable_rotations}
+            disableScaling={true}
+            translationLimits={message.props.translation_limits}
+            rotationLimits={message.props.rotation_limits}
+            depthTest={message.props.depth_test}
+            opacity={message.props.opacity}
+            onDrag={(l) => {
+              const attrs = viewer.mutable.current.nodeAttributesFromName;
+              if (attrs[message.name] === undefined) {
+                attrs[message.name] = {};
+              }
 
-                const wxyz = new THREE.Quaternion();
-                wxyz.setFromRotationMatrix(l);
-                const position = new THREE.Vector3().setFromMatrixPosition(l);
+              const wxyz = new THREE.Quaternion();
+              wxyz.setFromRotationMatrix(l);
+              const position = new THREE.Vector3().setFromMatrixPosition(l);
 
-                const nodeAttributes = attrs[message.name]!;
-                nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
-                nodeAttributes.position = position.toArray();
-                sendDragMessage({
-                  type: "TransformControlsUpdateMessage",
-                  name: name,
-                  wxyz: nodeAttributes.wxyz,
-                  position: nodeAttributes.position,
-                });
-              }}
-            />
-          </group>
+              const nodeAttributes = attrs[message.name]!;
+              nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
+              nodeAttributes.position = position.toArray();
+              sendDragMessage({
+                type: "TransformControlsUpdateMessage",
+                name: name,
+                wxyz: nodeAttributes.wxyz,
+                position: nodeAttributes.position,
+              });
+            }}
+          >
+            {children}
+          </PivotControls>
         ),
         unmountWhenInvisible: true,
       };
@@ -329,7 +341,7 @@ function createObjectFactory(
     // Add a 2D label.
     case "LabelMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           // We wrap with <group /> because Html doesn't implement THREE.Object3D.
           <group ref={ref}>
             <Html>
@@ -353,6 +365,7 @@ function createObjectFactory(
                 </span>
               </div>
             </Html>
+            {children}
           </group>
         ),
         unmountWhenInvisible: true,
@@ -360,7 +373,7 @@ function createObjectFactory(
     }
     case "Gui3DMessage": {
       return {
-        makeObject: (ref) => {
+        makeObject: (ref, children) => {
           // We wrap with <group /> because Html doesn't implement
           // THREE.Object3D.
           return (
@@ -386,6 +399,7 @@ function createObjectFactory(
                   </Paper>
                 </ContextBridge>
               </Html>
+              {children}
             </group>
           );
         },
@@ -395,24 +409,36 @@ function createObjectFactory(
     // Add an image.
     case "ImageMessage": {
       return {
-        makeObject: (ref) => <ViserImage ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <ViserImage ref={ref} {...message}>
+            {children}
+          </ViserImage>
+        ),
       };
     }
     // Add a glTF/GLB asset.
     case "GlbMessage": {
       return {
-        makeObject: (ref) => <SingleGlbAsset ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <SingleGlbAsset ref={ref} {...message}>
+            {children}
+          </SingleGlbAsset>
+        ),
       };
     }
     case "BatchedGlbMessage": {
       return {
-        makeObject: (ref) => <BatchedGlbAsset ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <BatchedGlbAsset ref={ref} {...message}>
+            {children}
+          </BatchedGlbAsset>
+        ),
         computeClickInstanceIndexFromInstanceId: (instanceId) => instanceId!,
       };
     }
     case "LineSegmentsMessage": {
       return {
-        makeObject: (ref) => {
+        makeObject: (ref, children) => {
           // The array conversion here isn't very efficient. We go from buffer
           // => TypeArray => Javascript Array, then back to buffers in drei's
           // <Line /> abstraction.
@@ -436,6 +462,7 @@ function createObjectFactory(
                 vertexColors={colorArray}
                 segments={true}
               />
+              {children}
             </group>
           );
         },
@@ -443,7 +470,7 @@ function createObjectFactory(
     }
     case "CatmullRomSplineMessage": {
       return {
-        makeObject: (ref) => {
+        makeObject: (ref, children) => {
           return (
             <group ref={ref}>
               <CatmullRomLine
@@ -456,6 +483,7 @@ function createObjectFactory(
                 // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
                 segments={(message.props.segments ?? undefined) as undefined}
               />
+              {children}
             </group>
           );
         },
@@ -463,7 +491,7 @@ function createObjectFactory(
     }
     case "CubicBezierSplineMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <group ref={ref}>
             {[...Array(message.props.positions.length - 1).keys()].map((i) => (
               <CubicBezierLine
@@ -478,13 +506,14 @@ function createObjectFactory(
                 segments={(message.props.segments ?? undefined) as undefined}
               ></CubicBezierLine>
             ))}
+            {children}
           </group>
         ),
       };
     }
     case "GaussianSplatsMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <SplatObject
             ref={ref}
             buffer={
@@ -496,7 +525,9 @@ function createObjectFactory(
                 ),
               )
             }
-          />
+          >
+            {children}
+          </SplatObject>
         ),
       };
     }
@@ -504,13 +535,14 @@ function createObjectFactory(
     // Add a directional light
     case "DirectionalLightMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <group ref={ref}>
             <CsmDirectionalLight
               lightIntensity={message.props.intensity}
               color={rgbToInt(message.props.color)}
               castShadow={message.props.cast_shadow}
             />
+            {children}
           </group>
         ),
         // CsmDirectionalLight is not influenced by visibility, since the
@@ -523,12 +555,14 @@ function createObjectFactory(
     // Cannot cast shadows
     case "AmbientLightMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <ambientLight
             ref={ref}
             intensity={message.props.intensity}
             color={rgbToInt(message.props.color)}
-          />
+          >
+            {children}
+          </ambientLight>
         ),
       };
     }
@@ -537,13 +571,15 @@ function createObjectFactory(
     // Cannot cast shadows
     case "HemisphereLightMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <hemisphereLight
             ref={ref}
             intensity={message.props.intensity}
             color={rgbToInt(message.props.sky_color)}
             groundColor={rgbToInt(message.props.ground_color)}
-          />
+          >
+            {children}
+          </hemisphereLight>
         ),
       };
     }
@@ -551,7 +587,7 @@ function createObjectFactory(
     // Add a point light
     case "PointLightMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <pointLight
             ref={ref}
             intensity={message.props.intensity}
@@ -560,7 +596,9 @@ function createObjectFactory(
             decay={message.props.decay}
             castShadow={message.props.cast_shadow}
             {...shadowArgs}
-          />
+          >
+            {children}
+          </pointLight>
         ),
       };
     }
@@ -568,14 +606,16 @@ function createObjectFactory(
     // Cannot cast shadows
     case "RectAreaLightMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <rectAreaLight
             ref={ref}
             intensity={message.props.intensity}
             color={rgbToInt(message.props.color)}
             width={message.props.width}
             height={message.props.height}
-          />
+          >
+            {children}
+          </rectAreaLight>
         ),
       };
     }
@@ -583,7 +623,7 @@ function createObjectFactory(
     // Add a spot light
     case "SpotLightMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <spotLight
             ref={ref}
             intensity={message.props.intensity}
@@ -594,7 +634,9 @@ function createObjectFactory(
             decay={message.props.decay}
             castShadow={message.props.cast_shadow}
             {...shadowArgs}
-          />
+          >
+            {children}
+          </spotLight>
         ),
       };
     }
@@ -628,14 +670,20 @@ export function SceneNodeThreeObject(props: {
   const clickable =
     viewer.useSceneTree((state) => state.nodeFromName[props.name]?.clickable) ??
     false;
-  const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
+  const objRef = React.useRef<THREE.Object3D | null>(null);
 
   // Update global registry of node objects.
   // This is used for updating bone transforms in skinned meshes.
   const viewerMutable = viewer.mutable.current;
   React.useEffect(() => {
-    if (obj !== null) viewerMutable.nodeRefFromName[props.name] = obj;
-  }, [obj]);
+    if (objRef.current !== null)
+      viewerMutable.nodeRefFromName[props.name] = objRef.current;
+  });
+
+  // Get children from scene tree state
+  const childrenNames = viewer.useSceneTree(
+    (state) => state.nodeFromName[props.name]?.children,
+  );
 
   // Create object + children.
   //
@@ -652,13 +700,23 @@ export function SceneNodeThreeObject(props: {
     }
     attrs[props.name]!.poseUpdateState = "needsUpdate";
 
-    return makeObject(setRef);
-  }, [makeObject]);
-
-  const children =
-    obj === null ? null : (
-      <SceneNodeThreeChildren name={props.name} parent={obj} />
+    // Create children components
+    const children = (
+      <>
+        {childrenNames &&
+          childrenNames.map((child_id) => (
+            <SceneNodeThreeObject
+              key={child_id}
+              name={child_id}
+              parent={objRef.current}
+            />
+          ))}
+        <SceneNodeLabel name={props.name} />
+      </>
     );
+
+    return makeObject(objRef, children);
+  }, [makeObject, childrenNames]);
 
   // Helper for transient visibility checks. Checks the .visible attribute of
   // both this object and ancestors.
@@ -709,7 +767,7 @@ export function SceneNodeThreeObject(props: {
       if (unmountWhenInvisible) {
         const displayed = isDisplayed();
         if (displayed && unmount) {
-          if (obj !== null) obj.visible = false;
+          if (objRef.current !== null) objRef.current.visible = false;
           setUnmount(false);
         }
         if (!displayed && !unmount) {
@@ -717,25 +775,26 @@ export function SceneNodeThreeObject(props: {
         }
       }
 
-      if (obj === null) return;
+      if (objRef.current === null) return;
       if (attrs === undefined) return;
 
       const visibility =
         (attrs?.overrideVisibility === undefined
           ? attrs?.visibility
           : attrs.overrideVisibility) ?? true;
-      obj.visible = visibility;
+      objRef.current.visible = visibility;
 
       if (attrs.poseUpdateState == "needsUpdate") {
         attrs.poseUpdateState = "updated";
         const wxyz = attrs.wxyz ?? [1, 0, 0, 0];
-        obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+        objRef.current.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
         const position = attrs.position ?? [0, 0, 0];
-        obj.position.set(position[0], position[1], position[2]);
+        objRef.current.position.set(position[0], position[1], position[2]);
 
         // Update matrices if necessary. This is necessary for PivotControls.
-        if (!obj.matrixAutoUpdate) obj.updateMatrix();
-        if (!obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
+        if (!objRef.current.matrixAutoUpdate) objRef.current.updateMatrix();
+        if (!objRef.current.matrixWorldAutoUpdate)
+          objRef.current.updateMatrixWorld();
       }
     },
     // Other useFrame hooks may depend on transforms + visibility. So it's best
@@ -896,7 +955,6 @@ export function SceneNodeThreeObject(props: {
             {objNode}
           </HoverableContext.Provider>
         </group>
-        {children}
       </>
     );
   }

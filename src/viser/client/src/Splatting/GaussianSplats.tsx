@@ -61,8 +61,9 @@ export const SplatObject = React.forwardRef<
   THREE.Group,
   {
     buffer: Uint32Array;
+    children?: React.ReactNode;
   }
->(function SplatObject({ buffer }, ref) {
+>(function SplatObject({ buffer, children }, ref) {
   const splatContext = React.useContext(GaussianSplatsContext)!;
   const setBuffer = splatContext.useGaussianSplatStore(
     (state) => state.setBuffer,
@@ -98,7 +99,9 @@ export const SplatObject = React.forwardRef<
         }
         nodeRefFromId.current[name] = obj;
       }}
-    ></group>
+    >
+      {children}
+    </group>
   );
 });
 
