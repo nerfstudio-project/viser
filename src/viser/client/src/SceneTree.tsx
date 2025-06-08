@@ -4,7 +4,7 @@ import {
   Grid,
   PivotControls,
 } from "@react-three/drei";
-import { useContextBridge } from "its-fine";
+import { ContextBridge, useContextBridge } from "its-fine";
 import { createPortal, useFrame } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
@@ -145,16 +145,17 @@ function SceneNodeLabel(props: { name: string }) {
 
 export type MakeObject = (ref: React.Ref<any>) => React.ReactNode;
 
-function useObjectFactory(message: SceneNodeMessage | undefined): {
+function createObjectFactory(
+  message: SceneNodeMessage | undefined,
+  viewer: ViewerContextContents,
+  ContextBridge: ContextBridge,
+): {
   makeObject: MakeObject;
   unmountWhenInvisible?: boolean;
   computeClickInstanceIndexFromInstanceId?: (
     instanceId: number | undefined,
   ) => number | null;
 } {
-  const viewer = React.useContext(ViewerContext)!;
-  const ContextBridge = useContextBridge();
-
   if (message === undefined) return { makeObject: () => null };
 
   switch (message.type) {
@@ -647,11 +648,16 @@ export function SceneNodeThreeObject(props: {
   const message = viewer.useSceneTree(
     (state) => state.nodeFromName[props.name]?.message,
   );
+  const ContextBridge = useContextBridge();
+
   const {
     makeObject,
     unmountWhenInvisible,
     computeClickInstanceIndexFromInstanceId,
-  } = useObjectFactory(message);
+  } = React.useMemo(
+    () => createObjectFactory(message, viewer, ContextBridge),
+    [message, viewer, ContextBridge],
+  );
 
   const [unmount, setUnmount] = React.useState(false);
   const clickable =
@@ -659,11 +665,9 @@ export function SceneNodeThreeObject(props: {
     false;
   const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
 
-  // Get viewer mutable once
-  const viewerMutable = viewer.mutable.current;
-
   // Update global registry of node objects.
   // This is used for updating bone transforms in skinned meshes.
+  const viewerMutable = viewer.mutable.current;
   React.useEffect(() => {
     if (obj !== null) viewerMutable.nodeRefFromName[props.name] = obj;
   }, [obj]);
@@ -685,6 +689,7 @@ export function SceneNodeThreeObject(props: {
 
     return makeObject(setRef);
   }, [makeObject]);
+
   const children =
     obj === null ? null : (
       <SceneNodeThreeChildren name={props.name} parent={obj} />
