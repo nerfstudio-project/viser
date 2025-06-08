@@ -73,6 +73,7 @@ function SceneNodeLabel(props: { name: string }) {
       <span
         style={{
           backgroundColor: "rgba(240, 240, 240, 0.9)",
+          color: "#333",
           borderRadius: "0.2rem",
           userSelect: "none",
           padding: "0.1em 0.2em",
@@ -647,10 +648,7 @@ function createObjectFactory(
   }
 }
 
-export function SceneNodeThreeObject(props: {
-  name: string;
-  parent: THREE.Object3D | null;
-}) {
+export function SceneNodeThreeObject(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const message = viewer.useSceneTree(
     (state) => state.nodeFromName[props.name]?.message,
@@ -671,14 +669,7 @@ export function SceneNodeThreeObject(props: {
     viewer.useSceneTree((state) => state.nodeFromName[props.name]?.clickable) ??
     false;
   const objRef = React.useRef<THREE.Object3D | null>(null);
-
-  // Update global registry of node objects.
-  // This is used for updating bone transforms in skinned meshes.
-  const viewerMutable = viewer.mutable.current;
-  React.useEffect(() => {
-    if (objRef.current !== null)
-      viewerMutable.nodeRefFromName[props.name] = objRef.current;
-  });
+  const groupRef = React.useRef<THREE.Group>();
 
   // Get children from scene tree state
   const childrenNames = viewer.useSceneTree(
@@ -690,6 +681,7 @@ export function SceneNodeThreeObject(props: {
   // For not-fully-understood reasons, wrapping makeObject with useMemo() fixes
   // stability issues (eg breaking runtime errors) associated with
   // PivotControls.
+  const viewerMutable = viewer.mutable.current;
   const objNode = React.useMemo(() => {
     if (makeObject === undefined) return null;
 
@@ -705,17 +697,16 @@ export function SceneNodeThreeObject(props: {
       <>
         {childrenNames &&
           childrenNames.map((child_id) => (
-            <SceneNodeThreeObject
-              key={child_id}
-              name={child_id}
-              parent={objRef.current}
-            />
+            <SceneNodeThreeObject key={child_id} name={child_id} />
           ))}
         <SceneNodeLabel name={props.name} />
       </>
     );
 
-    return makeObject(objRef, children);
+    return makeObject((ref: THREE.Object3D) => {
+      objRef.current = ref;
+      viewerMutable.nodeRefFromName[props.name] = objRef.current;
+    }, children);
   }, [makeObject, childrenNames]);
 
   // Helper for transient visibility checks. Checks the .visible attribute of
@@ -723,8 +714,9 @@ export function SceneNodeThreeObject(props: {
   //
   // This is used for (1) suppressing click events and (2) unmounting when
   // unmountWhenInvisible is true. The latter is used for <Html /> components.
+  const parentRef = React.useRef<THREE.Object3D | null>(null);
   function isDisplayed(): boolean {
-    // We avoid checking obj.visible because obj may be unmounted when
+    // We avoid checking objRef.current.visible because obj may be unmounted when
     // unmountWhenInvisible=true.
     const attrs = viewerMutable.nodeAttributesFromName[props.name];
     const visibility =
@@ -732,16 +724,24 @@ export function SceneNodeThreeObject(props: {
         ? attrs?.visibility
         : attrs.overrideVisibility) ?? true;
     if (visibility === false) return false;
-    if (props.parent === null) return true;
 
-    // Check visibility of parents + ancestors.
-    let visible = props.parent.visible;
-    if (visible) {
-      props.parent.traverseAncestors((ancestor) => {
-        visible = visible && ancestor.visible;
-      });
+    // Check visibility of parents + ancestors by traversing the THREE.js hierarchy.
+    // This is needed for unmountWhenInvisible to work correctly.
+    if (groupRef.current && groupRef.current.parent !== null) {
+      // The parent will be unreadable after unmounting, so we cache it.
+      parentRef.current = groupRef.current.parent;
     }
-    return visible;
+    if (parentRef.current !== null) {
+      let visible = parentRef.current.visible;
+      if (visible) {
+        parentRef.current.traverseAncestors((ancestor) => {
+          visible = visible && ancestor.visible;
+        });
+      }
+      return visible;
+    }
+
+    return true;
   }
 
   // Pose needs to be updated whenever component is remounted.
@@ -838,6 +838,7 @@ export function SceneNodeThreeObject(props: {
     return (
       <>
         <group
+          ref={groupRef}
           // Instead of using onClick, we use onPointerDown/Move/Up to check mouse drag,
           // and only send a click if the mouse hasn't moved between the down and up events.
           //  - onPointerDown resets the click state (dragged = false)
