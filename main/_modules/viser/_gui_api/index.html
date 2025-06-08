@@ -855,7 +855,7 @@
                 <span class="p">)</span>
                 <span class="n">colors_cast</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span>
                     <span class="n">LengthTenStrTuple</span><span class="p">,</span>
-                    <span class="nb">tuple</span><span class="p">(</span><span class="n">_hex_from_hls</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">ls</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span>
+                    <span class="nb">tuple</span><span class="p">(</span><span class="n">_hex_from_hls</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">ls</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span>
                 <span class="p">)</span>
 
         <span class="k">assert</span> <span class="n">colors_cast</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">all</span><span class="p">(</span>
