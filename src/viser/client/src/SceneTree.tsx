@@ -67,44 +67,9 @@ function SceneNodeThreeChildren(props: {
   parent: THREE.Object3D;
 }) {
   const viewer = React.useContext(ViewerContext)!;
-
-  const [children, setChildren] = React.useState<string[]>(
-    viewer.useSceneTree.getState().nodeFromName[props.name]?.children ?? [],
+  const children = viewer.useSceneTree(
+    (state) => state.nodeFromName[props.name]?.children,
   );
-
-  React.useEffect(() => {
-    let updateQueued = false;
-    return viewer.useSceneTree.subscribe((state) => {
-      // Do nothing if an update is already queued.
-      if (updateQueued) return;
-
-      // Do nothing if children haven't changed.
-      const newChildren = state.nodeFromName[props.name]?.children;
-      if (
-        newChildren === undefined ||
-        newChildren === children || // Note that this won't check for elementwise equality!
-        (newChildren.length === 0 && children.length === 0)
-      )
-        return;
-
-      // Queue a (throttled) children update.
-      updateQueued = true;
-      setTimeout(
-        () => {
-          updateQueued = false;
-          const node = viewer.useSceneTree.getState().nodeFromName[props.name];
-          if (node !== undefined) {
-            const newChildren = node.children!;
-            setChildren(newChildren);
-          }
-        },
-        // Throttle more when we have a lot of children...
-        newChildren.length <= 16 ? 10 : newChildren.length <= 128 ? 50 : 200,
-      );
-    });
-  }, []);
-
-  // Create a group of children inside of the parent object.
   return createPortal(
     <group>
       {children &&
