@@ -221,6 +221,18 @@ class SceneNodePointerEvent(Generic[TSceneNodeHandle]):
     """Instance ID of the clicked object, if applicable. Currently this is `None` for all objects except for the output of :meth:`SceneApi.add_batched_axes()`."""
 
 
+@dataclasses.dataclass(frozen=True)
+class TransformControlsEvent:
+    """Event passed to callbacks for transform control updates."""
+
+    client: ClientHandle | None
+    """Client that triggered this event."""
+    client_id: int | None
+    """ID of client that triggered this event."""
+    target: TransformControlsHandle
+    """Transform controls handle that was affected."""
+
+
 NoneOrCoroutine = TypeVar("NoneOrCoroutine", None, Coroutine)
 
 
@@ -615,12 +627,18 @@ class LabelHandle(
 @dataclasses.dataclass
 class _TransformControlsState:
     last_updated: float
-    update_cb: list[Callable[[TransformControlsHandle], None | Coroutine]]
+    update_cb: list[Callable[[TransformControlsEvent], None | Coroutine]]
+    drag_start_cb: list[Callable[[TransformControlsEvent], None | Coroutine]] = (
+        dataclasses.field(default_factory=list)
+    )
+    drag_end_cb: list[Callable[[TransformControlsEvent], None | Coroutine]] = (
+        dataclasses.field(default_factory=list)
+    )
     sync_cb: None | Callable[[ClientId, TransformControlsHandle], None] = None
 
 
 class TransformControlsHandle(
-    _ClickableSceneNodeHandle,
+    SceneNodeHandle,
     _messages.TransformControlsProps,
 ):
     """Handle for interacting with transform control gizmos."""
@@ -634,8 +652,8 @@ class TransformControlsHandle(
         return self._impl_aux.last_updated
 
     def on_update(
-        self, func: Callable[[TransformControlsHandle], NoneOrCoroutine]
-    ) -> Callable[[TransformControlsHandle], NoneOrCoroutine]:
+        self, func: Callable[[TransformControlsEvent], NoneOrCoroutine]
+    ) -> Callable[[TransformControlsEvent], NoneOrCoroutine]:
         """Attach a callback for when the gizmo is moved.
 
         The callback can be either a standard function or an async function:
@@ -660,6 +678,64 @@ class TransformControlsHandle(
         else:
             self._impl_aux.update_cb = [
                 cb for cb in self._impl_aux.update_cb if cb != callback
+            ]
+
+    def on_drag_start(
+        self, func: Callable[[TransformControlsEvent], NoneOrCoroutine]
+    ) -> Callable[[TransformControlsEvent], NoneOrCoroutine]:
+        """Attach a callback for when dragging starts ("mouse down").
+
+        The callback can be either a standard function or an async function:
+        - Standard functions (def) will be executed in a threadpool.
+        - Async functions (async def) will be executed in the event loop.
+
+        Using async functions can be useful for reducing race conditions.
+        """
+        self._impl_aux.drag_start_cb.append(func)
+        return func
+
+    def on_drag_end(
+        self, func: Callable[[TransformControlsEvent], NoneOrCoroutine]
+    ) -> Callable[[TransformControlsEvent], NoneOrCoroutine]:
+        """Attach a callback for when dragging end ("mouse up").
+
+        The callback can be either a standard function or an async function:
+        - Standard functions (def) will be executed in a threadpool.
+        - Async functions (async def) will be executed in the event loop.
+
+        Using async functions can be useful for reducing race conditions.
+        """
+        self._impl_aux.drag_end_cb.append(func)
+        return func
+
+    def remove_drag_start_callback(
+        self, callback: Literal["all"] | Callable = "all"
+    ) -> None:
+        """Remove drag start callbacks from the transform controls.
+
+        Args:
+            callback: Either "all" to remove all callbacks, or a specific callback function to remove.
+        """
+        if callback == "all":
+            self._impl_aux.drag_start_cb.clear()
+        else:
+            self._impl_aux.drag_start_cb = [
+                cb for cb in self._impl_aux.drag_start_cb if cb != callback
+            ]
+
+    def remove_drag_end_callback(
+        self, callback: Literal["all"] | Callable = "all"
+    ) -> None:
+        """Remove drag end callbacks from the transform controls.
+
+        Args:
+            callback: Either "all" to remove all callbacks, or a specific callback function to remove.
+        """
+        if callback == "all":
+            self._impl_aux.drag_end_cb.clear()
+        else:
+            self._impl_aux.drag_end_cb = [
+                cb for cb in self._impl_aux.drag_end_cb if cb != callback
             ]
 
     def remove(self) -> None:

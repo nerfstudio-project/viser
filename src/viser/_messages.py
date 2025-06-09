@@ -904,6 +904,20 @@ class TransformControlsUpdateMessage(Message):
 
 
 @dataclasses.dataclass
+class TransformControlsDragStartMessage(Message):
+    """Client -> server message when a transform control drag starts."""
+
+    name: str
+
+
+@dataclasses.dataclass
+class TransformControlsDragEndMessage(Message):
+    """Client -> server message when a transform control drag ends."""
+
+    name: str
+
+
+@dataclasses.dataclass
 class BackgroundImageMessage(Message):
     """Message for rendering a background image."""
 

@@ -293,48 +293,71 @@ function createObjectFactory(
         ),
       };
     }
+
+    // Add a transform control, centered at current object.
     case "TransformControlsMessage": {
-      const name = message.name;
       const sendDragMessage = makeThrottledMessageSender(viewer, 50);
+      // We track drag state to prevent duplicate drag end events.
+      // This variable persists in the closure created by makeObject,
+      // so we don't need useRef here.
+      let isDragging = false;
       return {
         makeObject: (ref, children) => (
-          <PivotControls
-            ref={ref}
-            scale={message.props.scale}
-            lineWidth={message.props.line_width}
-            fixed={message.props.fixed}
-            activeAxes={message.props.active_axes}
-            disableAxes={message.props.disable_axes}
-            disableSliders={message.props.disable_sliders}
-            disableRotations={message.props.disable_rotations}
-            disableScaling={true}
-            translationLimits={message.props.translation_limits}
-            rotationLimits={message.props.rotation_limits}
-            depthTest={message.props.depth_test}
-            opacity={message.props.opacity}
-            onDrag={(l) => {
-              const attrs = viewer.mutable.current.nodeAttributesFromName;
-              if (attrs[message.name] === undefined) {
-                attrs[message.name] = {};
-              }
+          <group onClick={(e) => e.stopPropagation()}>
+            <PivotControls
+              ref={ref}
+              scale={message.props.scale}
+              lineWidth={message.props.line_width}
+              fixed={message.props.fixed}
+              activeAxes={message.props.active_axes}
+              disableAxes={message.props.disable_axes}
+              disableSliders={message.props.disable_sliders}
+              disableRotations={message.props.disable_rotations}
+              disableScaling={true}
+              translationLimits={message.props.translation_limits}
+              rotationLimits={message.props.rotation_limits}
+              depthTest={message.props.depth_test}
+              opacity={message.props.opacity}
+              onDragStart={() => {
+                isDragging = true;
+                viewer.mutable.current.sendMessage({
+                  type: "TransformControlsDragStartMessage",
+                  name: message.name,
+                });
+              }}
+              onDrag={(l) => {
+                const attrs = viewer.mutable.current.nodeAttributesFromName;
+                if (attrs[message.name] === undefined) {
+                  attrs[message.name] = {};
+                }
 
-              const wxyz = new THREE.Quaternion();
-              wxyz.setFromRotationMatrix(l);
-              const position = new THREE.Vector3().setFromMatrixPosition(l);
+                const wxyz = new THREE.Quaternion();
+                wxyz.setFromRotationMatrix(l);
+                const position = new THREE.Vector3().setFromMatrixPosition(l);
 
-              const nodeAttributes = attrs[message.name]!;
-              nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
-              nodeAttributes.position = position.toArray();
-              sendDragMessage({
-                type: "TransformControlsUpdateMessage",
-                name: name,
-                wxyz: nodeAttributes.wxyz,
-                position: nodeAttributes.position,
-              });
-            }}
-          >
-            {children}
-          </PivotControls>
+                const nodeAttributes = attrs[message.name]!;
+                nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
+                nodeAttributes.position = position.toArray();
+                sendDragMessage({
+                  type: "TransformControlsUpdateMessage",
+                  name: message.name,
+                  wxyz: nodeAttributes.wxyz,
+                  position: nodeAttributes.position,
+                });
+              }}
+              onDragEnd={() => {
+                if (isDragging) {
+                  isDragging = false;
+                  viewer.mutable.current.sendMessage({
+                    type: "TransformControlsDragEndMessage",
+                    name: message.name,
+                  });
+                }
+              }}
+            >
+              {children}
+            </PivotControls>
+          </group>
         ),
         unmountWhenInvisible: true,
       };

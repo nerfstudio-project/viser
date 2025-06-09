@@ -46,6 +46,7 @@ from ._scene_handles import (
     SplineCatmullRomHandle,
     SplineCubicBezierHandle,
     SpotLightHandle,
+    TransformControlsEvent,
     TransformControlsHandle,
     _ClickableSceneNodeHandle,
     _TransformControlsState,
@@ -166,6 +167,14 @@ class SceneApi:
         self._websock_interface.register_handler(
             _messages.TransformControlsUpdateMessage,
             self._handle_transform_controls_updates,
+        )
+        self._websock_interface.register_handler(
+            _messages.TransformControlsDragStartMessage,
+            self._handle_transform_controls_drag_start,
+        )
+        self._websock_interface.register_handler(
+            _messages.TransformControlsDragEndMessage,
+            self._handle_transform_controls_drag_end,
         )
         self._websock_interface.register_handler(
             _messages.SceneNodeClickMessage,
@@ -1964,15 +1973,64 @@ class SceneApi:
         handle._impl_aux.last_updated = time.time()
 
         # Trigger callbacks.
+        event = TransformControlsEvent(
+            client=self._get_client_handle(client_id),
+            client_id=client_id,
+            target=handle,
+        )
         for cb in handle._impl_aux.update_cb:
             if asyncio.iscoroutinefunction(cb):
-                await cb(handle)
+                await cb(event)
             else:
-                self._thread_executor.submit(cb, handle).add_done_callback(
+                self._thread_executor.submit(cb, event).add_done_callback(
                     print_threadpool_errors
                 )
         if handle._impl_aux.sync_cb is not None:
             handle._impl_aux.sync_cb(client_id, handle)
+
+    async def _handle_transform_controls_drag_start(
+        self, client_id: ClientId, message: _messages.TransformControlsDragStartMessage
+    ) -> None:
+        """Callback for handling transform control drag start messages."""
+        handle = self._handle_from_transform_controls_name.get(message.name, None)
+        if handle is None:
+            return
+
+        # Trigger callbacks.
+        event = TransformControlsEvent(
+            client=self._get_client_handle(client_id),
+            client_id=client_id,
+            target=handle,
+        )
+        for cb in handle._impl_aux.drag_start_cb:
+            if asyncio.iscoroutinefunction(cb):
+                await cb(event)
+            else:
+                self._thread_executor.submit(cb, event).add_done_callback(
+                    print_threadpool_errors
+                )
+
+    async def _handle_transform_controls_drag_end(
+        self, client_id: ClientId, message: _messages.TransformControlsDragEndMessage
+    ) -> None:
+        """Callback for handling transform control drag end messages."""
+        handle = self._handle_from_transform_controls_name.get(message.name, None)
+        if handle is None:
+            return
+
+        # Trigger callbacks.
+        event = TransformControlsEvent(
+            client=self._get_client_handle(client_id),
+            client_id=client_id,
+            target=handle,
+        )
+        for cb in handle._impl_aux.drag_end_cb:
+            if asyncio.iscoroutinefunction(cb):
+                await cb(event)
+            else:
+                self._thread_executor.submit(cb, event).add_done_callback(
+                    print_threadpool_errors
+                )
 
     async def _handle_node_click_updates(
         self, client_id: ClientId, message: _messages.SceneNodeClickMessage
