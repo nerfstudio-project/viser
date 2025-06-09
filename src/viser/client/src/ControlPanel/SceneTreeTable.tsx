@@ -118,7 +118,10 @@ function EditNodeProps({
           <Box style={{ fontWeight: "500", flexGrow: "1" }} fz="sm">
             {node.message.type
               .replace("Message", "")
-              .replace(/([A-Z])/g, " $1")
+              // First, handle patterns like "Gui3D" -> "Gui 3D" (lowercase + digit + uppercase)
+              .replace(/([a-z])(\d[A-Z])/g, "$1 $2")
+              // Then handle remaining camelCase patterns like "DContainer" -> "D Container"
+              .replace(/([a-z])([A-Z])/g, "$1 $2")
               .trim()}{" "}
             Props
           </Box>
