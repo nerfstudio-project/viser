@@ -11,8 +11,11 @@ import { useFrame } from "@react-three/fiber";
  */
 export const SkinnedMesh = React.forwardRef<
   THREE.SkinnedMesh,
-  SkinnedMeshMessage
->(function SkinnedMesh(message, ref: React.ForwardedRef<THREE.SkinnedMesh>) {
+  SkinnedMeshMessage & { children?: React.ReactNode }
+>(function SkinnedMesh(
+  { children, ...message },
+  ref: React.ForwardedRef<THREE.SkinnedMesh>,
+) {
   const viewer = React.useContext(ViewerContext)!;
 
   // Create material based on props.
@@ -204,6 +207,7 @@ export const SkinnedMesh = React.forwardRef<
       frustumCulled={false}
     >
       <OutlinesIfHovered alwaysMounted />
+      {children}
     </skinnedMesh>
   );
 });
