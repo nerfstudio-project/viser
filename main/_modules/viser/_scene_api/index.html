@@ -433,6 +433,7 @@
     <span class="n">SplineCatmullRomHandle</span><span class="p">,</span>
     <span class="n">SplineCubicBezierHandle</span><span class="p">,</span>
     <span class="n">SpotLightHandle</span><span class="p">,</span>
+    <span class="n">TransformControlsEvent</span><span class="p">,</span>
     <span class="n">TransformControlsHandle</span><span class="p">,</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_TransformControlsState</span><span class="p">,</span>
@@ -555,6 +556,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span>
             <span class="n">_messages</span><span class="o">.</span><span class="n">TransformControlsUpdateMessage</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_handle_transform_controls_updates</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span>
+            <span class="n">_messages</span><span class="o">.</span><span class="n">TransformControlsDragStartMessage</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_transform_controls_drag_start</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span>
+            <span class="n">_messages</span><span class="o">.</span><span class="n">TransformControlsDragEndMessage</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_transform_controls_drag_end</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span>
             <span class="n">_messages</span><span class="o">.</span><span class="n">SceneNodeClickMessage</span><span class="p">,</span>
@@ -2455,15 +2464,64 @@
         <span class="n">handle</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">last_updated</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
         <span class="c1"># Trigger callbacks.</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">TransformControlsEvent</span><span class="p">(</span>
+            <span class="n">client</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_client_handle</span><span class="p">(</span><span class="n">client_id</span><span class="p">),</span>
+            <span class="n">client_id</span><span class="o">=</span><span class="n">client_id</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">handle</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="n">handle</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">update_cb</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">iscoroutinefunction</span><span class="p">(</span><span class="n">cb</span><span class="p">):</span>
-                <span class="k">await</span> <span class="n">cb</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+                <span class="k">await</span> <span class="n">cb</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span>
                     <span class="n">print_threadpool_errors</span>
                 <span class="p">)</span>
         <span class="k">if</span> <span class="n">handle</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">sync_cb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">handle</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">sync_cb</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_handle_transform_controls_drag_start</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">TransformControlsDragStartMessage</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback for handling transform control drag start messages.&quot;&quot;&quot;</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_from_transform_controls_name</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">handle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Trigger callbacks.</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">TransformControlsEvent</span><span class="p">(</span>
+            <span class="n">client</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_client_handle</span><span class="p">(</span><span class="n">client_id</span><span class="p">),</span>
+            <span class="n">client_id</span><span class="o">=</span><span class="n">client_id</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">handle</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="n">handle</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">drag_start_cb</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">iscoroutinefunction</span><span class="p">(</span><span class="n">cb</span><span class="p">):</span>
+                <span class="k">await</span> <span class="n">cb</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span>
+                    <span class="n">print_threadpool_errors</span>
+                <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_handle_transform_controls_drag_end</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">TransformControlsDragEndMessage</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback for handling transform control drag end messages.&quot;&quot;&quot;</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_from_transform_controls_name</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">handle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Trigger callbacks.</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">TransformControlsEvent</span><span class="p">(</span>
+            <span class="n">client</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_client_handle</span><span class="p">(</span><span class="n">client_id</span><span class="p">),</span>
+            <span class="n">client_id</span><span class="o">=</span><span class="n">client_id</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">handle</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="n">handle</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">drag_end_cb</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">iscoroutinefunction</span><span class="p">(</span><span class="n">cb</span><span class="p">):</span>
+                <span class="k">await</span> <span class="n">cb</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span>
+                    <span class="n">print_threadpool_errors</span>
+                <span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_handle_node_click_updates</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">SceneNodeClickMessage</span>

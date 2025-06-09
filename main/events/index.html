@@ -525,6 +525,30 @@ For a box selection, this includes the min- and max- corners of the box.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="viser.TransformControlsEvent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">TransformControlsEvent</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#TransformControlsEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsEvent" title="Link to this definition">¶</a></dt>
+<dd><p>Event passed to callbacks for transform control updates.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.TransformControlsEvent.client">
+<span class="sig-name descname"><span class="pre">client</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../client_handles/#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.TransformControlsEvent.client" title="Link to this definition">¶</a></dt>
+<dd><p>Client that triggered this event.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.TransformControlsEvent.client_id">
+<span class="sig-name descname"><span class="pre">client_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.TransformControlsEvent.client_id" title="Link to this definition">¶</a></dt>
+<dd><p>ID of client that triggered this event.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.TransformControlsEvent.target">
+<span class="sig-name descname"><span class="pre">target</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../scene_handles/#viser.TransformControlsHandle" title="viser.TransformControlsHandle"><span class="pre">TransformControlsHandle</span></a></em><a class="headerlink" href="#viser.TransformControlsEvent.target" title="Link to this definition">¶</a></dt>
+<dd><p>Transform controls handle that was affected.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
         </article>
@@ -615,6 +639,12 @@ For a box selection, this includes the min- and max- corners of the box.</p>
 <li><a class="reference internal" href="#viser.GuiEvent.client"><code class="docutils literal notranslate"><span class="pre">GuiEvent.client</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiEvent.client_id"><code class="docutils literal notranslate"><span class="pre">GuiEvent.client_id</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiEvent.target"><code class="docutils literal notranslate"><span class="pre">GuiEvent.target</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#viser.TransformControlsEvent"><code class="docutils literal notranslate"><span class="pre">TransformControlsEvent</span></code></a><ul>
+<li><a class="reference internal" href="#viser.TransformControlsEvent.client"><code class="docutils literal notranslate"><span class="pre">TransformControlsEvent.client</span></code></a></li>
+<li><a class="reference internal" href="#viser.TransformControlsEvent.client_id"><code class="docutils literal notranslate"><span class="pre">TransformControlsEvent.client_id</span></code></a></li>
+<li><a class="reference internal" href="#viser.TransformControlsEvent.target"><code class="docutils literal notranslate"><span class="pre">TransformControlsEvent.target</span></code></a></li>
 </ul>
 </li>
 </ul>

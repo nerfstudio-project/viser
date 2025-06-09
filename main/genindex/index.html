@@ -3352,10 +3352,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.CIRCUIT_MOTOR">CIRCUIT_MOTOR (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.CIRCUIT_PUSHBUTTON">CIRCUIT_PUSHBUTTON (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.CIRCUIT_RESISTOR">CIRCUIT_RESISTOR (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.CIRCUIT_SWITCH_CLOSED">CIRCUIT_SWITCH_CLOSED (viser.Icon attribute)</a>
@@ -3379,6 +3379,8 @@
 </li>
           <li><a href="../events/#viser.ScenePointerEvent.client">(viser.ScenePointerEvent attribute)</a>
 </li>
+          <li><a href="../events/#viser.TransformControlsEvent.client">(viser.TransformControlsEvent attribute)</a>
+</li>
         </ul></li>
         <li><a href="../client_handles/#viser.ClientHandle.client_id">client_id (viser.ClientHandle attribute)</a>
 
@@ -3388,6 +3390,8 @@
           <li><a href="../events/#viser.SceneNodePointerEvent.client_id">(viser.SceneNodePointerEvent attribute)</a>
 </li>
           <li><a href="../events/#viser.ScenePointerEvent.client_id">(viser.ScenePointerEvent attribute)</a>
+</li>
+          <li><a href="../events/#viser.TransformControlsEvent.client_id">(viser.TransformControlsEvent attribute)</a>
 </li>
         </ul></li>
         <li><a href="../client_handles/#viser.ClientHandle">ClientHandle (class in viser)</a>
@@ -7690,8 +7694,6 @@
 </li>
           <li><a href="../scene_handles/#viser.MeshSkinnedHandle.on_click">(viser.MeshSkinnedHandle method)</a>
 </li>
-          <li><a href="../scene_handles/#viser.TransformControlsHandle.on_click">(viser.TransformControlsHandle method)</a>
-</li>
         </ul></li>
         <li><a href="../infrastructure/#viser.infra.WebsockServer.on_client_connect">on_client_connect() (viser.infra.WebsockServer method)</a>
 
@@ -7705,6 +7707,10 @@
           <li><a href="../server/#viser.ViserServer.on_client_disconnect">(viser.ViserServer method)</a>
 </li>
         </ul></li>
+        <li><a href="../scene_handles/#viser.TransformControlsHandle.on_drag_end">on_drag_end() (viser.TransformControlsHandle method)</a>
+</li>
+        <li><a href="../scene_handles/#viser.TransformControlsHandle.on_drag_start">on_drag_start() (viser.TransformControlsHandle method)</a>
+</li>
         <li><a href="../scene_api/#viser.SceneApi.on_pointer_callback_removed">on_pointer_callback_removed() (viser.SceneApi method)</a>
 </li>
         <li><a href="../scene_api/#viser.SceneApi.on_pointer_event">on_pointer_event() (viser.SceneApi method)</a>
@@ -8712,9 +8718,11 @@
 </li>
           <li><a href="../scene_handles/#viser.MeshSkinnedHandle.remove_click_callback">(viser.MeshSkinnedHandle method)</a>
 </li>
-          <li><a href="../scene_handles/#viser.TransformControlsHandle.remove_click_callback">(viser.TransformControlsHandle method)</a>
-</li>
         </ul></li>
+        <li><a href="../scene_handles/#viser.TransformControlsHandle.remove_drag_end_callback">remove_drag_end_callback() (viser.TransformControlsHandle method)</a>
+</li>
+        <li><a href="../scene_handles/#viser.TransformControlsHandle.remove_drag_start_callback">remove_drag_start_callback() (viser.TransformControlsHandle method)</a>
+</li>
         <li><a href="../scene_api/#viser.SceneApi.remove_pointer_callback">remove_pointer_callback() (viser.SceneApi method)</a>
 </li>
         <li><a href="../gui_handles/#viser.GuiCheckboxHandle.remove_update_callback">remove_update_callback() (viser.GuiCheckboxHandle method)</a>
@@ -10096,7 +10104,11 @@
         <li><a href="../icons/#viser.Icon.TARGET">TARGET (viser.Icon attribute)</a>
 </li>
         <li><a href="../events/#viser.SceneNodePointerEvent.target">target (viser.SceneNodePointerEvent attribute)</a>
+
+        <ul>
+          <li><a href="../events/#viser.TransformControlsEvent.target">(viser.TransformControlsEvent attribute)</a>
 </li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.TARGET_ARROW">TARGET_ARROW (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.TARGET_OFF">TARGET_OFF (viser.Icon attribute)</a>
@@ -10326,6 +10338,8 @@
         <li><a href="../icons/#viser.Icon.TRANSFORM">TRANSFORM (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.TRANSFORM_FILLED">TRANSFORM_FILLED (viser.Icon attribute)</a>
+</li>
+        <li><a href="../events/#viser.TransformControlsEvent">TransformControlsEvent (class in viser)</a>
 </li>
         <li><a href="../scene_handles/#viser.TransformControlsHandle">TransformControlsHandle (class in viser)</a>
 </li>

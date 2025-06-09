@@ -2104,46 +2104,11 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dd><p>Read-only name of the scene node.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.TransformControlsHandle.on_click">
-<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><span class="pre">SceneNodePointerEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Self</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><span class="pre">SceneNodePointerEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Self</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#viser.TransformControlsHandle.on_click" title="Link to this definition">¶</a></dt>
-<dd><p>Attach a callback for when a scene node is clicked.</p>
-<p>The callback can be either a standard function or an async function:
-- Standard functions (def) will be executed in a threadpool.
-- Async functions (async def) will be executed in the event loop.</p>
-<p>Using async functions can be useful for reducing race conditions.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>self</strong> (<em>Self</em>)</p></li>
-<li><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><em>SceneNodePointerEvent</em></a><em>[</em><em>Self</em><em>]</em><em>]</em><em>, </em><em>NoneOrCoroutine</em><em>]</em>)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>Callable</em>[[<a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><em>SceneNodePointerEvent</em></a>[<em>Self</em>]], <em>NoneOrCoroutine</em>]</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.position">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float32</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.TransformControlsHandle.position" title="Link to this definition">¶</a></dt>
 <dd><p>Position of the scene node. This is equivalent to the t in
 <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automatically when assigned.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.TransformControlsHandle.remove_click_callback">
-<span class="sig-name descname"><span class="pre">remove_click_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'all'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.TransformControlsHandle.remove_click_callback" title="Link to this definition">¶</a></dt>
-<dd><p>Remove click callbacks from scene node.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>callback</strong> (<em>Literal</em><em>[</em><em>'all'</em><em>] </em><em>| </em><em>~typing.Callable</em>) – Either “all” to remove all callbacks, or a specific callback function to remove.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -2240,7 +2205,7 @@ other objects. Synchronized automatically when assigned.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.on_update">
-<span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.TransformControlsHandle" title="viser._scene_handles.TransformControlsHandle"><span class="pre">TransformControlsHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.TransformControlsHandle" title="viser._scene_handles.TransformControlsHandle"><span class="pre">TransformControlsHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#TransformControlsHandle.on_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.on_update" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.TransformControlsEvent" title="viser._scene_handles.TransformControlsEvent"><span class="pre">TransformControlsEvent</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.TransformControlsEvent" title="viser._scene_handles.TransformControlsEvent"><span class="pre">TransformControlsEvent</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#TransformControlsHandle.on_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.on_update" title="Link to this definition">¶</a></dt>
 <dd><p>Attach a callback for when the gizmo is moved.</p>
 <p>The callback can be either a standard function or an async function:
 - Standard functions (def) will be executed in a threadpool.
@@ -2248,10 +2213,10 @@ other objects. Synchronized automatically when assigned.</p>
 <p>Using async functions can be useful for reducing race conditions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.TransformControlsHandle" title="viser._scene_handles.TransformControlsHandle"><em>TransformControlsHandle</em></a><em>]</em><em>, </em><em>NoneOrCoroutine</em><em>]</em>)</p>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.TransformControlsEvent" title="viser._scene_handles.TransformControlsEvent"><em>TransformControlsEvent</em></a><em>]</em><em>, </em><em>NoneOrCoroutine</em><em>]</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>Callable</em>[[<a class="reference internal" href="#viser.TransformControlsHandle" title="viser._scene_handles.TransformControlsHandle"><em>TransformControlsHandle</em></a>], <em>NoneOrCoroutine</em>]</p>
+<dd class="field-even"><p><em>Callable</em>[[<a class="reference internal" href="../events/#viser.TransformControlsEvent" title="viser._scene_handles.TransformControlsEvent"><em>TransformControlsEvent</em></a>], <em>NoneOrCoroutine</em>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2260,6 +2225,70 @@ other objects. Synchronized automatically when assigned.</p>
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.remove_update_callback">
 <span class="sig-name descname"><span class="pre">remove_update_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'all'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#TransformControlsHandle.remove_update_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.remove_update_callback" title="Link to this definition">¶</a></dt>
 <dd><p>Remove update callbacks from the transform controls.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>callback</strong> (<em>Literal</em><em>[</em><em>'all'</em><em>] </em><em>| </em><em>~typing.Callable</em>) – Either “all” to remove all callbacks, or a specific callback function to remove.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.TransformControlsHandle.on_drag_start">
+<span class="sig-name descname"><span class="pre">on_drag_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.TransformControlsEvent" title="viser._scene_handles.TransformControlsEvent"><span class="pre">TransformControlsEvent</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.TransformControlsEvent" title="viser._scene_handles.TransformControlsEvent"><span class="pre">TransformControlsEvent</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#TransformControlsHandle.on_drag_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.on_drag_start" title="Link to this definition">¶</a></dt>
+<dd><p>Attach a callback for when dragging starts (“mouse down”).</p>
+<p>The callback can be either a standard function or an async function:
+- Standard functions (def) will be executed in a threadpool.
+- Async functions (async def) will be executed in the event loop.</p>
+<p>Using async functions can be useful for reducing race conditions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.TransformControlsEvent" title="viser._scene_handles.TransformControlsEvent"><em>TransformControlsEvent</em></a><em>]</em><em>, </em><em>NoneOrCoroutine</em><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Callable</em>[[<a class="reference internal" href="../events/#viser.TransformControlsEvent" title="viser._scene_handles.TransformControlsEvent"><em>TransformControlsEvent</em></a>], <em>NoneOrCoroutine</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.TransformControlsHandle.on_drag_end">
+<span class="sig-name descname"><span class="pre">on_drag_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.TransformControlsEvent" title="viser._scene_handles.TransformControlsEvent"><span class="pre">TransformControlsEvent</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.TransformControlsEvent" title="viser._scene_handles.TransformControlsEvent"><span class="pre">TransformControlsEvent</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#TransformControlsHandle.on_drag_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.on_drag_end" title="Link to this definition">¶</a></dt>
+<dd><p>Attach a callback for when dragging end (“mouse up”).</p>
+<p>The callback can be either a standard function or an async function:
+- Standard functions (def) will be executed in a threadpool.
+- Async functions (async def) will be executed in the event loop.</p>
+<p>Using async functions can be useful for reducing race conditions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.TransformControlsEvent" title="viser._scene_handles.TransformControlsEvent"><em>TransformControlsEvent</em></a><em>]</em><em>, </em><em>NoneOrCoroutine</em><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Callable</em>[[<a class="reference internal" href="../events/#viser.TransformControlsEvent" title="viser._scene_handles.TransformControlsEvent"><em>TransformControlsEvent</em></a>], <em>NoneOrCoroutine</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.TransformControlsHandle.remove_drag_start_callback">
+<span class="sig-name descname"><span class="pre">remove_drag_start_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'all'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#TransformControlsHandle.remove_drag_start_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.remove_drag_start_callback" title="Link to this definition">¶</a></dt>
+<dd><p>Remove drag start callbacks from the transform controls.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>callback</strong> (<em>Literal</em><em>[</em><em>'all'</em><em>] </em><em>| </em><em>~typing.Callable</em>) – Either “all” to remove all callbacks, or a specific callback function to remove.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.TransformControlsHandle.remove_drag_end_callback">
+<span class="sig-name descname"><span class="pre">remove_drag_end_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'all'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#TransformControlsHandle.remove_drag_end_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.remove_drag_end_callback" title="Link to this definition">¶</a></dt>
+<dd><p>Remove drag end callbacks from the transform controls.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>callback</strong> (<em>Literal</em><em>[</em><em>'all'</em><em>] </em><em>| </em><em>~typing.Callable</em>) – Either “all” to remove all callbacks, or a specific callback function to remove.</p>
@@ -3105,9 +3134,7 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 </li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle</span></code></a><ul>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.name"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.name</span></code></a></li>
-<li><a class="reference internal" href="#viser.TransformControlsHandle.on_click"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.on_click()</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.position"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.position</span></code></a></li>
-<li><a class="reference internal" href="#viser.TransformControlsHandle.remove_click_callback"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.remove_click_callback()</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.visible"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.visible</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.wxyz</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.scale"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.scale</span></code></a></li>
@@ -3124,6 +3151,10 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <li><a class="reference internal" href="#viser.TransformControlsHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.update_timestamp</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.on_update"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.on_update()</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.remove_update_callback"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.remove_update_callback()</span></code></a></li>
+<li><a class="reference internal" href="#viser.TransformControlsHandle.on_drag_start"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.on_drag_start()</span></code></a></li>
+<li><a class="reference internal" href="#viser.TransformControlsHandle.on_drag_end"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.on_drag_end()</span></code></a></li>
+<li><a class="reference internal" href="#viser.TransformControlsHandle.remove_drag_start_callback"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.remove_drag_start_callback()</span></code></a></li>
+<li><a class="reference internal" href="#viser.TransformControlsHandle.remove_drag_end_callback"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.remove_drag_end_callback()</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.remove"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.remove()</span></code></a></li>
 </ul>
 </li>
