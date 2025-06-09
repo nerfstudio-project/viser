@@ -210,15 +210,15 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
         message.props.plane == "xz"
           ? new THREE.Euler(0.0, 0.0, 0.0)
           : message.props.plane == "xy"
-            ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-            : message.props.plane == "yx"
-              ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-              : message.props.plane == "yz"
-                ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                : message.props.plane == "zx"
-                  ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                  : //message.props.plane == "zy"
-                    new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0),
+          ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+          : message.props.plane == "yx"
+          ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+          : message.props.plane == "yz"
+          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+          : message.props.plane == "zx"
+          ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+          : //message.props.plane == "zy"
+            new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0),
       );
 
       // When rotations are identity: plane is XY, while grid is XZ.
@@ -317,6 +317,10 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     case "TransformControlsMessage": {
       const name = message.name;
       const sendDragMessage = makeThrottledMessageSender(viewer, 50);
+      // Track drag state to prevent duplicate drag end events.
+      // This variable persists in the closure created by makeObject,
+      // so we don't need useRef here.
+      let isDragging = false;
       return {
         makeObject: (ref) => (
           <group onClick={(e) => e.stopPropagation()}>
@@ -334,6 +338,13 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
               rotationLimits={message.props.rotation_limits}
               depthTest={message.props.depth_test}
               opacity={message.props.opacity}
+              onDragStart={() => {
+                isDragging = true;
+                viewer.mutable.current.sendMessage({
+                  type: "TransformControlsDragStartMessage",
+                  name: name,
+                });
+              }}
               onDrag={(l) => {
                 const attrs = viewer.mutable.current.nodeAttributesFromName;
                 if (attrs[message.name] === undefined) {
@@ -353,6 +364,15 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                   wxyz: nodeAttributes.wxyz,
                   position: nodeAttributes.position,
                 });
+              }}
+              onDragEnd={() => {
+                if (isDragging) {
+                  isDragging = false;
+                  viewer.mutable.current.sendMessage({
+                    type: "TransformControlsDragEndMessage",
+                    name: name,
+                  });
+                }
               }}
             />
           </group>

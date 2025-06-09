@@ -168,7 +168,9 @@ export function MultiSlider({
   return (
     <Box
       id={id}
-      className={`multi-slider ${className || ""} ${disabled ? "disabled" : ""}`}
+      className={`multi-slider ${className || ""} ${
+        disabled ? "disabled" : ""
+      }`}
       pt={pt}
       pb={pb}
     >
@@ -191,7 +193,9 @@ export function MultiSlider({
             withinPortal
           >
             <div
-              className={`multi-slider-thumb ${activeThumb === index ? "active" : ""}`}
+              className={`multi-slider-thumb ${
+                activeThumb === index ? "active" : ""
+              }`}
               style={{
                 left: `${getPercentage(val)}%`,
                 backgroundColor: disabled

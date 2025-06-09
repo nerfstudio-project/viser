@@ -1068,6 +1068,22 @@ export interface TransformControlsUpdateMessage {
   wxyz: [number, number, number, number];
   position: [number, number, number];
 }
+/** Client -> server message when a transform control drag starts.
+ *
+ * (automatically generated)
+ */
+export interface TransformControlsDragStartMessage {
+  type: "TransformControlsDragStartMessage";
+  name: string;
+}
+/** Client -> server message when a transform control drag ends.
+ *
+ * (automatically generated)
+ */
+export interface TransformControlsDragEndMessage {
+  type: "TransformControlsDragEndMessage";
+  name: string;
+}
 /** Message for rendering a background image.
  *
  * (automatically generated)
@@ -1368,6 +1384,8 @@ export type Message =
   | SetOrientationMessage
   | SetPositionMessage
   | TransformControlsUpdateMessage
+  | TransformControlsDragStartMessage
+  | TransformControlsDragEndMessage
   | BackgroundImageMessage
   | SetSceneNodeVisibilityMessage
   | SetSceneNodeClickableMessage
