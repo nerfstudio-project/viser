@@ -37,7 +37,6 @@ interface GuiState {
     request_id: string;
     max_resolution: number | null;
     facing_mode: "user" | "environment" | null;
-    format: "image/jpeg" | "image/png";
   } | null;
 }
 
@@ -63,7 +62,6 @@ interface GuiActions {
       request_id: string;
       max_resolution: number | null;
       facing_mode: "user" | "environment" | null;
-      format: "image/jpeg" | "image/png";
     } | null
   ) => void;
 }

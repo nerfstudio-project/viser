@@ -160,7 +160,6 @@ function useMessageHandler(): (message: Message) => void {
           request_id: message.request_id,
           max_resolution: message.max_resolution,
           facing_mode: message.facing_mode,
-          format: message.format,
         });
         return;
       }

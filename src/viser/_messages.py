@@ -1620,7 +1620,6 @@ class CameraFrameRequestMessage(Message):
     request_id: str
     max_resolution: Optional[int]
     facing_mode: Optional[Literal["user", "environment"]]
-    format: Literal["image/jpeg", "image/png"] = "image/jpeg"
 
     @override
     def redundancy_key(self) -> str:
@@ -1635,7 +1634,6 @@ class CameraFrameResponseMessage(Message):
     frame_data: Optional[bytes]  # None if capture failed
     timestamp: float
     error: Optional[str]  # Error message if capture failed
-    format: Literal["image/jpeg", "image/png"]
 
     @override
     def redundancy_key(self) -> str:

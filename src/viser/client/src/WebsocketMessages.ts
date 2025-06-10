@@ -1316,7 +1316,6 @@ export interface CameraFrameRequestMessage {
   request_id: string;
   max_resolution: number | null;
   facing_mode: "user" | "environment" | null;
-  format: "image/jpeg" | "image/png";
 }
 /** Message from client->server responding with a camera frame.
  *
@@ -1328,7 +1327,6 @@ export interface CameraFrameResponseMessage {
   frame_data: Uint8Array | null;
   timestamp: number;
   error: string | null;
-  format: "image/jpeg" | "image/png";
 }
 
 export type Message =

@@ -13,8 +13,6 @@ export function CameraStream() {
   const setCameraRequest = viewer.useGui((state) => state.setCameraRequest);
   const webcamRef = useRef<Webcam>(null);
 
-  // TODO: use the webcam props.
-
   // Handle camera frame capture requests.
   useEffect(() => {
     if (!activeCameraRequest) return;
@@ -30,7 +28,6 @@ export function CameraStream() {
         frame_data: null,
         timestamp: timestamp,
         error: "Camera access disabled",
-        format: request.format,
       });
       setCameraRequest(null);
       return;
@@ -44,7 +41,6 @@ export function CameraStream() {
         frame_data: null,
         timestamp: timestamp,
         error: "Camera not ready",
-        format: request.format,
       });
       setCameraRequest(null);
       return;
@@ -60,7 +56,6 @@ export function CameraStream() {
         frame_data: null,
         timestamp: timestamp,
         error: "Failed to capture frame",
-        format: request.format,
       });
       setCameraRequest(null);
       return;
@@ -80,12 +75,11 @@ export function CameraStream() {
       frame_data: ia,
       timestamp: timestamp,
       error: null,
-      format: request.format || "image/jpeg" as const,
     };
     viewerMutable.sendMessage(response);
 
     // Clear the request after processing.
-    console.log("🎥 Camera frame captured");
+    console.log("Camera frame captured");
     setCameraRequest(null);
   }, [activeCameraRequest]);
 
@@ -115,6 +109,7 @@ export function CameraStream() {
     <Webcam
       ref={webcamRef}
       audio={false}
+      screenshotFormat="image/jpeg"
       onUserMediaError={handleUserMediaError}
       mirrored={false}
       // This is a hack -- {display: none} doesn't work.

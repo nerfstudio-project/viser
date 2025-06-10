@@ -450,7 +450,6 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         self,
         max_resolution: int | None = 720,
         facing_mode: Literal["user", "environment"] | None = None,
-        format: Literal["image/jpeg", "image/png"] = "image/jpeg",
         timeout: float = 2.0,
     ) -> Image.Image | None:
         """Request a camera frame from this client.
@@ -458,7 +457,6 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         Args:
             max_resolution: Maximum resolution (both width and height) constraint. Camera will choose best resolution within this limit while preserving aspect ratio.
             facing_mode: Camera facing mode constraint; the client will use the default facing mode if not provided.
-            format: Image format for the captured frame.
             timeout: Maximum time to wait for frame capture in seconds.
 
         Returns:
@@ -492,7 +490,6 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
                 request_id=_make_uuid(),
                 max_resolution=max_resolution,
                 facing_mode=facing_mode,
-                format=format,
             )
         )
         frame_ready_event.wait(timeout=timeout)
