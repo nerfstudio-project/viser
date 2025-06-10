@@ -77,7 +77,7 @@ export function CameraStream() {
 
     viewer.mutable.current.sendMessage(response);
     console.log("✅ Frame response sent");
-  }, [viewer, cameraReady]);
+  }, [viewer, cameraEnabled, cameraReady]);
 
   // Handle camera frame requests
   useEffect(() => {
@@ -99,11 +99,13 @@ export function CameraStream() {
     const handleEnableCamera = () => {
       console.log("🎥 Enabling camera access");
       setCameraEnabled(true);
+      setCameraReady(false); // Reset ready state when enabling
     };
     
     const handleDisableCamera = () => {
       console.log("🎥 Disabling camera access");
       setCameraEnabled(false);
+      setCameraReady(false);
     };
 
     window.addEventListener('enableCamera', handleEnableCamera);
@@ -117,9 +119,13 @@ export function CameraStream() {
 
   // Camera ready callback
   const handleUserMedia = useCallback(() => {
-    console.log("🎥 Webcam ready for on-demand capture");
-    setCameraReady(true);
-    window.dispatchEvent(new CustomEvent('cameraReady'));
+    console.log("🎥 Webcam stream started, waiting for stabilization...");
+    // Add a small delay to ensure the camera is truly ready for capture
+    setTimeout(() => {
+      console.log("🎥 Webcam ready for on-demand capture");
+      setCameraReady(true);
+      window.dispatchEvent(new CustomEvent('cameraReady'));
+    }, 500); // 500ms delay to ensure camera is fully initialized
   }, []);
 
   // Handle errors

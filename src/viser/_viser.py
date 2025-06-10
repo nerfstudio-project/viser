@@ -450,7 +450,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         max_resolution: int | None = 720,
         facing_mode: Literal["user", "environment"] | None = None,
         format: Literal["image/jpeg", "image/png"] = "image/jpeg",
-        timeout: float = 10.0,
+        timeout: float = 2.0,
     ) -> Image:
         """Request a camera frame from this client.
 
