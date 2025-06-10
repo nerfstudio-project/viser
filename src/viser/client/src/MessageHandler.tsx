@@ -150,11 +150,26 @@ function useMessageHandler(): (message: Message) => void {
       // Configure camera streaming.
       case "CameraStreamConfigMessage": {
         console.log("📩 Received CameraStreamConfigMessage:", message);
+        
+        // Convert max_resolution to video constraints
+        const resolutionConstraints: { width?: number; height?: number } = {};
+        if (message.max_resolution !== null) {
+          resolutionConstraints.width = { max: message.max_resolution };
+          resolutionConstraints.height = { max: message.max_resolution };
+        }
+
+        const videoConstraints: MediaStreamConstraints["video"] = {
+          ...resolutionConstraints,
+        };
+        if (message.facing_mode !== null) {
+          (videoConstraints as any).facingMode = message.facing_mode;
+        }
+        
         viewerMutable.cameraStreamConfig = {
           enabled: message.enabled,
-          videoConstraints: message.video_constraints || undefined,
-          captureFps: message.capture_fps || undefined,
-          captureResolution: message.capture_resolution || undefined,
+          videoConstraints,
+          captureFps: message.frame_rate,
+          maxResolution: message.max_resolution,
         };
         console.log("📩 Updated camera config:", viewerMutable.cameraStreamConfig);
         return;

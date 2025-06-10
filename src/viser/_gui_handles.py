@@ -824,8 +824,4 @@ class CameraStreamFrameEvent:
     """Frame as PIL image."""
     timestamp: float
     """Timestamp when the frame was captured."""
-    width: int
-    """Frame width in pixels."""
-    height: int
-    """Frame height in pixels."""
 

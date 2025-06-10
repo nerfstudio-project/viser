@@ -1306,9 +1306,9 @@ export interface SetGuiPanelLabelMessage {
 export interface CameraStreamConfigMessage {
   type: "CameraStreamConfigMessage";
   enabled: boolean;
-  video_constraints: { [key: string]: any } | null;
-  capture_fps: number | null;
-  capture_resolution: [number, number] | null;
+  max_resolution: number | null;
+  frame_rate: number;
+  facing_mode: "user" | "environment" | null;
 }
 /** Message from client->server carrying a camera frame.
  *
@@ -1318,8 +1318,6 @@ export interface CameraStreamFrameMessage {
   type: "CameraStreamFrameMessage";
   frame_data: Uint8Array;
   timestamp: number;
-  width: number;
-  height: number;
   format: "image/jpeg" | "image/png";
 }
 

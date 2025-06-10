@@ -74,7 +74,7 @@ export type ViewerMutable = {
     enabled: boolean;
     videoConstraints?: MediaStreamConstraints["video"];
     captureFps?: number;
-    captureResolution?: [number, number];
+    maxResolution?: number | null;
   };
 };
 

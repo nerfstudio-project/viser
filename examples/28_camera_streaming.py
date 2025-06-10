@@ -16,6 +16,17 @@ def main():
     # Attach a camera stream handler to each client.
     @server.on_client_connect
     def _(client: viser.ClientHandle):
+        # Camera configuration controls
+        max_resolution_slider = client.gui.add_slider(
+            "Max Resolution", min=240, max=2160, step=120, initial_value=720
+        )
+        fps_slider = client.gui.add_slider(
+            "Frame Rate", min=1, max=60, step=1, initial_value=10
+        )
+        facing_mode_dropdown = client.gui.add_dropdown(
+            "Camera", options=("user", "environment"), initial_value="user"
+        )
+
         enable_cam_handle = client.gui.add_button("Enable Camera")
 
         client_id = client.client_id
@@ -25,7 +36,7 @@ def main():
         server_image_handle = server.scene.add_image(
             name=f"/camera_frame_{client_id}",
             image=dummy_image,
-            render_width=CAPTURE_RES[0] / CAPTURE_RES[1] * 0.5,
+            render_width=0.5,
             render_height=0.5,
             position=(client_id, 0, 0),
         )
@@ -37,8 +48,25 @@ def main():
 
         @enable_cam_handle.on_click
         def _(_):
-            client.configure_camera_stream()
+            client.configure_camera_stream(
+                enabled=True,
+                max_resolution=max_resolution_slider.value,
+                frame_rate=fps_slider.value,
+                facing_mode=facing_mode_dropdown.value,
+            )
             enable_cam_handle.disabled = True
+
+        def update_config():
+            client.configure_camera_stream(
+                enabled=True,
+                max_resolution=max_resolution_slider.value,
+                frame_rate=fps_slider.value,
+                facing_mode=facing_mode_dropdown.value,
+            )
+
+        max_resolution_slider.on_update(lambda _: update_config())
+        fps_slider.on_update(lambda _: update_config())
+        facing_mode_dropdown.on_update(lambda _: update_config())
 
     server.sleep_forever()
 

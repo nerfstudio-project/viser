@@ -448,8 +448,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
     def configure_camera_stream(
         self,
         enabled: bool = True,
-        width: int = 800,
-        height: int = 600,
+        max_resolution: int | None = 720,
         frame_rate: int = 30,
         facing_mode: Literal["user", "environment"] | None = None,
     ) -> None:
@@ -457,16 +456,14 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
 
         Args:
             enabled: Whether to enable camera streaming.
-            width: Capture image width in pixels.
-            height: Capture image height in pixels.
+            max_resolution: Maximum resolution (both width and height) constraint. Camera will choose best resolution within this limit while preserving aspect ratio.
             frame_rate: Camera frame rate constraint.
             facing_mode: Camera facing mode constraint; the client will use the default facing mode if not provided.
         """
         self._websock_connection.queue_message(
             _messages.CameraStreamConfigMessage(
                 enabled=enabled,
-                width=width,
-                height=height,
+                max_resolution=max_resolution,
                 frame_rate=frame_rate,
                 facing_mode=facing_mode,
             )

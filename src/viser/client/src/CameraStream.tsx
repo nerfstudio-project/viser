@@ -13,14 +13,19 @@ export function CameraStream() {
   useEffect(() => {
     const checkConfigChanges = () => {
       const currentConfig = viewer.mutable.current.cameraStreamConfig;
-      if (currentConfig.enabled !== config.enabled) {
-        console.log("📝 Config enabled changed to:", currentConfig.enabled);
+      if (
+        currentConfig.enabled !== config.enabled ||
+        JSON.stringify(currentConfig.videoConstraints) !== JSON.stringify(config.videoConstraints) ||
+        currentConfig.captureFps !== config.captureFps ||
+        currentConfig.maxResolution !== config.maxResolution
+      ) {
+        console.log("📝 Config changed:", currentConfig);
         setConfig({ ...currentConfig });
       }
     };
-    const interval = setInterval(checkConfigChanges, 1000);
+    const interval = setInterval(checkConfigChanges, 100);
     return () => clearInterval(interval);
-  }, [config.enabled]);
+  }, [config]);
 
   const captureFrame = useCallback(() => {
     if (!webcamRef.current) {
@@ -44,18 +49,38 @@ export function CameraStream() {
       ia[i] = byteString.charCodeAt(i);
     }
     console.log("🎥 Image src:", ia);
+    console.log("Max resolution:", config.maxResolution);
     const message = {
       type: "CameraStreamFrameMessage" as const,
       frame_data: ia,
       timestamp: Date.now() / 1000,
-      width: 640,
-      height: 480,
       format: "image/jpeg" as const,
     };
 
     viewer.mutable.current.sendMessage(message);
     console.log("✅ Frame sent");
   }, [viewer]);
+
+  // Restart capture interval when FPS changes
+  useEffect(() => {
+    if (intervalRef.current && config.enabled) {
+      console.log(`🎥 Restarting capture at ${config.captureFps!} FPS`);
+      clearInterval(intervalRef.current);
+      intervalRef.current = setInterval(() => {
+        captureFrame();
+      }, 1000 / config.captureFps!);
+    }
+  }, [config.captureFps, config.enabled, captureFrame]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, []);
 
   // Start streaming
   const handleUserMedia = useCallback(() => {
@@ -65,9 +90,9 @@ export function CameraStream() {
 
     intervalRef.current = setInterval(() => {
       captureFrame();
-    }, 1000 / (config.captureFps || 10));
+    }, 1000 / config.captureFps!);
 
-    console.log(`🎥 Capture started at ${config.captureFps || 10} FPS`);
+    console.log(`🎥 Capture started at ${config.captureFps!} FPS`);
   }, [captureFrame, config.captureFps]);
 
   // Handle errors
@@ -83,12 +108,13 @@ export function CameraStream() {
   return (
     <Group justify="center">
       <Webcam
+        key={JSON.stringify(config.videoConstraints)}
         ref={webcamRef}
         audio={false}
         // width={100}
         // height={000}
         screenshotFormat="image/jpeg"
-        videoConstraints={{ width: 1000, height: 1000, facingMode: "user" }}
+        videoConstraints={config.videoConstraints!}
         onUserMedia={handleUserMedia}
         onUserMediaError={handleUserMediaError}
         mirrored={false}

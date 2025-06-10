@@ -1607,8 +1607,7 @@ class CameraStreamConfigMessage(Message):
     """Message from server->client to configure camera streaming."""
 
     enabled: bool
-    width: int
-    height: int
+    max_resolution: Optional[int]
     frame_rate: float
     facing_mode: Optional[Literal["user", "environment"]]
 
@@ -1623,8 +1622,6 @@ class CameraStreamFrameMessage(Message):
 
     frame_data: bytes
     timestamp: float
-    width: int
-    height: int
     format: Literal["image/jpeg", "image/png"]
 
     @override

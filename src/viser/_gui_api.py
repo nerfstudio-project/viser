@@ -408,13 +408,12 @@ class GuiApi:
             assert False
 
         # Create the camera stream frame event.
+        image = Image.open(io.BytesIO(message.frame_data))
         event = CameraStreamFrameEvent(
             client=client,
             client_id=client_id,
-            image=Image.open(io.BytesIO(message.frame_data)),
+            image=image,
             timestamp=message.timestamp,
-            width=message.width,
-            height=message.height,
         )
 
         for camera_stream_cb in self._camera_stream_cb:
