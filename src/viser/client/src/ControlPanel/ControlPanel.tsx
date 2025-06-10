@@ -114,6 +114,7 @@ export default function ControlPanel(props: {
       <BottomPanel>
         <BottomPanel.Handle>
           <ConnectionStatus />
+          <CameraStatus />
           <BottomPanel.HideWhenCollapsed>
             <ShareButton />
             {generatedServerToggleButton}
@@ -128,6 +129,7 @@ export default function ControlPanel(props: {
       <FloatingPanel width={controlWidth}>
         <FloatingPanel.Handle>
           <ConnectionStatus />
+          <CameraStatus />
           <FloatingPanel.HideWhenCollapsed>
             <ShareButton />
             {generatedServerToggleButton}
@@ -145,6 +147,7 @@ export default function ControlPanel(props: {
       >
         <SidebarPanel.Handle>
           <ConnectionStatus />
+          <CameraStatus />
           <ShareButton />
           {generatedServerToggleButton}
         </SidebarPanel.Handle>
@@ -190,6 +193,77 @@ function ConnectionStatus() {
         {label !== "" ? label : connected ? "Connected" : "Connecting..."}
       </Box>
     </>
+  );
+}
+
+function CameraStatus() {
+  const viewer = React.useContext(ViewerContext)!;
+  const [cameraEnabled, setCameraEnabled] = React.useState(false);
+  const [hasReceivedConfig, setHasReceivedConfig] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkCameraStatus = () => {
+      const config = viewer.mutable.current.cameraStreamConfig;
+      setCameraEnabled(config.enabled);
+      // Consider config received if we have fps or video constraints
+      if (config.captureFps || config.videoConstraints) {
+        setHasReceivedConfig(true);
+      }
+    };
+    
+    const interval = setInterval(checkCameraStatus, 100);
+    return () => clearInterval(interval);
+  }, [viewer]);
+
+  // Don't show anything if no camera config has been received
+  if (!hasReceivedConfig) {
+    return null;
+  }
+
+  const handleToggleCamera = (evt: React.MouseEvent) => {
+    evt.stopPropagation();
+    const config = viewer.mutable.current.cameraStreamConfig;
+    const newEnabledState = !cameraEnabled;
+    
+    // Update local state immediately for responsive UI
+    setCameraEnabled(newEnabledState);
+    
+    // Update the mutable config
+    viewer.mutable.current.cameraStreamConfig.enabled = newEnabledState;
+    
+    // Send message to server
+    viewer.mutable.current.sendMessage({
+      type: "CameraStreamConfigMessage",
+      enabled: newEnabledState,
+      max_resolution: config.maxResolution || null,
+      frame_rate: config.captureFps || 30,
+      facing_mode: (config.videoConstraints as any)?.facingMode || null,
+    });
+  };
+
+  return (
+    <Tooltip 
+      label={cameraEnabled ? "Turn camera off" : "Turn camera on"} 
+      withinPortal
+    >
+      <ActionIcon
+        onClick={handleToggleCamera}
+        style={{
+          transform: "translateY(0.05em)",
+          marginRight: "0.25em",
+        }}
+        size="md"
+      >
+        <div
+          style={{
+            width: "0.75em",
+            height: "0.75em",
+            borderRadius: "50%",
+            backgroundColor: cameraEnabled ? "#0b0" : "#f00",
+          }}
+        />
+      </ActionIcon>
+    </Tooltip>
   );
 }
 
