@@ -252,6 +252,8 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
   const colors = viewer.useGui((state) => state.theme.colors);
   const controlLayout = viewer.useGui((state) => state.theme.control_layout);
   const showLogo = viewer.useGui((state) => state.theme.show_logo);
+  const connected = viewer.useGui((state) => state.websocketConnected);
+  const cameraEnabled = viewer.useGui((state) => state.cameraEnabled);
   const { messageSource } = viewer;
 
   // Create Mantine theme with custom colors if provided.
@@ -318,7 +320,6 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
               <ViewerCanvas>
                 <FrameSynchronizedMessageHandler />
               </ViewerCanvas>
-              <CameraStream />
               {showLogo && messageSource === "websocket" && <ViserLogo />}
             </Box>
             {messageSource === "websocket" && (
@@ -326,6 +327,7 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
             )}
           </Box>
         </Box>
+        {connected && cameraEnabled && <CameraStream />}
       </MantineProvider>
     </>
   );

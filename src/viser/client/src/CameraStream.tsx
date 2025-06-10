@@ -1,4 +1,5 @@
 import { useEffect, useRef, useContext, useCallback } from "react";
+import { Box } from "@mantine/core";
 import { ViewerContext } from "./ViewerContext";
 import Webcam from "react-webcam";
 
@@ -107,15 +108,16 @@ export function CameraStream() {
   }
 
   return (
-    <Webcam
-      ref={webcamRef}
-      audio={false}
-      screenshotFormat="image/jpeg"
-      onUserMediaError={handleUserMediaError}
-      mirrored={false}
-      // This is a hack -- {display: none} doesn't work.
-      // It seems to fetch the current webcam render.
-      // style={{ position: "fixed", left: "-9999px", top: "-9999px" }}
-    />
+    // This is a hack -- {display: none} doesn't work.
+    // It seems to fetch the current webcam render.
+    <Box style={{ position: "absolute", zIndex: -1000 }}>
+      <Webcam
+        ref={webcamRef}
+        audio={false}
+        screenshotFormat="image/jpeg"
+        onUserMediaError={handleUserMediaError}
+        mirrored={false}
+      />
+    </Box>
   );
 }
