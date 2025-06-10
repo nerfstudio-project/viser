@@ -448,15 +448,11 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
 
     def capture_frame(
         self,
-        max_resolution: int | None = 720,
-        facing_mode: Literal["user", "environment"] | None = None,
         timeout: float = 2.0,
     ) -> Image.Image | None:
         """Request a camera frame from this client.
 
         Args:
-            max_resolution: Maximum resolution (both width and height) constraint. Camera will choose best resolution within this limit while preserving aspect ratio.
-            facing_mode: Camera facing mode constraint; the client will use the default facing mode if not provided.
             timeout: Maximum time to wait for frame capture in seconds.
 
         Returns:
@@ -488,23 +484,26 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         self._websock_connection.queue_message(
             _messages.CameraFrameRequestMessage(
                 request_id=_make_uuid(),
-                max_resolution=max_resolution,
-                facing_mode=facing_mode,
             )
         )
         frame_ready_event.wait(timeout=timeout)
         return frame
 
-    def configure_camera_access(self, enabled: bool) -> None:
+    def configure_camera_access(
+        self, 
+        enabled: bool, 
+        facing_mode: Literal["user", "environment"] | None = None
+    ) -> None:
         """Configure camera access for this client.
 
         Args:
             enabled: Whether to enable camera access. When True, the client will
                     request camera permissions and make the camera available for
                     frame capture. When False, camera access is disabled.
+            facing_mode: Camera facing mode ("user" for front camera, "environment" for back camera).
         """
         self._websock_connection.queue_message(
-            _messages.CameraAccessConfigMessage(enabled=enabled)
+            _messages.CameraAccessConfigMessage(enabled=enabled, facing_mode=facing_mode)
         )
 
     def add_notification(

@@ -1306,6 +1306,7 @@ export interface SetGuiPanelLabelMessage {
 export interface CameraAccessConfigMessage {
   type: "CameraAccessConfigMessage";
   enabled: boolean;
+  facing_mode: "user" | "environment" | null;
 }
 /** Message from server->client requesting a camera frame.
  *
@@ -1314,8 +1315,6 @@ export interface CameraAccessConfigMessage {
 export interface CameraFrameRequestMessage {
   type: "CameraFrameRequestMessage";
   request_id: string;
-  max_resolution: number | null;
-  facing_mode: "user" | "environment" | null;
 }
 /** Message from client->server responding with a camera frame.
  *

@@ -17,9 +17,6 @@ def main():
     @server.on_client_connect
     def _(client: viser.ClientHandle):
         # Camera configuration controls
-        max_resolution_slider = client.gui.add_slider(
-            "Max Resolution", min=240, max=2160, step=120, initial_value=720
-        )
         facing_mode_dropdown = client.gui.add_dropdown(
             "Camera", options=("user", "environment"), initial_value="user"
         )
@@ -43,15 +40,16 @@ def main():
             position=(0.25, 0.25, -0.001),
         )
 
-        # "Race condition" seems fine when started from False?
-        client.configure_camera_access(enabled=True)
+        # Configure camera with facing mode
+        client.configure_camera_access(enabled=True, facing_mode=facing_mode_dropdown.value)
+
+        # Update camera configuration when facing mode changes
+        @facing_mode_dropdown.on_update
+        def _():
+            client.configure_camera_access(enabled=True, facing_mode=facing_mode_dropdown.value)
 
         while True:
-            image = client.capture_frame(
-                max_resolution=max_resolution_slider.value,
-                facing_mode=facing_mode_dropdown.value,
-                timeout=2.0,
-            )
+            image = client.capture_frame(timeout=2.0)
             if image is not None:
                 client_image_handle.image = np.array(image)
                 server_image_handle.image = np.array(image)

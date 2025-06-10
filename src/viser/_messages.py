@@ -1607,6 +1607,7 @@ class CameraAccessConfigMessage(Message):
     """Message from server->client to configure camera access."""
 
     enabled: bool
+    facing_mode: Optional[Literal["user", "environment"]] = None
 
     @override
     def redundancy_key(self) -> str:
@@ -1618,8 +1619,6 @@ class CameraFrameRequestMessage(Message):
     """Message from server->client requesting a camera frame."""
 
     request_id: str
-    max_resolution: Optional[int]
-    facing_mode: Optional[Literal["user", "environment"]]
 
     @override
     def redundancy_key(self) -> str:

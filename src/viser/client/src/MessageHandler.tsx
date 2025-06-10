@@ -42,6 +42,7 @@ function useMessageHandler(): (message: Message) => void {
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
   const updateUploadState = viewer.useGui((state) => state.updateUploadState);
   const setCameraEnabled = viewer.useGui((state) => state.setCameraEnabled);
+  const setCameraFacingMode = viewer.useGui((state) => state.setCameraFacingMode);
   const setCameraRequest = viewer.useGui((state) => state.setCameraRequest);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
@@ -152,14 +153,13 @@ function useMessageHandler(): (message: Message) => void {
       // Handle camera access configuration
       case "CameraAccessConfigMessage": {
         setCameraEnabled(message.enabled);
+        setCameraFacingMode(message.facing_mode);
         return;
       }
       // Handle camera frame requests
       case "CameraFrameRequestMessage": {
         setCameraRequest({
           request_id: message.request_id,
-          max_resolution: message.max_resolution,
-          facing_mode: message.facing_mode,
         });
         return;
       }

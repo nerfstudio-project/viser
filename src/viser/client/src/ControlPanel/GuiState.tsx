@@ -33,10 +33,9 @@ interface GuiState {
   };
   cameraEnabled: boolean;
   cameraReady: boolean;
+  cameraFacingMode: "user" | "environment" | null;
   activeCameraRequest: {
     request_id: string;
-    max_resolution: number | null;
-    facing_mode: "user" | "environment" | null;
   } | null;
 }
 
@@ -57,11 +56,10 @@ interface GuiActions {
   ) => void;
   setCameraEnabled: (enabled: boolean) => void;
   setCameraReady: (ready: boolean) => void;
+  setCameraFacingMode: (facingMode: "user" | "environment" | null) => void;
   setCameraRequest: (
     request: {
       request_id: string;
-      max_resolution: number | null;
-      facing_mode: "user" | "environment" | null;
     } | null
   ) => void;
 }
@@ -90,6 +88,7 @@ const cleanGuiState: GuiState = {
   uploadsInProgress: {},
   cameraEnabled: false,
   cameraReady: false,
+  cameraFacingMode: null,
   activeCameraRequest: null,
 };
 
@@ -180,6 +179,7 @@ export function useGuiState(initialServer: string) {
             state.uploadsInProgress = cleanGuiState.uploadsInProgress;
             state.cameraEnabled = cleanGuiState.cameraEnabled;
             state.cameraReady = cleanGuiState.cameraReady;
+            state.cameraFacingMode = cleanGuiState.cameraFacingMode;
             state.activeCameraRequest = cleanGuiState.activeCameraRequest;
           }),
         updateUploadState: (state) =>
@@ -229,6 +229,10 @@ export function useGuiState(initialServer: string) {
         setCameraReady: (ready) =>
           set((state) => {
             state.cameraReady = ready;
+          }),
+        setCameraFacingMode: (facingMode) =>
+          set((state) => {
+            state.cameraFacingMode = facingMode;
           }),
         setCameraRequest: (request) =>
           set((state) => {

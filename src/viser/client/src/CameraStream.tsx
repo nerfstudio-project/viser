@@ -8,6 +8,7 @@ export function CameraStream() {
   const connected = viewer.useGui((state) => state.websocketConnected);
   const cameraEnabled = viewer.useGui((state) => state.cameraEnabled);
   const cameraReady = viewer.useGui((state) => state.cameraReady);
+  const cameraFacingMode = viewer.useGui((state) => state.cameraFacingMode);
   const activeCameraRequest = viewer.useGui((state) => state.activeCameraRequest);
   const setCameraReady = viewer.useGui((state) => state.setCameraReady);
   const setCameraRequest = viewer.useGui((state) => state.setCameraRequest);
@@ -110,6 +111,9 @@ export function CameraStream() {
       ref={webcamRef}
       audio={false}
       screenshotFormat="image/jpeg"
+      videoConstraints={{
+        facingMode: cameraFacingMode || "user",
+      }}
       onUserMediaError={handleUserMediaError}
       mirrored={false}
       // This is a hack -- {display: none} doesn't work.
