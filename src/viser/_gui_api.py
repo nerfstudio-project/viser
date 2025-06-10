@@ -235,7 +235,7 @@ class GuiApi:
             self._handle_file_transfer_part,
         )
         self._websock_interface.register_handler(
-            _messages.CameraStreamFrameMessage, self._handle_camera_stream_frame
+            _messages.CameraFrameResponseMessage, self._handle_camera_frame_response
         )
 
     async def _handle_gui_updates(
@@ -391,10 +391,10 @@ class GuiApi:
                     cb, GuiEvent(client, client_id, handle)
                 ).add_done_callback(print_threadpool_errors)
 
-    def _handle_camera_stream_frame(
-        self, client_id: ClientId, message: _messages.CameraStreamFrameMessage
+    def _handle_camera_frame_response(
+        self, client_id: ClientId, message: _messages.CameraFrameResponseMessage
     ) -> None:
-        """Callback for handling camera stream frame messages."""
+        """Callback for handling camera frame response messages."""
         # Get the handle of the client that triggered this event.
         from ._viser import ClientHandle, ViserServer
 
@@ -407,22 +407,24 @@ class GuiApi:
         else:
             assert False
 
-        # Create the camera stream frame event.
-        image = Image.open(io.BytesIO(message.frame_data))
-        event = CameraStreamFrameEvent(
-            client=client,
-            client_id=client_id,
-            image=image,
-            timestamp=message.timestamp,
-        )
-
-        for camera_stream_cb in self._camera_stream_cb:
-            if asyncio.iscoroutinefunction(camera_stream_cb):
-                self._event_loop.create_task(camera_stream_cb(event))
-            else:
-                self._thread_executor.submit(camera_stream_cb, event).add_done_callback(
-                    print_threadpool_errors
-                )
+        # Find the pending request
+        requests = getattr(client._websock_connection, '_camera_requests', {})
+        future = requests.pop(message.request_id, None)
+        
+        if future is None:
+            return  # No matching request found
+            
+        # Handle the response
+        if message.error is not None:
+            future.set_exception(RuntimeError(message.error))
+        elif message.frame_data is None:
+            future.set_exception(RuntimeError("Frame capture failed"))
+        else:
+            try:
+                image = Image.open(io.BytesIO(message.frame_data))
+                future.set_result(image)
+            except Exception as e:
+                future.set_exception(e)
 
     def _get_container_uuid(self) -> str:
         """Get container ID associated with the current thread."""

@@ -200,60 +200,79 @@ function CameraStatus() {
   const viewer = React.useContext(ViewerContext)!;
   const connected = viewer.useGui((state) => state.websocketConnected);
   const [cameraEnabled, setCameraEnabled] = React.useState(false);
-  const [hasReceivedConfig, setHasReceivedConfig] = React.useState(false);
+  const [cameraReady, setCameraReady] = React.useState(false);
 
   React.useEffect(() => {
-    const checkCameraStatus = () => {
-      const config = viewer.mutable.current.cameraStreamConfig;
-      setCameraEnabled(config.enabled);
-      // Consider config received if we have fps or video constraints
-      if (config.captureFps || config.videoConstraints) {
-        setHasReceivedConfig(true);
-      }
+    const handleCameraReady = () => setCameraReady(true);
+    const handleCameraError = () => setCameraReady(false);
+    const handleCameraDisabled = () => {
+      setCameraReady(false);
+      setCameraEnabled(false);
+    };
+    const handleEnableCamera = () => {
+      setCameraEnabled(true);
+    };
+    const handleDisableCamera = () => {
+      setCameraEnabled(false);
+      setCameraReady(false);
     };
     
-    const interval = setInterval(checkCameraStatus, 100);
-    return () => clearInterval(interval);
-  }, [viewer]);
+    window.addEventListener('cameraReady', handleCameraReady);
+    window.addEventListener('cameraError', handleCameraError);
+    window.addEventListener('cameraDisabled', handleCameraDisabled);
+    window.addEventListener('enableCamera', handleEnableCamera);
+    window.addEventListener('disableCamera', handleDisableCamera);
+    
+    return () => {
+      window.removeEventListener('cameraReady', handleCameraReady);
+      window.removeEventListener('cameraError', handleCameraError);
+      window.removeEventListener('cameraDisabled', handleCameraDisabled);
+      window.removeEventListener('enableCamera', handleEnableCamera);
+      window.removeEventListener('disableCamera', handleDisableCamera);
+    };
+  }, []);
 
-  // Disable camera when server disconnects
+  // Reset camera state when disconnected
   React.useEffect(() => {
-    if (!connected && cameraEnabled) {
-      console.log("🔌 Server disconnected, disabling camera");
+    if (!connected) {
+      setCameraReady(false);
       setCameraEnabled(false);
-      viewer.mutable.current.cameraStreamConfig.enabled = false;
     }
-  }, [connected, cameraEnabled, viewer]);
+  }, [connected]);
 
-  // Don't show anything if no camera config has been received or server is disconnected
-  if (!hasReceivedConfig || !connected) {
+  // Don't show anything if server is disconnected
+  if (!connected) {
     return null;
   }
 
   const handleToggleCamera = (evt: React.MouseEvent) => {
     evt.stopPropagation();
-    const config = viewer.mutable.current.cameraStreamConfig;
-    const newEnabledState = !cameraEnabled;
+    const newEnabled = !cameraEnabled;
+    setCameraEnabled(newEnabled);
     
-    // Update local state immediately for responsive UI
-    setCameraEnabled(newEnabledState);
-    
-    // Update the mutable config
-    viewer.mutable.current.cameraStreamConfig.enabled = newEnabledState;
-    
-    // Send message to server
-    viewer.mutable.current.sendMessage({
-      type: "CameraStreamConfigMessage",
-      enabled: newEnabledState,
-      max_resolution: config.maxResolution || null,
-      frame_rate: config.captureFps || 30,
-      facing_mode: (config.videoConstraints as any)?.facingMode || null,
-    });
+    // Dispatch event to camera component
+    if (newEnabled) {
+      window.dispatchEvent(new CustomEvent('enableCamera'));
+    } else {
+      window.dispatchEvent(new CustomEvent('disableCamera'));
+    }
+  };
+
+  const getStatusColor = () => {
+    if (!cameraEnabled) return "#888"; // Gray - disabled
+    if (cameraReady) return "#0b0";     // Green - ready
+    return "#f80";                      // Orange - enabled but not ready
+  };
+
+  const getStatusLabel = () => {
+    if (!cameraEnabled) return "Click to enable camera";
+    if (cameraReady) return "Camera ready - click to disable";
+    return "Camera enabled but not ready - click to disable";
   };
 
   return (
     <Tooltip 
-      label={cameraEnabled ? "Turn camera off" : "Turn camera on"} 
+      label={getStatusLabel()} 
       withinPortal
     >
       <ActionIcon
@@ -269,7 +288,7 @@ function CameraStatus() {
             width: "0.75em",
             height: "0.75em",
             borderRadius: "50%",
-            backgroundColor: cameraEnabled ? "#0b0" : "#f00",
+            backgroundColor: getStatusColor(),
           }}
         />
       </ActionIcon>

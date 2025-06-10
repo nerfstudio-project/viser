@@ -147,31 +147,22 @@ function useMessageHandler(): (message: Message) => void {
         viewer.useGui.setState({ label: message.label ?? "" });
         return;
       }
-      // Configure camera streaming.
-      case "CameraStreamConfigMessage": {
-        console.log("📩 Received CameraStreamConfigMessage:", message);
+      // Handle camera access configuration
+      case "CameraAccessConfigMessage": {
+        console.log("📩 Received CameraAccessConfigMessage:", message);
         
-        // Convert max_resolution to video constraints
-        const resolutionConstraints: { width?: number; height?: number } = {};
-        if (message.max_resolution !== null) {
-          resolutionConstraints.width = { max: message.max_resolution };
-          resolutionConstraints.height = { max: message.max_resolution };
-        }
-
-        const videoConstraints: MediaStreamConstraints["video"] = {
-          ...resolutionConstraints,
-        };
-        if (message.facing_mode !== null) {
-          (videoConstraints as any).facingMode = message.facing_mode;
-        }
+        // Dispatch camera access event
+        const eventType = message.enabled ? 'enableCamera' : 'disableCamera';
+        window.dispatchEvent(new CustomEvent(eventType));
+        return;
+      }
+      // Handle camera frame requests
+      case "CameraFrameRequestMessage": {
+        console.log("📩 Received CameraFrameRequestMessage:", message);
         
-        viewerMutable.cameraStreamConfig = {
-          enabled: message.enabled,
-          videoConstraints,
-          captureFps: message.frame_rate,
-          maxResolution: message.max_resolution,
-        };
-        console.log("📩 Updated camera config:", viewerMutable.cameraStreamConfig);
+        // Find camera stream component and trigger capture
+        const event = new CustomEvent('cameraFrameRequest', { detail: message });
+        window.dispatchEvent(event);
         return;
       }
       // Configure the theme.

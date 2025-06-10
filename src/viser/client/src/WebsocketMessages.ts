@@ -1299,25 +1299,35 @@ export interface SetGuiPanelLabelMessage {
   type: "SetGuiPanelLabelMessage";
   label: string | null;
 }
-/** Message from server->client to configure camera streaming.
+/** Message from server->client to configure camera access.
  *
  * (automatically generated)
  */
-export interface CameraStreamConfigMessage {
-  type: "CameraStreamConfigMessage";
+export interface CameraAccessConfigMessage {
+  type: "CameraAccessConfigMessage";
   enabled: boolean;
-  max_resolution: number | null;
-  frame_rate: number;
-  facing_mode: "user" | "environment" | null;
 }
-/** Message from client->server carrying a camera frame.
+/** Message from server->client requesting a camera frame.
  *
  * (automatically generated)
  */
-export interface CameraStreamFrameMessage {
-  type: "CameraStreamFrameMessage";
-  frame_data: Uint8Array;
+export interface CameraFrameRequestMessage {
+  type: "CameraFrameRequestMessage";
+  request_id: string;
+  max_resolution: number | null;
+  facing_mode: "user" | "environment" | null;
+  format: "image/jpeg" | "image/png";
+}
+/** Message from client->server responding with a camera frame.
+ *
+ * (automatically generated)
+ */
+export interface CameraFrameResponseMessage {
+  type: "CameraFrameResponseMessage";
+  request_id: string;
+  frame_data: Uint8Array | null;
   timestamp: number;
+  error: string | null;
   format: "image/jpeg" | "image/png";
 }
 
@@ -1409,8 +1419,9 @@ export type Message =
   | ShareUrlUpdated
   | ShareUrlDisconnect
   | SetGuiPanelLabelMessage
-  | CameraStreamConfigMessage
-  | CameraStreamFrameMessage;
+  | CameraAccessConfigMessage
+  | CameraFrameRequestMessage
+  | CameraFrameResponseMessage;
 export type SceneNodeMessage =
   | CameraFrustumMessage
   | GlbMessage

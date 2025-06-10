@@ -445,28 +445,67 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             )
             self.flush()
 
-    def configure_camera_stream(
+    def capture_frame(
         self,
-        enabled: bool = True,
         max_resolution: int | None = 720,
-        frame_rate: int = 30,
         facing_mode: Literal["user", "environment"] | None = None,
-    ) -> None:
-        """Configure camera streaming from this client.
+        format: Literal["image/jpeg", "image/png"] = "image/jpeg",
+        timeout: float = 10.0,
+    ) -> Image:
+        """Request a camera frame from this client.
 
         Args:
-            enabled: Whether to enable camera streaming.
             max_resolution: Maximum resolution (both width and height) constraint. Camera will choose best resolution within this limit while preserving aspect ratio.
-            frame_rate: Camera frame rate constraint.
             facing_mode: Camera facing mode constraint; the client will use the default facing mode if not provided.
+            format: Image format for the captured frame.
+            timeout: Maximum time to wait for frame capture in seconds.
+
+        Returns:
+            PIL Image when frame is captured.
+            
+        Raises:
+            TimeoutError: If frame capture takes longer than timeout.
+            RuntimeError: If camera capture fails.
+        """
+        import uuid
+        from concurrent.futures import Future, TimeoutError as FutureTimeoutError
+        
+        request_id = str(uuid.uuid4())
+        future: Future[Image] = Future()
+        
+        # Store the future so we can resolve it when response comes back
+        if not hasattr(self._websock_connection, '_camera_requests'):
+            self._websock_connection._camera_requests = {}
+        self._websock_connection._camera_requests[request_id] = future
+        
+        # Send the request
+        self._websock_connection.queue_message(
+            _messages.CameraFrameRequestMessage(
+                request_id=request_id,
+                max_resolution=max_resolution,
+                facing_mode=facing_mode,
+                format=format,
+            )
+        )
+        
+        # Wait for the result with timeout
+        try:
+            return future.result(timeout=timeout)
+        except FutureTimeoutError:
+            # Clean up the pending request
+            self._websock_connection._camera_requests.pop(request_id, None)
+            raise TimeoutError(f"Camera frame capture timed out after {timeout} seconds")
+
+    def configure_camera_access(self, enabled: bool) -> None:
+        """Configure camera access for this client.
+
+        Args:
+            enabled: Whether to enable camera access. When True, the client will
+                    request camera permissions and make the camera available for
+                    frame capture. When False, camera access is disabled.
         """
         self._websock_connection.queue_message(
-            _messages.CameraStreamConfigMessage(
-                enabled=enabled,
-                max_resolution=max_resolution,
-                frame_rate=frame_rate,
-                facing_mode=facing_mode,
-            )
+            _messages.CameraAccessConfigMessage(enabled=enabled)
         )
 
     def add_notification(

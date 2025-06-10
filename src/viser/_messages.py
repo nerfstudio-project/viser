@@ -1603,13 +1603,10 @@ class SetGuiPanelLabelMessage(Message):
 
 
 @dataclasses.dataclass
-class CameraStreamConfigMessage(Message):
-    """Message from server->client to configure camera streaming."""
+class CameraAccessConfigMessage(Message):
+    """Message from server->client to configure camera access."""
 
     enabled: bool
-    max_resolution: Optional[int]
-    frame_rate: float
-    facing_mode: Optional[Literal["user", "environment"]]
 
     @override
     def redundancy_key(self) -> str:
@@ -1617,13 +1614,29 @@ class CameraStreamConfigMessage(Message):
 
 
 @dataclasses.dataclass
-class CameraStreamFrameMessage(Message):
-    """Message from client->server carrying a camera frame."""
+class CameraFrameRequestMessage(Message):
+    """Message from server->client requesting a camera frame."""
 
-    frame_data: bytes
+    request_id: str
+    max_resolution: Optional[int]
+    facing_mode: Optional[Literal["user", "environment"]]
+    format: Literal["image/jpeg", "image/png"] = "image/jpeg"
+
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + self.request_id
+
+
+@dataclasses.dataclass
+class CameraFrameResponseMessage(Message):
+    """Message from client->server responding with a camera frame."""
+
+    request_id: str
+    frame_data: Optional[bytes]  # None if capture failed
     timestamp: float
+    error: Optional[str]  # Error message if capture failed
     format: Literal["image/jpeg", "image/png"]
 
     @override
     def redundancy_key(self) -> str:
-        return type(self).__name__ + "-" + str(int(self.timestamp * 1000))
+        return type(self).__name__ + "-" + self.request_id
