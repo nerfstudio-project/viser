@@ -203,14 +203,8 @@ function CameraStatus() {
   const cameraReady = viewer.useGui((state) => state.cameraReady);
   const setCameraEnabled = viewer.useGui((state) => state.setCameraEnabled);
 
-  // Camera state is now managed via GuiState, no need for DOM event listeners
-
-  // Camera state reset on disconnect is handled by resetGui() in WebsocketInterface
-
-  // Don't show anything if server is disconnected
-  if (!connected) {
-    return null;
-  }
+  // Don't show anything if server is disconnected.
+  if (!connected) { return null; }
 
   const handleToggleCamera = (evt: React.MouseEvent) => {
     evt.stopPropagation();
@@ -219,9 +213,9 @@ function CameraStatus() {
   };
 
   const getStatusColor = () => {
-    if (!cameraEnabled) return "#888"; // Gray - disabled
-    if (cameraReady) return "#0b0";     // Green - ready
-    return "#f80";                      // Orange - enabled but not ready
+    if (!cameraEnabled) return "#888";  // Gray - disabled.
+    if (cameraReady) return "#0b0";     // Green - ready.
+    return "#f80";                      // Orange - enabled but not ready.
   };
 
   const getStatusLabel = () => {
