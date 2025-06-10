@@ -5,7 +5,6 @@ import builtins
 import colorsys
 import dataclasses
 import functools
-import io
 import threading
 import time
 from asyncio import AbstractEventLoop
@@ -14,19 +13,16 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     Coroutine,
     Protocol,
     Sequence,
     Tuple,
     TypeVar,
-    Union,
     cast,
     overload,
 )
 
 import numpy as np
-from PIL import Image
 from typing_extensions import (
     Literal,
     LiteralString,
@@ -39,7 +35,6 @@ from viser import theme
 
 from . import _messages
 from ._gui_handles import (
-    CameraStreamFrameEvent,
     GuiButtonGroupHandle,
     GuiButtonHandle,
     GuiCheckboxHandle,
@@ -217,9 +212,6 @@ class GuiApi:
         }
         self._modal_handle_from_uuid: dict[str, GuiModalHandle] = {}
         self._current_file_upload_states: dict[str, _FileUploadState] = {}
-        self._camera_stream_cb: list[
-            Callable[[CameraStreamFrameEvent], Union[None, Coroutine]]
-        ] = []
 
         # Set to True when plotly.min.js has been sent to client.
         self._setup_plotly_js: bool = False
@@ -233,9 +225,6 @@ class GuiApi:
         self._websock_interface.register_handler(
             _messages.FileTransferPart,
             self._handle_file_transfer_part,
-        )
-        self._websock_interface.register_handler(
-            _messages.CameraFrameResponseMessage, self._handle_camera_frame_response
         )
 
     async def _handle_gui_updates(
@@ -390,41 +379,6 @@ class GuiApi:
                 self._thread_executor.submit(
                     cb, GuiEvent(client, client_id, handle)
                 ).add_done_callback(print_threadpool_errors)
-
-    def _handle_camera_frame_response(
-        self, client_id: ClientId, message: _messages.CameraFrameResponseMessage
-    ) -> None:
-        """Callback for handling camera frame response messages."""
-        # Get the handle of the client that triggered this event.
-        from ._viser import ClientHandle, ViserServer
-
-        if isinstance(self._owner, ClientHandle):
-            client = self._owner
-        elif isinstance(self._owner, ViserServer):
-            client = self._owner._connected_clients.get(client_id, None)
-            if client is None:
-                return
-        else:
-            assert False
-
-        # Find the pending request
-        requests = getattr(client._websock_connection, '_camera_requests', {})
-        future = requests.pop(message.request_id, None)
-        
-        if future is None:
-            return  # No matching request found
-            
-        # Handle the response
-        if message.error is not None:
-            future.set_exception(RuntimeError(message.error))
-        elif message.frame_data is None:
-            future.set_exception(RuntimeError("Frame capture failed"))
-        else:
-            try:
-                image = Image.open(io.BytesIO(message.frame_data))
-                future.set_result(image)
-            except Exception as e:
-                future.set_exception(e)
 
     def _get_container_uuid(self) -> str:
         """Get container ID associated with the current thread."""
@@ -1705,32 +1659,3 @@ class GuiApi:
             handle_state.sync_cb = sync_other_clients
 
         return handle_state
-
-    def on_camera_stream_frame(
-        self, cb: Callable[[CameraStreamFrameEvent], NoneOrCoroutine]
-    ) -> Callable[[CameraStreamFrameEvent], NoneOrCoroutine]:
-        """Attach a callback to run when camera stream frames are received from this client.
-
-        The callback can be either a standard function or an async function:
-        - Standard functions (def) will be executed in a threadpool.
-        - Async functions (async def) will be executed in the event loop.
-
-        Args:
-            cb: Callback function that receives a camera stream frame event.
-
-        Returns:
-            The callback function (for method chaining).
-        """
-        self._camera_stream_cb.append(cb)
-        return cb
-
-    def remove_camera_stream_callback(
-        self, cb: Callable[[CameraStreamFrameEvent], NoneOrCoroutine]
-    ) -> None:
-        """Remove a camera stream callback.
-
-        Args:
-            cb: Callback function to remove.
-        """
-        if cb in self._camera_stream_cb:
-            self._camera_stream_cb.remove(cb)
