@@ -27,18 +27,24 @@ def main():
             "Camera", options=("user", "environment"), initial_value="user"
         )
 
-        enable_cam_handle = client.gui.add_button("Enable Camera")
+        camera_enabled_checkbox = client.gui.add_checkbox("Enable Camera", initial_value=False)
 
         client_id = client.client_id
 
         dummy_image = np.zeros((CAPTURE_RES[1], CAPTURE_RES[0], 3), dtype=np.uint8)
         client_image_handle = client.gui.add_image(dummy_image)
-        server_image_handle = server.scene.add_image(
+        server.scene.add_transform_controls(
             name=f"/camera_frame_{client_id}",
+            scale=0.2,
+            position=(client_id, 0, 0),
+            active_axes=(True, True, False),
+        )
+        server_image_handle = server.scene.add_image(
+            name=f"/camera_frame_{client_id}/img",
             image=dummy_image,
             render_width=0.5,
             render_height=0.5,
-            position=(client_id, 0, 0),
+            position=(0.25, 0.25, -0.001),
         )
 
         @client.gui.on_camera_stream_frame
@@ -46,24 +52,15 @@ def main():
             client_image_handle.image = np.array(event.image)
             server_image_handle.image = np.array(event.image)
 
-        @enable_cam_handle.on_click
-        def _(_):
-            client.configure_camera_stream(
-                enabled=True,
-                max_resolution=max_resolution_slider.value,
-                frame_rate=fps_slider.value,
-                facing_mode=facing_mode_dropdown.value,
-            )
-            enable_cam_handle.disabled = True
-
         def update_config():
             client.configure_camera_stream(
-                enabled=True,
+                enabled=camera_enabled_checkbox.value,
                 max_resolution=max_resolution_slider.value,
                 frame_rate=fps_slider.value,
                 facing_mode=facing_mode_dropdown.value,
             )
 
+        camera_enabled_checkbox.on_update(lambda _: update_config())
         max_resolution_slider.on_update(lambda _: update_config())
         fps_slider.on_update(lambda _: update_config())
         facing_mode_dropdown.on_update(lambda _: update_config())

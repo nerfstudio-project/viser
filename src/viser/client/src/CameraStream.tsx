@@ -61,6 +61,17 @@ export function CameraStream() {
     console.log("✅ Frame sent");
   }, [viewer]);
 
+  // Handle enabled state changes
+  useEffect(() => {
+    if (!config.enabled) {
+      console.log("🎥 Camera disabled, stopping capture");
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+  }, [config.enabled]);
+
   // Restart capture interval when FPS changes
   useEffect(() => {
     if (intervalRef.current && config.enabled) {
