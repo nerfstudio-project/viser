@@ -8,7 +8,6 @@ export function CameraStream() {
   const connected = viewer.useGui((state) => state.websocketConnected);
   const cameraEnabled = viewer.useGui((state) => state.cameraEnabled);
   const cameraReady = viewer.useGui((state) => state.cameraReady);
-  const cameraFacingMode = viewer.useGui((state) => state.cameraFacingMode);
   const activeCameraRequest = viewer.useGui((state) => state.activeCameraRequest);
   const setCameraReady = viewer.useGui((state) => state.setCameraReady);
   const setCameraRequest = viewer.useGui((state) => state.setCameraRequest);
@@ -99,6 +98,7 @@ export function CameraStream() {
   // Reset camera ready state when disconnected.
   useEffect(() => {
     if (!connected) { setCameraReady(false); }
+    else { setCameraReady(true); }
   }, [connected]);
 
   // Only render webcam if connected and enabled.
@@ -111,14 +111,11 @@ export function CameraStream() {
       ref={webcamRef}
       audio={false}
       screenshotFormat="image/jpeg"
-      videoConstraints={{
-        facingMode: cameraFacingMode || "user",
-      }}
       onUserMediaError={handleUserMediaError}
       mirrored={false}
       // This is a hack -- {display: none} doesn't work.
       // It seems to fetch the current webcam render.
-      style={{ position: "fixed", left: "-9999px", top: "-9999px" }}
+      // style={{ position: "fixed", left: "-9999px", top: "-9999px" }}
     />
   );
 }

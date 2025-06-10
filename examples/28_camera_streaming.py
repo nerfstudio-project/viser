@@ -45,7 +45,7 @@ def main():
 
         # Update camera configuration when facing mode changes
         @facing_mode_dropdown.on_update
-        def _():
+        def _(_):
             client.configure_camera_access(enabled=True, facing_mode=facing_mode_dropdown.value)
 
         while True:

@@ -237,7 +237,6 @@ function ViewerRoot() {
         {messageSource === "file_playback" && (
           <PlaybackFromFile fileUrl={playbackPath!} />
         )}
-        <CameraStream />
         {showStats && <Stats className="stats-panel" />}
       </ViewerContents>
     </ViewerContext.Provider>
@@ -319,6 +318,7 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
               <ViewerCanvas>
                 <FrameSynchronizedMessageHandler />
               </ViewerCanvas>
+              <CameraStream />
               {showLogo && messageSource === "websocket" && <ViserLogo />}
             </Box>
             {messageSource === "websocket" && (
