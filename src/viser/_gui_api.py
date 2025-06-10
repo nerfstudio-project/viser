@@ -13,7 +13,6 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
-    Coroutine,
     Protocol,
     Sequence,
     Tuple,
@@ -98,7 +97,6 @@ LiteralColor: TypeAlias = Literal[
     "orange",
     "teal",
 ]
-NoneOrCoroutine = TypeVar("NoneOrCoroutine", None, Coroutine)
 
 
 def _hex_from_hls(h: float, l: float, s: float) -> str:
@@ -434,9 +432,9 @@ class GuiApi:
         if brand_color is not None:
             assert len(brand_color) in (3, 10)
             if len(brand_color) == 3:
-                assert all(
-                    map(lambda val: isinstance(val, int), brand_color)
-                ), "All channels should be integers."
+                assert all(map(lambda val: isinstance(val, int), brand_color)), (
+                    "All channels should be integers."
+                )
 
                 # RGB => HLS.
                 h, l, s = colorsys.rgb_to_hls(
@@ -746,9 +744,9 @@ class GuiApi:
             plotly_path = (
                 Path(plotly.__file__).parent / "package_data" / "plotly.min.js"
             )
-            assert (
-                plotly_path.exists()
-            ), f"Could not find plotly.min.js at {plotly_path}."
+            assert plotly_path.exists(), (
+                f"Could not find plotly.min.js at {plotly_path}."
+            )
 
             # Send it over!
             plotly_js = plotly_path.read_text(encoding="utf-8")
@@ -1420,18 +1418,14 @@ class GuiApi:
                         precision=_compute_precision_digits(step),
                         visible=visible,
                         disabled=disabled,
-                        _marks=(
-                            tuple(
-                                (
-                                    GuiSliderMark(value=float(x[0]), label=x[1])
-                                    if isinstance(x, tuple)
-                                    else GuiSliderMark(value=x, label=None)
-                                )
-                                for x in marks
-                            )
-                            if marks is not None
-                            else None
-                        ),
+                        _marks=tuple(
+                            GuiSliderMark(value=float(x[0]), label=x[1])
+                            if isinstance(x, tuple)
+                            else GuiSliderMark(value=x, label=None)
+                            for x in marks
+                        )
+                        if marks is not None
+                        else None,
                     ),
                 ),
                 is_button=False,
@@ -1511,18 +1505,14 @@ class GuiApi:
                         disabled=disabled,
                         fixed_endpoints=fixed_endpoints,
                         precision=_compute_precision_digits(step),
-                        _marks=(
-                            tuple(
-                                (
-                                    GuiSliderMark(value=float(x[0]), label=x[1])
-                                    if isinstance(x, tuple)
-                                    else GuiSliderMark(value=x, label=None)
-                                )
-                                for x in marks
-                            )
-                            if marks is not None
-                            else None
-                        ),
+                        _marks=tuple(
+                            GuiSliderMark(value=float(x[0]), label=x[1])
+                            if isinstance(x, tuple)
+                            else GuiSliderMark(value=x, label=None)
+                            for x in marks
+                        )
+                        if marks is not None
+                        else None,
                     ),
                 ),
                 is_button=False,

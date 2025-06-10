@@ -1609,10 +1609,6 @@ class CameraAccessConfigMessage(Message):
     enabled: bool
     facing_mode: Optional[Literal["user", "environment"]] = None
 
-    @override
-    def redundancy_key(self) -> str:
-        return type(self).__name__
-
 
 @dataclasses.dataclass
 class CameraFrameRequestMessage(Message):
