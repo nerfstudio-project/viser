@@ -10,6 +10,7 @@ export function CameraStream() {
   const cameraEnabled = viewer.useGui((state) => state.cameraEnabled);
   const cameraReady = viewer.useGui((state) => state.cameraReady);
   const activeCameraRequest = viewer.useGui((state) => state.activeCameraRequest);
+  const cameraFacingMode = viewer.useGui((state) => state.cameraFacingMode);
   const setCameraReady = viewer.useGui((state) => state.setCameraReady);
   const setCameraRequest = viewer.useGui((state) => state.setCameraRequest);
   const webcamRef = useRef<Webcam>(null);
@@ -117,6 +118,9 @@ export function CameraStream() {
         screenshotFormat="image/jpeg"
         onUserMediaError={handleUserMediaError}
         mirrored={false}
+        videoConstraints={{
+          facingMode: cameraFacingMode == "environment" ? {exact: "environment"} : "user",
+        }}
       />
     </Box>
   );
