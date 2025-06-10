@@ -199,46 +199,13 @@ function ConnectionStatus() {
 function CameraStatus() {
   const viewer = React.useContext(ViewerContext)!;
   const connected = viewer.useGui((state) => state.websocketConnected);
-  const [cameraEnabled, setCameraEnabled] = React.useState(false);
-  const [cameraReady, setCameraReady] = React.useState(false);
+  const cameraEnabled = viewer.useGui((state) => state.cameraEnabled);
+  const cameraReady = viewer.useGui((state) => state.cameraReady);
+  const setCameraEnabled = viewer.useGui((state) => state.setCameraEnabled);
 
-  React.useEffect(() => {
-    const handleCameraReady = () => setCameraReady(true);
-    const handleCameraError = () => setCameraReady(false);
-    const handleCameraDisabled = () => {
-      setCameraReady(false);
-      setCameraEnabled(false);
-    };
-    const handleEnableCamera = () => {
-      setCameraEnabled(true);
-    };
-    const handleDisableCamera = () => {
-      setCameraEnabled(false);
-      setCameraReady(false);
-    };
-    
-    window.addEventListener('cameraReady', handleCameraReady);
-    window.addEventListener('cameraError', handleCameraError);
-    window.addEventListener('cameraDisabled', handleCameraDisabled);
-    window.addEventListener('enableCamera', handleEnableCamera);
-    window.addEventListener('disableCamera', handleDisableCamera);
-    
-    return () => {
-      window.removeEventListener('cameraReady', handleCameraReady);
-      window.removeEventListener('cameraError', handleCameraError);
-      window.removeEventListener('cameraDisabled', handleCameraDisabled);
-      window.removeEventListener('enableCamera', handleEnableCamera);
-      window.removeEventListener('disableCamera', handleDisableCamera);
-    };
-  }, []);
+  // Camera state is now managed via GuiState, no need for DOM event listeners
 
-  // Reset camera state when disconnected
-  React.useEffect(() => {
-    if (!connected) {
-      setCameraReady(false);
-      setCameraEnabled(false);
-    }
-  }, [connected]);
+  // Camera state reset on disconnect is handled by resetGui() in WebsocketInterface
 
   // Don't show anything if server is disconnected
   if (!connected) {
@@ -249,13 +216,6 @@ function CameraStatus() {
     evt.stopPropagation();
     const newEnabled = !cameraEnabled;
     setCameraEnabled(newEnabled);
-    
-    // Dispatch event to camera component
-    if (newEnabled) {
-      window.dispatchEvent(new CustomEvent('enableCamera'));
-    } else {
-      window.dispatchEvent(new CustomEvent('disableCamera'));
-    }
   };
 
   const getStatusColor = () => {

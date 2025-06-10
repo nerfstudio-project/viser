@@ -31,6 +31,14 @@ interface GuiState {
       filename: string;
     };
   };
+  cameraEnabled: boolean;
+  cameraReady: boolean;
+  activeCameraRequest: {
+    request_id: string;
+    max_resolution: number | null;
+    facing_mode: "user" | "environment" | null;
+    format: "image/jpeg" | "image/png";
+  } | null;
 }
 
 interface GuiActions {
@@ -47,6 +55,16 @@ interface GuiActions {
       | { uploadedBytes: number; totalBytes: number }
       | GuiState["uploadsInProgress"][string]
     ) & { componentId: string },
+  ) => void;
+  setCameraEnabled: (enabled: boolean) => void;
+  setCameraReady: (ready: boolean) => void;
+  setCameraRequest: (
+    request: {
+      request_id: string;
+      max_resolution: number | null;
+      facing_mode: "user" | "environment" | null;
+      format: "image/jpeg" | "image/png";
+    } | null
   ) => void;
 }
 
@@ -72,6 +90,9 @@ const cleanGuiState: GuiState = {
   guiOrderFromUuid: {},
   guiConfigFromUuid: {},
   uploadsInProgress: {},
+  cameraEnabled: false,
+  cameraReady: false,
+  activeCameraRequest: null,
 };
 
 export function computeRelativeLuminance(color: string) {
@@ -159,6 +180,9 @@ export function useGuiState(initialServer: string) {
             state.guiOrderFromUuid = cleanGuiState.guiOrderFromUuid;
             state.guiConfigFromUuid = cleanGuiState.guiConfigFromUuid;
             state.uploadsInProgress = cleanGuiState.uploadsInProgress;
+            state.cameraEnabled = cleanGuiState.cameraEnabled;
+            state.cameraReady = cleanGuiState.cameraReady;
+            state.activeCameraRequest = cleanGuiState.activeCameraRequest;
           }),
         updateUploadState: (state) =>
           set((globalState) => {
@@ -196,6 +220,22 @@ export function useGuiState(initialServer: string) {
             }
           });
         },
+        setCameraEnabled: (enabled) =>
+          set((state) => {
+            state.cameraEnabled = enabled;
+            if (!enabled) {
+              state.cameraReady = false;
+              state.activeCameraRequest = null;
+            }
+          }),
+        setCameraReady: (ready) =>
+          set((state) => {
+            state.cameraReady = ready;
+          }),
+        setCameraRequest: (request) =>
+          set((state) => {
+            state.activeCameraRequest = request;
+          }),
       })),
     ),
   )[0];

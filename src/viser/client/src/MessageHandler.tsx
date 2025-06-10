@@ -41,6 +41,8 @@ function useMessageHandler(): (message: Message) => void {
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
   const updateUploadState = viewer.useGui((state) => state.updateUploadState);
+  const setCameraEnabled = viewer.useGui((state) => state.setCameraEnabled);
+  const setCameraRequest = viewer.useGui((state) => state.setCameraRequest);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
@@ -149,20 +151,17 @@ function useMessageHandler(): (message: Message) => void {
       }
       // Handle camera access configuration
       case "CameraAccessConfigMessage": {
-        console.log("📩 Received CameraAccessConfigMessage:", message);
-        
-        // Dispatch camera access event
-        const eventType = message.enabled ? 'enableCamera' : 'disableCamera';
-        window.dispatchEvent(new CustomEvent(eventType));
+        setCameraEnabled(message.enabled);
         return;
       }
       // Handle camera frame requests
       case "CameraFrameRequestMessage": {
-        console.log("📩 Received CameraFrameRequestMessage:", message);
-        
-        // Find camera stream component and trigger capture
-        const event = new CustomEvent('cameraFrameRequest', { detail: message });
-        window.dispatchEvent(event);
+        setCameraRequest({
+          request_id: message.request_id,
+          max_resolution: message.max_resolution,
+          facing_mode: message.facing_mode,
+          format: message.format,
+        });
         return;
       }
       // Configure the theme.

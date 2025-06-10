@@ -6,12 +6,20 @@ import Webcam from "react-webcam";
 export function CameraStream() {
   const viewer = useContext(ViewerContext)!;
   const connected = viewer.useGui((state) => state.websocketConnected);
+  const cameraEnabled = viewer.useGui((state) => state.cameraEnabled);
+  const cameraReady = viewer.useGui((state) => state.cameraReady);
+  const activeCameraRequest = viewer.useGui((state) => state.activeCameraRequest);
+  const setCameraReady = viewer.useGui((state) => state.setCameraReady);
+  const setCameraRequest = viewer.useGui((state) => state.setCameraRequest);
   const webcamRef = useRef<Webcam>(null);
-  const [cameraEnabled, setCameraEnabled] = useState(false);
-  const [cameraReady, setCameraReady] = useState(false);
 
 
-  const captureFrameForRequest = useCallback((request: any) => {
+  const captureFrameForRequest = useCallback((request: {
+    request_id: string;
+    max_resolution: number | null;
+    facing_mode: "user" | "environment" | null;
+    format: "image/jpeg" | "image/png";
+  }) => {
     if (!cameraEnabled) {
       console.log("🎥 Camera access disabled");
       // Send error response
@@ -79,43 +87,26 @@ export function CameraStream() {
     console.log("✅ Frame response sent");
   }, [viewer, cameraEnabled, cameraReady]);
 
-  // Handle camera frame requests
+  // Handle camera frame requests from GuiState
   useEffect(() => {
-    const handleFrameRequest = (event: CustomEvent) => {
-      const message = event.detail;
-      console.log("📸 Received frame request:", message.request_id);
-      captureFrameForRequest(message);
-    };
+    if (activeCameraRequest) {
+      console.log("📸 Received frame request:", activeCameraRequest.request_id);
+      captureFrameForRequest(activeCameraRequest);
+      // Clear the request after processing
+      setCameraRequest(null);
+    }
+  }, [activeCameraRequest, captureFrameForRequest, setCameraRequest]);
 
-    window.addEventListener('cameraFrameRequest', handleFrameRequest as EventListener);
-    
-    return () => {
-      window.removeEventListener('cameraFrameRequest', handleFrameRequest as EventListener);
-    };
-  }, [captureFrameForRequest]);
-
-  // Handle camera enable/disable events
+  // Handle camera state changes
   useEffect(() => {
-    const handleEnableCamera = () => {
+    if (cameraEnabled) {
       console.log("🎥 Enabling camera access");
-      setCameraEnabled(true);
       setCameraReady(false); // Reset ready state when enabling
-    };
-    
-    const handleDisableCamera = () => {
+    } else {
       console.log("🎥 Disabling camera access");
-      setCameraEnabled(false);
       setCameraReady(false);
-    };
-
-    window.addEventListener('enableCamera', handleEnableCamera);
-    window.addEventListener('disableCamera', handleDisableCamera);
-    
-    return () => {
-      window.removeEventListener('enableCamera', handleEnableCamera);
-      window.removeEventListener('disableCamera', handleDisableCamera);
-    };
-  }, []);
+    }
+  }, [cameraEnabled, setCameraReady]);
 
   // Camera ready callback
   const handleUserMedia = useCallback(() => {
@@ -124,32 +115,22 @@ export function CameraStream() {
     setTimeout(() => {
       console.log("🎥 Webcam ready for on-demand capture");
       setCameraReady(true);
-      window.dispatchEvent(new CustomEvent('cameraReady'));
     }, 500); // 500ms delay to ensure camera is fully initialized
-  }, []);
+  }, [setCameraReady]);
 
   // Handle errors
   const handleUserMediaError = useCallback((error: any) => {
     console.error("❌ Webcam error:", error);
     setCameraReady(false);
-    window.dispatchEvent(new CustomEvent('cameraError'));
-  }, []);
+  }, [setCameraReady]);
 
-  // Reset camera ready state when disconnected or disabled
+  // Reset camera ready state when disconnected
   useEffect(() => {
     if (!connected) {
       console.log("🔌 Server disconnected, camera no longer ready");
       setCameraReady(false);
     }
-  }, [connected]);
-
-  useEffect(() => {
-    if (!cameraEnabled) {
-      console.log("🎥 Camera disabled, resetting ready state");
-      setCameraReady(false);
-      window.dispatchEvent(new CustomEvent('cameraDisabled'));
-    }
-  }, [cameraEnabled]);
+  }, [connected, setCameraReady]);
 
   // Only render webcam if connected and enabled
   if (!connected || !cameraEnabled) {
@@ -162,7 +143,11 @@ export function CameraStream() {
         ref={webcamRef}
         audio={false}
         screenshotFormat="image/jpeg"
-        videoConstraints={{ facingMode: "user" }} // Default constraints
+        videoConstraints={{
+          facingMode: cameraEnabled ? "user" : "user",
+          width: 1280,
+          height: 720,
+        }}
         onUserMedia={handleUserMedia}
         onUserMediaError={handleUserMediaError}
         mirrored={false}
