@@ -198,6 +198,7 @@ function ConnectionStatus() {
 
 function CameraStatus() {
   const viewer = React.useContext(ViewerContext)!;
+  const connected = viewer.useGui((state) => state.websocketConnected);
   const [cameraEnabled, setCameraEnabled] = React.useState(false);
   const [hasReceivedConfig, setHasReceivedConfig] = React.useState(false);
 
@@ -215,8 +216,17 @@ function CameraStatus() {
     return () => clearInterval(interval);
   }, [viewer]);
 
-  // Don't show anything if no camera config has been received
-  if (!hasReceivedConfig) {
+  // Disable camera when server disconnects
+  React.useEffect(() => {
+    if (!connected && cameraEnabled) {
+      console.log("🔌 Server disconnected, disabling camera");
+      setCameraEnabled(false);
+      viewer.mutable.current.cameraStreamConfig.enabled = false;
+    }
+  }, [connected, cameraEnabled, viewer]);
+
+  // Don't show anything if no camera config has been received or server is disconnected
+  if (!hasReceivedConfig || !connected) {
     return null;
   }
 

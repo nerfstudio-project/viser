@@ -5,6 +5,7 @@ import Webcam from "react-webcam";
 
 export function CameraStream() {
   const viewer = useContext(ViewerContext)!;
+  const connected = viewer.useGui((state) => state.websocketConnected);
   const webcamRef = useRef<Webcam>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [config, setConfig] = useState(viewer.mutable.current.cameraStreamConfig);
@@ -71,6 +72,17 @@ export function CameraStream() {
       }
     }
   }, [config.enabled]);
+
+  // Stop camera when server disconnects
+  useEffect(() => {
+    if (!connected) {
+      console.log("🔌 Server disconnected, stopping camera capture");
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+  }, [connected]);
 
   // Restart capture interval when FPS changes
   useEffect(() => {
