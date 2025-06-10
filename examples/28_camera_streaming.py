@@ -43,7 +43,8 @@ def main():
             position=(0.25, 0.25, -0.001),
         )
 
-        client.configure_camera_access(enabled=True)
+        # "Race condition" seems fine when started from False?
+        client.configure_camera_access(enabled=False)
 
         while True:
             try:
