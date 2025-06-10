@@ -44,19 +44,17 @@ def main():
         )
 
         # "Race condition" seems fine when started from False?
-        client.configure_camera_access(enabled=False)
+        client.configure_camera_access(enabled=True)
 
         while True:
-            try:
-                image = client.capture_frame(
-                    max_resolution=max_resolution_slider.value,
-                    facing_mode=facing_mode_dropdown.value,
-                    timeout=2.0,
-                )
+            image = client.capture_frame(
+                max_resolution=max_resolution_slider.value,
+                facing_mode=facing_mode_dropdown.value,
+                timeout=2.0,
+            )
+            if image is not None:
                 client_image_handle.image = np.array(image)
                 server_image_handle.image = np.array(image)
-            except Exception as e:
-                print(e)
 
             time.sleep(1 / 20)
 
