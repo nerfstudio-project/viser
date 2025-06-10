@@ -16,6 +16,7 @@ import imageio.v3 as iio
 import numpy as np
 import numpy.typing as npt
 import rich
+from PIL import Image
 from rich import box, style
 from rich.panel import Panel
 from rich.table import Table
@@ -451,7 +452,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         facing_mode: Literal["user", "environment"] | None = None,
         format: Literal["image/jpeg", "image/png"] = "image/jpeg",
         timeout: float = 2.0,
-    ) -> Image:
+    ) -> Image.Image | None:
         """Request a camera frame from this client.
 
         Args:
@@ -467,34 +468,35 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             TimeoutError: If frame capture takes longer than timeout.
             RuntimeError: If camera capture fails.
         """
-        import uuid
-        from concurrent.futures import Future, TimeoutError as FutureTimeoutError
+        frame_ready_event = threading.Event()
+        frame: Image.Image | None = None
+
+        connection = self._websock_connection
+
+        def got_frame_cb(
+            client_id: int, message: _messages.CameraFrameResponseMessage
+        ) -> None:
+            del client_id
+            connection.unregister_handler(_messages.CameraFrameResponseMessage, got_frame_cb)
+            nonlocal frame
+            if message.frame_data is None:
+                frame = None
+            else:
+                frame = Image.open(io.BytesIO(message.frame_data))
+            frame_ready_event.set()
+
+        connection.register_handler(_messages.CameraFrameResponseMessage, got_frame_cb)
         
-        request_id = str(uuid.uuid4())
-        future: Future[Image] = Future()
-        
-        # Store the future so we can resolve it when response comes back
-        if not hasattr(self._websock_connection, '_camera_requests'):
-            self._websock_connection._camera_requests = {}
-        self._websock_connection._camera_requests[request_id] = future
-        
-        # Send the request
         self._websock_connection.queue_message(
             _messages.CameraFrameRequestMessage(
-                request_id=request_id,
+                request_id=_make_uuid(),
                 max_resolution=max_resolution,
                 facing_mode=facing_mode,
                 format=format,
             )
         )
-        
-        # Wait for the result with timeout
-        try:
-            return future.result(timeout=timeout)
-        except FutureTimeoutError:
-            # Clean up the pending request
-            self._websock_connection._camera_requests.pop(request_id, None)
-            raise TimeoutError(f"Camera frame capture timed out after {timeout} seconds")
+        frame_ready_event.wait(timeout=timeout)
+        return frame
 
     def configure_camera_access(self, enabled: bool) -> None:
         """Configure camera access for this client.
