@@ -1,12 +1,6 @@
 // @refresh reset
 
-import {
-  Box,
-  Collapse,
-  Divider,
-  Paper,
-  ScrollArea,
-} from "@mantine/core";
+import { Box, Collapse, Divider, Paper, ScrollArea } from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";
 

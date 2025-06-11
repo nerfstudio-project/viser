@@ -1,4 +1,4 @@
-import { Box, Collapse, Divider, Paper, useMantineColorScheme } from "@mantine/core";
+import { Box, Collapse, Divider, Paper } from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";
 
@@ -25,10 +25,18 @@ export default function BottomPanel({
       }}
     >
       <>
-        <Divider style={{ position: "fixed", bottom: "0", left: "0", width: "100%", zIndex: 11 }} />
+        <Divider
+          style={{
+            position: "fixed",
+            bottom: "0",
+            left: "0",
+            width: "100%",
+            zIndex: 11,
+          }}
+        />
         <Paper
           radius="0"
-          style={(theme) => ({
+          style={{
             boxSizing: "border-box",
             width: "100%",
             zIndex: 10,
@@ -40,7 +48,7 @@ export default function BottomPanel({
             minHeight: "3.5em",
             maxHeight: "60%",
             transition: "height 0.3s linear",
-          })}
+          }}
           ref={panelWrapperRef}
         >
           {children}
@@ -58,7 +66,7 @@ BottomPanel.Handle = function BottomPanelHandle({
   return (
     <Box
       color="red"
-      style={(theme) => ({
+      style={{
         cursor: "pointer",
         position: "relative",
         fontWeight: 400,
@@ -67,7 +75,7 @@ BottomPanel.Handle = function BottomPanelHandle({
         alignItems: "center",
         padding: "0 0.8em",
         height: "3.5em",
-      })}
+      }}
       onClick={() => {
         panelContext.toggleExpanded();
       }}

@@ -332,7 +332,6 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   indentCount: number;
 }) {
   const viewer = React.useContext(ViewerContext)!;
-  const viewerMutable = viewer.mutable.current; // Get mutable once
   const { paintingRef, paintValueRef, startPainting } = React.useContext(
     VisibilityPaintContext,
   )!;
@@ -342,18 +341,20 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
     const newValue = !isVisible;
     startPainting(newValue);
 
-    // Update visibility
-    const attr = viewerMutable.nodeAttributesFromName;
-    attr[props.nodeName]!.overrideVisibility = newValue;
+    // Update visibility using scene tree state.
+    viewer.useSceneTree.getState().updateNodeAttributes(props.nodeName, {
+      overrideVisibility: newValue,
+    });
     setIsVisible(newValue);
   };
 
   const handleVisibilityMouseEnter = () => {
     if (!paintingRef.current) return;
 
-    // Update visibility to match paint value
-    const attr = viewerMutable.nodeAttributesFromName;
-    attr[props.nodeName]!.overrideVisibility = paintValueRef.current;
+    // Update visibility to match paint value using scene tree state.
+    viewer.useSceneTree.getState().updateNodeAttributes(props.nodeName, {
+      overrideVisibility: paintValueRef.current,
+    });
     setIsVisible(paintValueRef.current);
   };
 
@@ -369,7 +370,8 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   );
 
   const pollIsVisible = React.useCallback(() => {
-    const attrs = viewerMutable.nodeAttributesFromName[props.nodeName];
+    const attrs =
+      viewer.useSceneTree.getState().nodeAttributesFromName[props.nodeName];
     return (
       (attrs?.overrideVisibility === undefined
         ? attrs?.visibility
@@ -504,4 +506,3 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
     </>
   );
 });
-

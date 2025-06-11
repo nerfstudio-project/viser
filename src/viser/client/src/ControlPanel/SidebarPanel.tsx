@@ -8,7 +8,6 @@ import {
   ScrollArea,
   Tooltip,
   useMantineColorScheme,
-  useMantineTheme,
 } from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";

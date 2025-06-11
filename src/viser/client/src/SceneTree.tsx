@@ -210,15 +210,15 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
         message.props.plane == "xz"
           ? new THREE.Euler(0.0, 0.0, 0.0)
           : message.props.plane == "xy"
-          ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-          : message.props.plane == "yx"
-          ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-          : message.props.plane == "yz"
-          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-          : message.props.plane == "zx"
-          ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-          : //message.props.plane == "zy"
-            new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0),
+            ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+            : message.props.plane == "yx"
+              ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+              : message.props.plane == "yz"
+                ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                : message.props.plane == "zx"
+                  ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                  : //message.props.plane == "zy"
+                    new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0),
       );
 
       // When rotations are identity: plane is XY, while grid is XZ.
@@ -346,23 +346,32 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 });
               }}
               onDrag={(l) => {
-                const attrs = viewer.mutable.current.nodeAttributesFromName;
-                if (attrs[message.name] === undefined) {
-                  attrs[message.name] = {};
-                }
-
                 const wxyz = new THREE.Quaternion();
                 wxyz.setFromRotationMatrix(l);
                 const position = new THREE.Vector3().setFromMatrixPosition(l);
 
-                const nodeAttributes = attrs[message.name]!;
-                nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
-                nodeAttributes.position = position.toArray();
+                const wxyzArray: [number, number, number, number] = [
+                  wxyz.w,
+                  wxyz.x,
+                  wxyz.y,
+                  wxyz.z,
+                ];
+                const positionArray: [number, number, number] =
+                  position.toArray() as [number, number, number];
+
+                // Update node attributes in scene tree state.
+                viewer.useSceneTree
+                  .getState()
+                  .updateNodeAttributes(message.name, {
+                    wxyz: wxyzArray,
+                    position: positionArray,
+                  });
+
                 sendDragMessage({
                   type: "TransformControlsUpdateMessage",
                   name: name,
-                  wxyz: nodeAttributes.wxyz,
-                  position: nodeAttributes.position,
+                  wxyz: wxyzArray,
+                  position: positionArray,
                 });
               }}
               onDragEnd={() => {
@@ -697,11 +706,9 @@ export function SceneNodeThreeObject(props: {
     if (makeObject === undefined) return null;
 
     // Pose will need to be updated.
-    const attrs = viewerMutable.nodeAttributesFromName;
-    if (!(props.name in attrs)) {
-      attrs[props.name] = {};
-    }
-    attrs[props.name]!.poseUpdateState = "needsUpdate";
+    viewer.useSceneTree.getState().updateNodeAttributes(props.name, {
+      poseUpdateState: "needsUpdate",
+    });
 
     return makeObject(setRef);
   }, [makeObject]);
@@ -718,7 +725,8 @@ export function SceneNodeThreeObject(props: {
   function isDisplayed(): boolean {
     // We avoid checking obj.visible because obj may be unmounted when
     // unmountWhenInvisible=true.
-    const attrs = viewerMutable.nodeAttributesFromName[props.name];
+    const attrs =
+      viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
     const visibility =
       (attrs?.overrideVisibility === undefined
         ? attrs?.visibility
@@ -738,15 +746,22 @@ export function SceneNodeThreeObject(props: {
 
   // Pose needs to be updated whenever component is remounted.
   React.useEffect(() => {
-    const attrs = viewerMutable.nodeAttributesFromName[props.name];
-    if (attrs !== undefined) attrs.poseUpdateState = "needsUpdate";
+    const currentAttrs =
+      viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
+    if (currentAttrs !== undefined) {
+      viewer.useSceneTree.getState().updateNodeAttributes(props.name, {
+        poseUpdateState: "needsUpdate",
+      });
+    }
   });
 
   // Update attributes on a per-frame basis. Currently does redundant work,
   // although this shouldn't be a bottleneck.
   useFrame(
     () => {
-      const attrs = viewerMutable.nodeAttributesFromName[props.name];
+      // Use getState() for performance in render loops (no re-renders).
+      const attrs =
+        viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
 
       // Unmount when invisible.
       // Examples: <Html /> components, PivotControls.
@@ -777,7 +792,11 @@ export function SceneNodeThreeObject(props: {
       obj.visible = visibility;
 
       if (attrs.poseUpdateState == "needsUpdate") {
-        attrs.poseUpdateState = "updated";
+        // Update pose state through zustand action.
+        viewer.useSceneTree.getState().updateNodeAttributes(props.name, {
+          poseUpdateState: "updated",
+        });
+
         const wxyz = attrs.wxyz ?? [1, 0, 0, 0];
         obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
         const position = attrs.position ?? [0, 0, 0];
