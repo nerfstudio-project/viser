@@ -504,3 +504,4 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
     </>
   );
 });
+

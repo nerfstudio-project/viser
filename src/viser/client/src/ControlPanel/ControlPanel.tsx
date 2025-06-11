@@ -64,10 +64,10 @@ export default function ControlPanel(props: {
     controlWidthString == "small"
       ? "16em"
       : controlWidthString == "medium"
-      ? "20em"
-      : controlWidthString == "large"
-      ? "24em"
-      : null
+        ? "20em"
+        : controlWidthString == "large"
+          ? "24em"
+          : null
   )!;
 
   const generatedServerToggleButton = (
@@ -348,7 +348,7 @@ function ShareButton() {
           </>
         )}
         <Text size="xs">
-          This feature is experimental. Problems? Consider{" "}
+          Share links are experimental and bandwidth-limited. Problems? Consider{" "}
           <Anchor href="https://github.com/nerfstudio-project/viser/issues">
             reporting on GitHub
           </Anchor>

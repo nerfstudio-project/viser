@@ -9,6 +9,7 @@ import {
   Button,
   createTheme,
   Textarea,
+  Divider,
 } from "@mantine/core";
 import { themeToVars } from "@mantine/vanilla-extract";
 
@@ -24,6 +25,11 @@ export const theme = createTheme({
     ColorInput: ColorInput.extend({
       defaultProps: {
         radius: "xs",
+      },
+    }),
+    Divider: Divider.extend({
+      defaultProps: {
+        size: "1px",
       },
     }),
     Select: Select.extend({
