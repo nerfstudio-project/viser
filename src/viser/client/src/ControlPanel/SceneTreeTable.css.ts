@@ -12,14 +12,7 @@ export const tableWrapper = style({
 
 export const propsWrapper = style({
   position: "relative",
-  borderRadius: vars.radius.xs,
-  border: "1px solid",
-  borderColor: vars.colors.defaultBorder,
-  padding: vars.spacing.xs,
   boxSizing: "border-box",
-  margin: vars.spacing.xs,
-  marginTop: "0.2em",
-  marginBottom: "0.2em",
   overflowX: "auto",
   display: "flex",
   flexDirection: "column",

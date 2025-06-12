@@ -187,7 +187,7 @@ export default function ServerControls() {
             }
             position="top-start"
           >
-            <Text style={{ fontWeight: 500, cursor: "help" }} fz="sm" mb="xs">
+            <Text style={{ fontWeight: 500 }} fz="sm">
               Scene tree
             </Text>
           </Tooltip>

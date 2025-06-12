@@ -471,7 +471,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           <SplatRenderContext>
             <AdaptiveDpr />
             {children}
-            <SceneNodeThreeObject name="" parent={null} />
+            <SceneNodeThreeObject name="" />
           </SplatRenderContext>
           <DefaultLights />
         </Bvh>
