@@ -330,6 +330,7 @@ function createObjectFactory(
                 wxyz.setFromRotationMatrix(l);
                 const position = new THREE.Vector3().setFromMatrixPosition(l);
 
+                // Update node attributes in scene tree state.
                 const wxyzArray = [wxyz.w, wxyz.x, wxyz.y, wxyz.z] as [
                   number,
                   number,
@@ -341,14 +342,12 @@ function createObjectFactory(
                   number,
                   number,
                 ];
-                // Update node attributes in scene tree state.
                 viewer.useSceneTree
                   .getState()
                   .updateNodeAttributes(message.name, {
                     wxyz: wxyzArray,
                     position: positionArray,
                   });
-
                 sendDragMessage({
                   type: "TransformControlsUpdateMessage",
                   name: message.name,
@@ -688,6 +687,9 @@ export function SceneNodeThreeObject(props: { name: string }) {
     (state) => state.nodeFromName[props.name]?.message,
   );
   const ContextBridge = useContextBridge();
+  const updateNodeAttributes = viewer.useSceneTree(
+    (state) => state.updateNodeAttributes,
+  );
 
   const {
     makeObject,
@@ -705,9 +707,10 @@ export function SceneNodeThreeObject(props: { name: string }) {
   const objRef = React.useRef<THREE.Object3D | null>(null);
   const groupRef = React.useRef<THREE.Group>();
 
-  // Get children from scene tree state
-  const childrenNames = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.children,
+  // Get children.
+  const children = React.useMemo(
+    () => <SceneNodeChildren name={props.name} />,
+    [],
   );
 
   // Create object + children.
@@ -718,28 +721,11 @@ export function SceneNodeThreeObject(props: { name: string }) {
   const viewerMutable = viewer.mutable.current;
   const objNode = React.useMemo(() => {
     if (makeObject === undefined) return null;
-
-    // Pose will need to be updated.
-    viewer.useSceneTree.getState().updateNodeAttributes(props.name, {
-      poseUpdateState: "needsUpdate",
-    });
-
-    // Create children components
-    const children = (
-      <>
-        {childrenNames &&
-          childrenNames.map((child_id) => (
-            <SceneNodeThreeObject key={child_id} name={child_id} />
-          ))}
-        <SceneNodeLabel name={props.name} />
-      </>
-    );
-
     return makeObject((ref: THREE.Object3D) => {
       objRef.current = ref;
       viewerMutable.nodeRefFromName[props.name] = objRef.current;
     }, children);
-  }, [makeObject, childrenNames]);
+  }, [makeObject, children]);
 
   // Helper for transient visibility checks. Checks the .visible attribute of
   // both this object and ancestors.
@@ -782,11 +768,11 @@ export function SceneNodeThreeObject(props: { name: string }) {
     const currentAttrs =
       viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
     if (currentAttrs !== undefined) {
-      viewer.useSceneTree.getState().updateNodeAttributes(props.name, {
+      updateNodeAttributes(props.name, {
         poseUpdateState: "needsUpdate",
       });
     }
-  });
+  }, []);
 
   // Update attributes on a per-frame basis. Currently does redundant work,
   // although this shouldn't be a bottleneck.
@@ -826,7 +812,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
 
       if (attrs.poseUpdateState == "needsUpdate") {
         // Update pose state through zustand action.
-        viewer.useSceneTree.getState().updateNodeAttributes(props.name, {
+        updateNodeAttributes(props.name, {
           poseUpdateState: "updated",
         });
 
@@ -1003,4 +989,20 @@ export function SceneNodeThreeObject(props: { name: string }) {
       </>
     );
   }
+}
+
+function SceneNodeChildren(props: { name: string }) {
+  const viewer = React.useContext(ViewerContext)!;
+  const childrenNames = viewer.useSceneTree(
+    (state) => state.nodeFromName[props.name]?.children,
+  );
+  return (
+    <>
+      {childrenNames &&
+        childrenNames.map((child_id) => (
+          <SceneNodeThreeObject key={child_id} name={child_id} />
+        ))}
+      <SceneNodeLabel name={props.name} />
+    </>
+  );
 }

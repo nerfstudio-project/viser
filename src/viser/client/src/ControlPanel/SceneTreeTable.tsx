@@ -111,6 +111,7 @@ function EditNodeProps({
       className={propsWrapper}
       component="form"
       onSubmit={form.onSubmit(handleSubmit)}
+      w="15em"
     >
       <Box>
         <Box
@@ -191,7 +192,10 @@ function EditNodeProps({
                       <ColorInput
                         size="xs"
                         styles={{
-                          input: { height: "1.625rem", minHeight: "1.625rem" },
+                          input: {
+                            height: "1.625rem",
+                            minHeight: "1.625rem",
+                          },
                           // icon: { transform: "scale(0.8)" },
                         }}
                         style={{ width: "100%" }}
@@ -401,9 +405,10 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   );
 
   // Get server visibility and override visibility separately
-  const serverVisibility = viewer.useSceneTree(
-    (state) => state.nodeAttributesFromName[props.nodeName]?.visibility ?? true,
-  );
+  const serverVisibility =
+    viewer.useSceneTree(
+      (state) => state.nodeAttributesFromName[props.nodeName]?.visibility,
+    ) ?? true;
   const overrideVisibility = viewer.useSceneTree(
     (state) => state.nodeAttributesFromName[props.nodeName]?.overrideVisibility,
   );
@@ -540,9 +545,11 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
         <Popover
           position="bottom"
           withArrow
-          shadow="md"
+          shadow="sm"
+          arrowSize={10}
           trapFocus
           opened={openPopoverNodeName === props.nodeName}
+          onDismiss={closePropsPopover}
         >
           <Popover.Target>
             <Box
@@ -570,7 +577,13 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
               </Tooltip>
             </Box>
           </Popover.Target>
-          <Popover.Dropdown>
+          <Popover.Dropdown
+            // Don't propagate clicks or mouse events. This prevents (i)
+            // clicking the popover from expanding rows, and (ii) clicking
+            // color inputs from closing the popover.
+            onMouseDown={(evt) => evt.stopPropagation()}
+            onClick={(evt) => evt.stopPropagation()}
+          >
             <EditNodeProps
               nodeName={props.nodeName}
               close={closePropsPopover}
