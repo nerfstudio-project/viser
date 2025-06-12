@@ -296,7 +296,8 @@ function createObjectFactory(
 
     // Add a transform control, centered at current object.
     case "TransformControlsMessage": {
-      const sendDragMessage = makeThrottledMessageSender(viewer, 50);
+      const { send: sendDragMessage, flush: flushDragMessage } =
+        makeThrottledMessageSender(viewer, 50);
       // We track drag state to prevent duplicate drag end events.
       // This variable persists in the closure created by makeObject,
       // so we don't need useRef here.
@@ -358,6 +359,7 @@ function createObjectFactory(
               onDragEnd={() => {
                 if (isDragging) {
                   isDragging = false;
+                  flushDragMessage();
                   viewer.mutable.current.sendMessage({
                     type: "TransformControlsDragEndMessage",
                     name: message.name,
@@ -837,7 +839,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
   );
 
   // Clicking logic.
-  const sendClicksThrottled = useThrottledMessageSender(50);
+  const sendClicksThrottled = useThrottledMessageSender(50).send;
 
   // Track hover state.
   const hoveredRef = React.useRef<HoverState>({

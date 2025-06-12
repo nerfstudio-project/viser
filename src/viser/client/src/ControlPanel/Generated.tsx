@@ -33,7 +33,7 @@ export default function GeneratedGuiContainer({
 }) {
   const viewer = React.useContext(ViewerContext)!;
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
-  const messageSender = useThrottledMessageSender(50);
+  const messageSender = useThrottledMessageSender(50).send;
 
   function setValue(uuid: string, value: NonNullable<unknown>) {
     updateGuiProps(uuid, { value: value });

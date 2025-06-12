@@ -351,7 +351,7 @@ function NotificationsPanel() {
  */
 function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const viewer = React.useContext(ViewerContext)!;
-  const sendClickThrottled = useThrottledMessageSender(20);
+  const sendClickThrottled = useThrottledMessageSender(20).send;
   const theme = useMantineTheme();
   const { ref: inViewRef, inView } = useInView();
 
