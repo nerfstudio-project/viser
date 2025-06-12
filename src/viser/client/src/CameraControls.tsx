@@ -84,7 +84,7 @@ export function SynchronizedCameraControls() {
   const viewer = useContext(ViewerContext)!;
   const camera = useThree((state) => state.camera as PerspectiveCamera);
 
-  const sendCameraThrottled = useThrottledMessageSender(20);
+  const sendCameraThrottled = useThrottledMessageSender(20).send;
 
   // Helper for resetting camera poses.
   const initialCameraRef = useRef<{
