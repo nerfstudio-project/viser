@@ -50,7 +50,6 @@ type SceneTreeActions = {
       | Partial<NonNullable<SceneTreeState["nodeAttributesFromName"][string]>>
       | undefined,
   ): void;
-  resetAllVisibilityOverrides(): void;
 };
 
 // Pre-defined scene nodes.
@@ -225,17 +224,6 @@ export function useSceneTreeState(nodeRefFromName: {
                 ...attributes,
               };
             }
-          }),
-        resetAllVisibilityOverrides: () =>
-          set((state) => {
-            Object.keys(state.nodeAttributesFromName).forEach((name) => {
-              if (
-                state.nodeAttributesFromName[name]?.overrideVisibility !==
-                undefined
-              ) {
-                delete state.nodeAttributesFromName[name]!.overrideVisibility;
-              }
-            });
           }),
       })),
     ),
