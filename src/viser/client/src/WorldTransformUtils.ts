@@ -5,9 +5,9 @@ import * as THREE from "three";
  * Python-exposed world frames. This is useful for things like switching
  * between +Y and +Z up directions for the world frame. */
 export function computeT_threeworld_world(viewer: ViewerContextContents) {
-  const wxyz = viewer.mutable.current.nodeAttributesFromName[""]!.wxyz!;
-  const position = viewer.mutable.current.nodeAttributesFromName[""]!
-    .position ?? [0, 0, 0];
+  const rootAttrs = viewer.useSceneTree.getState().nodeAttributesFromName[""];
+  const wxyz = rootAttrs?.wxyz ?? [1, 0, 0, 0];
+  const position = rootAttrs?.position ?? [0, 0, 0];
   return new THREE.Matrix4()
     .makeRotationFromQuaternion(
       new THREE.Quaternion(wxyz[1], wxyz[2], wxyz[3], wxyz[0]),

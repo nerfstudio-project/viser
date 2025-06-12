@@ -326,23 +326,33 @@ function createObjectFactory(
                 });
               }}
               onDrag={(l) => {
-                const attrs = viewer.mutable.current.nodeAttributesFromName;
-                if (attrs[message.name] === undefined) {
-                  attrs[message.name] = {};
-                }
-
                 const wxyz = new THREE.Quaternion();
                 wxyz.setFromRotationMatrix(l);
                 const position = new THREE.Vector3().setFromMatrixPosition(l);
 
-                const nodeAttributes = attrs[message.name]!;
-                nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
-                nodeAttributes.position = position.toArray();
+                // Update node attributes in scene tree state.
+                const wxyzArray = [wxyz.w, wxyz.x, wxyz.y, wxyz.z] as [
+                  number,
+                  number,
+                  number,
+                  number,
+                ];
+                const positionArray = position.toArray() as [
+                  number,
+                  number,
+                  number,
+                ];
+                viewer.useSceneTree
+                  .getState()
+                  .updateNodeAttributes(message.name, {
+                    wxyz: wxyzArray,
+                    position: positionArray,
+                  });
                 sendDragMessage({
                   type: "TransformControlsUpdateMessage",
                   name: message.name,
-                  wxyz: nodeAttributes.wxyz,
-                  position: nodeAttributes.position,
+                  wxyz: wxyzArray,
+                  position: positionArray,
                 });
               }}
               onDragEnd={() => {
@@ -677,6 +687,9 @@ export function SceneNodeThreeObject(props: { name: string }) {
     (state) => state.nodeFromName[props.name]?.message,
   );
   const ContextBridge = useContextBridge();
+  const updateNodeAttributes = viewer.useSceneTree(
+    (state) => state.updateNodeAttributes,
+  );
 
   const {
     makeObject,
@@ -694,9 +707,10 @@ export function SceneNodeThreeObject(props: { name: string }) {
   const objRef = React.useRef<THREE.Object3D | null>(null);
   const groupRef = React.useRef<THREE.Group>();
 
-  // Get children from scene tree state
-  const childrenNames = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.children,
+  // Get children.
+  const children = React.useMemo(
+    () => <SceneNodeChildren name={props.name} />,
+    [],
   );
 
   // Create object + children.
@@ -707,30 +721,11 @@ export function SceneNodeThreeObject(props: { name: string }) {
   const viewerMutable = viewer.mutable.current;
   const objNode = React.useMemo(() => {
     if (makeObject === undefined) return null;
-
-    // Pose will need to be updated.
-    const attrs = viewerMutable.nodeAttributesFromName;
-    if (!(props.name in attrs)) {
-      attrs[props.name] = {};
-    }
-    attrs[props.name]!.poseUpdateState = "needsUpdate";
-
-    // Create children components
-    const children = (
-      <>
-        {childrenNames &&
-          childrenNames.map((child_id) => (
-            <SceneNodeThreeObject key={child_id} name={child_id} />
-          ))}
-        <SceneNodeLabel name={props.name} />
-      </>
-    );
-
     return makeObject((ref: THREE.Object3D) => {
       objRef.current = ref;
       viewerMutable.nodeRefFromName[props.name] = objRef.current;
     }, children);
-  }, [makeObject, childrenNames]);
+  }, [makeObject, children]);
 
   // Helper for transient visibility checks. Checks the .visible attribute of
   // both this object and ancestors.
@@ -741,7 +736,8 @@ export function SceneNodeThreeObject(props: { name: string }) {
   function isDisplayed(): boolean {
     // We avoid checking objRef.current.visible because obj may be unmounted when
     // unmountWhenInvisible=true.
-    const attrs = viewerMutable.nodeAttributesFromName[props.name];
+    const attrs =
+      viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
     const visibility =
       (attrs?.overrideVisibility === undefined
         ? attrs?.visibility
@@ -769,15 +765,22 @@ export function SceneNodeThreeObject(props: { name: string }) {
 
   // Pose needs to be updated whenever component is remounted.
   React.useEffect(() => {
-    const attrs = viewerMutable.nodeAttributesFromName[props.name];
-    if (attrs !== undefined) attrs.poseUpdateState = "needsUpdate";
-  });
+    const currentAttrs =
+      viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
+    if (currentAttrs !== undefined) {
+      updateNodeAttributes(props.name, {
+        poseUpdateState: "needsUpdate",
+      });
+    }
+  }, []);
 
   // Update attributes on a per-frame basis. Currently does redundant work,
   // although this shouldn't be a bottleneck.
   useFrame(
     () => {
-      const attrs = viewerMutable.nodeAttributesFromName[props.name];
+      // Use getState() for performance in render loops (no re-renders).
+      const attrs =
+        viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
 
       // Unmount when invisible.
       // Examples: <Html /> components, PivotControls.
@@ -808,7 +811,11 @@ export function SceneNodeThreeObject(props: { name: string }) {
       objRef.current.visible = visibility;
 
       if (attrs.poseUpdateState == "needsUpdate") {
-        attrs.poseUpdateState = "updated";
+        // Update pose state through zustand action.
+        updateNodeAttributes(props.name, {
+          poseUpdateState: "updated",
+        });
+
         const wxyz = attrs.wxyz ?? [1, 0, 0, 0];
         objRef.current.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
         const position = attrs.position ?? [0, 0, 0];
@@ -982,4 +989,20 @@ export function SceneNodeThreeObject(props: { name: string }) {
       </>
     );
   }
+}
+
+function SceneNodeChildren(props: { name: string }) {
+  const viewer = React.useContext(ViewerContext)!;
+  const childrenNames = viewer.useSceneTree(
+    (state) => state.nodeFromName[props.name]?.children,
+  );
+  return (
+    <>
+      {childrenNames &&
+        childrenNames.map((child_id) => (
+          <SceneNodeThreeObject key={child_id} name={child_id} />
+        ))}
+      <SceneNodeLabel name={props.name} />
+    </>
+  );
 }
