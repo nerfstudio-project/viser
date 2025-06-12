@@ -12,7 +12,23 @@ export type SceneNode = {
 };
 
 type SceneTreeState = {
+  // Scene graph structure: static scene node definitions from server.
   nodeFromName: { [name: string]: SceneNode | undefined };
+
+  // Dynamic runtime attributes: poses, visibility state, local overrides.
+  // Separate from nodeFromName because they have different lifecycles and access patterns.
+  nodeAttributesFromName: {
+    [name: string]:
+      | undefined
+      | {
+          poseUpdateState?: "updated" | "needsUpdate" | "waitForMakeObject";
+          wxyz?: [number, number, number, number];
+          position?: [number, number, number];
+          visibility?: boolean; // Visibility state from the server.
+          overrideVisibility?: boolean; // Override from the GUI.
+        };
+  };
+
   labelVisibleFromName: { [name: string]: boolean };
   enableDefaultLights: boolean;
   enableDefaultLightsShadows: boolean;
@@ -26,6 +42,14 @@ type SceneTreeActions = {
   updateSceneNode(name: string, updates: { [key: string]: any }): void;
   resetScene(): void;
   setLabelVisibility(name: string, labelVisibility: boolean): void;
+
+  // Node attributes management.
+  updateNodeAttributes(
+    name: string,
+    attributes:
+      | Partial<NonNullable<SceneTreeState["nodeAttributesFromName"][string]>>
+      | undefined,
+  ): void;
 };
 
 // Pre-defined scene nodes.
@@ -71,6 +95,23 @@ export function useSceneTreeState(nodeRefFromName: {
         nodeFromName: {
           "": rootNodeTemplate,
           "/WorldAxes": worldAxesNodeTemplate,
+        },
+        nodeAttributesFromName: {
+          "": {
+            // Default quaternion: 90° around X, 180° around Y, -90° around Z.
+            // This matches the coordinate system transformation.
+            wxyz: (() => {
+              const quat = new THREE.Quaternion().setFromEuler(
+                new THREE.Euler(Math.PI / 2, Math.PI, -Math.PI / 2),
+              );
+              return [quat.w, quat.x, quat.y, quat.z] as [
+                number,
+                number,
+                number,
+                number,
+              ];
+            })(),
+          },
         },
         labelVisibleFromName: {},
         enableDefaultLights: true,
@@ -158,10 +199,31 @@ export function useSceneTreeState(nodeRefFromName: {
             }
             state.nodeFromName[""] = rootNodeTemplate;
             state.nodeFromName["/WorldAxes"] = worldAxesNodeTemplate;
+
+            // Also reset node attributes (keep root attributes).
+            const rootAttrs = state.nodeAttributesFromName[""];
+            state.nodeAttributesFromName = rootAttrs ? { "": rootAttrs } : {};
           }),
         setLabelVisibility: (name, labelVisibility) =>
           set((state) => {
             state.labelVisibleFromName[name] = labelVisibility;
+          }),
+
+        // Node attributes management actions.
+        updateNodeAttributes: (name, attributes) =>
+          set((state) => {
+            if (attributes === undefined) {
+              // Remove the node attributes entirely.
+              delete state.nodeAttributesFromName[name];
+            } else {
+              if (!state.nodeAttributesFromName[name]) {
+                state.nodeAttributesFromName[name] = {};
+              }
+              state.nodeAttributesFromName[name] = {
+                ...state.nodeAttributesFromName[name],
+                ...attributes,
+              };
+            }
           }),
       })),
     ),

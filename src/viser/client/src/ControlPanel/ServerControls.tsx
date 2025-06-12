@@ -52,77 +52,79 @@ export default function ServerControls() {
             }}
           />
         </Tooltip>
-        <Button
-          onClick={async () => {
-            const supportsFileSystemAccess =
-              "showSaveFilePicker" in window &&
-              (() => {
-                try {
-                  return window.self === window.top;
-                } catch {
-                  return false;
-                }
-              })();
+        <Group gap="0.5em">
+          <Button
+            onClick={async () => {
+              const supportsFileSystemAccess =
+                "showSaveFilePicker" in window &&
+                (() => {
+                  try {
+                    return window.self === window.top;
+                  } catch {
+                    return false;
+                  }
+                })();
 
-            if (supportsFileSystemAccess) {
-              // File System Access API is supported. (eg Chrome)
-              const fileHandlePromise = window.showSaveFilePicker({
-                suggestedName: "render.png",
-                types: [
-                  {
-                    accept: { "image/png": [".png"] },
-                  },
-                ],
-              });
-              viewerMutable.canvas?.toBlob(async (blob) => {
-                if (blob === null) {
-                  console.error("Export failed");
-                  return;
-                }
+              if (supportsFileSystemAccess) {
+                // File System Access API is supported. (eg Chrome)
+                const fileHandlePromise = window.showSaveFilePicker({
+                  suggestedName: "render.png",
+                  types: [
+                    {
+                      accept: { "image/png": [".png"] },
+                    },
+                  ],
+                });
+                viewerMutable.canvas?.toBlob(async (blob) => {
+                  if (blob === null) {
+                    console.error("Export failed");
+                    return;
+                  }
 
-                const handle = await fileHandlePromise;
-                const writableStream = await handle.createWritable();
-                await writableStream.write(blob);
-                await writableStream.close();
-              });
-            } else {
-              // File System Access API is not supported. (eg Firefox)
-              viewerMutable.canvas?.toBlob((blob) => {
-                if (blob === null) {
-                  console.error("Export failed");
-                  return;
-                }
-                const href = URL.createObjectURL(blob);
+                  const handle = await fileHandlePromise;
+                  const writableStream = await handle.createWritable();
+                  await writableStream.write(blob);
+                  await writableStream.close();
+                });
+              } else {
+                // File System Access API is not supported. (eg Firefox)
+                viewerMutable.canvas?.toBlob((blob) => {
+                  if (blob === null) {
+                    console.error("Export failed");
+                    return;
+                  }
+                  const href = URL.createObjectURL(blob);
 
-                // Download a file by creating a link and then clicking it.
-                const link = document.createElement("a");
-                link.href = href;
-                const filename = "render.png";
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(href);
-              });
-            }
-          }}
-          fullWidth
-          leftSection={<IconPhoto size="1rem" />}
-          style={{ height: "1.875rem" }}
-        >
-          Export Canvas
-        </Button>
-        <Button
-          onClick={() => {
-            viewerMutable.resetCameraView!();
-          }}
-          fullWidth
-          leftSection={<IconHomeMove size="1rem" />}
-          style={{ height: "1.875rem" }}
-        >
-          Reset View
-        </Button>
-        <Group>
+                  // Download a file by creating a link and then clicking it.
+                  const link = document.createElement("a");
+                  link.href = href;
+                  const filename = "render.png";
+                  link.download = filename;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  URL.revokeObjectURL(href);
+                });
+              }
+            }}
+            flex={1}
+            leftSection={<IconPhoto size="1rem" />}
+            style={{ height: "1.875rem" }}
+          >
+            Save Canvas
+          </Button>
+          <Button
+            onClick={() => {
+              viewerMutable.resetCameraView!();
+            }}
+            flex={1}
+            leftSection={<IconHomeMove size="1rem" />}
+            style={{ height: "1.875rem" }}
+          >
+            Reset View
+          </Button>
+        </Group>
+        <Group gap="md">
           <Tooltip
             label={
               <>
@@ -149,6 +151,7 @@ export default function ServerControls() {
               }}
               styles={{
                 label: { paddingLeft: "8px", letterSpacing: "-0.3px" },
+                root: { flex: 1 },
               }}
               size="sm"
             />
@@ -166,6 +169,7 @@ export default function ServerControls() {
               }}
               styles={{
                 label: { paddingLeft: "8px", letterSpacing: "-0.3px" },
+                root: { flex: 1 },
               }}
               size="sm"
             />
@@ -173,9 +177,20 @@ export default function ServerControls() {
         </Group>
         <Divider mt="xs" />
         <Box>
-          <Text style={{ fontWeight: 500 }} fz="sm">
-            Scene tree
-          </Text>
+          <Tooltip
+            label={
+              <>
+                Hierarchical view of all objects in the 3D scene.
+                <br />
+                Use to override visibility and properties.
+              </>
+            }
+            position="top-start"
+          >
+            <Text style={{ fontWeight: 500 }} fz="sm">
+              Scene tree
+            </Text>
+          </Tooltip>
           <MemoizedTable />
         </Box>
       </Stack>

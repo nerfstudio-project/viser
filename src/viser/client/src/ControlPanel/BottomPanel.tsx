@@ -1,4 +1,4 @@
-import { Box, Collapse, Paper, useMantineColorScheme } from "@mantine/core";
+import { Box, Collapse, Divider, Paper } from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";
 
@@ -24,31 +24,36 @@ export default function BottomPanel({
         toggleExpanded: toggleExpanded,
       }}
     >
-      <Paper
-        radius="0"
-        style={(theme) => ({
-          borderTopWidth: "1px",
-          borderTopStyle: "solid",
-          borderColor:
-            useMantineColorScheme().colorScheme == "dark"
-              ? theme.colors.dark[4]
-              : theme.colors.gray[3],
-          boxSizing: "border-box",
-          width: "100%",
-          zIndex: 10,
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          margin: 0,
-          overflow: "scroll",
-          minHeight: "3.5em",
-          maxHeight: "60%",
-          transition: "height 0.3s linear",
-        })}
-        ref={panelWrapperRef}
-      >
-        {children}
-      </Paper>
+      <>
+        <Divider
+          style={{
+            position: "fixed",
+            bottom: "0",
+            left: "0",
+            width: "100%",
+            zIndex: 11,
+          }}
+        />
+        <Paper
+          radius="0"
+          style={{
+            boxSizing: "border-box",
+            width: "100%",
+            zIndex: 10,
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            margin: 0,
+            overflow: "scroll",
+            minHeight: "3.5em",
+            maxHeight: "60%",
+            transition: "height 0.3s linear",
+          }}
+          ref={panelWrapperRef}
+        >
+          {children}
+        </Paper>
+      </>
     </BottomPanelContext.Provider>
   );
 }
@@ -61,13 +66,7 @@ BottomPanel.Handle = function BottomPanelHandle({
   return (
     <Box
       color="red"
-      style={(theme) => ({
-        borderBottomWidth: panelContext.expanded ? "1px" : undefined,
-        borderBottomStyle: "solid",
-        borderColor:
-          useMantineColorScheme().colorScheme == "dark"
-            ? theme.colors.dark[4]
-            : theme.colors.gray[3],
+      style={{
         cursor: "pointer",
         position: "relative",
         fontWeight: 400,
@@ -76,12 +75,13 @@ BottomPanel.Handle = function BottomPanelHandle({
         alignItems: "center",
         padding: "0 0.8em",
         height: "3.5em",
-      })}
+      }}
       onClick={() => {
         panelContext.toggleExpanded();
       }}
     >
       {children}
+      {panelContext.expanded && <Divider />}
     </Box>
   );
 };

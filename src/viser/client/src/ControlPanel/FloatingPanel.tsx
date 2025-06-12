@@ -1,13 +1,6 @@
 // @refresh reset
 
-import {
-  Box,
-  Collapse,
-  Paper,
-  ScrollArea,
-  useMantineColorScheme,
-  useMantineTheme,
-} from "@mantine/core";
+import { Box, Collapse, Divider, Paper, ScrollArea } from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";
 
@@ -252,8 +245,6 @@ FloatingPanel.Handle = function FloatingPanelHandle({
   children: string | React.ReactNode;
 }) {
   const panelContext = React.useContext(FloatingPanelContext)!;
-  const theme = useMantineTheme();
-  const isDarkMode = useMantineColorScheme().colorScheme === "dark";
 
   return (
     <>
@@ -287,14 +278,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
       >
         {children}
       </Box>
-      <Box
-        mx="xs"
-        style={{
-          borderBottomWidth: panelContext.expanded ? "1px" : 0,
-          borderBottomStyle: "solid",
-          borderColor: isDarkMode ? theme.colors.dark[4] : theme.colors.gray[3],
-        }}
-      ></Box>
+      {panelContext.expanded && <Divider mx="xs" />}
     </>
   );
 };

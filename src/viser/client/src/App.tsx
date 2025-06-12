@@ -9,7 +9,7 @@ import { Notifications } from "@mantine/notifications";
 import { Environment, PerformanceMonitor, Stats, Bvh } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { ViewerMutable } from "./ViewerContext";
 import {
   Anchor,
@@ -155,14 +155,6 @@ function ViewerRoot() {
   // Create a message source string.
   const messageSource = playbackPath === null ? "websocket" : "file_playback";
 
-  // Create a default quaternion for the world frame.
-  const defaultQuat = (() => {
-    const quat = new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(Math.PI / 2, Math.PI, -Math.PI / 2),
-    );
-    return [quat.w, quat.x, quat.y, quat.z] as [number, number, number, number];
-  })();
-
   // Create a single ref with all mutable state.
   const nodeRefFromName = {};
   const mutable = React.useRef<ViewerMutable>({
@@ -186,11 +178,6 @@ function ViewerRoot() {
     cameraControl: null,
 
     // Scene management.
-    nodeAttributesFromName: {
-      "": {
-        wxyz: defaultQuat,
-      },
-    },
     nodeRefFromName,
 
     // Message and rendering state.
@@ -561,19 +548,10 @@ function DefaultLights() {
   );
   const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
 
-  // Track environment rotation state.
-  const [worldRotation, setWorldRotation] = useState(
-    viewer.mutable.current.nodeAttributesFromName[""]!.wxyz!,
+  // Get world rotation directly from scene tree state.
+  const worldRotation = viewer.useSceneTree(
+    (state) => state.nodeAttributesFromName[""]?.wxyz ?? [1, 0, 0, 0],
   );
-
-  // Update rotation when changed.
-  useFrame(() => {
-    const currentRotation =
-      viewer.mutable.current.nodeAttributesFromName[""]!.wxyz!;
-    if (currentRotation !== worldRotation) {
-      setWorldRotation(currentRotation);
-    }
-  });
 
   // Calculate environment map.
   const envMapNode = useMemo(() => {

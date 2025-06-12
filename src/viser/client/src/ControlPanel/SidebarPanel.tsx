@@ -3,11 +3,11 @@
 import {
   ActionIcon,
   Box,
+  Divider,
   Paper,
   ScrollArea,
   Tooltip,
   useMantineColorScheme,
-  useMantineTheme,
 } from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";
@@ -135,8 +135,6 @@ SidebarPanel.Handle = function SidebarPanelHandle({
       </Tooltip>
     </ActionIcon>
   );
-  const theme = useMantineTheme();
-  const isDarkMode = useMantineColorScheme().colorScheme === "dark";
   return (
     <>
       <Box
@@ -154,14 +152,7 @@ SidebarPanel.Handle = function SidebarPanelHandle({
         {children}
         {collapsible ? collapseSidebarToggleButton : null}
       </Box>
-      <Box
-        mx="xs"
-        style={{
-          borderBottomWidth: "1px",
-          borderBottomStyle: "solid",
-          borderColor: isDarkMode ? theme.colors.dark[4] : theme.colors.gray[3],
-        }}
-      ></Box>
+      <Divider mx="xs" />
     </>
   );
 };
