@@ -33,10 +33,10 @@ import {
 
 function EditNodeProps({
   nodeName,
-  close,
+  closePopoverFn,
 }: {
   nodeName: string;
-  close: () => void;
+  closePopoverFn: () => void;
 }) {
   const viewer = React.useContext(ViewerContext)!;
   const node = viewer.useSceneTree((state) => state.nodeFromName[nodeName]);
@@ -138,7 +138,7 @@ function EditNodeProps({
               }}
               onClick={(evt) => {
                 evt.stopPropagation();
-                close();
+                closePopoverFn();
               }}
             />
           </Tooltip>
@@ -586,7 +586,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
           >
             <EditNodeProps
               nodeName={props.nodeName}
-              close={closePropsPopover}
+              closePopoverFn={closePropsPopover}
             />
           </Popover.Dropdown>
         </Popover>
