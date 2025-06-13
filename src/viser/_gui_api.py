@@ -55,6 +55,7 @@ from ._gui_handles import (
     GuiTabGroupHandle,
     GuiTextHandle,
     GuiUploadButtonHandle,
+    GuiUplotHandle,
     GuiVector2Handle,
     GuiVector3Handle,
     SupportsRemoveProtocol,
@@ -785,6 +786,59 @@ class GuiApi:
         # Set the plotly handle properties.
         handle.figure = figure
         handle.aspect = aspect
+        return handle
+
+    def add_uplot(
+        self,
+        aligned_data: np.ndarray,
+        options: dict[str, Any],
+        aspect: float = 1.0,
+    ) -> GuiUplotHandle:
+        """Add a uPlot to the GUI. Requires the `uplot` package to be
+        installed.
+        Args:
+            aligned_data: 2D array of floats [num_trajectories + 1, num_points],
+                where the first row is the x-data and the rest are the y-data, minimum
+                first dimension is 2.
+            options: uPlot options as a dictionary, including among others keys:
+                'series', 'axes', 'scales' but excluding 'width', 'height' and 'cursor'
+                which are handled on the client side.
+            aspect: Aspect ratio of the plot in the control panel (height/width).
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+
+        assert aligned_data.ndim == 2, "aligned_data must be a 2D array"
+        assert aligned_data.shape[0] >= 2, "aligned_data must have at least 2 rows"
+
+        list_aligned_data = [
+            [float(e) for e in aligned_data[i]] for i in range(aligned_data.shape[0])
+        ]
+
+        message = _messages.GuiUplotMessage(
+            uuid=_make_uuid(),
+            container_uuid=self._get_container_uuid(),
+            props=_messages.GuiUplotProps(
+                aligned_data=list_aligned_data,
+                options=options,
+                aspect=aspect,
+            ),
+        )
+        self._websock_interface.queue_message(message)
+
+        handle = GuiUplotHandle(
+            _GuiHandleState(
+                message.uuid,
+                self,
+                value=None,
+                props=message.props,
+                parent_container_id=message.container_uuid,
+            ),
+            _aligned_data=aligned_data,
+            _options=options,
+            _aspect=aspect,
+        )
+
         return handle
 
     def add_button(
