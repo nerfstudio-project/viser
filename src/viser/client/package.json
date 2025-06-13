@@ -39,6 +39,8 @@
     "rehype-color-chips": "^0.1.3",
     "remark-gfm": "^4.0.0",
     "three": "^0.174.0",
+    "uplot": "^1.6.32",
+    "uplot-react": "^1.2.2",
     "uuid": "^11.0.5",
     "vite": "^5.2.6",
     "vite-plugin-svgr": "^4.2.0",
