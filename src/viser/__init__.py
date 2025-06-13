@@ -1,4 +1,5 @@
 from ._gui_api import GuiApi as GuiApi
+from ._gui_handles import CameraStreamFrameEvent as CameraStreamFrameEvent
 from ._gui_handles import GuiButtonGroupHandle as GuiButtonGroupHandle
 from ._gui_handles import GuiButtonHandle as GuiButtonHandle
 from ._gui_handles import GuiCheckboxHandle as GuiCheckboxHandle
