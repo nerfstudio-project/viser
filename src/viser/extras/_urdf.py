@@ -62,7 +62,10 @@ class ViserUrdf:
         urdf_or_path: Either a path to a URDF file or a yourdfpy URDF object.
         scale: Scale factor to apply to resize the URDF.
         root_node_name: Viser scene tree name for the root of the URDF geometry.
-        mesh_color_override: Optional color to override the URDF's mesh colors.
+        show_visuals: If true, shows the URDF's visual meshes.
+        show_collisions: If true, shows the URDF's collision meshes.
+        visual_mesh_color_override: Optional color to override the URDF's visual mesh colors.
+        collision_mesh_color_override: Optional color to override the URDF's collision mesh colors.
     """
 
     def __init__(
@@ -71,7 +74,10 @@ class ViserUrdf:
         urdf_or_path: yourdfpy.URDF | Path,
         scale: float = 1.0,
         root_node_name: str = "/",
-        mesh_color_override: tuple[float, float, float] | None = None,
+        show_visuals: bool = True,
+        show_collisions: bool = False,
+        collision_mesh_color_override: tuple[float, float, float] | None = None,
+        visual_mesh_color_override: tuple[float, float, float] | None = None,
     ) -> None:
         assert root_node_name.startswith("/")
         assert len(root_node_name) == 1 or not root_node_name.endswith("/")
@@ -79,8 +85,13 @@ class ViserUrdf:
         if isinstance(urdf_or_path, Path):
             urdf = yourdfpy.URDF.load(
                 urdf_or_path,
+                build_scene_graph=show_visuals,
+                build_collision_scene_graph=show_collisions,
+                load_meshes=show_visuals,
+                load_collision_meshes=show_collisions,
                 filename_handler=partial(
-                    yourdfpy.filename_handler_magic, dir=urdf_or_path.parent
+                    yourdfpy.filename_handler_magic,
+                    dir=urdf_or_path.parent,
                 ),
             )
         else:
@@ -92,48 +103,27 @@ class ViserUrdf:
         self._scale = scale
         self._root_node_name = root_node_name
 
-        # Add coordinate frame for each joint.
         self._joint_frames: List[viser.SceneNodeHandle] = []
-        for joint in self._urdf.joint_map.values():
-            assert isinstance(joint, yourdfpy.Joint)
-            self._joint_frames.append(
-                self._target.scene.add_frame(
-                    _viser_name_from_frame(
-                        self._urdf, joint.child, self._root_node_name
-                    ),
-                    show_axes=False,
-                )
-            )
-
-        # Add the URDF's meshes/geometry to viser.
         self._meshes: List[viser.SceneNodeHandle] = []
-        for link_name, mesh in urdf.scene.geometry.items():
-            assert isinstance(mesh, trimesh.Trimesh)
-            T_parent_child = urdf.get_transform(
-                link_name, urdf.scene.graph.transforms.parents[link_name]
+        num_joints_to_repeat = 0
+        if show_visuals and urdf.scene is not None:
+            num_joints_to_repeat += 1
+            self._add_joint_frames_and_meshes(
+                urdf.scene,
+                root_node_name,
+                collision_geometry=False,
+                mesh_color_override=visual_mesh_color_override,
             )
-            name = _viser_name_from_frame(urdf, link_name, root_node_name)
+        if show_collisions and urdf.collision_scene is not None:
+            num_joints_to_repeat += 1
+            self._add_joint_frames_and_meshes(
+                urdf.collision_scene,
+                root_node_name,
+                collision_geometry=True,
+                mesh_color_override=collision_mesh_color_override,
+            )
 
-            # Scale + transform the mesh. (these will mutate it!)
-            #
-            # It's important that we use apply_transform() instead of unpacking
-            # the rotation/translation terms, since the scene graph transform
-            # can also contain scale and reflection terms.
-            mesh = mesh.copy()
-            mesh.apply_scale(self._scale)
-            mesh.apply_transform(T_parent_child)
-
-            if mesh_color_override is None:
-                self._meshes.append(target.scene.add_mesh_trimesh(name, mesh))
-            else:
-                self._meshes.append(
-                    target.scene.add_mesh_simple(
-                        name,
-                        mesh.vertices,
-                        mesh.faces,
-                        color=mesh_color_override,
-                    )
-                )
+        self._joint_map_values = [*self._urdf.joint_map.values()] * num_joints_to_repeat
 
     def remove(self) -> None:
         """Remove URDF from scene."""
@@ -148,7 +138,9 @@ class ViserUrdf:
         """Update the joint angles of the visualized URDF."""
         self._urdf.update_cfg(configuration)
         for joint, frame_handle in zip(
-            self._urdf.joint_map.values(), self._joint_frames
+            self._joint_map_values,
+            self._joint_frames,
+            strict=True,
         ):
             assert isinstance(joint, yourdfpy.Joint)
             T_parent_child = self._urdf.get_transform(joint.child, joint.parent)
@@ -175,9 +167,67 @@ class ViserUrdf:
         """Returns a tuple of actuated joint names, in order."""
         return tuple(self._urdf.actuated_joint_names)
 
+    def _add_joint_frames_and_meshes(
+        self,
+        scene: trimesh.scene.Scene,
+        root_node_name: str,
+        collision_geometry: bool = False,
+        mesh_color_override: tuple[float, float, float] | None = None,
+    ) -> None:
+        """
+        Helper function to add joint frames and meshes to the ViserUrdf object.
+        """
+        prefix = "collision" if collision_geometry else "visual"
+        prefixed_root_node_name = (f"{root_node_name}/{prefix}").replace("//", "/")
+
+        # Add coordinate frame for each joint.
+        for joint in self._urdf.joint_map.values():
+            assert isinstance(joint, yourdfpy.Joint)
+            self._joint_frames.append(
+                self._target.scene.add_frame(
+                    _viser_name_from_frame(
+                        scene,
+                        joint.child,
+                        prefixed_root_node_name,
+                    ),
+                    show_axes=False,
+                )
+            )
+
+        # Add the URDF's meshes/geometry to viser.
+        for link_name, mesh in scene.geometry.items():
+            assert isinstance(mesh, trimesh.Trimesh)
+            T_parent_child = self._urdf.get_transform(
+                link_name,
+                scene.graph.transforms.parents[link_name],
+                collision_geometry=collision_geometry,
+            )
+            name = _viser_name_from_frame(scene, link_name, prefixed_root_node_name)
+
+            # Scale + transform the mesh. (these will mutate it!)
+            #
+            # It's important that we use apply_transform() instead of unpacking
+            # the rotation/translation terms, since the scene graph transform
+            # can also contain scale and reflection terms.
+            mesh = mesh.copy()
+            mesh.apply_scale(self._scale)
+            mesh.apply_transform(T_parent_child)
+
+            if mesh_color_override is None:
+                self._meshes.append(self._target.scene.add_mesh_trimesh(name, mesh))
+            else:
+                self._meshes.append(
+                    self._target.scene.add_mesh_simple(
+                        name,
+                        mesh.vertices,
+                        mesh.faces,
+                        color=mesh_color_override,
+                    )
+                )
+
 
 def _viser_name_from_frame(
-    urdf: yourdfpy.URDF,
+    scene: trimesh.scene.Scene,
     frame_name: str,
     root_node_name: str = "/",
 ) -> str:
@@ -202,9 +252,9 @@ def _viser_name_from_frame(
     assert len(root_node_name) == 1 or not root_node_name.endswith("/")
 
     frames = []
-    while frame_name != urdf.scene.graph.base_frame:
+    while frame_name != scene.graph.base_frame:
         frames.append(frame_name)
-        frame_name = urdf.scene.graph.transforms.parents[frame_name]
+        frame_name = scene.graph.transforms.parents[frame_name]
     if root_node_name != "/":
         frames.append(root_node_name)
     return "/".join(frames[::-1])
