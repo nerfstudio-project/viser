@@ -141,11 +141,7 @@ class ViserUrdf:
     def update_cfg(self, configuration: np.ndarray) -> None:
         """Update the joint angles of the visualized URDF."""
         self._urdf.update_cfg(configuration)
-        for joint, frame_handle in zip(
-            self._joint_map_values,
-            self._joint_frames,
-            strict=True,
-        ):
+        for joint, frame_handle in zip(self._joint_map_values, self._joint_frames):
             assert isinstance(joint, yourdfpy.Joint)
             T_parent_child = self._urdf.get_transform(joint.child, joint.parent)
             frame_handle.wxyz = tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz
