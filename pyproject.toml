@@ -101,6 +101,7 @@ lint.ignore = [
     "PLR0915",  # Too many statements.
     "PLR0913",  # Too many arguments.
     "PLC0414",  # Import alias does not rename variable. (this is used for exporting names)
+    "PLC0415",  # Import should be at the top-level of a file.
     "PLC1901",  # Use falsey strings.
     "PLR5501",  # Use `elif` instead of `else if`.
     "PLR0911",  # Too many return statements.
