@@ -570,7 +570,7 @@ export interface GuiUplotMessage {
       tzDate?: any;
       fmtDate?: any;
       ms?: 1;
-      drawOrder?: any[];
+      drawOrder?: ("axes" | "series")[];
       pxAlign?: boolean | number;
       bands?: { series: [number, number]; fill?: string; dir?: 1 | -1 }[];
       scales?: {

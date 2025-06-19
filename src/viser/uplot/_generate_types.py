@@ -945,11 +945,12 @@ def parse_enums(content: str) -> Dict[str, Enum]:
                 if current_line == "}":
                     break
 
-                # Parse enum member: Name = value,.
-                member_match = re.match(r"(\w+)\s*=\s*(-?\d+)", current_line)
+                # Parse enum member: Name = value (either number or string).
+                # Handle both numeric and string values
+                member_match = re.match(r"(\w+)\s*=\s*(.+?)(?:,.*)?$", current_line)
                 if member_match:
                     member_name = member_match.group(1)
-                    value = member_match.group(2)
+                    value = member_match.group(2).strip().rstrip(",")
                     enum_members.append((member_name, value))
 
                 i += 1
@@ -1428,7 +1429,7 @@ def generate_python_code(interfaces: List[Interface], content: str) -> str:
         "",
         "from __future__ import annotations",
         "",
-        "from enum import IntEnum",
+        "from enum import IntEnum, StrEnum",
         "from typing import Any, Dict, Literal",
         "from typing_extensions import Never, Required, TypedDict",
         "",
@@ -1440,14 +1441,24 @@ def generate_python_code(interfaces: List[Interface], content: str) -> str:
         "",
     ]
 
-    # Generate IntEnum classes.
+    # Generate Enum classes and type aliases.
     if enums:
         lines.append("# Enum definitions")
         for enum_name, enum_obj in enums.items():
-            lines.append(f"class {enum_name}(IntEnum):")
-            for member_name, value in enum_obj.members:
-                snake_case_name = camel_to_screaming_snake(member_name)
-                lines.append(f"    {snake_case_name} = {value}")
+            # Determine if this is a string enum or numeric enum
+            is_string_enum = any(value.startswith("'") or value.startswith('"') for _, value in enum_obj.members)
+            
+            if is_string_enum:
+                lines.append(f"class {enum_name}(StrEnum):")
+                for member_name, value in enum_obj.members:
+                    # For string enums, use UPPER_CASE naming convention
+                    upper_name = member_name.upper()
+                    lines.append(f"    {upper_name} = {value}")
+            else:
+                lines.append(f"class {enum_name}(IntEnum):")
+                for member_name, value in enum_obj.members:
+                    snake_case_name = camel_to_screaming_snake(member_name)
+                    lines.append(f"    {snake_case_name} = {value}")
             lines.append("")
 
     # Generate TypedDict classes and collect type aliases.

@@ -8,7 +8,7 @@
 
 from __future__ import annotations
 
-from enum import IntEnum
+from enum import IntEnum, StrEnum
 from typing import Any, Dict, Literal
 from typing_extensions import Never, Required, TypedDict
 
@@ -29,6 +29,11 @@ class JoinNullMode(IntEnum):
 class Orientation(IntEnum):
     HORIZONTAL = 0
     VERTICAL = 1
+
+
+class DrawOrderKey(StrEnum):
+    AXES = "axes"
+    SERIES = "series"
 
 
 class Mode(IntEnum):
@@ -620,7 +625,7 @@ Options = TypedDict(
         # timestamp multiplier that yields 1 millisecond.
         "ms": Literal[1],
         # drawing order for axes/grid & series (default: ["axes", "series"]).
-        "drawOrder": list[UnknownType],
+        "drawOrder": list[DrawOrderKey],
         # whether vt & hz lines of series/grid/ticks should be crisp/sharp or sub-px antialiased.
         "pxAlign": bool | float,
         "bands": list[Band],

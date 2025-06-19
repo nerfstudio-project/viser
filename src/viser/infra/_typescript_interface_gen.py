@@ -105,9 +105,19 @@ def _get_ts_type(typ: Type[Any]) -> str:
 
         ret = "{" + ", ".join(map(fmt, hints)) + "}"
         return ret
-    elif isinstance(typ, type) and issubclass(typ, enum.IntEnum):
+    elif isinstance(typ, type) and (
+        issubclass(typ, enum.IntEnum) or issubclass(typ, enum.StrEnum)
+    ):
         # For IntEnum, we return a Literal type of its values.
-        return " | ".join(map(str, typ.__members__.values()))
+        # For StrEnum, we need to quote the string values.
+        if issubclass(typ, enum.StrEnum):
+            union_type = " | ".join(f'"{val}"' for val in typ.__members__.values())
+            # Wrap in parentheses if there are multiple values to ensure proper precedence
+            return f"({union_type})" if len(typ.__members__) > 1 else union_type
+        else:
+            union_type = " | ".join(map(str, typ.__members__.values()))
+            # Wrap in parentheses if there are multiple values to ensure proper precedence
+            return f"({union_type})" if len(typ.__members__) > 1 else union_type
     else:
         # Like get_origin(), but also supports numpy.typing.NDArray[dtype].
         typ = cast(Any, getattr(typ, "__origin__", typ))
