@@ -172,7 +172,7 @@ class ViserUrdf:
 
     def _add_joint_frames_and_meshes(
         self,
-        scene: trimesh.scene.Scene,
+        scene: trimesh.scene.scene.Scene,
         root_node_name: str,
         collision_geometry: bool = False,
         mesh_color_override: tuple[float, float, float] | None = None,
@@ -237,7 +237,7 @@ class ViserUrdf:
 
 
 def _viser_name_from_frame(
-    scene: trimesh.scene.Scene,
+    scene: trimesh.scene.scene.Scene,
     frame_name: str,
     root_node_name: str = "/",
 ) -> str:
