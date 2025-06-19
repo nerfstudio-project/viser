@@ -66,6 +66,8 @@ def main(
         "anymal_c",
         "go2",
     ] = "panda",
+    show_visuals: bool = True,
+    show_collisions: bool = False,
 ) -> None:
     # Start viser server.
     server = viser.ViserServer()
@@ -73,9 +75,19 @@ def main(
     # Load URDF.
     #
     # This takes either a yourdfpy.URDF object or a path to a .urdf file.
+    # NOTE: Properly supporting collision meshes requires
+    # https://github.com/robot-descriptions/robot_descriptions.py/pull/156
+    # to go in first and be released.
     viser_urdf = ViserUrdf(
         server,
-        urdf_or_path=load_robot_description(robot_type + "_description"),
+        urdf_or_path=load_robot_description(
+            robot_type + "_description",
+            load_collision_meshes=show_collisions,
+            build_collision_scene_graph=show_collisions,
+        ),
+        show_visuals=show_visuals,
+        show_collisions=show_collisions,
+        collision_mesh_color_override=(1.0, 0.0, 0.0),
     )
 
     # Create sliders in GUI that help us move the robot joints.

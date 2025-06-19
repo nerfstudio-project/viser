@@ -62,10 +62,10 @@ class ViserUrdf:
         urdf_or_path: Either a path to a URDF file or a yourdfpy URDF object.
         scale: Scale factor to apply to resize the URDF.
         root_node_name: Viser scene tree name for the root of the URDF geometry.
+        mesh_color_override: Optional color to override the URDF's visual mesh colors.
+        collision_mesh_color_override: Optional color to override the URDF's collision mesh colors.
         show_visuals: If true, shows the URDF's visual meshes.
         show_collisions: If true, shows the URDF's collision meshes.
-        visual_mesh_color_override: Optional color to override the URDF's visual mesh colors.
-        collision_mesh_color_override: Optional color to override the URDF's collision mesh colors.
     """
 
     def __init__(
@@ -74,10 +74,10 @@ class ViserUrdf:
         urdf_or_path: yourdfpy.URDF | Path,
         scale: float = 1.0,
         root_node_name: str = "/",
+        collision_mesh_color_override: tuple[float, float, float] | None = None,
+        mesh_color_override: tuple[float, float, float] | None = None,
         show_visuals: bool = True,
         show_collisions: bool = False,
-        collision_mesh_color_override: tuple[float, float, float] | None = None,
-        visual_mesh_color_override: tuple[float, float, float] | None = None,
     ) -> None:
         assert root_node_name.startswith("/")
         assert len(root_node_name) == 1 or not root_node_name.endswith("/")
@@ -103,6 +103,9 @@ class ViserUrdf:
         self._scale = scale
         self._root_node_name = root_node_name
 
+        self.collision_root_frame = None
+        self.visual_root_frame = None
+
         self._joint_frames: List[viser.SceneNodeHandle] = []
         self._meshes: List[viser.SceneNodeHandle] = []
         num_joints_to_repeat = 0
@@ -112,7 +115,7 @@ class ViserUrdf:
                 urdf.scene,
                 root_node_name,
                 collision_geometry=False,
-                mesh_color_override=visual_mesh_color_override,
+                mesh_color_override=mesh_color_override,
             )
         if show_collisions and urdf.collision_scene is not None:
             num_joints_to_repeat += 1
@@ -179,6 +182,13 @@ class ViserUrdf:
         """
         prefix = "collision" if collision_geometry else "visual"
         prefixed_root_node_name = (f"{root_node_name}/{prefix}").replace("//", "/")
+        root_frame = self._target.scene.add_frame(
+            prefixed_root_node_name, show_axes=False
+        )
+        if collision_geometry:
+            self.collision_root_frame = root_frame
+        else:
+            self.visual_root_frame = root_frame
 
         # Add coordinate frame for each joint.
         for joint in self._urdf.joint_map.values():
