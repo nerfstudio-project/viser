@@ -32,7 +32,7 @@ from typing_extensions import (
 
 from viser import theme
 
-from . import _messages
+from . import _messages, uplot
 from ._gui_handles import (
     GuiButtonGroupHandle,
     GuiButtonHandle,
@@ -791,7 +791,7 @@ class GuiApi:
     def add_uplot(
         self,
         aligned_data: np.ndarray,
-        options: dict[str, Any],
+        options: uplot.Options,
         aspect: float = 1.0,
     ) -> GuiUplotHandle:
         """Add a uPlot to the GUI. Requires the `uplot` package to be

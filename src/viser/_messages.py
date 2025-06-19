@@ -11,7 +11,7 @@ import numpy as np
 import numpy.typing as npt
 from typing_extensions import Literal, override
 
-from . import infra, theme
+from . import infra, theme, uplot
 
 
 @dataclasses.dataclass(frozen=True)
@@ -1088,9 +1088,9 @@ class GuiPlotlyMessage(_CreateGuiComponentMessage):
 @dataclasses.dataclass
 class GuiUplotProps:
     aligned_data: list[list[float]]
-    """List of lists of floats, where the first inner list is the x-data and the rest are the y-data, 
+    """List of lists of floats, where the first inner list is the x-data and the rest are the y-data,
     minimum outerlength 2. Synchronized automatically when assigned."""
-    options: dict[str, Any]
+    options: uplot.Options
     """uPlot options as a dictionary. Synchronized automatically when assigned."""
     aspect: float
     """Aspect ratio of the plot in the control panel (height/width). Synchronized automatically when assigned."""

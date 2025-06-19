@@ -5,7 +5,6 @@ Examples of visualizing uplot plots in Viser."""
 import time
 
 import numpy as np
-
 import viser
 
 
@@ -21,31 +20,6 @@ def y1(x: float | np.ndarray) -> float | np.ndarray:
 def main() -> None:
     server = viser.ViserServer(port=8100)
 
-    options = {
-        "scales": {
-            "x": {
-                "time": False,
-                "auto": True,
-            },
-            "y": {"range": [-1.5, 2.5]},
-        },
-        "axes": [{}],
-        "series": [
-            {"label": "time"},
-            {
-                "label": "y0",
-                "stroke": "blue",
-                "width": 2,
-            },
-            {
-                "label": "y1",
-                "stroke": "red",
-                "width": 2,
-            },
-        ],
-        "legend": {"show": True},
-    }
-
     time_step = 1.0 / 60.0
     x_data = time_step * np.arange(100)
     y0_data = y0(x_data)
@@ -56,7 +30,30 @@ def main() -> None:
     print("aligned_data", aligned_data)
     uplot_handle = server.gui.add_uplot(
         aligned_data=aligned_data,
-        options=options,
+        options={
+            "scales": {
+                "x": {
+                    "time": False,
+                    "auto": True,
+                },
+                "y": {"range": [-1.5, 2.5]},
+            },
+            # "axes": [{}],options
+            "series": [
+                {"label": "time"},
+                {
+                    "label": "y0",
+                    "stroke": "blue",
+                    "width": 2,
+                },
+                {
+                    "label": "y1",
+                    "stroke": "red",
+                    "width": 2,
+                },
+            ],
+            # "legend": {"show": True},
+        },
         aspect=1.0,
     )
 

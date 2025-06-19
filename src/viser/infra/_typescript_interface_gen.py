@@ -1,7 +1,8 @@
 import dataclasses
+import enum
 import types
 from collections import defaultdict
-from typing import Any, Type, Union, cast
+from typing import Any, Never, Type, Union, cast
 
 import numpy as np
 from typing_extensions import (
@@ -31,6 +32,7 @@ _raw_type_mapping = {
     bytes: "Uint8Array",
     Any: "any",
     None: "null",
+    Never: "never",
     type(None): "null",
 }
 
@@ -103,6 +105,9 @@ def _get_ts_type(typ: Type[Any]) -> str:
 
         ret = "{" + ", ".join(map(fmt, hints)) + "}"
         return ret
+    elif isinstance(typ, type) and issubclass(typ, enum.IntEnum):
+        # For IntEnum, we return a Literal type of its values.
+        return " | ".join(map(str, typ.__members__.values()))
     else:
         # Like get_origin(), but also supports numpy.typing.NDArray[dtype].
         typ = cast(Any, getattr(typ, "__origin__", typ))
