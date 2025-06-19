@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-"""
-TypeScript to Python TypedDict generator with AST-based parsing.
+"""TypeScript to Python TypedDict generator with AST-based parsing.
 
 This script uses principled recursive descent parsing to convert TypeScript
 definition files into Python TypedDict format with proper type mappings.
