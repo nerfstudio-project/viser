@@ -538,9 +538,9 @@ export interface GuiUplotMessage {
         values?: never;
         paths?: never;
         points?: {
-          show?: any;
-          paths?: any;
-          filter?: any;
+          show?: boolean | never;
+          paths?: never;
+          filter?: number[] | null | never;
           size?: number;
           space?: number;
           width?: number;
@@ -613,12 +613,40 @@ export interface GuiUplotMessage {
         rotate?: number | never;
         align?: any;
         alignTo?: any;
-        grid?: {};
-        ticks?: { size?: number };
-        border?: {};
+        grid?: {
+          show?: boolean;
+          stroke?: any;
+          width?: number;
+          dash?: number[];
+          cap?: string;
+          filter?: any;
+        };
+        ticks?: {
+          show?: boolean;
+          stroke?: any;
+          width?: number;
+          dash?: number[];
+          cap?: string;
+          filter?: any;
+          size?: number;
+        };
+        border?: {
+          show?: boolean;
+          stroke?: any;
+          width?: number;
+          dash?: number[];
+          cap?: string;
+        };
       }[];
       padding?: any;
-      select?: { over?: boolean };
+      select?: {
+        left: number;
+        top: number;
+        width: number;
+        height: number;
+        show?: boolean;
+        over?: boolean;
+      };
       legend?: {
         show?: boolean;
         live?: boolean;
@@ -646,13 +674,13 @@ export interface GuiUplotMessage {
         idxs?: (number | null)[];
         move?: never;
         points?: {
-          show?: any;
+          show?: boolean | never;
           one?: boolean;
-          size?: any;
-          bbox?: any;
-          width?: any;
-          stroke?: any;
-          fill?: any;
+          size?: number | never;
+          bbox?: never;
+          width?: number | never;
+          stroke?: string;
+          fill?: string;
         };
         bind?: {
           mousedown?: any;
@@ -674,10 +702,10 @@ export interface GuiUplotMessage {
         sync?: {
           key: string;
           setSeries?: boolean;
-          scales?: any;
-          match?: any;
+          scales?: [string | null, string | null];
+          match?: [any, any, any, any, any];
           filters?: any;
-          values?: any;
+          values?: [number, number];
         };
         focus?: { prox: number; bias?: 0 | 1 | -1; dist?: any };
         hover?: { prox?: number | null | any; bias?: 0 | 1 | -1; skip?: any[] };

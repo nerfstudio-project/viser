@@ -488,6 +488,9 @@ class TypeScriptTypeParser:
                 self.advance()  # consume ,
             elif self.current_token.type == TokenType.RPAREN:
                 break
+            else:
+                # Safety break: if we don't see comma or closing paren, advance to avoid infinite loop
+                self.advance()
 
         if self.current_token.type == TokenType.RPAREN:
             self.advance()  # consume )
@@ -549,6 +552,9 @@ class TypeScriptTypeParser:
                 self.advance()  # consume ,
             elif self.current_token.type == TokenType.RBRACKET:
                 break
+            else:
+                # Safety break: if we don't see comma or closing bracket, advance to avoid infinite loop
+                self.advance()
 
         if self.current_token.type == TokenType.RBRACKET:
             self.advance()  # consume ]
@@ -849,6 +855,7 @@ class Interface:
     name: str
     properties: List[Dict[str, str]]
     raw_definition: str
+    base_interface: Optional[str] = None
 
 
 @dataclass
@@ -982,10 +989,10 @@ def parse_interfaces(content: str) -> List[Interface]:
             if indent <= len(namespace_stack):
                 namespace_stack.pop()
 
-        # Find interface declarations.
-        interface_match = re.match(r"export interface (\w+)", line)
+        # Find interface declarations (both exported and internal).
+        interface_match = re.match(r"(export )?interface (\w+)", line)
         if interface_match:
-            interface_name = interface_match.group(1)
+            interface_name = interface_match.group(2)
 
             # Build qualified name with namespace (skip main uPlot namespace for top-level exports).
             if namespace_stack and not (
@@ -994,6 +1001,12 @@ def parse_interfaces(content: str) -> List[Interface]:
                 qualified_name = "_".join(namespace_stack + [interface_name])
             else:
                 qualified_name = interface_name
+
+            # Check for inheritance using extends keyword
+            extends_match = re.search(r"extends\s+([A-Za-z_][A-Za-z0-9_.<>]*)", line)
+            base_interface = None
+            if extends_match:
+                base_interface = extends_match.group(1)
 
             # Extract interface body.
             body_lines = []
@@ -1022,6 +1035,7 @@ def parse_interfaces(content: str) -> List[Interface]:
                     name=qualified_name,
                     properties=properties,
                     raw_definition="\n".join(body_lines),
+                    base_interface=base_interface,
                 )
             )
 
@@ -1244,6 +1258,85 @@ def topological_sort_interfaces(interfaces: List[Interface]) -> List[Interface]:
     return result
 
 
+def resolve_inheritance(interfaces: List[Interface]) -> List[Interface]:
+    """Resolve interface inheritance by copying properties from base interfaces."""
+    interface_map = {iface.name: iface for iface in interfaces}
+    resolved_interfaces = []
+    
+    # Create a simple resolution that doesn't cause loops
+    for interface in interfaces:
+        if interface.base_interface:
+            # Look for the base interface with proper namespacing
+            base_name = interface.base_interface
+            base_interface = None
+            
+            # Try exact match first
+            if base_name in interface_map:
+                base_interface = interface_map[base_name]
+            else:
+                # Try with namespace prefix if the current interface has one
+                current_namespace = ""
+                if "_" in interface.name:
+                    current_namespace = interface.name.split("_")[0] + "_"
+                
+                namespaced_base = current_namespace + base_name
+                if namespaced_base in interface_map:
+                    base_interface = interface_map[namespaced_base]
+            
+            if base_interface:
+                # Recursively resolve base interface first if it has inheritance
+                resolved_base = base_interface
+                if base_interface.base_interface:
+                    # Find the base's base
+                    base_base_name = base_interface.base_interface
+                    base_base_interface = None
+                    
+                    if base_base_name in interface_map:
+                        base_base_interface = interface_map[base_base_name]
+                    else:
+                        namespaced_base_base = current_namespace + base_base_name
+                        if namespaced_base_base in interface_map:
+                            base_base_interface = interface_map[namespaced_base_base]
+                    
+                    if base_base_interface:
+                        # Combine base's base properties with base properties
+                        combined_base_props = base_base_interface.properties.copy()
+                        base_prop_names = {prop["name"] for prop in base_interface.properties}
+                        combined_base_props = [prop for prop in combined_base_props if prop["name"] not in base_prop_names]
+                        combined_base_props.extend(base_interface.properties)
+                        
+                        resolved_base = Interface(
+                            name=base_interface.name,
+                            properties=combined_base_props,
+                            raw_definition=base_interface.raw_definition,
+                            base_interface=None
+                        )
+                
+                # Copy properties from resolved base interface
+                combined_properties = resolved_base.properties.copy()
+                
+                # Add properties from current interface (they override base properties)
+                current_prop_names = {prop["name"] for prop in interface.properties}
+                combined_properties = [prop for prop in combined_properties if prop["name"] not in current_prop_names]
+                combined_properties.extend(interface.properties)
+                
+                resolved_interface = Interface(
+                    name=interface.name,
+                    properties=combined_properties,
+                    raw_definition=interface.raw_definition,
+                    base_interface=None  # Clear base interface after resolution
+                )
+                resolved_interfaces.append(resolved_interface)
+            else:
+                # Base interface not found, keep as is
+                resolved_interfaces.append(interface)
+        else:
+            # No inheritance, keep as is
+            resolved_interfaces.append(interface)
+    
+    return resolved_interfaces
+
+
 def find_needed_interfaces(
     interfaces: List[Interface], start: str = "Options"
 ) -> Set[str]:
@@ -1258,9 +1351,26 @@ def find_needed_interfaces(
             continue
 
         needed.add(current)
+        current_interface = interface_map[current]
+
+        # Also include base interfaces for inheritance
+        if current_interface.base_interface:
+            base_name = current_interface.base_interface
+            # Try exact match first
+            if base_name in interface_map and base_name not in needed:
+                to_process.append(base_name)
+            else:
+                # Try with namespace prefix
+                current_namespace = ""
+                if "_" in current:
+                    current_namespace = current.split("_")[0] + "_"
+                
+                namespaced_base = current_namespace + base_name
+                if namespaced_base in interface_map and namespaced_base not in needed:
+                    to_process.append(namespaced_base)
 
         # Look for interface references in properties.
-        for prop in interface_map[current].properties:
+        for prop in current_interface.properties:
             # Find PascalCase words that might be interface names.
             words = re.findall(r"\b[A-Z][a-zA-Z0-9_]*\b", prop["type"])
             for word in words:
@@ -1286,6 +1396,9 @@ def generate_python_code(interfaces: List[Interface], content: str) -> str:
     needed_names = find_needed_interfaces(interfaces, "Options")
     needed_interfaces = [iface for iface in interfaces if iface.name in needed_names]
     
+    # Resolve inheritance relationships
+    needed_interfaces = resolve_inheritance(needed_interfaces)
+    
     # Filter out width and height from Options interface
     for interface in needed_interfaces:
         if interface.name == "Options":
@@ -1309,6 +1422,12 @@ def generate_python_code(interfaces: List[Interface], content: str) -> str:
     lines = [
         '"""Clean uPlot TypedDict definitions."""',
         "",
+        "# =========================================================================",
+        "# WARNING: This file is auto-generated by _generate_types.py",
+        "# DO NOT EDIT MANUALLY - Your changes will be overwritten!",
+        "# To modify types, edit the generation script or the TypeScript definitions",
+        "# =========================================================================",
+        "",
         "from __future__ import annotations",
         "",
         "from enum import IntEnum",
@@ -1316,10 +1435,10 @@ def generate_python_code(interfaces: List[Interface], content: str) -> str:
         "from typing_extensions import Never, Required, TypedDict",
         "",
         "# Semantic type aliases for unsupported/complex TypeScript patterns",
-        "JSCallback = Never      # JavaScript function signatures",
-        "DOMElement = Never      # DOM elements (HTMLElement, etc.)",
-        "CSSValue = str          # CSS property values",
-        "UnknownType = Any       # Unknown interface references",
+        "JSCallback = Never  # JavaScript function signatures",
+        "DOMElement = Never  # DOM elements (HTMLElement, etc.)",
+        "CSSValue = str  # CSS property values",
+        "UnknownType = Any  # Unknown interface references",
         "",
     ]
 
