@@ -62,7 +62,7 @@ examples = [
     "torch>=1.13.1",
     "matplotlib>=3.7.1",
     "plotly>=5.21.0",
-    "robot_descriptions>=1.10.0",
+    "robot_descriptions>=1.18.0",
     "gdown>=4.6.6",
     "plyfile",
     "opencv-python",
