@@ -6,6 +6,7 @@ from typing import List, Tuple
 
 import numpy as np
 import trimesh
+from trimesh.scene import Scene
 import yourdfpy
 
 import viser
@@ -172,7 +173,7 @@ class ViserUrdf:
 
     def _add_joint_frames_and_meshes(
         self,
-        scene: trimesh.scene.scene.Scene,
+        scene: Scene,
         root_node_name: str,
         collision_geometry: bool = False,
         mesh_color_override: tuple[float, float, float] | None = None,
@@ -237,7 +238,7 @@ class ViserUrdf:
 
 
 def _viser_name_from_frame(
-    scene: trimesh.scene.scene.Scene,
+    scene: Scene,
     frame_name: str,
     root_node_name: str = "/",
 ) -> str:
