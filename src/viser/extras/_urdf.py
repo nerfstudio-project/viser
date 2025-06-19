@@ -6,8 +6,8 @@ from typing import List, Tuple
 
 import numpy as np
 import trimesh
-from trimesh.scene import Scene
 import yourdfpy
+from trimesh.scene import Scene
 
 import viser
 
