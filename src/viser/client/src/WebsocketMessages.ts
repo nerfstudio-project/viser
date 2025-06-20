@@ -522,201 +522,187 @@ export interface GuiUplotMessage {
   uuid: string;
   container_uuid: string;
   props: {
-    aligned_data: number[][];
-    options: {
-      series: {
-        show?: boolean;
-        class?: string;
-        scale?: string;
-        auto?: boolean;
-        sorted?: any;
-        spanGaps?: boolean;
-        gaps?: any | never;
-        pxAlign?: number | boolean;
-        label?: string | never;
-        value?: string | never;
-        values?: never;
+    order: number;
+    data: Uint8Array[];
+    mode: 1 | 2 | null;
+    title: string | null;
+    series: {
+      show?: boolean;
+      class?: string;
+      scale?: string;
+      auto?: boolean;
+      sorted?: 0 | 1 | -1;
+      spanGaps?: boolean;
+      gaps?: [number, number][] | never;
+      pxAlign?: number | boolean;
+      label?: string | never;
+      value?: string | never;
+      values?: never;
+      paths?: never;
+      points?: {
+        show?: boolean | never;
         paths?: never;
-        points?: {
-          show?: boolean | never;
-          paths?: never;
-          filter?: number[] | null | never;
-          size?: number;
-          space?: number;
-          width?: number;
-          stroke?: any;
-          dash?: number[];
-          cap?: string;
-          fill?: any;
-        };
-        facets?: { scale: string; auto?: boolean; sorted?: 0 | 1 | -1 }[];
+        filter?: number[] | null | never;
+        size?: number;
+        space?: number;
         width?: number;
         stroke?: string;
-        fill?: string;
-        fillTo?: number | never;
         dash?: number[];
         cap?: string;
-        alpha?: number;
-        idxs?: [number, number];
+        fill?: string;
+      };
+      facets?: { scale: string; auto?: boolean; sorted?: 0 | 1 | -1 }[];
+      width?: number;
+      stroke?: string;
+      fill?: string;
+      fillTo?: number | never;
+      dash?: number[];
+      cap?: string;
+      alpha?: number;
+      idxs?: [number, number];
+      min?: number;
+      max?: number;
+    }[];
+    bands: { series: [number, number]; fill?: string; dir?: 1 | -1 }[] | null;
+    scales: {
+      [key: string]: {
+        time?: boolean;
+        auto?: boolean | never;
+        range?: [number | null, number | null] | never | any;
+        from?: string;
+        distr?: 1 | 2 | 3 | 4 | 100;
+        log?: 10 | 2;
+        clamp?: number | never;
+        asinh?: number;
+        fwd?: never;
+        bwd?: never;
         min?: number;
         max?: number;
-      }[];
-      mode?: 1 | 2;
-      title?: string;
-      id?: string;
-      class?: string;
-      pxRatio?: number;
-      data?: any;
-      tzDate?: any;
-      fmtDate?: any;
-      ms?: 1;
-      drawOrder?: ("axes" | "series")[];
-      pxAlign?: boolean | number;
-      bands?: { series: [number, number]; fill?: string; dir?: 1 | -1 }[];
-      scales?: {
-        [key: string]: {
-          time?: boolean;
-          auto?: boolean | never;
-          range?: [number | null, number | null] | never | any;
-          from?: string;
-          distr?: any;
-          log?: 10 | 2;
-          clamp?: number | never;
-          asinh?: number;
-          fwd?: never;
-          bwd?: never;
-          min?: number;
-          max?: number;
-          dir?: 1 | -1;
-          ori?: 0 | 1;
-          key?: string;
-        };
+        dir?: 1 | -1;
+        ori?: 0 | 1;
+        key?: string;
       };
-      axes?: {
-        show?: boolean;
-        scale?: string;
-        side?: any;
-        size?: number | never;
-        gap?: number;
-        font?: string;
-        lineGap?: number;
-        stroke?: string;
-        label?: string | never;
-        labelSize?: number;
-        labelGap?: number;
-        labelFont?: string;
-        space?: number | never;
-        incrs?: number[] | never;
-        splits?: number[] | never;
-        filter?: never;
-        values?: any;
-        rotate?: number | never;
-        align?: any;
-        alignTo?: any;
-        grid?: {
+    } | null;
+    axes:
+      | {
           show?: boolean;
-          stroke?: any;
-          width?: number;
-          dash?: number[];
-          cap?: string;
-          filter?: any;
-        };
-        ticks?: {
-          show?: boolean;
-          stroke?: any;
-          width?: number;
-          dash?: number[];
-          cap?: string;
-          filter?: any;
-          size?: number;
-        };
-        border?: {
-          show?: boolean;
-          stroke?: any;
-          width?: number;
-          dash?: number[];
-          cap?: string;
-        };
-      }[];
-      padding?: any;
-      select?: {
-        left: number;
-        top: number;
-        width: number;
-        height: number;
-        show?: boolean;
-        over?: boolean;
-      };
-      legend?: {
-        show?: boolean;
-        live?: boolean;
-        isolate?: boolean;
-        markers?: {
-          show?: boolean;
-          width?: number | never;
+          scale?: string;
+          side?: 0 | 1 | 2 | 3;
+          size?: number | never;
+          gap?: number;
+          font?: string;
+          lineGap?: number;
           stroke?: string;
-          fill?: string;
-          dash?: string;
-        };
-        mount?: any;
-        idx?: number | null;
-        idxs?: (number | null)[];
-        values?: any[];
-      };
-      cursor?: {
+          label?: string | never;
+          labelSize?: number;
+          labelGap?: number;
+          labelFont?: string;
+          space?: number | never;
+          incrs?: number[] | never;
+          splits?: number[] | never;
+          filter?: never;
+          values?:
+            | (string | number | null)[]
+            | never
+            | string
+            | (string | number | null)[][];
+          rotate?: number | never;
+          align?: 1 | 2;
+          alignTo?: 1 | 2;
+          grid?: {
+            show?: boolean;
+            stroke?: string;
+            width?: number;
+            dash?: number[];
+            cap?: string;
+            filter?: never;
+          };
+          ticks?: {
+            show?: boolean;
+            stroke?: string;
+            width?: number;
+            dash?: number[];
+            cap?: string;
+            filter?: never;
+            size?: number;
+          };
+          border?: {
+            show?: boolean;
+            stroke?: string;
+            width?: number;
+            dash?: number[];
+            cap?: string;
+          };
+        }[]
+      | null;
+    legend: {
+      show?: boolean;
+      live?: boolean;
+      isolate?: boolean;
+      markers?: {
         show?: boolean;
+        width?: number | never;
+        stroke?: string;
+        fill?: string;
+        dash?: string;
+      };
+      mount?: any;
+      idx?: number | null;
+      idxs?: (number | null)[];
+      values?: (string | never)[];
+    } | null;
+    cursor: {
+      show?: boolean;
+      x?: boolean;
+      y?: boolean;
+      left?: number;
+      top?: number;
+      idx?: number | null;
+      dataIdx?: never;
+      idxs?: (number | null)[];
+      move?: never;
+      points?: {
+        show?: boolean | never;
+        one?: boolean;
+        size?: number | never;
+        bbox?: never;
+        width?: number | never;
+        stroke?: string;
+        fill?: string;
+      };
+      bind?: {
+        mousedown?: never;
+        mouseup?: never;
+        click?: never;
+        dblclick?: never;
+        mousemove?: never;
+        mouseleave?: never;
+        mouseenter?: never;
+      };
+      drag?: {
+        setScale?: boolean;
         x?: boolean;
         y?: boolean;
-        left?: number;
-        top?: number;
-        idx?: number | null;
-        dataIdx?: never;
-        idxs?: (number | null)[];
-        move?: never;
-        points?: {
-          show?: boolean | never;
-          one?: boolean;
-          size?: number | never;
-          bbox?: never;
-          width?: number | never;
-          stroke?: string;
-          fill?: string;
-        };
-        bind?: {
-          mousedown?: any;
-          mouseup?: any;
-          click?: any;
-          dblclick?: any;
-          mousemove?: any;
-          mouseleave?: any;
-          mouseenter?: any;
-        };
-        drag?: {
-          setScale?: boolean;
-          x?: boolean;
-          y?: boolean;
-          dist?: number;
-          uni?: number;
-          click?: any;
-        };
-        sync?: {
-          key: string;
-          setSeries?: boolean;
-          scales?: [string | null, string | null];
-          match?: [any, any, any, any, any];
-          filters?: any;
-          values?: [number, number];
-        };
-        focus?: { prox: number; bias?: 0 | 1 | -1; dist?: any };
-        hover?: { prox?: number | null | any; bias?: 0 | 1 | -1; skip?: any[] };
-        lock?: boolean;
-        event?: never;
+        dist?: number;
+        uni?: number;
+        click?: any;
       };
-      focus?: { alpha: number };
-      hooks?: any;
-      plugins?: { hooks: any; opts?: any }[];
-    };
+      sync?: {
+        key: string;
+        setSeries?: boolean;
+        scales?: [string | null, string | null];
+        match?: [never, never, any, any, never];
+        filters?: any;
+        values?: [number, number];
+      };
+      focus?: { prox: number; bias?: 0 | 1 | -1; dist?: any };
+      hover?: { prox?: number | null | any; bias?: 0 | 1 | -1; skip?: any[] };
+      lock?: boolean;
+      event?: never;
+    } | null;
+    focus: { alpha: number } | null;
     aspect: number;
+    visible: boolean;
   };
 }
 /** GuiImageMessage(uuid: 'str', container_uuid: 'str', props: 'GuiImageProps')

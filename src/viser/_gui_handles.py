@@ -786,56 +786,7 @@ class GuiPlotlyHandle(_GuiHandle[None], GuiPlotlyProps):
 class GuiUplotHandle(_GuiHandle[None], GuiUplotProps):
     """Handle for updating and removing Uplot figures."""
 
-    def __init__(
-        self,
-        _impl: _GuiHandleState,
-        _aligned_data: np.ndarray,
-        _options: dict[str, Any],
-        _aspect: float,
-    ):
-        super().__init__(_impl=_impl)
-        self._aligned_data = _aligned_data
-        self._options = _options
-        self._aspect = _aspect
-
-    @property
-    def aligned_data(self) -> np.ndarray:
-        """Current aligned data of this Uplot element. Synchronized automatically when assigned."""
-        assert self._aligned_data is not None
-        return self._aligned_data
-
-    @aligned_data.setter
-    def aligned_data(self, aligned_data: np.ndarray) -> None:
-        assert aligned_data.ndim == 2, "aligned_data must be a 2D array"
-        assert aligned_data.shape[0] >= 2, "aligned_data must have at least 2 rows"
-
-        self._aligned_data = aligned_data
-        aligned_data_list = [
-            [float(e) for e in aligned_data[i]] for i in range(aligned_data.shape[0])
-        ]
-        self._queue_update("aligned_data", aligned_data_list)
-
-    @property
-    def options(self) -> dict[str, Any]:
-        """Current Uplot options of this Uplot element. Synchronized automatically when assigned."""
-        assert self._options is not None
-        return self._options
-
-    @options.setter
-    def options(self, options: dict[str, Any]) -> None:
-        self._options = options
-        self._queue_update("options", options)
-
-    @property
-    def aspect(self) -> float:
-        """Current aspect ratio of this Uplot element. Synchronized automatically when assigned."""
-        assert self._aspect is not None
-        return self._aspect
-
-    @aspect.setter
-    def aspect(self, aspect: float) -> None:
-        self._aspect = aspect
-        self._queue_update("aspect", aspect)
+    pass
 
 
 class GuiImageHandle(_GuiHandle[None], GuiImageProps):

@@ -574,9 +574,17 @@ def parse_typescript_type(type_string: str) -> TypeNode:
 class PythonTypeConverter:
     """Converts TypeScript AST nodes to Python type annotations."""
 
-    def __init__(self, known_interfaces: Optional[Set[str]] = None, type_aliases: Optional[Dict[str, str]] = None):
+    def __init__(
+        self,
+        known_interfaces: Optional[Set[str]] = None,
+        type_aliases: Optional[Dict[str, str]] = None,
+        enums: Optional[Dict[str, Enum]] = None,
+        use_literal_enums: bool = True,
+    ):
         self.known_interfaces = known_interfaces or set()
         self.type_aliases = type_aliases or {}
+        self.enums = enums or {}
+        self.use_literal_enums = use_literal_enums
 
         # Semantic type mappings
         self.primitive_mappings = {
@@ -670,7 +678,7 @@ class PythonTypeConverter:
                 except Exception:
                     # If parsing fails, fall back to original logic
                     pass
-            
+
             # Try with common namespace prefixes (e.g., Sync.Scales -> Cursor.Sync.Scales)
             for prefix in ["Cursor", "Scale", "Series", "Axis", "Legend"]:
                 qualified_name = f"{prefix}.{name}"
@@ -687,6 +695,16 @@ class PythonTypeConverter:
             if full_name in self.known_interfaces:
                 return full_name
 
+            # Check for namespaced enums (e.g., Axis.Align -> Align)
+            enum_name = parts[-1]  # Get the last part (e.g., "Align" from "Axis.Align")
+            if enum_name in self.enums:
+                if self.use_literal_enums:
+                    return self._convert_enum_to_literal(enum_name)
+                else:
+                    return enum_name
+            elif enum_name in self.known_interfaces:
+                return enum_name
+
             # For type aliases within namespaces (e.g., Legend.Width, Legend.Stroke)
             # these should be treated as UnknownType since they're not interfaces
             if base_name in self.known_interfaces:
@@ -694,6 +712,24 @@ class PythonTypeConverter:
 
             # For other qualified names that we don't have definitions for
             return "UnknownType"
+
+        # Check if it's a type alias first
+        if name in self.type_aliases:
+            alias_def = self.type_aliases[name]
+            # Recursively convert the aliased type
+            try:
+                ast_node = parse_typescript_type(alias_def)
+                return self.convert(ast_node)
+            except Exception:
+                # If parsing fails, fall back to original logic
+                pass
+
+        # Check if it's an enum first
+        if name in self.enums:
+            if self.use_literal_enums:
+                return self._convert_enum_to_literal(name)
+            else:
+                return name
 
         # Check if it's a known interface
         if name in self.known_interfaces:
@@ -752,6 +788,20 @@ class PythonTypeConverter:
         # Default for unknown identifiers
         return "UnknownType"
 
+    def _convert_enum_to_literal(self, enum_name: str) -> str:
+        """Convert an enum to a Literal union type."""
+        if enum_name not in self.enums:
+            return "UnknownType"
+
+        enum_obj = self.enums[enum_name]
+        values = []
+        for member_name, value in enum_obj.members:
+            # Keep the value as-is (already properly quoted for strings)
+            values.append(value)
+
+        # Use compact Literal syntax: Literal[0, 1, 2] instead of Literal[0] | Literal[1] | Literal[2]
+        return f"Literal[{', '.join(values)}]"
+
     def _convert_union(self, node: UnionType) -> str:
         """Convert union types."""
         if not node.types:
@@ -785,9 +835,9 @@ class PythonTypeConverter:
         return "UnknownType"
 
     def _convert_array(self, node: ArrayType) -> str:
-        """Convert array types."""
+        """Convert array types to tuple[T, ...] by default."""
         element_type = self.convert(node.element_type)
-        return f"list[{element_type}]"
+        return f"tuple[{element_type}, ...]"
 
     def _convert_tuple(self, node: TupleType) -> str:
         """Convert tuple types."""
@@ -811,7 +861,7 @@ class PythonTypeConverter:
 
             if base_name == "Array" and node.type_arguments:
                 element_type = self.convert(node.type_arguments[0])
-                return f"list[{element_type}]"
+                return f"tuple[{element_type}, ...]"
 
             if base_name == "Record" and len(node.type_arguments) >= 2:
                 key_type = self.convert(node.type_arguments[0])
@@ -831,11 +881,19 @@ class PythonTypeConverter:
         return base
 
 
-def convert_type_with_ast(ts_type: str, known_interfaces: Set[str], type_aliases: Optional[Dict[str, str]] = None) -> str:
+def convert_type_with_ast(
+    ts_type: str,
+    known_interfaces: Set[str],
+    type_aliases: Optional[Dict[str, str]] = None,
+    enums: Optional[Dict[str, Enum]] = None,
+    use_literal_enums: bool = True,
+) -> str:
     """Convert TypeScript type using AST-based parsing."""
     try:
-        # Create converter with known interfaces and type aliases for better type resolution
-        converter = PythonTypeConverter(known_interfaces, type_aliases)
+        # Create converter with known interfaces, type aliases, and enums for better type resolution
+        converter = PythonTypeConverter(
+            known_interfaces, type_aliases, enums, use_literal_enums
+        )
 
         # Parse and convert using AST
         ast_node = parse_typescript_type(ts_type)
@@ -1261,14 +1319,14 @@ def resolve_inheritance(interfaces: List[Interface]) -> List[Interface]:
     """Resolve interface inheritance by copying properties from base interfaces."""
     interface_map = {iface.name: iface for iface in interfaces}
     resolved_interfaces = []
-    
+
     # Create a simple resolution that doesn't cause loops
     for interface in interfaces:
         if interface.base_interface:
             # Look for the base interface with proper namespacing
             base_name = interface.base_interface
             base_interface = None
-            
+
             # Try exact match first
             if base_name in interface_map:
                 base_interface = interface_map[base_name]
@@ -1277,11 +1335,11 @@ def resolve_inheritance(interfaces: List[Interface]) -> List[Interface]:
                 current_namespace = ""
                 if "_" in interface.name:
                     current_namespace = interface.name.split("_")[0] + "_"
-                
+
                 namespaced_base = current_namespace + base_name
                 if namespaced_base in interface_map:
                     base_interface = interface_map[namespaced_base]
-            
+
             if base_interface:
                 # Recursively resolve base interface first if it has inheritance
                 resolved_base = base_interface
@@ -1289,41 +1347,51 @@ def resolve_inheritance(interfaces: List[Interface]) -> List[Interface]:
                     # Find the base's base
                     base_base_name = base_interface.base_interface
                     base_base_interface = None
-                    
+
                     if base_base_name in interface_map:
                         base_base_interface = interface_map[base_base_name]
                     else:
                         namespaced_base_base = current_namespace + base_base_name
                         if namespaced_base_base in interface_map:
                             base_base_interface = interface_map[namespaced_base_base]
-                    
+
                     if base_base_interface:
                         # Combine base's base properties with base properties
                         combined_base_props = base_base_interface.properties.copy()
-                        base_prop_names = {prop["name"] for prop in base_interface.properties}
-                        combined_base_props = [prop for prop in combined_base_props if prop["name"] not in base_prop_names]
+                        base_prop_names = {
+                            prop["name"] for prop in base_interface.properties
+                        }
+                        combined_base_props = [
+                            prop
+                            for prop in combined_base_props
+                            if prop["name"] not in base_prop_names
+                        ]
                         combined_base_props.extend(base_interface.properties)
-                        
+
                         resolved_base = Interface(
                             name=base_interface.name,
                             properties=combined_base_props,
                             raw_definition=base_interface.raw_definition,
-                            base_interface=None
+                            base_interface=None,
                         )
-                
+
                 # Copy properties from resolved base interface
                 combined_properties = resolved_base.properties.copy()
-                
+
                 # Add properties from current interface (they override base properties)
                 current_prop_names = {prop["name"] for prop in interface.properties}
-                combined_properties = [prop for prop in combined_properties if prop["name"] not in current_prop_names]
+                combined_properties = [
+                    prop
+                    for prop in combined_properties
+                    if prop["name"] not in current_prop_names
+                ]
                 combined_properties.extend(interface.properties)
-                
+
                 resolved_interface = Interface(
                     name=interface.name,
                     properties=combined_properties,
                     raw_definition=interface.raw_definition,
-                    base_interface=None  # Clear base interface after resolution
+                    base_interface=None,  # Clear base interface after resolution
                 )
                 resolved_interfaces.append(resolved_interface)
             else:
@@ -1332,7 +1400,7 @@ def resolve_inheritance(interfaces: List[Interface]) -> List[Interface]:
         else:
             # No inheritance, keep as is
             resolved_interfaces.append(interface)
-    
+
     return resolved_interfaces
 
 
@@ -1363,7 +1431,7 @@ def find_needed_interfaces(
                 current_namespace = ""
                 if "_" in current:
                     current_namespace = current.split("_")[0] + "_"
-                
+
                 namespaced_base = current_namespace + base_name
                 if namespaced_base in interface_map and namespaced_base not in needed:
                     to_process.append(namespaced_base)
@@ -1388,21 +1456,55 @@ def find_needed_interfaces(
     return needed
 
 
-def generate_python_code(interfaces: List[Interface], content: str) -> str:
+def collect_used_enums(
+    interfaces: List[Interface], enums: Dict[str, Enum], type_aliases: Dict[str, str]
+) -> Set[str]:
+    """Collect enum names that are actually used in the TypedDict definitions."""
+    used_enums = set()
+
+    # Create set of known interface names for type conversion
+    known_interface_names = {iface.name for iface in interfaces} | set(enums.keys())
+
+    for interface in interfaces:
+        for prop in interface.properties:
+            if prop["name"] == "__index_signature__":
+                continue
+
+            # Convert the property type and see what enums it references (using enum classes for analysis)
+            converted_type = convert_type_with_ast(
+                prop["type"],
+                known_interface_names,
+                type_aliases,
+                enums,
+                use_literal_enums=False,
+            )
+
+            # Look for enum references in the converted type
+            for enum_name in enums.keys():
+                if re.search(rf"\b{re.escape(enum_name)}\b", converted_type):
+                    used_enums.add(enum_name)
+
+    return used_enums
+
+
+def generate_python_code(
+    interfaces: List[Interface], content: str, use_literal_enums: bool = True
+) -> str:
     """Generate clean Python TypedDict code using AST-based type conversion."""
 
     # Find needed interfaces.
     needed_names = find_needed_interfaces(interfaces, "Options")
     needed_interfaces = [iface for iface in interfaces if iface.name in needed_names]
-    
+
     # Resolve inheritance relationships
     needed_interfaces = resolve_inheritance(needed_interfaces)
-    
+
     # Filter out width and height from Options interface
     for interface in needed_interfaces:
         if interface.name == "Options":
             interface.properties = [
-                prop for prop in interface.properties 
+                prop
+                for prop in interface.properties
                 if prop["name"] not in ["width", "height"]
             ]
 
@@ -1410,8 +1512,20 @@ def generate_python_code(interfaces: List[Interface], content: str) -> str:
     needed_interfaces = topological_sort_interfaces(needed_interfaces)
 
     # Parse enums and type aliases from content.
-    enums = parse_enums(content)
+    all_enums = parse_enums(content)
     type_aliases = parse_type_aliases(content)
+
+    # Only keep enums that are actually used in the final interfaces (if generating enum classes)
+    if use_literal_enums:
+        # When using literal enums, we still need all enums for conversion but won't generate classes
+        enums = all_enums
+    else:
+        used_enum_names = collect_used_enums(needed_interfaces, all_enums, type_aliases)
+        enums = {
+            name: enum_obj
+            for name, enum_obj in all_enums.items()
+            if name in used_enum_names
+        }
 
     # Create set of known interface names for better type conversion
     known_interface_names = {iface.name for iface in needed_interfaces} | set(
@@ -1429,25 +1543,35 @@ def generate_python_code(interfaces: List[Interface], content: str) -> str:
         "",
         "from __future__ import annotations",
         "",
-        "from enum import IntEnum, StrEnum",
-        "from typing import Any, Dict, Literal",
-        "from typing_extensions import Never, Required, TypedDict",
-        "",
-        "# Semantic type aliases for unsupported/complex TypeScript patterns",
-        "JSCallback = Never  # JavaScript function signatures",
-        "DOMElement = Never  # DOM elements (HTMLElement, etc.)",
-        "CSSValue = str  # CSS property values",
-        "UnknownType = Any  # Unknown interface references",
-        "",
     ]
 
-    # Generate Enum classes and type aliases.
-    if enums:
+    # Add imports based on what we're generating
+    if enums and not use_literal_enums:
+        lines.append("from enum import IntEnum, StrEnum")
+    lines.extend(
+        [
+            "from typing import Any, Dict, Literal",
+            "from typing_extensions import Never, Required, TypedDict",
+            "",
+            "# Semantic type aliases for unsupported/complex TypeScript patterns",
+            "JSCallback = Never  # JavaScript function signatures",
+            "DOMElement = Never  # DOM elements (HTMLElement, etc.)",
+            "CSSValue = str  # CSS property values",
+            "UnknownType = Any  # Unknown interface references",
+            "",
+        ]
+    )
+
+    # Generate Enum classes and type aliases (only if not using literal enums).
+    if enums and not use_literal_enums:
         lines.append("# Enum definitions")
         for enum_name, enum_obj in enums.items():
             # Determine if this is a string enum or numeric enum
-            is_string_enum = any(value.startswith("'") or value.startswith('"') for _, value in enum_obj.members)
-            
+            is_string_enum = any(
+                value.startswith("'") or value.startswith('"')
+                for _, value in enum_obj.members
+            )
+
             if is_string_enum:
                 lines.append(f"class {enum_name}(StrEnum):")
                 for member_name, value in enum_obj.members:
@@ -1484,10 +1608,18 @@ def generate_python_code(interfaces: List[Interface], content: str) -> str:
             match = re.match(r"^\[([^,]+),\s*(.+)\]$", index_sig["type"])
             if match:
                 key_type = convert_type_with_ast(
-                    match.group(1).strip(), known_interface_names, type_aliases
+                    match.group(1).strip(),
+                    known_interface_names,
+                    type_aliases,
+                    enums,
+                    use_literal_enums,
                 )
                 value_type = convert_type_with_ast(
-                    match.group(2).strip(), known_interface_names, type_aliases
+                    match.group(2).strip(),
+                    known_interface_names,
+                    type_aliases,
+                    enums,
+                    use_literal_enums,
                 )
                 type_aliases_to_generate.append(
                     (name, index_sig["comment"], key_type, value_type)
@@ -1543,7 +1675,13 @@ def generate_python_code(interfaces: List[Interface], content: str) -> str:
             prop_name = prop["name"]  # Use original name, no escaping needed in quotes
 
             # Use AST-based type conversion
-            prop_type = convert_type_with_ast(prop["type"], known_interface_names, type_aliases)
+            prop_type = convert_type_with_ast(
+                prop["type"],
+                known_interface_names,
+                type_aliases,
+                enums,
+                use_literal_enums,
+            )
 
             # Add comment above the property
             if prop["comment"]:
@@ -1578,6 +1716,7 @@ def generate_python_code(interfaces: List[Interface], content: str) -> str:
 def main(
     input_file: Path = Path("uPlot.d.ts"),
     output_file: Path = Path("_uplot_types.py"),
+    use_literal_enums: bool = True,
 ) -> None:
     """Generate clean Python TypedDict types from TypeScript definitions."""
 
@@ -1589,7 +1728,9 @@ def main(
     print(f"Found {len(interfaces)} interfaces")
 
     print("Generating Python code...")
-    python_code = generate_python_code(interfaces, content)
+    enum_mode = "Literal types" if use_literal_enums else "Enum classes"
+    print(f"Using {enum_mode} for enums")
+    python_code = generate_python_code(interfaces, content, use_literal_enums)
 
     print(f"Writing to {output_file}")
     output_file.write_text(python_code)
@@ -1606,5 +1747,27 @@ def main(
     print("Done!")
 
 
+@dataclass
+class Config:
+    """Configuration for generating Python TypedDict types from TypeScript definitions."""
+
+    input: Path = Path("uPlot.d.ts")
+    """Input TypeScript file"""
+
+    output: Path = Path("_uplot_types.py")
+    """Output Python file"""
+
+    enum_classes: bool = False
+    """Generate enum classes instead of Literal types"""
+
+
 if __name__ == "__main__":
-    main()
+    import tyro
+
+    config = tyro.cli(Config)
+
+    main(
+        input_file=config.input,
+        output_file=config.output,
+        use_literal_enums=not config.enum_classes,
+    )

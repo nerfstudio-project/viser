@@ -790,43 +790,100 @@ class GuiApi:
 
     def add_uplot(
         self,
-        aligned_data: np.ndarray,
-        options: uplot.Options,
+        data: tuple[np.ndarray, ...],
+        series: tuple[uplot.Series, ...],
+        *,
+        mode: Literal[1, 2] | None = None,
+        title: str | None = None,
+        bands: tuple[uplot.Band, ...] | None = None,
+        scales: dict[str, uplot.Scale] | None = None,
+        axes: tuple[uplot.Axis, ...] | None = None,
+        legend: uplot.Legend | None = None,
+        cursor: uplot.Cursor | None = None,
+        focus: uplot.Focus | None = None,
         aspect: float = 1.0,
+        order: float | None = None,
+        visible: bool = True,
     ) -> GuiUplotHandle:
-        """Add a uPlot to the GUI. Requires the `uplot` package to be
-        installed.
+        """Add a uPlot to the GUI.
+
         Args:
-            aligned_data: 2D array of floats [num_trajectories + 1, num_points],
-                where the first row is the x-data and the rest are the y-data, minimum
-                first dimension is 2.
-            options: uPlot options as a dictionary, including among others keys:
-                'series', 'axes', 'scales' but excluding 'width', 'height' and 'cursor'
-                which are handled on the client side.
+            data: Tuple of 1D numpy arrays, where the first array is the x-data and the rest are the y-data.
+                  All arrays must have the same length. Minimum length is 2 arrays.
+            series: Series configurations for the plot. Must have the same length as data tuple.
+                   Each series object configures how the corresponding data array is displayed.
+            mode: Mode of the plot, either 1 for aligned plots or 2 for faceted plots.
+            title: Title of the plot.
+            bands: Band options for the plot.
+            scales: Scale options for the plot.
+            axes: Axis options for the plot.
+            legend: Legend options for the plot.
+            cursor: Cursor options for the plot.
+            focus: Focus options for the plot.
             aspect: Aspect ratio of the plot in the control panel (height/width).
+            order: Optional ordering, smallest values will be displayed first.
+            visible: Whether the component is visible.
+
         Returns:
             A handle that can be used to interact with the GUI element.
+
+        Raises:
+            ValueError: If data arrays have inconsistent lengths or if series length doesn't match data length.
+            AssertionError: If data is not properly formatted (wrong types, dimensions, etc.).
         """
 
-        assert aligned_data.ndim == 2, "aligned_data must be a 2D array"
-        assert aligned_data.shape[0] >= 2, "aligned_data must have at least 2 rows"
+        # Validate data structure
+        assert len(data) >= 2, (
+            "data must have at least 2 arrays (x-data + at least one y-data series)"
+        )
+        assert all(isinstance(arr, np.ndarray) for arr in data), (
+            "all data elements must be numpy arrays"
+        )
 
-        list_aligned_data = [
-            [float(e) for e in aligned_data[i]] for i in range(aligned_data.shape[0])
-        ]
+        # Validate data dimensions and shapes
+        for i, arr in enumerate(data):
+            assert arr.ndim == 1, f"data[{i}] must be a 1D array, got shape {arr.shape}"
+
+        # Check that all arrays have the same length
+        lengths = [len(arr) for arr in data]
+        if not all(length == lengths[0] for length in lengths):
+            raise ValueError(
+                f"All data arrays must have the same length. Got lengths: {lengths}"
+            )
+
+        # Validate series configuration
+        assert len(series) > 0, "series must not be empty"
+        if len(series) != len(data):
+            raise ValueError(
+                f"Length of series ({len(series)}) must match length of data ({len(data)}). "
+                f"Each array in data needs a corresponding series configuration."
+            )
+
+        # Convert arrays to float64 as expected by GuiUplotProps
+        data_float64 = tuple(arr.astype(np.float64) for arr in data)
 
         message = _messages.GuiUplotMessage(
             uuid=_make_uuid(),
             container_uuid=self._get_container_uuid(),
             props=_messages.GuiUplotProps(
-                aligned_data=list_aligned_data,
-                options=options,
+                order=_apply_default_order(order),
+                data=data_float64,
+                mode=mode,
+                title=title,
+                series=series,
+                bands=bands,
+                scales=scales,
+                axes=axes,
+                legend=legend,
+                cursor=cursor,
+                focus=focus,
                 aspect=aspect,
+                visible=visible,
             ),
         )
         self._websock_interface.queue_message(message)
 
-        handle = GuiUplotHandle(
+        return GuiUplotHandle(
             _GuiHandleState(
                 message.uuid,
                 self,
@@ -834,12 +891,7 @@ class GuiApi:
                 props=message.props,
                 parent_container_id=message.container_uuid,
             ),
-            _aligned_data=aligned_data,
-            _options=options,
-            _aspect=aspect,
         )
-
-        return handle
 
     def add_button(
         self,

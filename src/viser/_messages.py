@@ -1087,13 +1087,34 @@ class GuiPlotlyMessage(_CreateGuiComponentMessage):
 
 @dataclasses.dataclass
 class GuiUplotProps:
-    aligned_data: list[list[float]]
-    """List of lists of floats, where the first inner list is the x-data and the rest are the y-data,
+    order: float
+    """Order value for arranging GUI elements. Synchronized automatically when assigned."""
+    data: tuple[npt.NDArray[np.float64], ...]
+    """List of arrays, where the first array is the x-data and the rest are the y-data,
     minimum outerlength 2. Synchronized automatically when assigned."""
-    options: uplot.Options
-    """uPlot options as a dictionary. Synchronized automatically when assigned."""
+    mode: Literal[1, 2] | None
+    """Mode of the plot, either 1 for aligned plots or 2 for faceted plots.
+    Synchronized automatically when assigned."""
+    title: str | None
+    """Title of the plot. Synchronized automatically when assigned."""
+    series: tuple[uplot.Series, ...]
+    """Series to be displayed on the plot, if any. Synchronized automatically when assigned."""
+    bands: tuple[uplot.Band, ...] | None
+    """Band options. Synchronized automatically when assigned."""
+    scales: dict[str, uplot.Scale] | None
+    """Scales options. Synchronized automatically when assigned."""
+    axes: tuple[uplot.Axis, ...] | None
+    """Axes options. Synchronized automatically when assigned."""
+    legend: uplot.Legend | None
+    """Legend options. Synchronized automatically when assigned."""
+    cursor: uplot.Cursor | None
+    """Cursor options. Synchronized automatically when assigned."""
+    focus: uplot.Focus | None
+    """Focus options. Synchronized automatically when assigned."""
     aspect: float
     """Aspect ratio of the plot in the control panel (height/width). Synchronized automatically when assigned."""
+    visible: bool
+    """Visibility state of the plot. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass

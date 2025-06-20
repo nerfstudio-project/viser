@@ -8,8 +8,8 @@
 
 from __future__ import annotations
 
-from enum import IntEnum, StrEnum
 from typing import Any, Dict, Literal
+
 from typing_extensions import Never, Required, TypedDict
 
 # Semantic type aliases for unsupported/complex TypeScript patterns
@@ -17,84 +17,6 @@ JSCallback = Never  # JavaScript function signatures
 DOMElement = Never  # DOM elements (HTMLElement, etc.)
 CSSValue = str  # CSS property values
 UnknownType = Any  # Unknown interface references
-
-
-# Enum definitions
-class JoinNullMode(IntEnum):
-    REMOVE = 0
-    RETAIN = 1
-    EXPAND = 2
-
-
-class Orientation(IntEnum):
-    HORIZONTAL = 0
-    VERTICAL = 1
-
-
-class DrawOrderKey(StrEnum):
-    AXES = "axes"
-    SERIES = "series"
-
-
-class Mode(IntEnum):
-    ALIGNED = 1
-    FACETED = 2
-
-
-class FocusBias(IntEnum):
-    NONE = 0
-    AWAY_FROM_ZERO = 1
-    TOWARDS_ZERO = -1
-
-
-class HoverBias(IntEnum):
-    NONE = 0
-    FORWARD = 1
-    BACKWARD = -1
-
-
-class Distr(IntEnum):
-    LINEAR = 1
-    ORDINAL = 2
-    LOGARITHMIC = 3
-    ARC_SINH = 4
-    CUSTOM = 100
-
-
-class BarsPathBuilderFacetUnit(IntEnum):
-    SCALE_VALUE = 1
-    PIXEL_PERCENT = 2
-    COLOR = 3
-
-
-class BarsPathBuilderFacetKind(IntEnum):
-    UNARY = 1
-    DISCRETE = 2
-    CONTINUOUS = 3
-
-
-class Sorted(IntEnum):
-    UNSORTED = 0
-    ASCENDING = 1
-    DESCENDING = -1
-
-
-class Side(IntEnum):
-    TOP = 0
-    RIGHT = 1
-    BOTTOM = 2
-    LEFT = 3
-
-
-class Align(IntEnum):
-    LEFT = 1
-    RIGHT = 2
-
-
-class AlignTo(IntEnum):
-    INSIDE = 1
-    OUTSIDE = 2
-
 
 # Type aliases for index signatures
 # Index signature: key -> Scale.
@@ -153,13 +75,13 @@ Select = TypedDict(
 Cursor_Bind = TypedDict(
     "Cursor_Bind",
     {
-        "mousedown": UnknownType,
-        "mouseup": UnknownType,
-        "click": UnknownType,
-        "dblclick": UnknownType,
-        "mousemove": UnknownType,
-        "mouseleave": UnknownType,
-        "mouseenter": UnknownType,
+        "mousedown": JSCallback,
+        "mouseup": JSCallback,
+        "click": JSCallback,
+        "dblclick": JSCallback,
+        "mousemove": JSCallback,
+        "mouseleave": JSCallback,
+        "mouseenter": JSCallback,
     },
     total=False,
 )
@@ -188,9 +110,9 @@ Cursor_Hover = TypedDict(
         # minimum cursor proximity to datapoint in CSS pixels for point hover.
         "prox": float | None | UnknownType,
         # when non-zero, will only proximity-test indices forward or backward.
-        "bias": HoverBias,
+        "bias": Literal[0, 1, -1],
         # what values to treat as non-hoverable and trigger scanning to another index.
-        "skip": list[Any],
+        "skip": tuple[Any, ...],
     },
     total=False,
 )
@@ -201,7 +123,7 @@ Cursor_Focus = TypedDict(
         # minimum cursor proximity to datapoint in CSS pixels for focus activation, disabled: < 0, enabled: <= 1e6.
         "prox": Required[float],
         # when non-zero, will only focus next series towards or away from zero.
-        "bias": FocusBias,
+        "bias": Literal[0, 1, -1],
         # measures cursor y distance to a series in CSS pixels (for triggering setSeries hook with closest).
         "dist": UnknownType,
     },
@@ -220,7 +142,7 @@ Scale = TypedDict(
         # scale key from which this scale is derived.
         "from": str,
         # scale distribution. 1: linear, 2: ordinal, 3: logarithmic, 4: arcsinh.
-        "distr": UnknownType,
+        "distr": Literal[1, 2, 3, 4, 100],
         # logarithmic base.
         "log": Literal[10] | Literal[2],
         # clamps log scale values <= 0 (default = scaleMin / 10).
@@ -252,7 +174,7 @@ Series_Points = TypedDict(
         "show": bool | JSCallback,
         "paths": JSCallback,
         # may return an array of points indices to draw.
-        "filter": list[float] | None | JSCallback,
+        "filter": tuple[float, ...] | None | JSCallback,
         # diameter of point in CSS pixels.
         "size": float,
         # minimum avg space between point centers before they're shown (default: size * 2).
@@ -260,20 +182,20 @@ Series_Points = TypedDict(
         # line width of circle outline in CSS pixels.
         "width": float,
         # line color of circle outline (defaults to series.stroke).
-        "stroke": UnknownType,
+        "stroke": CSSValue,
         # line dash segment array.
-        "dash": list[float],
+        "dash": tuple[float, ...],
         # line cap.
         "cap": CSSValue,
         # fill color of circle (defaults to #fff).
-        "fill": UnknownType,
+        "fill": CSSValue,
     },
     total=False,
 )
 
 Series_Facet = TypedDict(
     "Series_Facet",
-    {"scale": Required[str], "auto": bool, "sorted": Sorted},
+    {"scale": Required[str], "auto": bool, "sorted": Literal[0, 1, -1]},
     total=False,
 )
 
@@ -296,11 +218,11 @@ Axis_OrthoLines = TypedDict(
         # on/off.
         "show": bool,
         # line color.
-        "stroke": UnknownType,
+        "stroke": CSSValue,
         # line width in CSS pixels.
         "width": float,
         # line dash segment array.
-        "dash": list[float],
+        "dash": tuple[float, ...],
         # line cap.
         "cap": CSSValue,
     },
@@ -313,11 +235,11 @@ Axis_Border = TypedDict(
         # on/off.
         "show": bool,
         # line color.
-        "stroke": UnknownType,
+        "stroke": CSSValue,
         # line width in CSS pixels.
         "width": float,
         # line dash segment array.
-        "dash": list[float],
+        "dash": tuple[float, ...],
         # line cap.
         "cap": CSSValue,
     },
@@ -330,15 +252,15 @@ Axis_FilterableOrthoLines = TypedDict(
         # on/off.
         "show": bool,
         # line color.
-        "stroke": UnknownType,
+        "stroke": CSSValue,
         # line width in CSS pixels.
         "width": float,
         # line dash segment array.
-        "dash": list[float],
+        "dash": tuple[float, ...],
         # line cap.
         "cap": CSSValue,
         # can filter which splits render lines. e.g splits.map(v => v % 2 == 0 ? v : null).
-        "filter": UnknownType,
+        "filter": JSCallback,
     },
     total=False,
 )
@@ -349,15 +271,15 @@ Axis_Grid = TypedDict(
         # on/off.
         "show": bool,
         # line color.
-        "stroke": UnknownType,
+        "stroke": CSSValue,
         # line width in CSS pixels.
         "width": float,
         # line dash segment array.
-        "dash": list[float],
+        "dash": tuple[float, ...],
         # line cap.
         "cap": CSSValue,
         # can filter which splits render lines. e.g splits.map(v => v % 2 == 0 ? v : null).
-        "filter": UnknownType,
+        "filter": JSCallback,
     },
     total=False,
 )
@@ -368,15 +290,15 @@ Axis_Ticks = TypedDict(
         # on/off.
         "show": bool,
         # line color.
-        "stroke": UnknownType,
+        "stroke": CSSValue,
         # line width in CSS pixels.
         "width": float,
         # line dash segment array.
-        "dash": list[float],
+        "dash": tuple[float, ...],
         # line cap.
         "cap": CSSValue,
         # can filter which splits render lines. e.g splits.map(v => v % 2 == 0 ? v : null).
-        "filter": UnknownType,
+        "filter": JSCallback,
         # length of tick in CSS pixels.
         "size": float,
     },
@@ -403,7 +325,7 @@ Cursor_Sync = TypedDict(
         # sets the x and y scales to sync by values. null will sync by relative (%) position.
         "scales": tuple[str | None, str | None],
         # fns that match x and y scale keys and seriesIdxs between publisher and subscriber.
-        "match": tuple[UnknownType, UnknownType, UnknownType, UnknownType, UnknownType],
+        "match": tuple[JSCallback, JSCallback, UnknownType, UnknownType, JSCallback],
         # event filters.
         "filters": UnknownType,
         # sync scales' values at the cursor position (exposed for read-back by subscribers).
@@ -427,9 +349,9 @@ Legend = TypedDict(
         # current index (readback-only, not for init).
         "idx": float | None,
         # current indices (readback-only, not for init).
-        "idxs": list[float | None],
+        "idxs": tuple[float | None, ...],
         # current values (readback-only, not for init).
-        "values": list[UnknownType],
+        "values": tuple[str | JSCallback, ...],
     },
     total=False,
 )
@@ -466,11 +388,11 @@ Series = TypedDict(
         # whether this series' data is scanned during auto-ranging of its scale.
         "auto": bool,
         # if & how the data is pre-sorted (scale.auto optimization).
-        "sorted": UnknownType,
+        "sorted": Literal[0, 1, -1],
         # when true, null data values will not cause line breaks.
         "spanGaps": bool,
         # may mutate and/or augment gaps array found from null values.
-        "gaps": UnknownType | JSCallback,
+        "gaps": tuple[tuple[float, float], ...] | JSCallback,
         # whether path and point drawing should offset canvas to try drawing crisp lines.
         "pxAlign": float | bool,
         # legend label.
@@ -483,7 +405,7 @@ Series = TypedDict(
         # rendered datapoints.
         "points": Series_Points,
         # facets.
-        "facets": list[Series_Facet],
+        "facets": tuple[Series_Facet, ...],
         # line width in CSS pixels.
         "width": float,
         # line & legend color.
@@ -493,7 +415,7 @@ Series = TypedDict(
         # area fill baseline (default: 0).
         "fillTo": float | JSCallback,
         # line dash segment array.
-        "dash": list[float],
+        "dash": tuple[float, ...],
         # line cap.
         "cap": CSSValue,
         # alpha-transparancy.
@@ -516,7 +438,7 @@ Axis = TypedDict(
         # scale key.
         "scale": str,
         # side of chart - 0: top, 1: rgt, 2: btm, 3: lft.
-        "side": UnknownType,
+        "side": Literal[0, 1, 2, 3],
         # height of x axis or width of y axis in CSS pixels alloted for values, gap & ticks, but excluding axis label.
         "size": float | JSCallback,
         # gap between axis values and axis baseline (or ticks, if enabled) in CSS pixels.
@@ -538,19 +460,22 @@ Axis = TypedDict(
         # minimum grid & tick spacing in CSS pixels.
         "space": float | JSCallback,
         # available divisors for axis ticks, values, grid.
-        "incrs": list[float] | JSCallback,
+        "incrs": tuple[float, ...] | JSCallback,
         # determines how and where the axis must be split for placing ticks, values, grid.
-        "splits": list[float] | JSCallback,
+        "splits": tuple[float, ...] | JSCallback,
         # can filter which splits are passed to axis.values() for rendering. e.g splits.map(v => v % 2 == 0 ? v : null).
         "filter": JSCallback,
         # formats values for rendering.
-        "values": UnknownType,
+        "values": tuple[str | float | None, ...]
+        | JSCallback
+        | str
+        | tuple[tuple[str | float | None, ...], ...],
         # values rotation in degrees off horizontal (only bottom axes w/ side: 2).
         "rotate": float | JSCallback,
         # text alignment of axis values - 1: left, 2: right.
-        "align": UnknownType,
+        "align": Literal[1, 2],
         # baseline for text alignment of axis values - 1: inside, 2: outside.
-        "alignTo": UnknownType,
+        "alignTo": Literal[1, 2],
         # gridlines to draw from this axis' splits.
         "grid": Axis_Grid,
         # ticks to draw from this axis' splits.
@@ -579,7 +504,7 @@ Cursor = TypedDict(
         # returns data idx used for hover points & legend display (defaults to closestIdx).
         "dataIdx": JSCallback,
         # a series-matched array of indices returned by dataIdx().
-        "idxs": list[float | None],
+        "idxs": tuple[float | None, ...],
         # fires on debounced mousemove events; returns refined [left, top] tuple to snap cursor position.
         "move": JSCallback,
         # series hover points.
@@ -605,9 +530,9 @@ Cursor = TypedDict(
 Options = TypedDict(
     "Options",
     {
-        "series": Required[list[Series]],
+        "series": Required[tuple[Series, ...]],
         # 1: aligned & ordered, single-x / y-per-series, 2: unordered & faceted, per-series/per-point x,y,size,label,color,shape,etc.
-        "mode": Mode,
+        "mode": Literal[1, 2],
         # chart title.
         "title": str,
         # id to set on chart div.
@@ -617,28 +542,33 @@ Options = TypedDict(
         # initial devicePixelRatio, if different than window.devicePixelRatio.
         "pxRatio": float,
         # data for chart, if none is provided as argument to constructor.
-        "data": UnknownType,
+        "data": tuple[UnknownType, ...] | tuple[()],
         # converts a unix timestamp to Date that's time-adjusted for the desired timezone.
-        "tzDate": UnknownType,
+        "tzDate": JSCallback,
         # creates an efficient formatter for Date objects from a template string, e.g. {YYYY}-{MM}-{DD}.
-        "fmtDate": UnknownType,
+        "fmtDate": JSCallback,
         # timestamp multiplier that yields 1 millisecond.
         "ms": Literal[1],
         # drawing order for axes/grid & series (default: ["axes", "series"]).
-        "drawOrder": list[DrawOrderKey],
+        "drawOrder": tuple[Literal["axes", "series"], ...],
         # whether vt & hz lines of series/grid/ticks should be crisp/sharp or sub-px antialiased.
         "pxAlign": bool | float,
-        "bands": list[Band],
-        "scales": Scales,
-        "axes": list[Axis],
+        "bands": tuple[Band, ...],
+        "scales": tuple[str | None, str | None],
+        "axes": tuple[Axis, ...],
         # padding per side, in CSS pixels (can prevent cross-axis labels at the plotting area limits from being chopped off).
-        "padding": UnknownType,
+        "padding": tuple[
+            float | None | JSCallback,
+            float | None | JSCallback,
+            float | None | JSCallback,
+            float | None | JSCallback,
+        ],
         "select": Select,
         "legend": Legend,
         "cursor": Cursor,
         "focus": Focus,
         "hooks": UnknownType,
-        "plugins": list[Plugin],
+        "plugins": tuple[Plugin, ...],
     },
     total=False,
 )
