@@ -66,8 +66,8 @@ def main(
         "anymal_c",
         "go2",
     ] = "panda",
-    show_visuals: bool = True,
-    show_collisions: bool = False,
+    load_meshes: bool = True,
+    load_collision_meshes: bool = False,
 ) -> None:
     # Start viser server.
     server = viser.ViserServer()
@@ -79,14 +79,14 @@ def main(
         server,
         urdf_or_path=load_robot_description(
             robot_type + "_description",
-            load_meshes=show_visuals,
-            build_scene_graph=show_visuals,
-            load_collision_meshes=show_collisions,
-            build_collision_scene_graph=show_collisions,
+            load_meshes=load_meshes,
+            build_scene_graph=load_meshes,
+            load_collision_meshes=load_collision_meshes,
+            build_collision_scene_graph=load_collision_meshes,
         ),
-        show_visuals=show_visuals,
-        show_collisions=show_collisions,
-        collision_mesh_color_override=(1.0, 0.0, 0.0),
+        load_meshes=load_meshes,
+        load_collision_meshes=load_collision_meshes,
+        collision_mesh_color_override=(1.0, 0.0, 0.0, 0.5),
     )
 
     # Create sliders in GUI that help us move the robot joints.
@@ -94,6 +94,28 @@ def main(
         (slider_handles, initial_config) = create_robot_control_sliders(
             server, viser_urdf
         )
+
+    # Add visibility checkboxes.
+    with server.gui.add_folder("Visibility"):
+        show_meshes_cb = server.gui.add_checkbox(
+            "Show meshes",
+            viser_urdf.show_visual,
+        )
+        show_collision_meshes_cb = server.gui.add_checkbox(
+            "Show collision meshes", viser_urdf.show_collision
+        )
+
+    @show_meshes_cb.on_update
+    def _(_):
+        viser_urdf.show_visual = show_meshes_cb.value
+
+    @show_collision_meshes_cb.on_update
+    def _(_):
+        viser_urdf.show_collision = show_collision_meshes_cb.value
+
+    # Hide checkboxes if meshes are not loaded.
+    show_meshes_cb.visible = load_meshes
+    show_collision_meshes_cb.visible = load_collision_meshes
 
     # Set initial robot configuration.
     viser_urdf.update_cfg(np.array(initial_config))

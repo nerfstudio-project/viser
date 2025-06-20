@@ -64,10 +64,14 @@ class ViserUrdf:
         urdf_or_path: Either a path to a URDF file or a yourdfpy URDF object.
         scale: Scale factor to apply to resize the URDF.
         root_node_name: Viser scene tree name for the root of the URDF geometry.
-        mesh_color_override: Optional color to override the URDF's visual mesh colors.
-        collision_mesh_color_override: Optional color to override the URDF's collision mesh colors.
-        show_visuals: If true, shows the URDF's visual meshes.
-        show_collisions: If true, shows the URDF's collision meshes.
+        mesh_color_override: Optional color to override the URDF's visual mesh colors. RGB or RGBA tuple.
+        collision_mesh_color_override: Optional color to override the URDF's collision mesh colors. RGB or RGBA tuple.
+        load_meshes: If true, shows the URDF's visual meshes. If a yourdfpy
+            URDF object is used as input, this expects the URDF to have a visual
+            scene graph configured.
+        load_collision_meshes: If true, shows the URDF's collision meshes. If a
+            yourdfpy URDF object is used as input, this expects the URDF to have a
+            collision scene graph configured.
     """
 
     def __init__(
@@ -76,10 +80,14 @@ class ViserUrdf:
         urdf_or_path: yourdfpy.URDF | Path,
         scale: float = 1.0,
         root_node_name: str = "/",
-        collision_mesh_color_override: tuple[float, float, float] | None = None,
-        mesh_color_override: tuple[float, float, float] | None = None,
-        show_visuals: bool = True,
-        show_collisions: bool = False,
+        mesh_color_override: tuple[float, float, float]
+        | tuple[float, float, float, float]
+        | None = None,
+        collision_mesh_color_override: tuple[float, float, float]
+        | tuple[float, float, float, float]
+        | None = None,
+        load_meshes: bool = True,
+        load_collision_meshes: bool = False,
     ) -> None:
         assert root_node_name.startswith("/")
         assert len(root_node_name) == 1 or not root_node_name.endswith("/")
@@ -87,10 +95,10 @@ class ViserUrdf:
         if isinstance(urdf_or_path, Path):
             urdf = yourdfpy.URDF.load(
                 urdf_or_path,
-                build_scene_graph=show_visuals,
-                build_collision_scene_graph=show_collisions,
-                load_meshes=show_visuals,
-                load_collision_meshes=show_collisions,
+                build_scene_graph=load_meshes,
+                build_collision_scene_graph=load_collision_meshes,
+                load_meshes=load_meshes,
+                load_collision_meshes=load_collision_meshes,
                 filename_handler=partial(
                     yourdfpy.filename_handler_magic,
                     dir=urdf_or_path.parent,
@@ -104,19 +112,16 @@ class ViserUrdf:
         self._urdf = urdf
         self._scale = scale
         self._root_node_name = root_node_name
-        self._show_collisions = show_collisions
-        self._show_visuals = show_visuals
-
-        self.collision_root_frame = None
-        self.visual_root_frame = None
-
+        self._load_meshes = load_meshes
+        self._collision_root_frame: viser.FrameHandle | None = None
+        self._visual_root_frame: viser.FrameHandle | None = None
         self._joint_frames: List[viser.SceneNodeHandle] = []
         self._meshes: List[viser.SceneNodeHandle] = []
         num_joints_to_repeat = 0
-        if show_visuals:
+        if load_meshes:
             if urdf.scene is not None:
                 num_joints_to_repeat += 1
-                self._add_joint_frames_and_meshes(
+                self._visual_root_frame = self._add_joint_frames_and_meshes(
                     urdf.scene,
                     root_node_name,
                     collision_geometry=False,
@@ -124,12 +129,12 @@ class ViserUrdf:
                 )
             else:
                 warnings.warn(
-                    "show_visuals is enabled but the URDF model does not have a visual scene configured. Not displaying."
+                    "load_meshes is enabled but the URDF model does not have a visual scene configured. Not displaying."
                 )
-        if show_collisions:
+        if load_collision_meshes:
             if urdf.collision_scene is not None:
                 num_joints_to_repeat += 1
-                self._add_joint_frames_and_meshes(
+                self._collision_root_frame = self._add_joint_frames_and_meshes(
                     urdf.collision_scene,
                     root_node_name,
                     collision_geometry=True,
@@ -137,10 +142,43 @@ class ViserUrdf:
                 )
             else:
                 warnings.warn(
-                    "show_collisions is enabled but the URDF model does not have a collision scene configured. Not displaying."
+                    "load_collision_meshes is enabled but the URDF model does not have a collision scene configured. Not displaying."
                 )
 
         self._joint_map_values = [*self._urdf.joint_map.values()] * num_joints_to_repeat
+
+    @property
+    def show_visual(self) -> bool:
+        """Returns whether the visual meshes are currently visible."""
+        return self._visual_root_frame is not None and self._visual_root_frame.visible
+
+    @show_visual.setter
+    def show_visual(self, visible: bool) -> None:
+        """Set whether the visual meshes are currently visible."""
+        if self._visual_root_frame is not None:
+            self._visual_root_frame.visible = visible
+        else:
+            warnings.warn(
+                "Cannot set visual_meshes_visible, since no visual meshes were loaded."
+            )
+
+    @property
+    def show_collision(self) -> bool:
+        """Returns whether the collision meshes are currently visible."""
+        return (
+            self._collision_root_frame is not None
+            and self._collision_root_frame.visible
+        )
+
+    @show_collision.setter
+    def show_collision(self, visible: bool) -> None:
+        """Set whether the collision meshes are currently visible."""
+        if self._collision_root_frame is not None:
+            self._collision_root_frame.visible = visible
+        else:
+            warnings.warn(
+                "Cannot set collision_meshes_visible, since no collision meshes were loaded."
+            )
 
     def remove(self) -> None:
         """Remove URDF from scene."""
@@ -157,7 +195,7 @@ class ViserUrdf:
         for joint, frame_handle in zip(self._joint_map_values, self._joint_frames):
             assert isinstance(joint, yourdfpy.Joint)
             T_parent_child = self._urdf.get_transform(
-                joint.child, joint.parent, collision_geometry=not self._show_visuals
+                joint.child, joint.parent, collision_geometry=not self._load_meshes
             )
             frame_handle.wxyz = tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz
             frame_handle.position = T_parent_child[:3, 3] * self._scale
@@ -186,9 +224,11 @@ class ViserUrdf:
         self,
         scene: Scene,
         root_node_name: str,
-        collision_geometry: bool = False,
-        mesh_color_override: tuple[float, float, float] | None = None,
-    ) -> None:
+        collision_geometry: bool,
+        mesh_color_override: tuple[float, float, float]
+        | tuple[float, float, float, float]
+        | None,
+    ) -> viser.FrameHandle:
         """
         Helper function to add joint frames and meshes to the ViserUrdf object.
         """
@@ -197,10 +237,6 @@ class ViserUrdf:
         root_frame = self._target.scene.add_frame(
             prefixed_root_node_name, show_axes=False
         )
-        if collision_geometry:
-            self.collision_root_frame = root_frame
-        else:
-            self.visual_root_frame = root_frame
 
         # Add coordinate frame for each joint.
         for joint in self._urdf.joint_map.values():
@@ -237,7 +273,7 @@ class ViserUrdf:
 
             if mesh_color_override is None:
                 self._meshes.append(self._target.scene.add_mesh_trimesh(name, mesh))
-            else:
+            elif len(mesh_color_override) == 3:
                 self._meshes.append(
                     self._target.scene.add_mesh_simple(
                         name,
@@ -246,6 +282,17 @@ class ViserUrdf:
                         color=mesh_color_override,
                     )
                 )
+            elif len(mesh_color_override) == 4:
+                self._meshes.append(
+                    self._target.scene.add_mesh_simple(
+                        name,
+                        mesh.vertices,
+                        mesh.faces,
+                        color=mesh_color_override[:3],
+                        opacity=mesh_color_override[3],
+                    )
+                )
+        return root_frame
 
 
 def _viser_name_from_frame(

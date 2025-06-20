@@ -79,8 +79,12 @@ function GuiContainer({ containerUuid }: { containerUuid: string }) {
   );
   const out = (
     <Box pt="xs">
-      {guiUuidOrderPairArray.map((pair) => (
-        <GeneratedInput key={pair.uuid} guiUuid={pair.uuid} />
+      {guiUuidOrderPairArray.map((pair, index) => (
+        <GeneratedInput
+          key={pair.uuid}
+          guiUuid={pair.uuid}
+          nextGuiUuid={guiUuidOrderPairArray[index + 1]?.uuid ?? null}
+        />
       ))}
     </Box>
   );
@@ -88,7 +92,10 @@ function GuiContainer({ containerUuid }: { containerUuid: string }) {
 }
 
 /** A single generated GUI element. */
-function GeneratedInput(props: { guiUuid: string }) {
+function GeneratedInput(props: {
+  guiUuid: string;
+  nextGuiUuid: string | null;
+}) {
   const viewer = React.useContext(ViewerContext)!;
   const conf = viewer.useGui((state) => state.guiConfigFromUuid[props.guiUuid]);
   if (conf === undefined) {
@@ -97,7 +104,7 @@ function GeneratedInput(props: { guiUuid: string }) {
   }
   switch (conf.type) {
     case "GuiFolderMessage":
-      return <FolderComponent {...conf} />;
+      return <FolderComponent {...conf} nextGuiUuid={props.nextGuiUuid} />;
     case "GuiTabGroupMessage":
       return <TabGroupComponent {...conf} />;
     case "GuiMarkdownMessage":
