@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from functools import partial
 from pathlib import Path
 from typing import List, Tuple
@@ -103,6 +104,8 @@ class ViserUrdf:
         self._urdf = urdf
         self._scale = scale
         self._root_node_name = root_node_name
+        self._show_collisions = show_collisions
+        self._show_visuals = show_visuals
 
         self.collision_root_frame = None
         self.visual_root_frame = None
@@ -110,22 +113,32 @@ class ViserUrdf:
         self._joint_frames: List[viser.SceneNodeHandle] = []
         self._meshes: List[viser.SceneNodeHandle] = []
         num_joints_to_repeat = 0
-        if show_visuals and urdf.scene is not None:
-            num_joints_to_repeat += 1
-            self._add_joint_frames_and_meshes(
-                urdf.scene,
-                root_node_name,
-                collision_geometry=False,
-                mesh_color_override=mesh_color_override,
-            )
-        if show_collisions and urdf.collision_scene is not None:
-            num_joints_to_repeat += 1
-            self._add_joint_frames_and_meshes(
-                urdf.collision_scene,
-                root_node_name,
-                collision_geometry=True,
-                mesh_color_override=collision_mesh_color_override,
-            )
+        if show_visuals:
+            if urdf.scene is not None:
+                num_joints_to_repeat += 1
+                self._add_joint_frames_and_meshes(
+                    urdf.scene,
+                    root_node_name,
+                    collision_geometry=False,
+                    mesh_color_override=mesh_color_override,
+                )
+            else:
+                warnings.warn(
+                    "show_visuals is enabled but the URDF model does not have a visual scene configured. Not displaying."
+                )
+        if show_collisions:
+            if urdf.collision_scene is not None:
+                num_joints_to_repeat += 1
+                self._add_joint_frames_and_meshes(
+                    urdf.collision_scene,
+                    root_node_name,
+                    collision_geometry=True,
+                    mesh_color_override=collision_mesh_color_override,
+                )
+            else:
+                warnings.warn(
+                    "show_collisions is enabled but the URDF model does not have a collision scene configured. Not displaying."
+                )
 
         self._joint_map_values = [*self._urdf.joint_map.values()] * num_joints_to_repeat
 
@@ -143,7 +156,9 @@ class ViserUrdf:
         self._urdf.update_cfg(configuration)
         for joint, frame_handle in zip(self._joint_map_values, self._joint_frames):
             assert isinstance(joint, yourdfpy.Joint)
-            T_parent_child = self._urdf.get_transform(joint.child, joint.parent)
+            T_parent_child = self._urdf.get_transform(
+                joint.child, joint.parent, collision_geometry=not self._show_visuals
+            )
             frame_handle.wxyz = tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz
             frame_handle.position = T_parent_child[:3, 3] * self._scale
 

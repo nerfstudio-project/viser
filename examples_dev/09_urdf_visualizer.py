@@ -34,7 +34,7 @@ def create_robot_control_sliders(
     ) in viser_urdf.get_actuated_joint_limits().items():
         lower = lower if lower is not None else -np.pi
         upper = upper if upper is not None else np.pi
-        initial_pos = 0.0 if lower < 0 and upper > 0 else (lower + upper) / 2.0
+        initial_pos = 0.0 if lower < -0.1 and upper > 0.1 else (lower + upper) / 2.0
         slider = server.gui.add_slider(
             label=joint_name,
             min=lower,
@@ -79,6 +79,8 @@ def main(
         server,
         urdf_or_path=load_robot_description(
             robot_type + "_description",
+            load_meshes=show_visuals,
+            build_scene_graph=show_visuals,
             load_collision_meshes=show_collisions,
             build_collision_scene_graph=show_collisions,
         ),
@@ -97,6 +99,7 @@ def main(
     viser_urdf.update_cfg(np.array(initial_config))
 
     # Create grid.
+    trimesh_scene = viser_urdf._urdf.scene or viser_urdf._urdf.collision_scene
     server.scene.add_grid(
         "/grid",
         width=2,
@@ -105,7 +108,7 @@ def main(
             0.0,
             0.0,
             # Get the minimum z value of the trimesh scene.
-            viser_urdf._urdf.scene.bounds[0, 2],
+            trimesh_scene.bounds[0, 2] if trimesh_scene is not None else 0.0,
         ),
     )
 
