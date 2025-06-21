@@ -720,6 +720,10 @@ class GuiApi:
         """Add a Plotly figure to the GUI. Requires the `plotly` package to be
         installed.
 
+        .. note::
+           Updates to Plotly figures can be slow when you have many plots or frequent updates. For real-time visualization, consider using
+           :meth:`add_uplot` instead.
+
         Args:
             figure: Plotly figure to display.
             aspect: Aspect ratio of the plot in the control panel (width/height).
@@ -812,23 +816,19 @@ class GuiApi:
         documentation, see: https://github.com/leeoniya/uPlot/tree/1.6.32/docs
 
         .. note::
-           Configuration types are exposed under the `viser.uplot` module for convenience:
-           `viser.uplot.Series`, `viser.uplot.Scale`, `viser.uplot.Axis`, `viser.uplot.Band`,
-           `viser.uplot.Legend`, `viser.uplot.Cursor`, and `viser.uplot.Focus`.
+           Configuration types are exposed under the :mod:`viser.uplot` module for convenience:
+           :class:`~viser.uplot.Series`, :class:`viser.uplot.Scale`, :class:`viser.uplot.Axis`,
+           :class:`viser.uplot.Band`, :class:`viser.uplot.Legend`, :class:`viser.uplot.Cursor`,
+           and :class:`viser.uplot.Focus`. These are :py:class:`~typing.TypedDict` types;
+           standard dictionaries can also be used.
 
         Args:
             data: Tuple of 1D numpy arrays containing chart data. The first array provides
-                x-axis values (typically time or sequential data), and subsequent arrays
-                contain y-axis data for each series. All arrays must have identical length.
-                Minimum requirement: 2 arrays (x + at least one y series).
+                x-axis values, and subsequent arrays contain y-axis data for
+                each series. All arrays must have identical length. Minimum 2
+                arrays.
             series: Series configuration objects defining visual appearance and behavior.
-                Must match the length of data tuple. Each series can specify:
-                - `label`: Display name for legend
-                - `stroke`: Line color (CSS color)
-                - `width`: Line thickness in pixels
-                - `fill`: Area fill color for filled plots
-                - `show`: Visibility toggle
-                See viser.uplot.Series for full options.
+                Must match the length of data tuple.
             mode: Chart layout mode. 1 = aligned (default) where all series share axes,
                 2 = faceted where each series gets its own subplot panel.
             title: Chart title displayed at the top.
