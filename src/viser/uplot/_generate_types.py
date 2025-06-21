@@ -671,7 +671,7 @@ class PythonTypeConverter:
             base_name = parts[0]
 
             # Check for type aliases first (e.g., Scale.Auto, Sync.Scales)
-            # Try exact match first
+            # Try exact match first.
             if name in self.type_aliases:
                 alias_def = self.type_aliases[name]
                 # Recursively convert the aliased type
@@ -941,7 +941,7 @@ def parse_type_aliases(content: str) -> Dict[str, str]:
     while i < len(lines):
         line = lines[i].strip()
 
-        # Count braces to track nesting depth..
+        # Count braces to track nesting depth.
         open_braces = line.count("{")
         close_braces = line.count("}")
 
@@ -1239,7 +1239,7 @@ def topological_sort_interfaces(interfaces: List[Interface]) -> List[Interface]:
 
     # Build dependency graph: interface -> set of interfaces it depends on.
     dependencies = defaultdict(set)
-    dependents = defaultdict(set)  # reverse mapping
+    dependents = defaultdict(set)  # Reverse mapping.
 
     for interface in interfaces:
         interface_name = interface.name
@@ -1257,11 +1257,11 @@ def topological_sort_interfaces(interfaces: List[Interface]) -> List[Interface]:
             # Look for exact interface names (including underscore names like Legend_Markers).
             for other_name in interface_names:
                 if other_name != interface_name:
-                    # Use word boundary regex to ensure exact matches.
-                    # But exclude patterns like "Legend.Something" which are type aliases, not interface refs.
+                    # Use word boundary regex to ensure exact matches..
+                    # But exclude patterns like "Legend.Something" which are type aliases, not interface refs..
                     if re.search(r"\b" + re.escape(other_name) + r"\b", prop_type):
-                        # Make sure it's not a qualified name like "Legend.Width".
-                        # by checking if it's followed by a dot and identifier.
+                        # Make sure it's not a qualified name like "Legend.Width"..
+                        # By checking if it's followed by a dot and identifier..
                         full_match = re.search(
                             r"\b"
                             + re.escape(other_name)
@@ -1269,12 +1269,12 @@ def topological_sort_interfaces(interfaces: List[Interface]) -> List[Interface]:
                             prop_type,
                         )
                         if full_match and full_match.group(1):
-                            # This is a qualified name like "Legend.Width", not an interface reference.
+                            # This is a qualified name like "Legend.Width", not an interface reference..
                             continue
                         deps.add(other_name)
 
-            # Also look for namespaced references that map to underscore names.
-            # e.g., "Legend.Markers" should create dependency on "Legend_Markers".
+            # Also look for namespaced references that map to underscore names..
+            # e.g., "Legend.Markers" should create dependency on "Legend_Markers"..
             namespaced_refs = re.findall(
                 r"\b[A-Z][a-zA-Z0-9_]*\.[A-Z][a-zA-Z0-9_]*\b", prop_type
             )
@@ -1290,8 +1290,8 @@ def topological_sort_interfaces(interfaces: List[Interface]) -> List[Interface]:
         for dep in deps:
             dependents[dep].add(interface_name)
 
-    # Kahn's algorithm for topological sorting.
-    # Start with interfaces that have no dependencies.
+    # Kahn's algorithm for topological sorting..
+    # Start with interfaces that have no dependencies..
     in_degree = {iface.name: len(dependencies[iface.name]) for iface in interfaces}
     queue = deque([name for name, degree in in_degree.items() if degree == 0])
     result = []
@@ -1300,17 +1300,17 @@ def topological_sort_interfaces(interfaces: List[Interface]) -> List[Interface]:
         current = queue.popleft()
         result.append(interface_map[current])
 
-        # Remove this interface from its dependents' dependency lists.
+        # Remove this interface from its dependents' dependency lists..
         for dependent in dependents[current]:
             in_degree[dependent] -= 1
             if in_degree[dependent] == 0:
                 queue.append(dependent)
 
-    # Check for cycles.
+    # Check for cycles..
     if len(result) != len(interfaces):
         remaining = set(interface_map.keys()) - {iface.name for iface in result}
         print(f"Warning: Circular dependencies detected in interfaces: {remaining}")
-        # Add remaining interfaces in original order.
+        # Add remaining interfaces in original order..
         for interface in interfaces:
             if interface.name in remaining:
                 result.append(interface)
@@ -1323,19 +1323,19 @@ def resolve_inheritance(interfaces: List[Interface]) -> List[Interface]:
     interface_map = {iface.name: iface for iface in interfaces}
     resolved_interfaces = []
 
-    # Create a simple resolution that doesn't cause loops
+    # Create a simple resolution that doesn't cause loops.
     for interface in interfaces:
         if interface.base_interface:
-            # Look for the base interface with proper namespacing
+            # Look for the base interface with proper namespacing.
             base_name = interface.base_interface
             base_interface = None
 
-            # Try with namespace prefix if the current interface has one
+            # Try with namespace prefix if the current interface has one.
             current_namespace = ""
             if "_" in interface.name:
                 current_namespace = interface.name.split("_")[0] + "_"
 
-            # Try exact match first
+            # Try exact match first.
             if base_name in interface_map:
                 base_interface = interface_map[base_name]
             else:
@@ -1344,10 +1344,10 @@ def resolve_inheritance(interfaces: List[Interface]) -> List[Interface]:
                     base_interface = interface_map[namespaced_base]
 
             if base_interface:
-                # Recursively resolve base interface first if it has inheritance
+                # Recursively resolve base interface first if it has inheritance.
                 resolved_base = base_interface
                 if base_interface.base_interface:
-                    # Find the base's base
+                    # Find the base's base.
                     base_base_name = base_interface.base_interface
                     base_base_interface = None
 
@@ -1359,7 +1359,7 @@ def resolve_inheritance(interfaces: List[Interface]) -> List[Interface]:
                             base_base_interface = interface_map[namespaced_base_base]
 
                     if base_base_interface:
-                        # Combine base's base properties with base properties
+                        # Combine base's base properties with base properties.
                         combined_base_props = base_base_interface.properties.copy()
                         base_prop_names = {
                             prop["name"] for prop in base_interface.properties
@@ -1378,10 +1378,10 @@ def resolve_inheritance(interfaces: List[Interface]) -> List[Interface]:
                             base_interface=None,
                         )
 
-                # Copy properties from resolved base interface
+                # Copy properties from resolved base interface.
                 combined_properties = resolved_base.properties.copy()
 
-                # Add properties from current interface (they override base properties)
+                # Add properties from current interface (they override base properties).
                 current_prop_names = {prop["name"] for prop in interface.properties}
                 combined_properties = [
                     prop
@@ -1394,14 +1394,14 @@ def resolve_inheritance(interfaces: List[Interface]) -> List[Interface]:
                     name=interface.name,
                     properties=combined_properties,
                     raw_definition=interface.raw_definition,
-                    base_interface=None,  # Clear base interface after resolution
+                    base_interface=None,  # Clear base interface after resolution.
                 )
                 resolved_interfaces.append(resolved_interface)
             else:
-                # Base interface not found, keep as is
+                # Base interface not found, keep as is.
                 resolved_interfaces.append(interface)
         else:
-            # No inheritance, keep as is
+            # No inheritance, keep as is.
             resolved_interfaces.append(interface)
 
     return resolved_interfaces
@@ -1426,11 +1426,11 @@ def find_needed_interfaces(
         # Also include base interfaces for inheritance
         if current_interface.base_interface:
             base_name = current_interface.base_interface
-            # Try exact match first
+            # Try exact match first.
             if base_name in interface_map and base_name not in needed:
                 to_process.append(base_name)
             else:
-                # Try with namespace prefix
+                # Try with namespace prefix.
                 current_namespace = ""
                 if "_" in current:
                     current_namespace = current.split("_")[0] + "_"
@@ -1439,15 +1439,15 @@ def find_needed_interfaces(
                 if namespaced_base in interface_map and namespaced_base not in needed:
                     to_process.append(namespaced_base)
 
-        # Look for interface references in properties.
+        # Look for interface references in properties..
         for prop in current_interface.properties:
-            # Find PascalCase words that might be interface names.
+            # Find PascalCase words that might be interface names..
             words = re.findall(r"\b[A-Z][a-zA-Z0-9_]*\b", prop["type"])
             for word in words:
                 if word in interface_map and word not in needed:
                     to_process.append(word)
 
-            # Also look for namespaced interfaces like Axis.Grid -> Axis_Grid.
+            # Also look for namespaced interfaces like Axis.Grid -> Axis_Grid..
             namespaced_refs = re.findall(
                 r"\b[A-Z][a-zA-Z0-9_]*\.[A-Z][a-zA-Z0-9_]*\b", prop["type"]
             )
@@ -1475,7 +1475,7 @@ def collect_used_enums(
             if prop["name"] == "__index_signature__":
                 continue
 
-            # Convert the property type and see what enums it references (using enum classes for analysis)
+            # Convert the property type and see what enums it references (using enum classes for analysis).
             converted_type = convert_type_with_ast(
                 prop["type"],
                 known_interface_names,
@@ -1484,7 +1484,7 @@ def collect_used_enums(
                 use_literal_enums=False,
             )
 
-            # Look for enum references in the converted type
+            # Look for enum references in the converted type.
             for enum_name in enums.keys():
                 if re.search(rf"\b{re.escape(enum_name)}\b", converted_type):
                     used_enums.add(enum_name)
@@ -1504,7 +1504,7 @@ def generate_python_code(
     # Resolve inheritance relationships
     needed_interfaces = resolve_inheritance(needed_interfaces)
 
-    # Filter out width and height from Options interface
+    # Filter out width and height from Options interface.
     for interface in needed_interfaces:
         if interface.name == "Options":
             interface.properties = [
@@ -1516,13 +1516,13 @@ def generate_python_code(
     # Sort interfaces in topological order to eliminate forward references.
     needed_interfaces = topological_sort_interfaces(needed_interfaces)
 
-    # Parse enums and type aliases from content.
+    # Parse enums and type aliases from content..
     all_enums = parse_enums(content)
     type_aliases = parse_type_aliases(content)
 
-    # Only keep enums that are actually used in the final interfaces (if generating enum classes)
+    # Only keep enums that are actually used in the final interfaces (if generating enum classes).
     if use_literal_enums:
-        # When using literal enums, we still need all enums for conversion but won't generate classes
+        # When using literal enums, we still need all enums for conversion but won't generate classes.
         enums = all_enums
     else:
         used_enum_names = collect_used_enums(needed_interfaces, all_enums, type_aliases)
@@ -1532,7 +1532,7 @@ def generate_python_code(
             if name in used_enum_names
         }
 
-    # Create set of known interface names for better type conversion
+    # Create set of known interface names for better type conversion.
     known_interface_names = {iface.name for iface in needed_interfaces} | set(
         enums.keys()
     )
@@ -1550,7 +1550,7 @@ def generate_python_code(
         "",
     ]
 
-    # Add imports based on what we're generating
+    # Add imports based on what we're generating.
     if enums and not use_literal_enums:
         lines.append("from enum import IntEnum, StrEnum")
     lines.extend(
@@ -1567,11 +1567,11 @@ def generate_python_code(
         ]
     )
 
-    # Generate Enum classes and type aliases (only if not using literal enums).
+    # Generate Enum classes and type aliases (only if not using literal enums)..
     if enums and not use_literal_enums:
         lines.append("# Enum definitions")
         for enum_name, enum_obj in enums.items():
-            # Determine if this is a string enum or numeric enum
+            # Determine if this is a string enum or numeric enum.
             is_string_enum = any(
                 value.startswith("'") or value.startswith('"')
                 for _, value in enum_obj.members
@@ -1580,7 +1580,7 @@ def generate_python_code(
             if is_string_enum:
                 lines.append(f"class {enum_name}(StrEnum):")
                 for member_name, value in enum_obj.members:
-                    # For string enums, use UPPER_CASE naming convention
+                    # For string enums, use UPPER_CASE naming convention.
                     upper_name = member_name.upper()
                     lines.append(f"    {upper_name} = {value}")
             else:
@@ -1590,16 +1590,16 @@ def generate_python_code(
                     lines.append(f"    {snake_case_name} = {value}")
             lines.append("")
 
-    # Generate TypedDict classes and collect type aliases.
+    # Generate TypedDict classes and collect type aliases..
     type_aliases_to_generate = []
     interface_names = {iface.name for iface in needed_interfaces}
 
-    # First pass: collect type aliases that need to be generated.
+    # First pass: collect type aliases that need to be generated..
     for interface in needed_interfaces:
         name = interface.name
         properties = interface.properties
 
-        # Check for index signatures
+        # Check for index signatures.
         index_signatures = [p for p in properties if p["name"] == "__index_signature__"]
         regular_properties = [
             p for p in properties if p["name"] != "__index_signature__"
@@ -1630,34 +1630,34 @@ def generate_python_code(
                     (name, index_sig["comment"], key_type, value_type)
                 )
 
-    # Generate type aliases first (using string quotes for forward references).
+    # Generate type aliases first (using string quotes for forward references)..
     if type_aliases_to_generate:
         lines.append("# Type aliases for index signatures")
         for name, comment, key_type, value_type in type_aliases_to_generate:
-            # Use string quotes to allow forward references.
+            # Use string quotes to allow forward references..
             value_type_str = (
                 f'"{value_type}"' if value_type in interface_names else value_type
             )
-            # Add period to comment if it doesn't already end with punctuation.
+            # Add period to comment if it doesn't already end with punctuation..
             if comment and not comment.rstrip().endswith((".", "!", "?", ":", ";")):
                 comment += "."
             lines.extend(
                 [f"# {comment}", f"{name} = Dict[{key_type}, {value_type_str}]", ""]
             )
 
-    # Second pass: generate TypedDict classes.
+    # Second pass: generate TypedDict classes..
     type_alias_names = {name for name, _, _, _ in type_aliases_to_generate}
 
     for interface in needed_interfaces:
         name = interface.name
 
-        # Skip if this was already handled as a type alias.
+        # Skip if this was already handled as a type alias..
         if name in type_alias_names:
             continue
 
         properties = interface.properties
 
-        # Check for index signatures
+        # Check for index signatures.
         index_signatures = [p for p in properties if p["name"] == "__index_signature__"]
         regular_properties = [
             p for p in properties if p["name"] != "__index_signature__"
@@ -1669,19 +1669,19 @@ def generate_python_code(
             lines.append("")
             continue
 
-        # Separate required and optional regular properties
+        # Separate required and optional regular properties.
         required = [p for p in regular_properties if not p["optional"]]
         optional = [p for p in regular_properties if p["optional"]]
 
-        # Generate functional TypedDict
+        # Generate functional TypedDict.
         lines.append(f"{name} = TypedDict('{name}', {{")
 
-        # Add all properties (both required and optional)
+        # Add all properties (both required and optional).
         all_props = required + optional
         for i, prop in enumerate(all_props):
-            prop_name = prop["name"]  # Use original name, no escaping needed in quotes
+            prop_name = prop["name"]  # Use original name, no escaping needed in quotes.
 
-            # Use AST-based type conversion
+            # Use AST-based type conversion.
             prop_type = convert_type_with_ast(
                 prop["type"],
                 known_interface_names,
@@ -1690,33 +1690,33 @@ def generate_python_code(
                 use_literal_enums,
             )
 
-            # Add comment above the property
+            # Add comment above the property.
             if prop["comment"]:
                 comment = prop["comment"]
-                # Add period if comment doesn't already end with punctuation
+                # Add period if comment doesn't already end with punctuation.
                 if comment and not comment.rstrip().endswith((".", "!", "?", ":", ";")):
                     comment += "."
                 lines.append(f"    # {comment}")
 
-            # Handle required vs optional
-            if required and optional:  # Mixed case - use Required[] for required props
+            # Handle required vs optional.
+            if required and optional:  # Mixed case - use Required[] for required props.
                 if prop in required:
                     type_annotation = f"Required[{prop_type}]"
                 else:
                     type_annotation = prop_type
             else:
-                # All required or all optional
+                # All required or all optional.
                 type_annotation = prop_type
 
-            # Add trailing comma except for last item
+            # Add trailing comma except for last item.
             comma = "," if i < len(all_props) - 1 else ""
             lines.append(f"    '{prop_name}': {type_annotation}{comma}")
 
-        # Set total=False if we have any optional properties
+        # Set total=False if we have any optional properties.
         total_param = ", total=False" if optional else ""
         lines.append(f"}}{total_param})")
 
-        # Add docstring after the TypedDict definition
+        # Add docstring after the TypedDict definition.
         lines.append('""":py:class:`~typing.TypedDict` type for uPlot."""')
         lines.append("")
 
