@@ -805,31 +805,91 @@ class GuiApi:
         order: float | None = None,
         visible: bool = True,
     ) -> GuiUplotHandle:
-        """Add a uPlot to the GUI.
+        """Add a uPlot chart to the GUI for high-performance time-series visualization.
+
+        uPlot is optimized for plotting large datasets with smooth pan/zoom interactions.
+        All configuration options follow the standard uPlot API. For comprehensive
+        documentation, see: https://github.com/leeoniya/uPlot/tree/1.6.32/docs
+
+        .. note::
+           Configuration types are exposed under the `viser.uplot` module for convenience:
+           `viser.uplot.Series`, `viser.uplot.Scale`, `viser.uplot.Axis`, `viser.uplot.Band`,
+           `viser.uplot.Legend`, `viser.uplot.Cursor`, and `viser.uplot.Focus`.
 
         Args:
-            data: Tuple of 1D numpy arrays, where the first array is the x-data and the rest are the y-data.
-                  All arrays must have the same length. Minimum length is 2 arrays.
-            series: Series configurations for the plot. Must have the same length as data tuple.
-                   Each series object configures how the corresponding data array is displayed.
-            mode: Mode of the plot, either 1 for aligned plots or 2 for faceted plots.
-            title: Title of the plot.
-            bands: Band options for the plot.
-            scales: Scale options for the plot.
-            axes: Axis options for the plot.
-            legend: Legend options for the plot.
-            cursor: Cursor options for the plot.
-            focus: Focus options for the plot.
-            aspect: Aspect ratio of the plot in the control panel (height/width).
-            order: Optional ordering, smallest values will be displayed first.
-            visible: Whether the component is visible.
+            data: Tuple of 1D numpy arrays containing chart data. The first array provides
+                x-axis values (typically time or sequential data), and subsequent arrays
+                contain y-axis data for each series. All arrays must have identical length.
+                Minimum requirement: 2 arrays (x + at least one y series).
+            series: Series configuration objects defining visual appearance and behavior.
+                Must match the length of data tuple. Each series can specify:
+                - `label`: Display name for legend
+                - `stroke`: Line color (CSS color)
+                - `width`: Line thickness in pixels
+                - `fill`: Area fill color for filled plots
+                - `show`: Visibility toggle
+                See viser.uplot.Series for full options.
+            mode: Chart layout mode. 1 = aligned (default) where all series share axes,
+                2 = faceted where each series gets its own subplot panel.
+            title: Chart title displayed at the top.
+            bands: High/low range visualizations between data series. Useful for showing
+                confidence intervals, error bounds, or min/max ranges. Each band connects
+                two adjacent series indices.
+            scales: Scale definitions controlling data-to-pixel mapping and axis ranges.
+                Key features include auto-ranging, manual min/max, time-based scaling,
+                and logarithmic distributions. Multiple scales enable dual-axis charts.
+            axes: Axis configuration for labels, ticks, grids, and positioning.
+                Controls which side axes appear (top/right/bottom/left), tick formatting,
+                grid line styling, and spacing between tick marks.
+            legend: Legend display options including positioning, styling, and custom
+                value formatting functions for hover states.
+            cursor: Interactive cursor behavior including hover proximity detection,
+                drag-to-zoom, and crosshair appearance. Controls how users interact
+                with the chart through mouse/touch.
+            focus: Visual highlighting when hovering over series. Controls the alpha
+                transparency of non-focused series to emphasize the active one.
+            aspect: Height-to-width ratio for the chart display in the control panel.
+                1.0 creates a square chart, values < 1.0 create wider charts.
+            order: Display ordering relative to other GUI elements (lower values first).
+            visible: Whether the chart is visible in the interface.
 
         Returns:
-            A handle that can be used to interact with the GUI element.
+            A handle for programmatically updating chart properties and data.
 
         Raises:
-            ValueError: If data arrays have inconsistent lengths or if series length doesn't match data length.
-            AssertionError: If data is not properly formatted (wrong types, dimensions, etc.).
+            ValueError: If data arrays have inconsistent lengths or series count
+                doesn't match data array count.
+            AssertionError: If data contains non-numpy arrays or non-1D arrays.
+
+        Example:
+            ```python
+            import numpy as np
+            import viser
+
+            server = viser.ViserServer()
+
+            # Generate sample time series data
+            time = np.linspace(0, 10, 100)
+            signal1 = np.sin(time)
+            signal2 = np.cos(time)
+
+            # Create chart with two series
+            chart = server.gui.add_uplot(
+                data=(time, signal1, signal2),
+                series=(
+                    viser.uplot.Series(label="Time"),
+                    viser.uplot.Series(label="Sine", stroke="red", width=2),
+                    viser.uplot.Series(label="Cosine", stroke="blue", width=2),
+                ),
+                title="Trigonometric Functions",
+                scales={
+                    "x": viser.uplot.Scale(auto=True),
+                    "y": viser.uplot.Scale(range=(-1.2, 1.2)),
+                },
+                legend=viser.uplot.Legend(show=True),
+                aspect=0.6,
+            )
+            ```
         """
 
         # Validate data structure

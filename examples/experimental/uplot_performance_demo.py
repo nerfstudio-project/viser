@@ -9,6 +9,7 @@ import time
 import numpy as np
 
 import viser
+import viser.uplot
 
 
 def y(x: np.ndarray, offset: int) -> np.ndarray:
@@ -30,23 +31,21 @@ def main() -> None:
             server.gui.add_uplot(
                 data=(x_data, *[y(x_data, i) for i in range(num_trajectories)]),
                 series=(
-                    {"label": "time"},
+                    viser.uplot.Series(label="time"),
                     *[
-                        {
-                            "label": f"y{i + 1}",
-                            "stroke": ["red", "green", "blue", "orange", "purple"][
-                                i % 5
-                            ],
-                            "width": 2,
-                        }
+                        viser.uplot.Series(
+                            label=f"y{i + 1}",
+                            stroke=["red", "green", "blue", "orange", "purple"][i % 5],
+                            width=2,
+                        )
                         for i in range(num_trajectories)
                     ],
                 ),
                 scales={
-                    "x": {"time": False, "auto": True},
-                    "y": {"range": [-2, 2]},
+                    "x": viser.uplot.Scale(time=False, auto=True),
+                    "y": viser.uplot.Scale(range=(-2, 2)),
                 },
-                legend={"show": True},
+                legend=viser.uplot.Legend(show=True),
                 aspect=1.0,
             )
         )

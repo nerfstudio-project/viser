@@ -37,6 +37,7 @@ Legend_Markers = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Focus = TypedDict(
     "Focus",
@@ -45,6 +46,7 @@ Focus = TypedDict(
         "alpha": float
     },
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 BBox = TypedDict(
     "BBox",
@@ -57,6 +59,7 @@ BBox = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Select = TypedDict(
     "Select",
@@ -71,6 +74,7 @@ Select = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Cursor_Bind = TypedDict(
     "Cursor_Bind",
@@ -85,6 +89,7 @@ Cursor_Bind = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Cursor_Drag = TypedDict(
     "Cursor_Drag",
@@ -103,6 +108,7 @@ Cursor_Drag = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Cursor_Hover = TypedDict(
     "Cursor_Hover",
@@ -116,6 +122,7 @@ Cursor_Hover = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Cursor_Focus = TypedDict(
     "Cursor_Focus",
@@ -129,6 +136,7 @@ Cursor_Focus = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Scale = TypedDict(
     "Scale",
@@ -166,6 +174,7 @@ Scale = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Series_Points = TypedDict(
     "Series_Points",
@@ -192,12 +201,14 @@ Series_Points = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Series_Facet = TypedDict(
     "Series_Facet",
     {"scale": Required[str], "auto": bool, "sorted": Literal[0, 1, -1]},
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Band = TypedDict(
     "Band",
@@ -211,6 +222,7 @@ Band = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Axis_OrthoLines = TypedDict(
     "Axis_OrthoLines",
@@ -228,6 +240,7 @@ Axis_OrthoLines = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Axis_Border = TypedDict(
     "Axis_Border",
@@ -245,6 +258,7 @@ Axis_Border = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Axis_FilterableOrthoLines = TypedDict(
     "Axis_FilterableOrthoLines",
@@ -264,6 +278,7 @@ Axis_FilterableOrthoLines = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Axis_Grid = TypedDict(
     "Axis_Grid",
@@ -283,6 +298,7 @@ Axis_Grid = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Axis_Ticks = TypedDict(
     "Axis_Ticks",
@@ -304,6 +320,7 @@ Axis_Ticks = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Plugin = TypedDict(
     "Plugin",
@@ -314,6 +331,7 @@ Plugin = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Cursor_Sync = TypedDict(
     "Cursor_Sync",
@@ -333,6 +351,7 @@ Cursor_Sync = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Legend = TypedDict(
     "Legend",
@@ -355,6 +374,7 @@ Legend = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Cursor_Points = TypedDict(
     "Cursor_Points",
@@ -375,6 +395,7 @@ Cursor_Points = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Series = TypedDict(
     "Series",
@@ -429,6 +450,7 @@ Series = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Axis = TypedDict(
     "Axis",
@@ -485,6 +507,7 @@ Axis = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Cursor = TypedDict(
     "Cursor",
@@ -526,6 +549,7 @@ Cursor = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""
 
 Options = TypedDict(
     "Options",
@@ -572,3 +596,4 @@ Options = TypedDict(
     },
     total=False,
 )
+""":py:class:`~typing.TypedDict` type for uPlot."""

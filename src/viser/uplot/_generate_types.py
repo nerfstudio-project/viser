@@ -1659,7 +1659,9 @@ def generate_python_code(
         ]
 
         if not regular_properties:
-            lines.extend([f"{name} = TypedDict('{name}', {{}}, total=False)", ""])
+            lines.append(f"{name} = TypedDict('{name}', {{}}, total=False)")
+            lines.append('""":py:class:`~typing.TypedDict` type for uPlot."""')
+            lines.append("")
             continue
 
         # Separate required and optional regular properties
@@ -1708,6 +1710,9 @@ def generate_python_code(
         # Set total=False if we have any optional properties
         total_param = ", total=False" if optional else ""
         lines.append(f"}}{total_param})")
+
+        # Add docstring after the TypedDict definition
+        lines.append('""":py:class:`~typing.TypedDict` type for uPlot."""')
         lines.append("")
 
     return "\n".join(lines)

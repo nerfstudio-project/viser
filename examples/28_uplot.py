@@ -5,7 +5,9 @@ Examples of visualizing uPlot plots in Viser."""
 import time
 
 import numpy as np
+
 import viser
+import viser.uplot
 
 
 def y0(x: np.ndarray) -> np.ndarray:
@@ -30,26 +32,26 @@ def main() -> None:
     uplot_handle = server.gui.add_uplot(
         data=data,
         series=(
-            {"label": "time"},
-            {
-                "label": "y0",
-                "stroke": "blue",
-                "width": 2,
-            },
-            {
-                "label": "y1",
-                "stroke": "red",
-                "width": 2,
-            },
+            viser.uplot.Series(label="time"),
+            viser.uplot.Series(
+                label="y0",
+                stroke="blue",
+                width=2,
+            ),
+            viser.uplot.Series(
+                label="y1",
+                stroke="red",
+                width=2,
+            ),
         ),
         scales={
-            "x": {
-                "time": False,
-                "auto": True,
-            },
-            "y": {"range": [-1.5, 2.5]},
+            "x": viser.uplot.Scale(
+                time=False,
+                auto=True,
+            ),
+            "y": viser.uplot.Scale(range=(-1.5, 2.5)),
         },
-        legend={"show": True},
+        legend=viser.uplot.Legend(show=True),
         aspect=1.0,
     )
 

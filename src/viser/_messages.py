@@ -1090,31 +1090,41 @@ class GuiUplotProps:
     order: float
     """Order value for arranging GUI elements. Synchronized automatically when assigned."""
     data: tuple[npt.NDArray[np.float64], ...]
-    """List of arrays, where the first array is the x-data and the rest are the y-data,
-    minimum outerlength 2. Synchronized automatically when assigned."""
+    """Tuple of 1D numpy arrays containing chart data. First array is x-axis data,
+    subsequent arrays are y-axis data for each series. All arrays must have matching
+    lengths. Minimum 2 arrays required. Synchronized automatically when assigned."""
     mode: Literal[1, 2] | None
-    """Mode of the plot, either 1 for aligned plots or 2 for faceted plots.
-    Synchronized automatically when assigned."""
+    """Chart layout mode: 1 = aligned (all series share axes), 2 = faceted (each series
+    gets its own subplot panel). Defaults to 1. Synchronized automatically when assigned."""
     title: str | None
-    """Title of the plot. Synchronized automatically when assigned."""
+    """Chart title displayed at the top of the plot. Synchronized automatically when assigned."""
     series: tuple[uplot.Series, ...]
-    """Series to be displayed on the plot, if any. Synchronized automatically when assigned."""
+    """Series configuration objects defining visual appearance (colors, line styles, labels)
+    and behavior for each data array. Must match data tuple length. Synchronized automatically when assigned."""
     bands: tuple[uplot.Band, ...] | None
-    """Band options. Synchronized automatically when assigned."""
+    """High/low range visualizations between adjacent series indices. Useful for confidence
+    intervals, error bounds, or min/max ranges. Synchronized automatically when assigned."""
     scales: dict[str, uplot.Scale] | None
-    """Scales options. Synchronized automatically when assigned."""
+    """Scale definitions controlling data-to-pixel mapping and axis ranges. Enables features
+    like auto-ranging, manual bounds, time-based scaling, and logarithmic distributions.
+    Multiple scales support dual-axis charts. Synchronized automatically when assigned."""
     axes: tuple[uplot.Axis, ...] | None
-    """Axes options. Synchronized automatically when assigned."""
+    """Axis configuration for positioning (top/right/bottom/left), tick formatting, grid
+    styling, and spacing. Controls visual appearance of chart axes. Synchronized automatically when assigned."""
     legend: uplot.Legend | None
-    """Legend options. Synchronized automatically when assigned."""
+    """Legend display options including positioning, styling, and custom value formatting
+    for hover states. Synchronized automatically when assigned."""
     cursor: uplot.Cursor | None
-    """Cursor options. Synchronized automatically when assigned."""
+    """Interactive cursor behavior including hover detection, drag-to-zoom, and crosshair
+    appearance. Controls user interaction with the chart. Synchronized automatically when assigned."""
     focus: uplot.Focus | None
-    """Focus options. Synchronized automatically when assigned."""
+    """Visual highlighting when hovering over series. Controls alpha transparency of
+    non-focused series to emphasize the active one. Synchronized automatically when assigned."""
     aspect: float
-    """Aspect ratio of the plot in the control panel (height/width). Synchronized automatically when assigned."""
+    """Height-to-width ratio for chart display (height/width). 1.0 = square, <1.0 = wider.
+    Synchronized automatically when assigned."""
     visible: bool
-    """Visibility state of the plot. Synchronized automatically when assigned."""
+    """Whether the chart is visible in the interface. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
