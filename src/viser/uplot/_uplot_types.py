@@ -8,7 +8,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Literal
+from typing import Any, Dict, Literal, Union
 
 from typing_extensions import Never, Required, TypedDict
 
@@ -27,7 +27,7 @@ Legend_Markers = TypedDict(
     {
         "show": bool,
         # series indicator line width.
-        "width": float | JSCallback,
+        "width": Union[float, JSCallback],
         # series indicator stroke (CSS borderColor).
         "stroke": CSSValue,
         # series indicator fill.
@@ -114,7 +114,7 @@ Cursor_Hover = TypedDict(
     "Cursor_Hover",
     {
         # minimum cursor proximity to datapoint in CSS pixels for point hover.
-        "prox": float | None | UnknownType,
+        "prox": Union[float, None, UnknownType],
         # when non-zero, will only proximity-test indices forward or backward.
         "bias": Literal[0, 1, -1],
         # what values to treat as non-hoverable and trigger scanning to another index.
@@ -144,17 +144,19 @@ Scale = TypedDict(
         # is this scale temporal, with series' data in UNIX timestamps?
         "time": bool,
         # determines whether all series' data on this scale will be scanned to find the full min/max range.
-        "auto": bool | JSCallback,
+        "auto": Union[bool, JSCallback],
         # can define a static scale range or re-range an initially-determined range from series data.
-        "range": tuple[float | None, float | None] | JSCallback | UnknownType,
+        "range": Union[
+            tuple[Union[float, None], Union[float, None]], JSCallback, UnknownType
+        ],
         # scale key from which this scale is derived.
         "from": str,
         # scale distribution. 1: linear, 2: ordinal, 3: logarithmic, 4: arcsinh.
         "distr": Literal[1, 2, 3, 4, 100],
         # logarithmic base.
-        "log": Literal[10] | Literal[2],
+        "log": Union[Literal[10], Literal[2]],
         # clamps log scale values <= 0 (default = scaleMin / 10).
-        "clamp": float | JSCallback,
+        "clamp": Union[float, JSCallback],
         # arcsinh linear threshold.
         "asinh": float,
         # forward transform fn, with custom distr: 100.
@@ -166,9 +168,9 @@ Scale = TypedDict(
         # current max scale value.
         "max": float,
         # scale direction.
-        "dir": Literal[1] | Literal[-1],
+        "dir": Union[Literal[1], Literal[-1]],
         # scale orientation - 0: hz, 1: vt.
-        "ori": Literal[0] | Literal[1],
+        "ori": Union[Literal[0], Literal[1]],
         # own key (for read-back).
         "key": str,
     },
@@ -180,10 +182,10 @@ Series_Points = TypedDict(
     "Series_Points",
     {
         # if boolean or returns boolean, round points are drawn with defined options, else fn should draw own custom points via self.ctx.
-        "show": bool | JSCallback,
+        "show": Union[bool, JSCallback],
         "paths": JSCallback,
         # may return an array of points indices to draw.
-        "filter": tuple[float, ...] | None | JSCallback,
+        "filter": Union[tuple[float, ...], None, JSCallback],
         # diameter of point in CSS pixels.
         "size": float,
         # minimum avg space between point centers before they're shown (default: size * 2).
@@ -218,7 +220,7 @@ Band = TypedDict(
         # area fill style.
         "fill": CSSValue,
         # whether to fill towards yMin (-1) or yMax (+1) between "from" & "to" series.
-        "dir": Literal[1] | Literal[-1],
+        "dir": Union[Literal[1], Literal[-1]],
     },
     total=False,
 )
@@ -341,7 +343,7 @@ Cursor_Sync = TypedDict(
         # determines if series toggling and focus via cursor is synced across charts.
         "setSeries": bool,
         # sets the x and y scales to sync by values. null will sync by relative (%) position.
-        "scales": tuple[str | None, str | None],
+        "scales": tuple[Union[str, None], Union[str, None]],
         # fns that match x and y scale keys and seriesIdxs between publisher and subscriber.
         "match": tuple[JSCallback, JSCallback, UnknownType, UnknownType, JSCallback],
         # event filters.
@@ -366,11 +368,11 @@ Legend = TypedDict(
         # callback for moving the legend elsewhere. e.g. external DOM container.
         "mount": UnknownType,
         # current index (readback-only, not for init).
-        "idx": float | None,
+        "idx": Union[float, None],
         # current indices (readback-only, not for init).
-        "idxs": tuple[float | None, ...],
+        "idxs": tuple[Union[float, None], ...],
         # current values (readback-only, not for init).
-        "values": tuple[str | JSCallback, ...],
+        "values": tuple[Union[str, JSCallback], ...],
     },
     total=False,
 )
@@ -379,15 +381,15 @@ Legend = TypedDict(
 Cursor_Points = TypedDict(
     "Cursor_Points",
     {
-        "show": bool | JSCallback,
+        "show": Union[bool, JSCallback],
         # only show single y-closest point on hover (only works when cursor.focus.prox >= 0).
         "one": bool,
         # hover point diameter in CSS pixels.
-        "size": float | JSCallback,
+        "size": Union[float, JSCallback],
         # hover point bbox in CSS pixels (will be used instead of size).
         "bbox": JSCallback,
         # hover point outline width in CSS pixels.
-        "width": float | JSCallback,
+        "width": Union[float, JSCallback],
         # hover point outline color, pattern or gradient.
         "stroke": CSSValue,
         # hover point fill color, pattern or gradient.
@@ -413,13 +415,13 @@ Series = TypedDict(
         # when true, null data values will not cause line breaks.
         "spanGaps": bool,
         # may mutate and/or augment gaps array found from null values.
-        "gaps": tuple[tuple[float, float], ...] | JSCallback,
+        "gaps": Union[tuple[tuple[float, float], ...], JSCallback],
         # whether path and point drawing should offset canvas to try drawing crisp lines.
-        "pxAlign": float | bool,
+        "pxAlign": Union[float, bool],
         # legend label.
-        "label": str | DOMElement,
+        "label": Union[str, DOMElement],
         # inline-legend value formatter. can be an fmtDate formatting string when scale.time: true.
-        "value": str | JSCallback,
+        "value": Union[str, JSCallback],
         # table-legend multi-values formatter.
         "values": JSCallback,
         "paths": JSCallback,
@@ -434,7 +436,7 @@ Series = TypedDict(
         # area fill & legend color.
         "fill": CSSValue,
         # area fill baseline (default: 0).
-        "fillTo": float | JSCallback,
+        "fillTo": Union[float, JSCallback],
         # line dash segment array.
         "dash": tuple[float, ...],
         # line cap.
@@ -462,7 +464,7 @@ Axis = TypedDict(
         # side of chart - 0: top, 1: rgt, 2: btm, 3: lft.
         "side": Literal[0, 1, 2, 3],
         # height of x axis or width of y axis in CSS pixels alloted for values, gap & ticks, but excluding axis label.
-        "size": float | JSCallback,
+        "size": Union[float, JSCallback],
         # gap between axis values and axis baseline (or ticks, if enabled) in CSS pixels.
         "gap": float,
         # font used for axis values.
@@ -472,7 +474,7 @@ Axis = TypedDict(
         # color of axis label & values.
         "stroke": CSSValue,
         # axis label text.
-        "label": str | JSCallback,
+        "label": Union[str, JSCallback],
         # height of x axis label or width of y axis label in CSS pixels alloted for label text + labelGap.
         "labelSize": float,
         # gap between label baseline and tick values in CSS pixels.
@@ -480,20 +482,22 @@ Axis = TypedDict(
         # font used for axis label.
         "labelFont": CSSValue,
         # minimum grid & tick spacing in CSS pixels.
-        "space": float | JSCallback,
+        "space": Union[float, JSCallback],
         # available divisors for axis ticks, values, grid.
-        "incrs": tuple[float, ...] | JSCallback,
+        "incrs": Union[tuple[float, ...], JSCallback],
         # determines how and where the axis must be split for placing ticks, values, grid.
-        "splits": tuple[float, ...] | JSCallback,
+        "splits": Union[tuple[float, ...], JSCallback],
         # can filter which splits are passed to axis.values() for rendering. e.g splits.map(v => v % 2 == 0 ? v : null).
         "filter": JSCallback,
         # formats values for rendering.
-        "values": tuple[str | float | None, ...]
-        | JSCallback
-        | str
-        | tuple[tuple[str | float | None, ...], ...],
+        "values": Union[
+            tuple[Union[str, float, None], ...],
+            JSCallback,
+            str,
+            tuple[tuple[Union[str, float, None], ...], ...],
+        ],
         # values rotation in degrees off horizontal (only bottom axes w/ side: 2).
-        "rotate": float | JSCallback,
+        "rotate": Union[float, JSCallback],
         # text alignment of axis values - 1: left, 2: right.
         "align": Literal[1, 2],
         # baseline for text alignment of axis values - 1: inside, 2: outside.
@@ -523,11 +527,11 @@ Cursor = TypedDict(
         # cursor position top offset in CSS pixels (relative to plotting area).
         "top": float,
         # closest data index to cursor (closestIdx).
-        "idx": float | None,
+        "idx": Union[float, None],
         # returns data idx used for hover points & legend display (defaults to closestIdx).
         "dataIdx": JSCallback,
         # a series-matched array of indices returned by dataIdx().
-        "idxs": tuple[float | None, ...],
+        "idxs": tuple[Union[float, None], ...],
         # fires on debounced mousemove events; returns refined [left, top] tuple to snap cursor position.
         "move": JSCallback,
         # series hover points.
@@ -566,7 +570,7 @@ Options = TypedDict(
         # initial devicePixelRatio, if different than window.devicePixelRatio.
         "pxRatio": float,
         # data for chart, if none is provided as argument to constructor.
-        "data": tuple[UnknownType, ...] | tuple[()],
+        "data": Union[tuple[UnknownType, ...], tuple[()]],
         # converts a unix timestamp to Date that's time-adjusted for the desired timezone.
         "tzDate": JSCallback,
         # creates an efficient formatter for Date objects from a template string, e.g. {YYYY}-{MM}-{DD}.
@@ -576,16 +580,16 @@ Options = TypedDict(
         # drawing order for axes/grid & series (default: ["axes", "series"]).
         "drawOrder": tuple[Literal["axes", "series"], ...],
         # whether vt & hz lines of series/grid/ticks should be crisp/sharp or sub-px antialiased.
-        "pxAlign": bool | float,
+        "pxAlign": Union[bool, float],
         "bands": tuple[Band, ...],
-        "scales": tuple[str | None, str | None],
+        "scales": tuple[Union[str, None], Union[str, None]],
         "axes": tuple[Axis, ...],
         # padding per side, in CSS pixels (can prevent cross-axis labels at the plotting area limits from being chopped off).
         "padding": tuple[
-            float | None | JSCallback,
-            float | None | JSCallback,
-            float | None | JSCallback,
-            float | None | JSCallback,
+            Union[float, None, JSCallback],
+            Union[float, None, JSCallback],
+            Union[float, None, JSCallback],
+            Union[float, None, JSCallback],
         ],
         "select": Select,
         "legend": Legend,

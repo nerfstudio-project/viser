@@ -145,7 +145,9 @@ class Lexer:
             # Number literals
             peek_char = self.peek()
             if self.current_char.isdigit() or (
-                self.current_char == "-" and peek_char is not None and peek_char.isdigit()
+                self.current_char == "-"
+                and peek_char is not None
+                and peek_char.isdigit()
             ):
                 return Token(
                     TokenType.NUMBER_LITERAL, self.read_number_literal(), self.position
@@ -824,7 +826,7 @@ class PythonTypeConverter:
         if len(unique_types) == 1:
             return unique_types[0]
         elif len(unique_types) > 1:
-            return " | ".join(unique_types)
+            return f"Union[{', '.join(unique_types)}]"
         else:
             return "UnknownType"
 
@@ -1458,7 +1460,9 @@ def find_needed_interfaces(
 
 
 def collect_used_enums(
-    interfaces: List[Interface], enums: Dict[str, TypeScriptEnum], type_aliases: Dict[str, str]
+    interfaces: List[Interface],
+    enums: Dict[str, TypeScriptEnum],
+    type_aliases: Dict[str, str],
 ) -> Set[str]:
     """Collect enum names that are actually used in the TypedDict definitions."""
     used_enums = set()
@@ -1551,7 +1555,7 @@ def generate_python_code(
         lines.append("from enum import IntEnum, StrEnum")
     lines.extend(
         [
-            "from typing import Any, Dict, Literal",
+            "from typing import Any, Dict, Literal, Union",
             "from typing_extensions import Never, Required, TypedDict",
             "",
             "# Semantic type aliases for unsupported/complex TypeScript patterns",
