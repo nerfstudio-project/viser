@@ -817,7 +817,7 @@ class GuiApi:
 
         .. note::
            Configuration types are exposed under the :mod:`viser.uplot` module for convenience:
-           :class:`~viser.uplot.Series`, :class:`viser.uplot.Scale`, :class:`viser.uplot.Axis`,
+           :class:`viser.uplot.Series`, :class:`viser.uplot.Scale`, :class:`viser.uplot.Axis`,
            :class:`viser.uplot.Band`, :class:`viser.uplot.Legend`, :class:`viser.uplot.Cursor`,
            and :class:`viser.uplot.Focus`. These are :py:class:`~typing.TypedDict` types;
            standard dictionaries can also be used.
