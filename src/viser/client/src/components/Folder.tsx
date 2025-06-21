@@ -10,7 +10,8 @@ import { folderLabel, folderToggleIcon, folderWrapper } from "./Folder.css";
 export default function FolderComponent({
   uuid,
   props: { label, visible, expand_by_default },
-}: GuiFolderMessage) {
+  nextGuiUuid,
+}: GuiFolderMessage & { nextGuiUuid: string | null }) {
   const viewer = React.useContext(ViewerContext)!;
   const [opened, { toggle }] = useDisclosure(expand_by_default);
   const guiIdSet = viewer.useGui(
@@ -18,11 +19,18 @@ export default function FolderComponent({
   );
   const guiContext = React.useContext(GuiComponentContext)!;
   const isEmpty = guiIdSet === undefined || Object.keys(guiIdSet).length === 0;
+  const nextGuiType = viewer.useGui((state) =>
+    nextGuiUuid == null ? null : state.guiConfigFromUuid[nextGuiUuid]?.type,
+  );
 
   const ToggleIcon = opened ? IconChevronUp : IconChevronDown;
   if (!visible) return null;
   return (
-    <Paper withBorder className={folderWrapper}>
+    <Paper
+      withBorder
+      className={folderWrapper}
+      mb={nextGuiType === "GuiFolderMessage" ? "md" : undefined}
+    >
       <Paper
         className={folderLabel}
         style={{
