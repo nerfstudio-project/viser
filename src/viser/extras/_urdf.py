@@ -9,6 +9,7 @@ import numpy as np
 import trimesh
 import yourdfpy
 from trimesh.scene import Scene
+from typing_extensions import assert_never
 
 import viser
 
@@ -159,7 +160,7 @@ class ViserUrdf:
             self._visual_root_frame.visible = visible
         else:
             warnings.warn(
-                "Cannot set visual_meshes_visible, since no visual meshes were loaded."
+                "Cannot set `.show_visual`, since no visual meshes were loaded."
             )
 
     @property
@@ -177,7 +178,7 @@ class ViserUrdf:
             self._collision_root_frame.visible = visible
         else:
             warnings.warn(
-                "Cannot set collision_meshes_visible, since no collision meshes were loaded."
+                "Cannot set `.show_collision`, since no collision meshes were loaded."
             )
 
     def remove(self) -> None:
@@ -292,6 +293,8 @@ class ViserUrdf:
                         opacity=mesh_color_override[3],
                     )
                 )
+            else:
+                assert_never(mesh_color_override)
         return root_frame
 
 
