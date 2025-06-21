@@ -7,6 +7,7 @@ import numpy as np
 from typing_extensions import (
     Annotated,
     Literal,
+    Never,
     NotRequired,
     get_args,
     get_origin,
@@ -31,6 +32,7 @@ _raw_type_mapping = {
     bytes: "Uint8Array",
     Any: "any",
     None: "null",
+    Never: "never",
     type(None): "null",
 }
 

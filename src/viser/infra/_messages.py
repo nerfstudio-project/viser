@@ -62,12 +62,6 @@ def _prepare_for_serialization(value: Any, annotation: object) -> Any:
 
     # Recursively handle tuples.
     if isinstance(value, tuple):
-        if isinstance(value, np.ndarray):
-            assert False, (
-                "Expected a tuple, but got an array... missing a cast somewhere?"
-                f" {value}"
-            )
-
         out = []
         if get_origin(annotation) is tuple:
             args = get_args(annotation)

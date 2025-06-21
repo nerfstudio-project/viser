@@ -17,6 +17,8 @@ GUI Handles
 
 .. autoclass:: viser.GuiPlotlyHandle()
 
+.. autoclass:: viser.GuiUplotHandle()
+
 .. autoclass:: viser.GuiTabGroupHandle()
 
 .. autoclass:: viser.GuiTabHandle()

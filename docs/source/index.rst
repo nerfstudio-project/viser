@@ -65,6 +65,8 @@ URL (default: ``http://localhost:8080``).
    ./scene_handles.rst
    ./events.rst
    ./icons.rst
+   ./theme.rst
+   ./uplot.rst
 
 
 .. toctree::
