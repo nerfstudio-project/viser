@@ -855,41 +855,6 @@ class GuiApi:
 
         Returns:
             A handle for programmatically updating chart properties and data.
-
-        Raises:
-            ValueError: If data arrays have inconsistent lengths or series count
-                doesn't match data array count.
-            AssertionError: If data contains non-numpy arrays or non-1D arrays.
-
-        Example:
-            ```python
-            import numpy as np
-            import viser
-
-            server = viser.ViserServer()
-
-            # Generate sample time series data
-            time = np.linspace(0, 10, 100)
-            signal1 = np.sin(time)
-            signal2 = np.cos(time)
-
-            # Create chart with two series
-            chart = server.gui.add_uplot(
-                data=(time, signal1, signal2),
-                series=(
-                    viser.uplot.Series(label="Time"),
-                    viser.uplot.Series(label="Sine", stroke="red", width=2),
-                    viser.uplot.Series(label="Cosine", stroke="blue", width=2),
-                ),
-                title="Trigonometric Functions",
-                scales={
-                    "x": viser.uplot.Scale(auto=True),
-                    "y": viser.uplot.Scale(range=(-1.2, 1.2)),
-                },
-                legend=viser.uplot.Legend(show=True),
-                aspect=0.6,
-            )
-            ```
         """
 
         # Validate data structure
