@@ -75,15 +75,16 @@ def main(
     # Load URDF.
     #
     # This takes either a yourdfpy.URDF object or a path to a .urdf file.
+    urdf = load_robot_description(
+        robot_type + "_description",
+        load_meshes=load_meshes,
+        build_scene_graph=load_meshes,
+        load_collision_meshes=load_collision_meshes,
+        build_collision_scene_graph=load_collision_meshes,
+    )
     viser_urdf = ViserUrdf(
         server,
-        urdf_or_path=load_robot_description(
-            robot_type + "_description",
-            load_meshes=load_meshes,
-            build_scene_graph=load_meshes,
-            load_collision_meshes=load_collision_meshes,
-            build_collision_scene_graph=load_collision_meshes,
-        ),
+        urdf_or_path=urdf,
         load_meshes=load_meshes,
         load_collision_meshes=load_collision_meshes,
         collision_mesh_color_override=(1.0, 0.0, 0.0, 0.5),
