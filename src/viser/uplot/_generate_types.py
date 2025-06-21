@@ -89,12 +89,12 @@ class Lexer:
     def read_string_literal(self) -> str:
         """Read a quoted string literal."""
         quote_char = self.current_char  # ' or "
-        result = quote_char
+        result = quote_char or ""
         self.advance()
 
         while self.current_char is not None and self.current_char != quote_char:
             if self.current_char == "\\":
-                result += self.current_char
+                result += "\\"
                 self.advance()
                 if self.current_char is not None:
                     result += self.current_char
@@ -104,7 +104,7 @@ class Lexer:
                 self.advance()
 
         if self.current_char == quote_char:
-            result += self.current_char
+            result += self.current_char or ""
             self.advance()
 
         return result
@@ -143,8 +143,9 @@ class Lexer:
                 )
 
             # Number literals
+            peek_char = self.peek()
             if self.current_char.isdigit() or (
-                self.current_char == "-" and self.peek() and self.peek().isdigit()
+                self.current_char == "-" and peek_char is not None and peek_char.isdigit()
             ):
                 return Token(
                     TokenType.NUMBER_LITERAL, self.read_number_literal(), self.position
@@ -578,7 +579,7 @@ class PythonTypeConverter:
         self,
         known_interfaces: Optional[Set[str]] = None,
         type_aliases: Optional[Dict[str, str]] = None,
-        enums: Optional[Dict[str, Enum]] = None,
+        enums: Optional[Dict[str, "TypeScriptEnum"]] = None,
         use_literal_enums: bool = True,
     ):
         self.known_interfaces = known_interfaces or set()
@@ -885,7 +886,7 @@ def convert_type_with_ast(
     ts_type: str,
     known_interfaces: Set[str],
     type_aliases: Optional[Dict[str, str]] = None,
-    enums: Optional[Dict[str, Enum]] = None,
+    enums: Optional[Dict[str, "TypeScriptEnum"]] = None,
     use_literal_enums: bool = True,
 ) -> str:
     """Convert TypeScript type using AST-based parsing."""
@@ -921,7 +922,7 @@ class TypeAlias:
 
 
 @dataclass
-class Enum:
+class TypeScriptEnum:
     name: str
     members: List[tuple[str, str]]  # List of (member_name, value) pairs.
 
@@ -979,7 +980,7 @@ def parse_type_aliases(content: str) -> Dict[str, str]:
     return type_aliases
 
 
-def parse_enums(content: str) -> Dict[str, Enum]:
+def parse_enums(content: str) -> Dict[str, TypeScriptEnum]:
     """Parse const enum declarations from TypeScript content."""
     enums = {}
     lines = content.split("\n")
@@ -1014,7 +1015,7 @@ def parse_enums(content: str) -> Dict[str, Enum]:
                 i += 1
 
             if enum_members:
-                enums[enum_name] = Enum(name=enum_name, members=enum_members)
+                enums[enum_name] = TypeScriptEnum(name=enum_name, members=enum_members)
 
         i += 1
 
@@ -1327,15 +1328,15 @@ def resolve_inheritance(interfaces: List[Interface]) -> List[Interface]:
             base_name = interface.base_interface
             base_interface = None
 
+            # Try with namespace prefix if the current interface has one
+            current_namespace = ""
+            if "_" in interface.name:
+                current_namespace = interface.name.split("_")[0] + "_"
+
             # Try exact match first
             if base_name in interface_map:
                 base_interface = interface_map[base_name]
             else:
-                # Try with namespace prefix if the current interface has one
-                current_namespace = ""
-                if "_" in interface.name:
-                    current_namespace = interface.name.split("_")[0] + "_"
-
                 namespaced_base = current_namespace + base_name
                 if namespaced_base in interface_map:
                     base_interface = interface_map[namespaced_base]
@@ -1457,7 +1458,7 @@ def find_needed_interfaces(
 
 
 def collect_used_enums(
-    interfaces: List[Interface], enums: Dict[str, Enum], type_aliases: Dict[str, str]
+    interfaces: List[Interface], enums: Dict[str, TypeScriptEnum], type_aliases: Dict[str, str]
 ) -> Set[str]:
     """Collect enum names that are actually used in the TypedDict definitions."""
     used_enums = set()
