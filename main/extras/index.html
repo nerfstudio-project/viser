@@ -517,10 +517,29 @@ ViserUrdf creates the robot’s geometry as children of the specified
 <li><p><strong>urdf_or_path</strong> – Either a path to a URDF file or a yourdfpy URDF object.</p></li>
 <li><p><strong>scale</strong> – Scale factor to apply to resize the URDF.</p></li>
 <li><p><strong>root_node_name</strong> – Viser scene tree name for the root of the URDF geometry.</p></li>
-<li><p><strong>mesh_color_override</strong> – Optional color to override the URDF’s mesh colors.</p></li>
+<li><p><strong>mesh_color_override</strong> – Optional color to override the URDF’s visual mesh colors. RGB or RGBA tuple.</p></li>
+<li><p><strong>collision_mesh_color_override</strong> – Optional color to override the URDF’s collision mesh colors. RGB or RGBA tuple.</p></li>
+<li><p><strong>load_meshes</strong> – If true, shows the URDF’s visual meshes. If a yourdfpy
+URDF object is used as input, this expects the URDF to have a visual
+scene graph configured.</p></li>
+<li><p><strong>load_collision_meshes</strong> – If true, shows the URDF’s collision meshes. If a
+yourdfpy URDF object is used as input, this expects the URDF to have a
+collision scene graph configured.</p></li>
 </ul>
 </dd>
 </dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.extras.ViserUrdf.show_visual">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">show_visual</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.extras.ViserUrdf.show_visual" title="Link to this definition">¶</a></dt>
+<dd><p>Returns whether the visual meshes are currently visible.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.extras.ViserUrdf.show_collision">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">show_collision</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.extras.ViserUrdf.show_collision" title="Link to this definition">¶</a></dt>
+<dd><p>Returns whether the collision meshes are currently visible.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.extras.ViserUrdf.remove">
 <span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/extras/_urdf/#ViserUrdf.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.ViserUrdf.remove" title="Link to this definition">¶</a></dt>
@@ -650,6 +669,8 @@ ViserUrdf creates the robot’s geometry as children of the specified
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.extras.ViserUrdf"><code class="docutils literal notranslate"><span class="pre">ViserUrdf</span></code></a><ul>
+<li><a class="reference internal" href="#viser.extras.ViserUrdf.show_visual"><code class="docutils literal notranslate"><span class="pre">ViserUrdf.show_visual</span></code></a></li>
+<li><a class="reference internal" href="#viser.extras.ViserUrdf.show_collision"><code class="docutils literal notranslate"><span class="pre">ViserUrdf.show_collision</span></code></a></li>
 <li><a class="reference internal" href="#viser.extras.ViserUrdf.remove"><code class="docutils literal notranslate"><span class="pre">ViserUrdf.remove()</span></code></a></li>
 <li><a class="reference internal" href="#viser.extras.ViserUrdf.update_cfg"><code class="docutils literal notranslate"><span class="pre">ViserUrdf.update_cfg()</span></code></a></li>
 <li><a class="reference internal" href="#viser.extras.ViserUrdf.get_actuated_joint_limits"><code class="docutils literal notranslate"><span class="pre">ViserUrdf.get_actuated_joint_limits()</span></code></a></li>
