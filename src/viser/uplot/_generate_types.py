@@ -10,6 +10,8 @@ Key features:
 - Conservative approach to undefined type references
 """
 
+from __future__ import annotations
+
 import re
 import subprocess
 from abc import ABC
@@ -1257,11 +1259,11 @@ def topological_sort_interfaces(interfaces: List[Interface]) -> List[Interface]:
             # Look for exact interface names (including underscore names like Legend_Markers).
             for other_name in interface_names:
                 if other_name != interface_name:
-                    # Use word boundary regex to ensure exact matches..
-                    # But exclude patterns like "Legend.Something" which are type aliases, not interface refs..
+                    # Use word boundary regex to ensure exact matches.
+                    # But exclude patterns like "Legend.Something" which are type aliases, not interface refs.
                     if re.search(r"\b" + re.escape(other_name) + r"\b", prop_type):
-                        # Make sure it's not a qualified name like "Legend.Width"..
-                        # By checking if it's followed by a dot and identifier..
+                        # Make sure it's not a qualified name like "Legend.Width".
+                        # By checking if it's followed by a dot and identifier.
                         full_match = re.search(
                             r"\b"
                             + re.escape(other_name)
@@ -1269,12 +1271,12 @@ def topological_sort_interfaces(interfaces: List[Interface]) -> List[Interface]:
                             prop_type,
                         )
                         if full_match and full_match.group(1):
-                            # This is a qualified name like "Legend.Width", not an interface reference..
+                            # This is a qualified name like "Legend.Width", not an interface reference.
                             continue
                         deps.add(other_name)
 
-            # Also look for namespaced references that map to underscore names..
-            # e.g., "Legend.Markers" should create dependency on "Legend_Markers"..
+            # Also look for namespaced references that map to underscore names.
+            # e.g., "Legend.Markers" should create dependency on "Legend_Markers".
             namespaced_refs = re.findall(
                 r"\b[A-Z][a-zA-Z0-9_]*\.[A-Z][a-zA-Z0-9_]*\b", prop_type
             )
@@ -1290,8 +1292,8 @@ def topological_sort_interfaces(interfaces: List[Interface]) -> List[Interface]:
         for dep in deps:
             dependents[dep].add(interface_name)
 
-    # Kahn's algorithm for topological sorting..
-    # Start with interfaces that have no dependencies..
+    # Kahn's algorithm for topological sorting.
+    # Start with interfaces that have no dependencies.
     in_degree = {iface.name: len(dependencies[iface.name]) for iface in interfaces}
     queue = deque([name for name, degree in in_degree.items() if degree == 0])
     result = []
@@ -1300,17 +1302,17 @@ def topological_sort_interfaces(interfaces: List[Interface]) -> List[Interface]:
         current = queue.popleft()
         result.append(interface_map[current])
 
-        # Remove this interface from its dependents' dependency lists..
+        # Remove this interface from its dependents' dependency lists.
         for dependent in dependents[current]:
             in_degree[dependent] -= 1
             if in_degree[dependent] == 0:
                 queue.append(dependent)
 
-    # Check for cycles..
+    # Check for cycles.
     if len(result) != len(interfaces):
         remaining = set(interface_map.keys()) - {iface.name for iface in result}
         print(f"Warning: Circular dependencies detected in interfaces: {remaining}")
-        # Add remaining interfaces in original order..
+        # Add remaining interfaces in original order.
         for interface in interfaces:
             if interface.name in remaining:
                 result.append(interface)
@@ -1439,15 +1441,15 @@ def find_needed_interfaces(
                 if namespaced_base in interface_map and namespaced_base not in needed:
                     to_process.append(namespaced_base)
 
-        # Look for interface references in properties..
+        # Look for interface references in properties.
         for prop in current_interface.properties:
-            # Find PascalCase words that might be interface names..
+            # Find PascalCase words that might be interface names.
             words = re.findall(r"\b[A-Z][a-zA-Z0-9_]*\b", prop["type"])
             for word in words:
                 if word in interface_map and word not in needed:
                     to_process.append(word)
 
-            # Also look for namespaced interfaces like Axis.Grid -> Axis_Grid..
+            # Also look for namespaced interfaces like Axis.Grid -> Axis_Grid.
             namespaced_refs = re.findall(
                 r"\b[A-Z][a-zA-Z0-9_]*\.[A-Z][a-zA-Z0-9_]*\b", prop["type"]
             )
@@ -1516,7 +1518,7 @@ def generate_python_code(
     # Sort interfaces in topological order to eliminate forward references.
     needed_interfaces = topological_sort_interfaces(needed_interfaces)
 
-    # Parse enums and type aliases from content..
+    # Parse enums and type aliases from content.
     all_enums = parse_enums(content)
     type_aliases = parse_type_aliases(content)
 
@@ -1567,7 +1569,7 @@ def generate_python_code(
         ]
     )
 
-    # Generate Enum classes and type aliases (only if not using literal enums)..
+    # Generate Enum classes and type aliases (only if not using literal enums).
     if enums and not use_literal_enums:
         lines.append("# Enum definitions")
         for enum_name, enum_obj in enums.items():
@@ -1590,11 +1592,11 @@ def generate_python_code(
                     lines.append(f"    {snake_case_name} = {value}")
             lines.append("")
 
-    # Generate TypedDict classes and collect type aliases..
+    # Generate TypedDict classes and collect type aliases.
     type_aliases_to_generate = []
     interface_names = {iface.name for iface in needed_interfaces}
 
-    # First pass: collect type aliases that need to be generated..
+    # First pass: collect type aliases that need to be generated.
     for interface in needed_interfaces:
         name = interface.name
         properties = interface.properties
@@ -1630,28 +1632,28 @@ def generate_python_code(
                     (name, index_sig["comment"], key_type, value_type)
                 )
 
-    # Generate type aliases first (using string quotes for forward references)..
+    # Generate type aliases first (using string quotes for forward references).
     if type_aliases_to_generate:
         lines.append("# Type aliases for index signatures")
         for name, comment, key_type, value_type in type_aliases_to_generate:
-            # Use string quotes to allow forward references..
+            # Use string quotes to allow forward references.
             value_type_str = (
                 f'"{value_type}"' if value_type in interface_names else value_type
             )
-            # Add period to comment if it doesn't already end with punctuation..
+            # Add period to comment if it doesn't already end with punctuation.
             if comment and not comment.rstrip().endswith((".", "!", "?", ":", ";")):
                 comment += "."
             lines.extend(
                 [f"# {comment}", f"{name} = Dict[{key_type}, {value_type_str}]", ""]
             )
 
-    # Second pass: generate TypedDict classes..
+    # Second pass: generate TypedDict classes.
     type_alias_names = {name for name, _, _, _ in type_aliases_to_generate}
 
     for interface in needed_interfaces:
         name = interface.name
 
-        # Skip if this was already handled as a type alias..
+        # Skip if this was already handled as a type alias.
         if name in type_alias_names:
             continue
 
