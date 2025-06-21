@@ -38,7 +38,7 @@ function PlotComponent({
   const plotOptions = useMemo(() => {
     return {
       width: containerWidth,
-      height: (containerWidth * props.aspect) as any,
+      height: (containerWidth / props.aspect) as any,
       title: props.title || undefined,
       mode: props.mode || undefined,
       series: (props.series as any) || [],

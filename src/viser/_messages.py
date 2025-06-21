@@ -1089,39 +1089,39 @@ class GuiPlotlyMessage(_CreateGuiComponentMessage):
 class GuiUplotProps:
     order: float
     """Order value for arranging GUI elements. Synchronized automatically when assigned."""
-    data: tuple[npt.NDArray[np.float64], ...]
+    data: Tuple[npt.NDArray[np.float64], ...]
     """Tuple of 1D numpy arrays containing chart data. First array is x-axis data,
     subsequent arrays are y-axis data for each series. All arrays must have matching
     lengths. Minimum 2 arrays required. Synchronized automatically when assigned."""
-    mode: Literal[1, 2] | None
+    mode: Union[Literal[1, 2], None]
     """Chart layout mode: 1 = aligned (all series share axes), 2 = faceted (each series
     gets its own subplot panel). Defaults to 1. Synchronized automatically when assigned."""
-    title: str | None
+    title: Union[str, None]
     """Chart title displayed at the top of the plot. Synchronized automatically when assigned."""
-    series: tuple[uplot.Series, ...]
+    series: Tuple[uplot.Series, ...]
     """Series configuration objects defining visual appearance (colors, line styles, labels)
     and behavior for each data array. Must match data tuple length. Synchronized automatically when assigned."""
-    bands: tuple[uplot.Band, ...] | None
+    bands: Union[Tuple[uplot.Band, ...], None]
     """High/low range visualizations between adjacent series indices. Useful for confidence
     intervals, error bounds, or min/max ranges. Synchronized automatically when assigned."""
-    scales: dict[str, uplot.Scale] | None
+    scales: Union[Dict[str, uplot.Scale], None]
     """Scale definitions controlling data-to-pixel mapping and axis ranges. Enables features
     like auto-ranging, manual bounds, time-based scaling, and logarithmic distributions.
     Multiple scales support dual-axis charts. Synchronized automatically when assigned."""
-    axes: tuple[uplot.Axis, ...] | None
+    axes: Union[Tuple[uplot.Axis, ...], None]
     """Axis configuration for positioning (top/right/bottom/left), tick formatting, grid
     styling, and spacing. Controls visual appearance of chart axes. Synchronized automatically when assigned."""
-    legend: uplot.Legend | None
+    legend: Union[uplot.Legend, None]
     """Legend display options including positioning, styling, and custom value formatting
     for hover states. Synchronized automatically when assigned."""
-    cursor: uplot.Cursor | None
+    cursor: Union[uplot.Cursor, None]
     """Interactive cursor behavior including hover detection, drag-to-zoom, and crosshair
     appearance. Controls user interaction with the chart. Synchronized automatically when assigned."""
-    focus: uplot.Focus | None
+    focus: Union[uplot.Focus, None]
     """Visual highlighting when hovering over series. Controls alpha transparency of
     non-focused series to emphasize the active one. Synchronized automatically when assigned."""
     aspect: float
-    """Height-to-width ratio for chart display (height/width). 1.0 = square, <1.0 = wider.
+    """Width-to-height ratio for chart display (width/height). 1.0 = square, >1.0 = wider.
     Synchronized automatically when assigned."""
     visible: bool
     """Whether the chart is visible in the interface. Synchronized automatically when assigned."""

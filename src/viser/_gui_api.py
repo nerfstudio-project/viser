@@ -848,8 +848,8 @@ class GuiApi:
                 with the chart through mouse/touch.
             focus: Visual highlighting when hovering over series. Controls the alpha
                 transparency of non-focused series to emphasize the active one.
-            aspect: Height-to-width ratio for the chart display in the control panel.
-                1.0 creates a square chart, values < 1.0 create wider charts.
+            aspect: Width-to-height ratio for the chart display in the control panel.
+                1.0 creates a square chart, values > 1.0 create wider charts.
             order: Display ordering relative to other GUI elements (lower values first).
             visible: Whether the chart is visible in the interface.
 
