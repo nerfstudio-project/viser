@@ -1,44 +1,26 @@
-import { useEffect, useRef, useMemo } from "react";
-import uPlot from "uplot";
+import { useMemo, useState } from "react";
 import UplotReact from "uplot-react";
 import "uplot/dist/uPlot.min.css";
 
-import { Modal, Box, Paper, Tooltip } from "@mantine/core";
+import { Modal, Box, Paper, Tooltip, ActionIcon } from "@mantine/core";
 import { useDisclosure, useElementSize } from "@mantine/hooks";
+import { IconMaximize } from "@tabler/icons-react";
 import { GuiUplotMessage } from "../WebsocketMessages";
 import { folderWrapper } from "./Folder.css";
 
-export default function UplotComponent({
-  props: {
-    data,
-    series,
-    title,
-    mode,
-    bands,
-    scales,
-    axes,
-    legend,
-    cursor,
-    focus,
-    aspect,
-  },
-}: GuiUplotMessage) {
-  // Modal state
-  const [opened, { open, close }] = useDisclosure(false);
-
-  // Container sizing
+// Individual plot component.
+function PlotComponent({
+  props,
+  onExpand,
+}: GuiUplotMessage & {
+  onExpand?: () => void;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
   const { ref: containerSizeRef, width: containerWidth } = useElementSize();
-  const { ref: modalContainerSizeRef, width: modalContainerWidth } =
-    useElementSize();
 
-  // uPlot instance refs for both small and modal plots
-  const plotRef = useRef<uPlot | null>(null);
-  const modalPlotRef = useRef<uPlot | null>(null);
-  const lastCursorPos = useRef<{ left: number; top: number } | null>(null);
-
-  // Convert inputs to Float64Array once per update
-  const alignedData = useMemo(() => {
-    const convertedData = data.map((array: Uint8Array) => {
+  // Convert inputs to Float64Array once per update.
+  const data = useMemo(() => {
+    const convertedData = props.data.map((array: Uint8Array) => {
       return new Float64Array(
         array.buffer.slice(
           array.byteOffset,
@@ -47,145 +29,73 @@ export default function UplotComponent({
       );
     });
     return convertedData;
-  }, [data]);
+  }, [props.data]);
 
-  // Build base uPlot options from the props
-  const baseUplotOptions = useMemo(() => {
-    const options: any = {
-      title: title || undefined,
-      mode: mode || undefined,
-      series: series || [],
-    };
-    if (bands !== null) options.bands = bands;
-    if (scales !== null) options.scales = scales;
-    if (axes !== null) options.axes = axes;
-    if (legend !== null) options.legend = legend;
-    if (cursor !== null) options.cursor = cursor;
-    if (focus !== null) options.focus = focus;
-
-    return options;
-  }, [title, mode, series, bands, scales, axes, legend, cursor, focus]);
-
-  // Small plot options (for the preview)
-  const smallPlotOptions = useMemo(() => {
-    if (containerWidth <= 0) return undefined;
+  // Build uPlot options from the props.
+  //
+  // There are some `any` casts because the types here come through multiple
+  // transpiler layers, which are imperfect: TS=>Python=>TS.
+  const plotOptions = useMemo(() => {
     return {
       width: containerWidth,
-      height: containerWidth * aspect,
-      cursor: {
-        show: true,
-        drag: { setScale: true },
-        points: { show: true, size: 4 },
-        ...baseUplotOptions.cursor,
-      },
-      ...baseUplotOptions,
+      height: (containerWidth * props.aspect) as any,
+      title: props.title || undefined,
+      mode: props.mode || undefined,
+      series: (props.series as any) || [],
+      cursor: (props.cursor as any) || undefined,
+      bands: props.bands || undefined,
+      scales: props.scales || undefined,
+      axes: (props.axes as any) || undefined,
+      legend: (props.legend as any) || undefined,
+      focus: props.focus || undefined,
     };
-  }, [containerWidth, aspect, baseUplotOptions]);
+  }, [containerWidth, props]);
 
-  // Modal plot options (for the expanded view)
-  const modalPlotOptions = useMemo(() => {
-    if (modalContainerWidth <= 0) return undefined;
-    return {
-      width: modalContainerWidth,
-      height: modalContainerWidth * aspect,
-      cursor: {
-        show: true,
-        drag: { setScale: true },
-        points: { show: true, size: 4 },
-        ...baseUplotOptions.cursor,
-      },
-      ...baseUplotOptions,
-    };
-  }, [modalContainerWidth, aspect, baseUplotOptions]);
+  return (
+    <Paper
+      ref={containerSizeRef}
+      className={folderWrapper}
+      withBorder
+      style={{ position: "relative" }}
+      onMouseEnter={onExpand ? () => setIsHovered(true) : undefined}
+      onMouseLeave={onExpand ? () => setIsHovered(false) : undefined}
+    >
+      {plotOptions && <UplotReact options={plotOptions} data={data} />}
+      {onExpand && isHovered && (
+        <Tooltip label="Expand plot">
+          <ActionIcon
+            onClick={onExpand}
+            variant="subtle"
+            color="gray"
+            size="sm"
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              backdropFilter: "blur(4px)",
+            }}
+          >
+            <IconMaximize size={14} />
+          </ActionIcon>
+        </Tooltip>
+      )}
+    </Paper>
+  );
+}
 
-  // Handle plot lifecycle for small plot
-  const handleSmallPlotCreate = (chart: uPlot) => {
-    plotRef.current = chart;
-    if (lastCursorPos.current) {
-      chart.setCursor(lastCursorPos.current);
-    }
-  };
-
-  const handleSmallPlotDelete = (chart: uPlot) => {
-    if (plotRef.current === chart) {
-      if (chart.cursor.left != null && chart.cursor.top != null) {
-        lastCursorPos.current = {
-          left: chart.cursor.left,
-          top: chart.cursor.top,
-        };
-      }
-      plotRef.current = null;
-    }
-  };
-
-  // Handle plot lifecycle for modal plot
-  const handleModalPlotCreate = (chart: uPlot) => {
-    modalPlotRef.current = chart;
-    if (lastCursorPos.current) {
-      chart.setCursor(lastCursorPos.current);
-    }
-  };
-
-  const handleModalPlotDelete = (chart: uPlot) => {
-    if (modalPlotRef.current === chart) {
-      if (chart.cursor.left != null && chart.cursor.top != null) {
-        lastCursorPos.current = {
-          left: chart.cursor.left,
-          top: chart.cursor.top,
-        };
-      }
-      modalPlotRef.current = null;
-    }
-  };
-
-  // Update data for both plots
-  useEffect(() => {
-    if (plotRef.current) {
-      plotRef.current.setData(alignedData);
-    }
-    if (opened && modalPlotRef.current) {
-      modalPlotRef.current.setData(alignedData);
-    }
-  }, [alignedData, opened]);
+export default function UplotComponent(message: GuiUplotMessage) {
+  // Modal state.
+  const [opened, { open, close }] = useDisclosure(false);
 
   return (
     <Box>
-      <Tooltip.Floating label="Click to expand" zIndex={100}>
-        <Box onClick={open} style={{ cursor: "pointer", flexShrink: 0 }}>
-          <Paper
-            ref={containerSizeRef}
-            className={folderWrapper}
-            withBorder
-            style={{ position: "relative" }}
-          >
-            {smallPlotOptions && (
-              <UplotReact
-                options={smallPlotOptions}
-                data={alignedData}
-                onCreate={handleSmallPlotCreate}
-                onDelete={handleSmallPlotDelete}
-              />
-            )}
-          </Paper>
-        </Box>
-      </Tooltip.Floating>
+      {/* Small plot with expand button. */}
+      <PlotComponent {...message} onExpand={open} />
 
-      <Modal opened={opened} onClose={close} size="xl" keepMounted>
-        <Paper
-          ref={modalContainerSizeRef}
-          className={folderWrapper}
-          withBorder
-          style={{ position: "relative" }}
-        >
-          {modalPlotOptions && (
-            <UplotReact
-              options={modalPlotOptions}
-              data={alignedData}
-              onCreate={handleModalPlotCreate}
-              onDelete={handleModalPlotDelete}
-            />
-          )}
-        </Paper>
+      {/* Modal with larger plot. */}
+      <Modal opened={opened} onClose={close} size="xl">
+        <PlotComponent {...message} />
       </Modal>
     </Box>
   );

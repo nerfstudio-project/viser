@@ -5,7 +5,6 @@ Examples of visualizing uPlot plots in Viser."""
 import time
 
 import numpy as np
-
 import viser
 
 
@@ -21,12 +20,10 @@ def main() -> None:
     server = viser.ViserServer()
 
     time_step = 1.0 / 60.0
-    x_data = time_step * np.arange(100, dtype=np.float64)
-    y0_data = y0(x_data)
-    y1_data = y1(x_data)
 
     # Data for uPlot: tuple of arrays where first is x-data, rest are y-data
-    data = (x_data, y0_data, y1_data)
+    x_data = time_step * np.arange(100)
+    data = (x_data, y0(x_data), y1(x_data))
 
     print("data shapes:", [arr.shape for arr in data])
 
@@ -58,13 +55,8 @@ def main() -> None:
 
     while True:
         # Update the line plot.
-        x_data = data[0] + time_step
-        y0_data = y0(x_data)
-        y1_data = y1(x_data)
-
-        # Update the data
-        data = (x_data, y0_data, y1_data)
-        uplot_handle.data = data
+        x_data = x_data + time_step
+        uplot_handle.data = (x_data, y0(x_data), y1(x_data))
         time.sleep(time_step)
 
 
