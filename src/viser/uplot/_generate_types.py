@@ -772,12 +772,12 @@ class PythonTypeConverter:
 
         # Handle built-in TypeScript types
         builtin_types = {
-            "object": "dict",
-            "Object": "dict",
+            "object": "Dict",
+            "Object": "Dict",
             "String": "str",
             "Number": "float",
             "Boolean": "bool",
-            "Array": "list",
+            "Array": "List",
             "Function": "JSCallback",
             "Date": "UnknownType",
             "RegExp": "UnknownType",
@@ -838,17 +838,17 @@ class PythonTypeConverter:
         return "UnknownType"
 
     def _convert_array(self, node: ArrayType) -> str:
-        """Convert array types to tuple[T, ...] by default."""
+        """Convert array types to Tuple[T, ...] by default."""
         element_type = self.convert(node.element_type)
-        return f"tuple[{element_type}, ...]"
+        return f"Tuple[{element_type}, ...]"
 
     def _convert_tuple(self, node: TupleType) -> str:
         """Convert tuple types."""
         if not node.element_types:
-            return "tuple[()]"
+            return "Tuple[()]"
 
         element_types = [self.convert(t) for t in node.element_types]
-        return f"tuple[{', '.join(element_types)}]"
+        return f"Tuple[{', '.join(element_types)}]"
 
     def _convert_function(self, node: FunctionType) -> str:
         """Convert function types to JSCallback."""
@@ -864,7 +864,7 @@ class PythonTypeConverter:
 
             if base_name == "Array" and node.type_arguments:
                 element_type = self.convert(node.type_arguments[0])
-                return f"tuple[{element_type}, ...]"
+                return f"Tuple[{element_type}, ...]"
 
             if base_name == "Record" and len(node.type_arguments) >= 2:
                 key_type = self.convert(node.type_arguments[0])
@@ -1555,7 +1555,7 @@ def generate_python_code(
         lines.append("from enum import IntEnum, StrEnum")
     lines.extend(
         [
-            "from typing import Any, Dict, Literal, Union",
+            "from typing import Any, Dict, List, Literal, Tuple, Union",
             "from typing_extensions import Never, Required, TypedDict",
             "",
             "# Semantic type aliases for unsupported/complex TypeScript patterns",
