@@ -30,6 +30,7 @@ from ._scene_handles import AmbientLightHandle as AmbientLightHandle
 from ._scene_handles import BatchedAxesHandle as BatchedAxesHandle
 from ._scene_handles import BatchedGlbHandle as BatchedGlbHandle
 from ._scene_handles import BatchedMeshHandle as BatchedMeshHandle
+from ._scene_handles import BoxHandle as BoxHandle
 from ._scene_handles import CameraFrustumHandle as CameraFrustumHandle
 from ._scene_handles import DirectionalLightHandle as DirectionalLightHandle
 from ._scene_handles import FrameHandle as FrameHandle
@@ -38,6 +39,7 @@ from ._scene_handles import GlbHandle as GlbHandle
 from ._scene_handles import GridHandle as GridHandle
 from ._scene_handles import Gui3dContainerHandle as Gui3dContainerHandle
 from ._scene_handles import HemisphereLightHandle as HemisphereLightHandle
+from ._scene_handles import IcosphereHandle as IcosphereHandle
 from ._scene_handles import ImageHandle as ImageHandle
 from ._scene_handles import LabelHandle as LabelHandle
 from ._scene_handles import LineSegmentsHandle as LineSegmentsHandle
@@ -53,6 +55,7 @@ from ._scene_handles import ScenePointerEvent as ScenePointerEvent
 from ._scene_handles import SplineCatmullRomHandle as SplineCatmullRomHandle
 from ._scene_handles import SplineCubicBezierHandle as SplineCubicBezierHandle
 from ._scene_handles import SpotLightHandle as SpotLightHandle
+from ._scene_handles import TransformControlsEvent as TransformControlsEvent
 from ._scene_handles import TransformControlsHandle as TransformControlsHandle
 from ._viser import CameraHandle as CameraHandle
 from ._viser import ClientHandle as ClientHandle

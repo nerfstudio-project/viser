@@ -9,3 +9,5 @@ when events like clicks or GUI updates are triggered.
 .. autoclass:: viser.SceneNodePointerEvent()
 
 .. autoclass:: viser.GuiEvent()
+
+.. autoclass:: viser.TransformControlsEvent()

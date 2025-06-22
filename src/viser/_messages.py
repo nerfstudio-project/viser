@@ -579,6 +579,20 @@ class MeshMessage(_CreateSceneNodeMessage):
 
 
 @dataclasses.dataclass
+class BoxMessage(_CreateSceneNodeMessage):
+    """Box message."""
+
+    props: BoxProps
+
+
+@dataclasses.dataclass
+class IcosphereMessage(_CreateSceneNodeMessage):
+    """Icosphere message."""
+
+    props: IcosphereProps
+
+
+@dataclasses.dataclass
 class MeshProps:
     vertices: npt.NDArray[np.float32]
     """A numpy array of vertex positions. Should have shape (V, 3). Synchronized automatically when assigned."""
@@ -605,6 +619,52 @@ class MeshProps:
         # Check shapes.
         assert self.vertices.shape[-1] == 3
         assert self.faces.shape[-1] == 3
+
+
+@dataclasses.dataclass
+class BoxProps:
+    dimensions: Tuple[float, float, float]
+    """Dimensions of the box (x, y, z). Synchronized automatically when assigned."""
+    color: Tuple[int, int, int]
+    """Color of the box as RGB integers. Synchronized automatically when assigned."""
+    wireframe: bool
+    """Boolean indicating if the box should be rendered as a wireframe. Synchronized automatically when assigned."""
+    opacity: Optional[float]
+    """Opacity of the box. None means opaque. Synchronized automatically when assigned."""
+    flat_shading: bool
+    """Whether to do flat shading. Synchronized automatically when assigned."""
+    side: Literal["front", "back", "double"]
+    """Side of the surface to render. Synchronized automatically when assigned."""
+    material: Literal["standard", "toon3", "toon5"]
+    """Material type of the box. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class IcosphereProps:
+    radius: float
+    """Radius of the icosphere. Synchronized automatically when assigned."""
+    subdivisions: int
+    """Number of subdivisions to use when creating the icosphere. Synchronized automatically when assigned."""
+    color: Tuple[int, int, int]
+    """Color of the icosphere as RGB integers. Synchronized automatically when assigned."""
+    wireframe: bool
+    """Boolean indicating if the icosphere should be rendered as a wireframe. Synchronized automatically when assigned."""
+    opacity: Optional[float]
+    """Opacity of the icosphere. None means opaque. Synchronized automatically when assigned."""
+    flat_shading: bool
+    """Whether to do flat shading. Synchronized automatically when assigned."""
+    side: Literal["front", "back", "double"]
+    """Side of the surface to render. Synchronized automatically when assigned."""
+    material: Literal["standard", "toon3", "toon5"]
+    """Material type of the icosphere. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -841,6 +901,20 @@ class TransformControlsUpdateMessage(Message):
     name: str
     wxyz: Tuple[float, float, float, float]
     position: Tuple[float, float, float]
+
+
+@dataclasses.dataclass
+class TransformControlsDragStartMessage(Message):
+    """Client -> server message when a transform control drag starts."""
+
+    name: str
+
+
+@dataclasses.dataclass
+class TransformControlsDragEndMessage(Message):
+    """Client -> server message when a transform control drag ends."""
+
+    name: str
 
 
 @dataclasses.dataclass

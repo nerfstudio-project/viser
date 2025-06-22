@@ -62,7 +62,7 @@ examples = [
     "torch>=1.13.1",
     "matplotlib>=3.7.1",
     "plotly>=5.21.0",
-    "robot_descriptions>=1.10.0",
+    "robot_descriptions>=1.18.0",
     "gdown>=4.6.6",
     "plyfile",
     "opencv-python",
@@ -88,11 +88,11 @@ lint.select = [
     "PLE",  # Pylint errors.
     "PLR",  # Pylint refactor recommendations.
     "PLW",  # Pylint warnings.
-    "I", # Import sorting.
+    "I",  # Import sorting.
 ]
 lint.ignore = [
     "E731",  # Do not assign a lambda expression, use a def.
-    "E741", # Ambiguous variable name. (l, O, or I)
+    "E741",  # Ambiguous variable name. (l, O, or I)
     "E501",  # Line too long.
     "E721",  # Do not compare types, use `isinstance()`.
     "F722",  # Forward annotation false positive from jaxtyping. Should be caught by pyright.
@@ -101,11 +101,12 @@ lint.ignore = [
     "PLR0915",  # Too many statements.
     "PLR0913",  # Too many arguments.
     "PLC0414",  # Import alias does not rename variable. (this is used for exporting names)
+    "PLC0415",  # Import should be at the top-level of a file.
     "PLC1901",  # Use falsey strings.
     "PLR5501",  # Use `elif` instead of `else if`.
     "PLR0911",  # Too many return statements.
     "PLR0912",  # Too many branches.
-    "PLW0603",  # Globa statement updates are discouraged.
+    "PLW0603",  # Global statement updates are discouraged.
     "PLW2901",  # For loop variable overwritten.
     "PLW0642",  # Reassigned self in instance method.
 ]

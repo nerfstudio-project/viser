@@ -4,8 +4,8 @@ import {
   Grid,
   PivotControls,
 } from "@react-three/drei";
-import { useContextBridge } from "its-fine";
-import { createPortal, useFrame } from "@react-three/fiber";
+import { ContextBridge, useContextBridge } from "its-fine";
+import { useFrame } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
 
@@ -48,6 +48,8 @@ import { Line } from "./Line";
 import { shadowArgs } from "./ShadowArgs";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
 import { BasicMesh } from "./mesh/BasicMesh";
+import { BoxMesh } from "./mesh/BoxMesh";
+import { IcosphereMesh } from "./mesh/IcosphereMesh";
 import { SkinnedMesh } from "./mesh/SkinnedMesh";
 import { BatchedMesh } from "./mesh/BatchedMesh";
 import { SingleGlbAsset } from "./mesh/SingleGlbAsset";
@@ -60,65 +62,6 @@ function rgbToInt(rgb: [number, number, number]): number {
 /** Type corresponding to a zustand-style useSceneTree hook. */
 export type UseSceneTree = ReturnType<typeof useSceneTreeState>;
 
-function SceneNodeThreeChildren(props: {
-  name: string;
-  parent: THREE.Object3D;
-}) {
-  const viewer = React.useContext(ViewerContext)!;
-
-  const [children, setChildren] = React.useState<string[]>(
-    viewer.useSceneTree.getState().nodeFromName[props.name]?.children ?? [],
-  );
-
-  React.useEffect(() => {
-    let updateQueued = false;
-    return viewer.useSceneTree.subscribe((state) => {
-      // Do nothing if an update is already queued.
-      if (updateQueued) return;
-
-      // Do nothing if children haven't changed.
-      const newChildren = state.nodeFromName[props.name]?.children;
-      if (
-        newChildren === undefined ||
-        newChildren === children || // Note that this won't check for elementwise equality!
-        (newChildren.length === 0 && children.length === 0)
-      )
-        return;
-
-      // Queue a (throttled) children update.
-      updateQueued = true;
-      setTimeout(
-        () => {
-          updateQueued = false;
-          const node = viewer.useSceneTree.getState().nodeFromName[props.name];
-          if (node !== undefined) {
-            const newChildren = node.children!;
-            setChildren(newChildren);
-          }
-        },
-        // Throttle more when we have a lot of children...
-        newChildren.length <= 16 ? 10 : newChildren.length <= 128 ? 50 : 200,
-      );
-    });
-  }, []);
-
-  // Create a group of children inside of the parent object.
-  return createPortal(
-    <group>
-      {children &&
-        children.map((child_id) => (
-          <SceneNodeThreeObject
-            key={child_id}
-            name={child_id}
-            parent={props.parent}
-          />
-        ))}
-      <SceneNodeLabel name={props.name} />
-    </group>,
-    props.parent,
-  );
-}
-
 /** Component for updating attributes of a scene node. */
 function SceneNodeLabel(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
@@ -130,6 +73,7 @@ function SceneNodeLabel(props: { name: string }) {
       <span
         style={{
           backgroundColor: "rgba(240, 240, 240, 0.9)",
+          color: "#333",
           borderRadius: "0.2rem",
           userSelect: "none",
           padding: "0.1em 0.2em",
@@ -141,25 +85,29 @@ function SceneNodeLabel(props: { name: string }) {
   ) : null;
 }
 
-export type MakeObject = (ref: React.Ref<any>) => React.ReactNode;
+export type MakeObject = (
+  ref: React.Ref<any>,
+  children: React.ReactNode,
+) => React.ReactNode;
 
-function useObjectFactory(message: SceneNodeMessage | undefined): {
+function createObjectFactory(
+  message: SceneNodeMessage | undefined,
+  viewer: ViewerContextContents,
+  ContextBridge: ContextBridge,
+): {
   makeObject: MakeObject;
   unmountWhenInvisible?: boolean;
   computeClickInstanceIndexFromInstanceId?: (
     instanceId: number | undefined,
   ) => number | null;
 } {
-  const viewer = React.useContext(ViewerContext)!;
-  const ContextBridge = useContextBridge();
-
   if (message === undefined) return { makeObject: () => null };
 
   switch (message.type) {
     // Add a coordinate frame.
     case "FrameMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <CoordinateFrame
             ref={ref}
             showAxes={message.props.show_axes}
@@ -167,7 +115,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             axesRadius={message.props.axes_radius}
             originRadius={message.props.origin_radius}
             originColor={rgbToInt(message.props.origin_color)}
-          />
+          >
+            {children}
+          </CoordinateFrame>
         ),
       };
     }
@@ -175,7 +125,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Add axes to visualize.
     case "BatchedAxesMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <InstancedAxes
             ref={ref}
             batched_wxyzs={message.props.batched_wxyzs}
@@ -183,7 +133,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             batched_scales={message.props.batched_scales}
             axes_length={message.props.axes_length}
             axes_radius={message.props.axes_radius}
-          />
+          >
+            {children}
+          </InstancedAxes>
         ),
         // Compute click instance index from instance ID. Each visualized
         // frame has 1 instance for each of 3 line segments.
@@ -245,7 +197,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
         shadowPlane = null;
       }
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <group ref={ref}>
             <Grid
               args={[
@@ -264,6 +216,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
               quaternion={gridQuaternion}
             />
             {shadowPlane}
+            {children}
           </group>
         ),
       };
@@ -272,24 +225,58 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Add a point cloud.
     case "PointCloudMessage": {
       return {
-        makeObject: (ref) => <PointCloud ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <PointCloud ref={ref} {...message}>
+            {children}
+          </PointCloud>
+        ),
       };
     }
 
     // Add mesh
     case "SkinnedMeshMessage": {
       return {
-        makeObject: (ref) => <SkinnedMesh ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <SkinnedMesh ref={ref} {...message}>
+            {children}
+          </SkinnedMesh>
+        ),
       };
     }
     case "MeshMessage": {
       return {
-        makeObject: (ref) => <BasicMesh ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <BasicMesh ref={ref} {...message}>
+            {children}
+          </BasicMesh>
+        ),
+      };
+    }
+    case "BoxMessage": {
+      return {
+        makeObject: (ref, children) => (
+          <BoxMesh ref={ref} {...message}>
+            {children}
+          </BoxMesh>
+        ),
+      };
+    }
+    case "IcosphereMessage": {
+      return {
+        makeObject: (ref, children) => (
+          <IcosphereMesh ref={ref} {...message}>
+            {children}
+          </IcosphereMesh>
+        ),
       };
     }
     case "BatchedMeshesMessage": {
       return {
-        makeObject: (ref) => <BatchedMesh ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <BatchedMesh ref={ref} {...message}>
+            {children}
+          </BatchedMesh>
+        ),
         computeClickInstanceIndexFromInstanceId:
           message.type === "BatchedMeshesMessage"
             ? (instanceId) => instanceId!
@@ -299,14 +286,24 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Add a camera frustum.
     case "CameraFrustumMessage": {
       return {
-        makeObject: (ref) => <CameraFrustum ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <CameraFrustum ref={ref} {...message}>
+            {children}
+          </CameraFrustum>
+        ),
       };
     }
+
+    // Add a transform control, centered at current object.
     case "TransformControlsMessage": {
-      const name = message.name;
-      const sendDragMessage = makeThrottledMessageSender(viewer, 50);
+      const { send: sendDragMessage, flush: flushDragMessage } =
+        makeThrottledMessageSender(viewer, 50);
+      // We track drag state to prevent duplicate drag end events.
+      // This variable persists in the closure created by makeObject,
+      // so we don't need useRef here.
+      let isDragging = false;
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <group onClick={(e) => e.stopPropagation()}>
             <PivotControls
               ref={ref}
@@ -322,27 +319,56 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
               rotationLimits={message.props.rotation_limits}
               depthTest={message.props.depth_test}
               opacity={message.props.opacity}
+              onDragStart={() => {
+                isDragging = true;
+                viewer.mutable.current.sendMessage({
+                  type: "TransformControlsDragStartMessage",
+                  name: message.name,
+                });
+              }}
               onDrag={(l) => {
-                const attrs = viewer.mutable.current.nodeAttributesFromName;
-                if (attrs[message.name] === undefined) {
-                  attrs[message.name] = {};
-                }
-
                 const wxyz = new THREE.Quaternion();
                 wxyz.setFromRotationMatrix(l);
                 const position = new THREE.Vector3().setFromMatrixPosition(l);
 
-                const nodeAttributes = attrs[message.name]!;
-                nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
-                nodeAttributes.position = position.toArray();
+                // Update node attributes in scene tree state.
+                const wxyzArray = [wxyz.w, wxyz.x, wxyz.y, wxyz.z] as [
+                  number,
+                  number,
+                  number,
+                  number,
+                ];
+                const positionArray = position.toArray() as [
+                  number,
+                  number,
+                  number,
+                ];
+                viewer.useSceneTree
+                  .getState()
+                  .updateNodeAttributes(message.name, {
+                    wxyz: wxyzArray,
+                    position: positionArray,
+                  });
                 sendDragMessage({
                   type: "TransformControlsUpdateMessage",
-                  name: name,
-                  wxyz: nodeAttributes.wxyz,
-                  position: nodeAttributes.position,
+                  name: message.name,
+                  wxyz: wxyzArray,
+                  position: positionArray,
                 });
               }}
-            />
+              onDragEnd={() => {
+                if (isDragging) {
+                  isDragging = false;
+                  flushDragMessage();
+                  viewer.mutable.current.sendMessage({
+                    type: "TransformControlsDragEndMessage",
+                    name: message.name,
+                  });
+                }
+              }}
+            >
+              {children}
+            </PivotControls>
           </group>
         ),
         unmountWhenInvisible: true,
@@ -351,7 +377,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Add a 2D label.
     case "LabelMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           // We wrap with <group /> because Html doesn't implement THREE.Object3D.
           <group ref={ref}>
             <Html>
@@ -375,6 +401,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 </span>
               </div>
             </Html>
+            {children}
           </group>
         ),
         unmountWhenInvisible: true,
@@ -382,7 +409,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     }
     case "Gui3DMessage": {
       return {
-        makeObject: (ref) => {
+        makeObject: (ref, children) => {
           // We wrap with <group /> because Html doesn't implement
           // THREE.Object3D.
           return (
@@ -408,6 +435,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                   </Paper>
                 </ContextBridge>
               </Html>
+              {children}
             </group>
           );
         },
@@ -417,24 +445,36 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Add an image.
     case "ImageMessage": {
       return {
-        makeObject: (ref) => <ViserImage ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <ViserImage ref={ref} {...message}>
+            {children}
+          </ViserImage>
+        ),
       };
     }
     // Add a glTF/GLB asset.
     case "GlbMessage": {
       return {
-        makeObject: (ref) => <SingleGlbAsset ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <SingleGlbAsset ref={ref} {...message}>
+            {children}
+          </SingleGlbAsset>
+        ),
       };
     }
     case "BatchedGlbMessage": {
       return {
-        makeObject: (ref) => <BatchedGlbAsset ref={ref} {...message} />,
+        makeObject: (ref, children) => (
+          <BatchedGlbAsset ref={ref} {...message}>
+            {children}
+          </BatchedGlbAsset>
+        ),
         computeClickInstanceIndexFromInstanceId: (instanceId) => instanceId!,
       };
     }
     case "LineSegmentsMessage": {
       return {
-        makeObject: (ref) => {
+        makeObject: (ref, children) => {
           // The array conversion here isn't very efficient. We go from buffer
           // => TypeArray => Javascript Array, then back to buffers in drei's
           // <Line /> abstraction.
@@ -458,6 +498,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 vertexColors={colorArray}
                 segments={true}
               />
+              {children}
             </group>
           );
         },
@@ -465,7 +506,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     }
     case "CatmullRomSplineMessage": {
       return {
-        makeObject: (ref) => {
+        makeObject: (ref, children) => {
           return (
             <group ref={ref}>
               <CatmullRomLine
@@ -478,6 +519,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
                 segments={(message.props.segments ?? undefined) as undefined}
               />
+              {children}
             </group>
           );
         },
@@ -485,7 +527,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     }
     case "CubicBezierSplineMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <group ref={ref}>
             {[...Array(message.props.positions.length - 1).keys()].map((i) => (
               <CubicBezierLine
@@ -500,13 +542,14 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 segments={(message.props.segments ?? undefined) as undefined}
               ></CubicBezierLine>
             ))}
+            {children}
           </group>
         ),
       };
     }
     case "GaussianSplatsMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <SplatObject
             ref={ref}
             buffer={
@@ -518,7 +561,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 ),
               )
             }
-          />
+          >
+            {children}
+          </SplatObject>
         ),
       };
     }
@@ -526,13 +571,14 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Add a directional light
     case "DirectionalLightMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <group ref={ref}>
             <CsmDirectionalLight
               lightIntensity={message.props.intensity}
               color={rgbToInt(message.props.color)}
               castShadow={message.props.cast_shadow}
             />
+            {children}
           </group>
         ),
         // CsmDirectionalLight is not influenced by visibility, since the
@@ -545,12 +591,14 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Cannot cast shadows
     case "AmbientLightMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <ambientLight
             ref={ref}
             intensity={message.props.intensity}
             color={rgbToInt(message.props.color)}
-          />
+          >
+            {children}
+          </ambientLight>
         ),
       };
     }
@@ -559,13 +607,15 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Cannot cast shadows
     case "HemisphereLightMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <hemisphereLight
             ref={ref}
             intensity={message.props.intensity}
             color={rgbToInt(message.props.sky_color)}
             groundColor={rgbToInt(message.props.ground_color)}
-          />
+          >
+            {children}
+          </hemisphereLight>
         ),
       };
     }
@@ -573,7 +623,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Add a point light
     case "PointLightMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <pointLight
             ref={ref}
             intensity={message.props.intensity}
@@ -582,7 +632,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             decay={message.props.decay}
             castShadow={message.props.cast_shadow}
             {...shadowArgs}
-          />
+          >
+            {children}
+          </pointLight>
         ),
       };
     }
@@ -590,14 +642,16 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Cannot cast shadows
     case "RectAreaLightMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <rectAreaLight
             ref={ref}
             intensity={message.props.intensity}
             color={rgbToInt(message.props.color)}
             width={message.props.width}
             height={message.props.height}
-          />
+          >
+            {children}
+          </rectAreaLight>
         ),
       };
     }
@@ -605,7 +659,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Add a spot light
     case "SpotLightMessage": {
       return {
-        makeObject: (ref) => (
+        makeObject: (ref, children) => (
           <spotLight
             ref={ref}
             intensity={message.props.intensity}
@@ -616,7 +670,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             decay={message.props.decay}
             castShadow={message.props.cast_shadow}
             {...shadowArgs}
-          />
+          >
+            {children}
+          </spotLight>
         ),
       };
     }
@@ -627,94 +683,106 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
   }
 }
 
-export function SceneNodeThreeObject(props: {
-  name: string;
-  parent: THREE.Object3D | null;
-}) {
+export function SceneNodeThreeObject(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const message = viewer.useSceneTree(
     (state) => state.nodeFromName[props.name]?.message,
   );
+  const ContextBridge = useContextBridge();
+  const updateNodeAttributes = viewer.useSceneTree(
+    (state) => state.updateNodeAttributes,
+  );
+
   const {
     makeObject,
     unmountWhenInvisible,
     computeClickInstanceIndexFromInstanceId,
-  } = useObjectFactory(message);
+  } = React.useMemo(
+    () => createObjectFactory(message, viewer, ContextBridge),
+    [message, viewer, ContextBridge],
+  );
 
   const [unmount, setUnmount] = React.useState(false);
   const clickable =
     viewer.useSceneTree((state) => state.nodeFromName[props.name]?.clickable) ??
     false;
-  const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
+  const objRef = React.useRef<THREE.Object3D | null>(null);
+  const groupRef = React.useRef<THREE.Group>();
 
-  // Get viewer mutable once
-  const viewerMutable = viewer.mutable.current;
-
-  // Update global registry of node objects.
-  // This is used for updating bone transforms in skinned meshes.
-  React.useEffect(() => {
-    if (obj !== null) viewerMutable.nodeRefFromName[props.name] = obj;
-  }, [obj]);
+  // Get children.
+  const children = React.useMemo(
+    () => <SceneNodeChildren name={props.name} />,
+    [],
+  );
 
   // Create object + children.
   //
   // For not-fully-understood reasons, wrapping makeObject with useMemo() fixes
   // stability issues (eg breaking runtime errors) associated with
   // PivotControls.
+  const viewerMutable = viewer.mutable.current;
   const objNode = React.useMemo(() => {
     if (makeObject === undefined) return null;
-
-    // Pose will need to be updated.
-    const attrs = viewerMutable.nodeAttributesFromName;
-    if (!(props.name in attrs)) {
-      attrs[props.name] = {};
-    }
-    attrs[props.name]!.poseUpdateState = "needsUpdate";
-
-    return makeObject(setRef);
-  }, [makeObject]);
-  const children =
-    obj === null ? null : (
-      <SceneNodeThreeChildren name={props.name} parent={obj} />
-    );
+    return makeObject((ref: THREE.Object3D) => {
+      objRef.current = ref;
+      viewerMutable.nodeRefFromName[props.name] = objRef.current;
+    }, children);
+  }, [makeObject, children]);
 
   // Helper for transient visibility checks. Checks the .visible attribute of
   // both this object and ancestors.
   //
   // This is used for (1) suppressing click events and (2) unmounting when
   // unmountWhenInvisible is true. The latter is used for <Html /> components.
+  const parentRef = React.useRef<THREE.Object3D | null>(null);
   function isDisplayed(): boolean {
-    // We avoid checking obj.visible because obj may be unmounted when
+    // We avoid checking objRef.current.visible because obj may be unmounted when
     // unmountWhenInvisible=true.
-    const attrs = viewerMutable.nodeAttributesFromName[props.name];
+    const attrs =
+      viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
     const visibility =
       (attrs?.overrideVisibility === undefined
         ? attrs?.visibility
         : attrs.overrideVisibility) ?? true;
     if (visibility === false) return false;
-    if (props.parent === null) return true;
 
-    // Check visibility of parents + ancestors.
-    let visible = props.parent.visible;
-    if (visible) {
-      props.parent.traverseAncestors((ancestor) => {
-        visible = visible && ancestor.visible;
-      });
+    // Check visibility of parents + ancestors by traversing the THREE.js hierarchy.
+    // This is needed for unmountWhenInvisible to work correctly.
+    if (groupRef.current && groupRef.current.parent !== null) {
+      // The parent will be unreadable after unmounting, so we cache it.
+      parentRef.current = groupRef.current.parent;
     }
-    return visible;
+    if (parentRef.current !== null) {
+      let visible = parentRef.current.visible;
+      if (visible) {
+        parentRef.current.traverseAncestors((ancestor) => {
+          visible = visible && ancestor.visible;
+        });
+      }
+      return visible;
+    }
+
+    return true;
   }
 
   // Pose needs to be updated whenever component is remounted.
   React.useEffect(() => {
-    const attrs = viewerMutable.nodeAttributesFromName[props.name];
-    if (attrs !== undefined) attrs.poseUpdateState = "needsUpdate";
-  });
+    const currentAttrs =
+      viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
+    if (currentAttrs !== undefined) {
+      updateNodeAttributes(props.name, {
+        poseUpdateState: "needsUpdate",
+      });
+    }
+  }, []);
 
   // Update attributes on a per-frame basis. Currently does redundant work,
   // although this shouldn't be a bottleneck.
   useFrame(
     () => {
-      const attrs = viewerMutable.nodeAttributesFromName[props.name];
+      // Use getState() for performance in render loops (no re-renders).
+      const attrs =
+        viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
 
       // Unmount when invisible.
       // Examples: <Html /> components, PivotControls.
@@ -727,7 +795,7 @@ export function SceneNodeThreeObject(props: {
       if (unmountWhenInvisible) {
         const displayed = isDisplayed();
         if (displayed && unmount) {
-          if (obj !== null) obj.visible = false;
+          if (objRef.current !== null) objRef.current.visible = false;
           setUnmount(false);
         }
         if (!displayed && !unmount) {
@@ -735,25 +803,30 @@ export function SceneNodeThreeObject(props: {
         }
       }
 
-      if (obj === null) return;
+      if (objRef.current === null) return;
       if (attrs === undefined) return;
 
       const visibility =
         (attrs?.overrideVisibility === undefined
           ? attrs?.visibility
           : attrs.overrideVisibility) ?? true;
-      obj.visible = visibility;
+      objRef.current.visible = visibility;
 
       if (attrs.poseUpdateState == "needsUpdate") {
-        attrs.poseUpdateState = "updated";
+        // Update pose state through zustand action.
+        updateNodeAttributes(props.name, {
+          poseUpdateState: "updated",
+        });
+
         const wxyz = attrs.wxyz ?? [1, 0, 0, 0];
-        obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+        objRef.current.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
         const position = attrs.position ?? [0, 0, 0];
-        obj.position.set(position[0], position[1], position[2]);
+        objRef.current.position.set(position[0], position[1], position[2]);
 
         // Update matrices if necessary. This is necessary for PivotControls.
-        if (!obj.matrixAutoUpdate) obj.updateMatrix();
-        if (!obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
+        if (!objRef.current.matrixAutoUpdate) objRef.current.updateMatrix();
+        if (!objRef.current.matrixWorldAutoUpdate)
+          objRef.current.updateMatrixWorld();
       }
     },
     // Other useFrame hooks may depend on transforms + visibility. So it's best
@@ -766,7 +839,7 @@ export function SceneNodeThreeObject(props: {
   );
 
   // Clicking logic.
-  const sendClicksThrottled = useThrottledMessageSender(50);
+  const sendClicksThrottled = useThrottledMessageSender(50).send;
 
   // Track hover state.
   const hoveredRef = React.useRef<HoverState>({
@@ -797,6 +870,7 @@ export function SceneNodeThreeObject(props: {
     return (
       <>
         <group
+          ref={groupRef}
           // Instead of using onClick, we use onPointerDown/Move/Up to check mouse drag,
           // and only send a click if the mouse hasn't moved between the down and up events.
           //  - onPointerDown resets the click state (dragged = false)
@@ -914,8 +988,23 @@ export function SceneNodeThreeObject(props: {
             {objNode}
           </HoverableContext.Provider>
         </group>
-        {children}
       </>
     );
   }
+}
+
+function SceneNodeChildren(props: { name: string }) {
+  const viewer = React.useContext(ViewerContext)!;
+  const childrenNames = viewer.useSceneTree(
+    (state) => state.nodeFromName[props.name]?.children,
+  );
+  return (
+    <>
+      {childrenNames &&
+        childrenNames.map((child_id) => (
+          <SceneNodeThreeObject key={child_id} name={child_id} />
+        ))}
+      <SceneNodeLabel name={props.name} />
+    </>
+  );
 }

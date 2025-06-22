@@ -123,6 +123,7 @@ def main(model_path: Path) -> None:
             mesh_handle.vertices = v_tpose
             mesh_handle.bone_positions = j_tpose
 
+        mesh_handle.color = gui_elements.gui_rgb.value
         gui_elements.changed = False
         gui_elements.betas_changed = False
 

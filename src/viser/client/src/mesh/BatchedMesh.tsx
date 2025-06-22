@@ -11,8 +11,8 @@ import { BatchedMeshBase } from "./BatchedMeshBase";
  */
 export const BatchedMesh = React.forwardRef<
   InstancedMesh2,
-  BatchedMeshesMessage
->(function BatchedMesh(message, ref) {
+  BatchedMeshesMessage & { children?: React.ReactNode }
+>(function BatchedMesh({ children, ...message }, ref) {
   const viewer = React.useContext(ViewerContext)!;
   const clickable =
     viewer.useSceneTree(
@@ -79,17 +79,19 @@ export const BatchedMesh = React.forwardRef<
   }, [message.props.vertices.buffer, message.props.faces.buffer]);
 
   return (
-    <BatchedMeshBase
-      ref={ref}
-      geometry={geometry}
-      material={material}
-      batched_positions={message.props.batched_positions}
-      batched_wxyzs={message.props.batched_wxyzs}
-      batched_scales={message.props.batched_scales}
-      lod={message.props.lod}
-      cast_shadow={message.props.cast_shadow}
-      receive_shadow={message.props.receive_shadow}
-      clickable={clickable}
-    />
+    <group ref={ref}>
+      <BatchedMeshBase
+        geometry={geometry}
+        material={material}
+        batched_positions={message.props.batched_positions}
+        batched_wxyzs={message.props.batched_wxyzs}
+        batched_scales={message.props.batched_scales}
+        lod={message.props.lod}
+        cast_shadow={message.props.cast_shadow}
+        receive_shadow={message.props.receive_shadow}
+        clickable={clickable}
+      />
+      {children}
+    </group>
   );
 });
