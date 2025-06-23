@@ -312,6 +312,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../icons/">Icons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../theme/">Theme Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../uplot/">uPlot Types</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Auxiliary)</span></p>
 <ul>
@@ -418,10 +420,6 @@
           <li><a href="../transforms/#viser.transforms.SOBase.__matmul__">(viser.transforms.SOBase method)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="../icons/#viser.IconName.__new__">__new__() (viser.IconName method)</a>
-</li>
     </ul></td>
   </tr></table>
 </section>
@@ -570,6 +568,8 @@
 </li>
         <li><a href="../gui_api/#viser.GuiApi.add_upload_button">add_upload_button() (viser.GuiApi method)</a>
 </li>
+        <li><a href="../gui_api/#viser.GuiApi.add_uplot">add_uplot() (viser.GuiApi method)</a>
+</li>
         <li><a href="../gui_api/#viser.GuiApi.add_vector2">add_vector2() (viser.GuiApi method)</a>
 </li>
         <li><a href="../gui_api/#viser.GuiApi.add_vector3">add_vector3() (viser.GuiApi method)</a>
@@ -706,6 +706,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.ALIEN_FILLED">ALIEN_FILLED (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Axis.align">align (viser.uplot.Axis attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.ALIGN_BOX_BOTTOM_CENTER">ALIGN_BOX_BOTTOM_CENTER (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.ALIGN_BOX_BOTTOM_CENTER_FILLED">ALIGN_BOX_BOTTOM_CENTER_FILLED (viser.Icon attribute)</a>
@@ -776,8 +778,16 @@
 </li>
         <li><a href="../icons/#viser.Icon.ALIGN_RIGHT">ALIGN_RIGHT (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Axis.alignTo">alignTo (viser.uplot.Axis attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.ALPHA">ALPHA (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Focus.alpha">alpha (viser.uplot.Focus attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Series.alpha">(viser.uplot.Series attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.ALPHABET_CYRILLIC">ALPHABET_CYRILLIC (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.ALPHABET_GREEK">ALPHABET_GREEK (viser.Icon attribute)</a>
@@ -890,12 +900,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.ARROW_AUTOFIT_RIGHT">ARROW_AUTOFIT_RIGHT (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.ARROW_AUTOFIT_UP">ARROW_AUTOFIT_UP (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.ARROW_AUTOFIT_WIDTH">ARROW_AUTOFIT_WIDTH (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.ARROW_BACK">ARROW_BACK (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.ARROW_BACK_UP">ARROW_BACK_UP (viser.Icon attribute)</a>
@@ -1276,12 +1286,16 @@
 </li>
         <li><a href="../infrastructure/#viser.infra.Message.as_serializable_dict">as_serializable_dict() (viser.infra.Message method)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Scale.asinh">asinh (viser.uplot.Scale attribute)</a>
+</li>
         <li><a href="../scene_handles/#viser.CameraFrustumHandle.aspect">aspect (viser.CameraFrustumHandle attribute)</a>
 
         <ul>
           <li><a href="../camera_handles/#viser.CameraHandle.aspect">(viser.CameraHandle property)</a>
 </li>
           <li><a href="../gui_handles/#viser.GuiPlotlyHandle.aspect">(viser.GuiPlotlyHandle attribute)</a>
+</li>
+          <li><a href="../gui_handles/#viser.GuiUplotHandle.aspect">(viser.GuiUplotHandle attribute)</a>
 </li>
         </ul></li>
         <li><a href="../icons/#viser.Icon.ASPECT_RATIO">ASPECT_RATIO (viser.Icon attribute)</a>
@@ -1330,6 +1344,14 @@
 </li>
         <li><a href="../icons/#viser.Icon.AUGMENTED_REALITY_OFF">AUGMENTED_REALITY_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Scale.auto">auto (viser.uplot.Scale attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Series.auto">(viser.uplot.Series attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series_Facet.auto">(viser.uplot.Series_Facet attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../client_handles/#viser.NotificationHandle.auto_close">auto_close (viser.NotificationHandle attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.AWARD">AWARD (viser.Icon attribute)</a>
@@ -1339,6 +1361,8 @@
         <li><a href="../icons/#viser.Icon.AWARD_OFF">AWARD_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.AXE">AXE (viser.Icon attribute)</a>
+</li>
+        <li><a href="../gui_handles/#viser.GuiUplotHandle.axes">axes (viser.GuiUplotHandle attribute)</a>
 </li>
         <li><a href="../scene_handles/#viser.BatchedAxesHandle.axes_length">axes_length (viser.BatchedAxesHandle attribute)</a>
 
@@ -1352,6 +1376,14 @@
           <li><a href="../scene_handles/#viser.FrameHandle.axes_radius">(viser.FrameHandle attribute)</a>
 </li>
         </ul></li>
+        <li><a href="../uplot/#viser.uplot.Axis">Axis (class in viser.uplot)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Axis_Border">Axis_Border (class in viser.uplot)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Axis_Grid">Axis_Grid (class in viser.uplot)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Axis_Ticks">Axis_Ticks (class in viser.uplot)</a>
+</li>
         <li><a href="../icons/#viser.Icon.AXIS_X">AXIS_X (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.AXIS_Y">AXIS_Y (viser.Icon attribute)</a>
@@ -1450,11 +1482,15 @@
 </li>
         <li><a href="../icons/#viser.Icon.BAN">BAN (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Band">Band (class in viser.uplot)</a>
+</li>
         <li><a href="../icons/#viser.Icon.BANDAGE">BANDAGE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BANDAGE_FILLED">BANDAGE_FILLED (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BANDAGE_OFF">BANDAGE_OFF (viser.Icon attribute)</a>
+</li>
+        <li><a href="../gui_handles/#viser.GuiUplotHandle.bands">bands (viser.GuiUplotHandle attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BARBELL">BARBELL (viser.Icon attribute)</a>
 </li>
@@ -1554,6 +1590,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.BATTERY_OFF">BATTERY_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Points.bbox">bbox (viser.uplot.Cursor_Points attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.BEACH">BEACH (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BEACH_OFF">BEACH_OFF (viser.Icon attribute)</a>
@@ -1636,6 +1674,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.BETA">BETA (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Focus.bias">bias (viser.uplot.Cursor_Focus attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Cursor_Hover.bias">(viser.uplot.Cursor_Hover attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.BIBLE">BIBLE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BIKE">BIKE (viser.Icon attribute)</a>
@@ -1649,6 +1693,8 @@
         <li><a href="../icons/#viser.Icon.BINARY_TREE">BINARY_TREE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BINARY_TREE_2">BINARY_TREE_2 (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor.bind">bind (viser.uplot.Cursor attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BIOHAZARD">BIOHAZARD (viser.Icon attribute)</a>
 </li>
@@ -1741,6 +1787,8 @@
         <li><a href="../icons/#viser.Icon.BOOKS">BOOKS (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BOOKS_OFF">BOOKS_OFF (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Axis.border">border (viser.uplot.Axis attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BORDER_ALL">BORDER_ALL (viser.Icon attribute)</a>
 </li>
@@ -2024,14 +2072,14 @@
 </li>
         <li><a href="../icons/#viser.Icon.BRAND_DCOS">BRAND_DCOS (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.BRAND_DEBIAN">BRAND_DEBIAN (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BRAND_DEEZER">BRAND_DEEZER (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BRAND_DELIVEROO">BRAND_DELIVEROO (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.BRAND_DENO">BRAND_DENO (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BRAND_DENODO">BRAND_DENODO (viser.Icon attribute)</a>
@@ -2692,6 +2740,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.BUTTERFLY">BUTTERFLY (viser.Icon attribute)</a>
 </li>
+        <li><a href="../theme/#viser.theme.TitlebarConfig.buttons">buttons (viser.theme.TitlebarConfig attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Scale.bwd">bwd (viser.uplot.Scale attribute)</a>
+</li>
     </ul></td>
   </tr></table>
 </section>
@@ -2832,6 +2884,18 @@
 </li>
         <li><a href="../icons/#viser.Icon.CANNABIS">CANNABIS (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Axis_Border.cap">cap (viser.uplot.Axis_Border attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Axis_Grid.cap">(viser.uplot.Axis_Grid attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Axis_Ticks.cap">(viser.uplot.Axis_Ticks attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series.cap">(viser.uplot.Series attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series_Points.cap">(viser.uplot.Series_Points attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.CAPSULE">CAPSULE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.CAPSULE_HORIZONTAL">CAPSULE_HORIZONTAL (viser.Icon attribute)</a>
@@ -3354,15 +3418,19 @@
 </li>
         <li><a href="../icons/#viser.Icon.CIRCUIT_PUSHBUTTON">CIRCUIT_PUSHBUTTON (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.CIRCUIT_RESISTOR">CIRCUIT_RESISTOR (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.CIRCUIT_SWITCH_CLOSED">CIRCUIT_SWITCH_CLOSED (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.CIRCUIT_SWITCH_OPEN">CIRCUIT_SWITCH_OPEN (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.CIRCUIT_VOLTMETER">CIRCUIT_VOLTMETER (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Scale.clamp">clamp (viser.uplot.Scale attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Series.class">class (viser.uplot.Series attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.CLEAR_ALL">CLEAR_ALL (viser.Icon attribute)</a>
 </li>
@@ -3370,6 +3438,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.CLICK">CLICK (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Bind.click">click (viser.uplot.Cursor_Bind attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Cursor_Drag.click">(viser.uplot.Cursor_Drag attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../camera_handles/#viser.CameraHandle.client">client (viser.CameraHandle property)</a>
 
         <ul>
@@ -4002,7 +4076,23 @@
 </li>
         <li><a href="../icons/#viser.Icon.CURRENT_LOCATION_OFF">CURRENT_LOCATION_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Cursor">Cursor (class in viser.uplot)</a>
+</li>
+        <li><a href="../gui_handles/#viser.GuiUplotHandle.cursor">cursor (viser.GuiUplotHandle attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Bind">Cursor_Bind (class in viser.uplot)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Drag">Cursor_Drag (class in viser.uplot)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Focus">Cursor_Focus (class in viser.uplot)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Hover">Cursor_Hover (class in viser.uplot)</a>
+</li>
         <li><a href="../icons/#viser.Icon.CURSOR_OFF">CURSOR_OFF (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Points">Cursor_Points (class in viser.uplot)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Sync">Cursor_Sync (class in viser.uplot)</a>
 </li>
         <li><a href="../icons/#viser.Icon.CURSOR_TEXT">CURSOR_TEXT (viser.Icon attribute)</a>
 </li>
@@ -4024,9 +4114,25 @@
   <h2>D</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../uplot/#viser.uplot.Axis_Border.dash">dash (viser.uplot.Axis_Border attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Axis_Grid.dash">(viser.uplot.Axis_Grid attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Axis_Ticks.dash">(viser.uplot.Axis_Ticks attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Legend_Markers.dash">(viser.uplot.Legend_Markers attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series.dash">(viser.uplot.Series attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series_Points.dash">(viser.uplot.Series_Points attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.DASHBOARD">DASHBOARD (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.DASHBOARD_OFF">DASHBOARD_OFF (viser.Icon attribute)</a>
+</li>
+        <li><a href="../gui_handles/#viser.GuiUplotHandle.data">data (viser.GuiUplotHandle attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.DATABASE">DATABASE (viser.Icon attribute)</a>
 </li>
@@ -4059,6 +4165,10 @@
         <li><a href="../icons/#viser.Icon.DATABASE_STAR">DATABASE_STAR (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.DATABASE_X">DATABASE_X (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor.dataIdx">dataIdx (viser.uplot.Cursor attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Bind.dblclick">dblclick (viser.uplot.Cursor_Bind attribute)</a>
 </li>
         <li><a href="../scene_handles/#viser.PointLightHandle.decay">decay (viser.PointLightHandle attribute)</a>
 
@@ -4382,12 +4492,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.DEVICE_TABLET_DOLLAR">DEVICE_TABLET_DOLLAR (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.DEVICE_TABLET_DOWN">DEVICE_TABLET_DOWN (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.DEVICE_TABLET_EXCLAMATION">DEVICE_TABLET_EXCLAMATION (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.DEVICE_TABLET_FILLED">DEVICE_TABLET_FILLED (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.DEVICE_TABLET_HEART">DEVICE_TABLET_HEART (viser.Icon attribute)</a>
@@ -4568,6 +4678,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.DIMENSIONS">DIMENSIONS (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Band.dir">dir (viser.uplot.Band attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Scale.dir">(viser.uplot.Scale attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.DIRECTION">DIRECTION (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.DIRECTION_HORIZONTAL">DIRECTION_HORIZONTAL (viser.Icon attribute)</a>
@@ -4646,12 +4762,20 @@
 </li>
         <li><a href="../icons/#viser.Icon.DISCOUNT_OFF">DISCOUNT_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Drag.dist">dist (viser.uplot.Cursor_Drag attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Cursor_Focus.dist">(viser.uplot.Cursor_Focus attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../scene_handles/#viser.PointLightHandle.distance">distance (viser.PointLightHandle attribute)</a>
 
         <ul>
           <li><a href="../scene_handles/#viser.SpotLightHandle.distance">(viser.SpotLightHandle attribute)</a>
 </li>
         </ul></li>
+        <li><a href="../uplot/#viser.uplot.Scale.distr">distr (viser.uplot.Scale attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.DIVIDE">DIVIDE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.DNA">DNA (viser.Icon attribute)</a>
@@ -4687,6 +4811,8 @@
         <li><a href="../icons/#viser.Icon.DOWNLOAD">DOWNLOAD (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.DOWNLOAD_OFF">DOWNLOAD_OFF (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor.drag">drag (viser.uplot.Cursor attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.DRAG_DROP">DRAG_DROP (viser.Icon attribute)</a>
 </li>
@@ -4835,6 +4961,8 @@
         <ul>
           <li><a href="../events/#viser.ScenePointerEvent.event">(viser.ScenePointerEvent property)</a>
 </li>
+          <li><a href="../uplot/#viser.uplot.Cursor.event">(viser.uplot.Cursor attribute)</a>
+</li>
         </ul></li>
         <li><a href="../events/#viser.ScenePointerEvent.event_type">event_type (viser.ScenePointerEvent attribute)</a>
 </li>
@@ -4944,6 +5072,8 @@
           <li><a href="../scene_handles/#viser.MeshSkinnedHandle.faces">(viser.MeshSkinnedHandle attribute)</a>
 </li>
         </ul></li>
+        <li><a href="../uplot/#viser.uplot.Series.facets">facets (viser.uplot.Series attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.FALL">FALL (viser.Icon attribute)</a>
 </li>
         <li><a href="../camera_handles/#viser.CameraHandle.far">far (viser.CameraHandle property)</a>
@@ -5092,8 +5222,32 @@
 </li>
         <li><a href="../icons/#viser.Icon.FILES_OFF">FILES_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Band.fill">fill (viser.uplot.Band attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Cursor_Points.fill">(viser.uplot.Cursor_Points attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Legend_Markers.fill">(viser.uplot.Legend_Markers attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series.fill">(viser.uplot.Series attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series_Points.fill">(viser.uplot.Series_Points attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="../uplot/#viser.uplot.Series.fillTo">fillTo (viser.uplot.Series attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.FILTER">FILTER (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Axis.filter">filter (viser.uplot.Axis attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Axis_Grid.filter">(viser.uplot.Axis_Grid attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Axis_Ticks.filter">(viser.uplot.Axis_Ticks attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series_Points.filter">(viser.uplot.Series_Points attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.FILTER_COG">FILTER_COG (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.FILTER_DOLLAR">FILTER_DOLLAR (viser.Icon attribute)</a>
@@ -5111,6 +5265,8 @@
         <li><a href="../icons/#viser.Icon.FILTER_X">FILTER_X (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.FILTERS">FILTERS (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Sync.filters">filters (viser.uplot.Cursor_Sync attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.FINGERPRINT">FINGERPRINT (viser.Icon attribute)</a>
 </li>
@@ -5142,14 +5298,14 @@
 </li>
         <li><a href="../scene_handles/#viser.TransformControlsHandle.fixed">fixed (viser.TransformControlsHandle attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../gui_handles/#viser.GuiMultiSliderHandle.fixed_endpoints">fixed_endpoints (viser.GuiMultiSliderHandle attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.FLAG">FLAG (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.FLAG_2">FLAG_2 (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.FLAG_2_FILLED">FLAG_2_FILLED (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.FLAG_2_OFF">FLAG_2_OFF (viser.Icon attribute)</a>
@@ -5212,7 +5368,13 @@
         </ul></li>
         <li><a href="../infrastructure/#viser.infra.WebsockServer.flush_client">flush_client() (viser.infra.WebsockServer method)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Focus">Focus (class in viser.uplot)</a>
+</li>
+        <li><a href="../gui_handles/#viser.GuiUplotHandle.focus">focus (viser.GuiUplotHandle attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.FOCUS">FOCUS (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor.focus">focus (viser.uplot.Cursor attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.FOCUS_2">FOCUS_2 (viser.Icon attribute)</a>
 </li>
@@ -5278,6 +5440,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.FOLDERS_OFF">FOLDERS_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Axis.font">font (viser.uplot.Axis attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.FORBID">FORBID (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.FORBID_2">FORBID_2 (viser.Icon attribute)</a>
@@ -5317,6 +5481,8 @@
         <li><a href="../icons/#viser.Icon.FRIENDS">FRIENDS (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.FRIENDS_OFF">FRIENDS_OFF (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Scale.from">from (viser.uplot.Scale attribute)</a>
 </li>
         <li><a href="../transforms/#viser.transforms.MatrixLieGroup.from_matrix">from_matrix() (viser.transforms.MatrixLieGroup class method)</a>
 
@@ -5382,6 +5548,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.FUNCTION_OFF">FUNCTION_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Scale.fwd">fwd (viser.uplot.Scale attribute)</a>
+</li>
     </ul></td>
   </tr></table>
 </section>
@@ -5390,6 +5558,10 @@
   <h2>G</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../uplot/#viser.uplot.Axis.gap">gap (viser.uplot.Axis attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Series.gaps">gaps (viser.uplot.Series attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.GARDEN_CART">GARDEN_CART (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.GARDEN_CART_OFF">GARDEN_CART_OFF (viser.Icon attribute)</a>
@@ -5584,6 +5756,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.GRAVE_2">GRAVE_2 (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Axis.grid">grid (viser.uplot.Axis attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.GRID_DOTS">GRID_DOTS (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.GRID_PATTERN">GRID_PATTERN (viser.Icon attribute)</a>
@@ -5657,6 +5831,8 @@
         <li><a href="../gui_handles/#viser.GuiTextHandle">GuiTextHandle (class in viser)</a>
 </li>
         <li><a href="../gui_handles/#viser.GuiUploadButtonHandle">GuiUploadButtonHandle (class in viser)</a>
+</li>
+        <li><a href="../gui_handles/#viser.GuiUplotHandle">GuiUplotHandle (class in viser)</a>
 </li>
         <li><a href="../gui_handles/#viser.GuiVector2Handle">GuiVector2Handle (class in viser)</a>
 </li>
@@ -5771,6 +5947,8 @@
         <ul>
           <li><a href="../scene_handles/#viser.RectAreaLightHandle.height">(viser.RectAreaLightHandle attribute)</a>
 </li>
+          <li><a href="../uplot/#viser.uplot.Select.height">(viser.uplot.Select attribute)</a>
+</li>
         </ul></li>
         <li><a href="../scene_handles/#viser.GridHandle.height_segments">height_segments (viser.GridHandle attribute)</a>
 </li>
@@ -5876,10 +6054,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.HEXAGON_LETTER_O">HEXAGON_LETTER_O (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.HEXAGON_LETTER_P">HEXAGON_LETTER_P (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.HEXAGON_LETTER_Q">HEXAGON_LETTER_Q (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.HEXAGON_LETTER_R">HEXAGON_LETTER_R (viser.Icon attribute)</a>
@@ -6062,6 +6240,14 @@
 </li>
         <li><a href="../icons/#viser.Icon.HOURGLASS_OFF">HOURGLASS_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Cursor.hover">hover (viser.uplot.Cursor attribute)</a>
+</li>
+        <li><a href="../theme/#viser.theme.TitlebarButton.href">href (viser.theme.TitlebarButton attribute)</a>
+
+        <ul>
+          <li><a href="../theme/#viser.theme.TitlebarImage.href">(viser.theme.TitlebarImage attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.HTML">HTML (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.HTTP_CONNECT">HTTP_CONNECT (viser.Icon attribute)</a>
@@ -6101,6 +6287,8 @@
         <li><a href="../icons/#viser.Icon.ICE_SKATING">ICE_SKATING (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon">Icon (class in viser)</a>
+</li>
+        <li><a href="../theme/#viser.theme.TitlebarButton.icon">icon (viser.theme.TitlebarButton attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.ICON_123">ICON_123 (viser.Icon attribute)</a>
 </li>
@@ -6150,15 +6338,37 @@
           <li><a href="../transforms/#viser.transforms.SOBase.identity">(viser.transforms.SOBase class method)</a>
 </li>
         </ul></li>
+        <li><a href="../uplot/#viser.uplot.Cursor.idx">idx (viser.uplot.Cursor attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Legend.idx">(viser.uplot.Legend attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="../uplot/#viser.uplot.Cursor.idxs">idxs (viser.uplot.Cursor attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Legend.idxs">(viser.uplot.Legend attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series.idxs">(viser.uplot.Series attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../scene_handles/#viser.CameraFrustumHandle.image">image (viser.CameraFrustumHandle property)</a>
 
         <ul>
           <li><a href="../scene_handles/#viser.ImageHandle.image">(viser.ImageHandle property)</a>
 </li>
+          <li><a href="../theme/#viser.theme.TitlebarConfig.image">(viser.theme.TitlebarConfig attribute)</a>
+</li>
         </ul></li>
+        <li><a href="../theme/#viser.theme.TitlebarImage.image_alt">image_alt (viser.theme.TitlebarImage attribute)</a>
+</li>
         <li><a href="../camera_handles/#viser.CameraHandle.image_height">image_height (viser.CameraHandle property)</a>
 </li>
         <li><a href="../scene_handles/#viser.CameraFrustumHandle.image_media_type">image_media_type (viser.CameraFrustumHandle attribute)</a>
+</li>
+        <li><a href="../theme/#viser.theme.TitlebarImage.image_url_dark">image_url_dark (viser.theme.TitlebarImage attribute)</a>
+</li>
+        <li><a href="../theme/#viser.theme.TitlebarImage.image_url_light">image_url_light (viser.theme.TitlebarImage attribute)</a>
 </li>
         <li><a href="../camera_handles/#viser.CameraHandle.image_width">image_width (viser.CameraHandle property)</a>
 </li>
@@ -6167,6 +6377,8 @@
         <li><a href="../icons/#viser.Icon.INBOX">INBOX (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.INBOX_OFF">INBOX_OFF (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Axis.incrs">incrs (viser.uplot.Axis attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.INDENT_DECREASE">INDENT_DECREASE (viser.Icon attribute)</a>
 </li>
@@ -6182,6 +6394,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.INFO_HEXAGON">INFO_HEXAGON (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.INFO_HEXAGON_FILLED">INFO_HEXAGON_FILLED (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.INFO_OCTAGON">INFO_OCTAGON (viser.Icon attribute)</a>
@@ -6192,8 +6406,6 @@
 </li>
         <li><a href="../icons/#viser.Icon.INFO_SQUARE">INFO_SQUARE (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.INFO_SQUARE_FILLED">INFO_SQUARE_FILLED (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.INFO_SQUARE_ROUNDED">INFO_SQUARE_ROUNDED (viser.Icon attribute)</a>
@@ -6292,6 +6504,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.IRREGULAR_POLYHEDRON_PLUS">IRREGULAR_POLYHEDRON_PLUS (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Legend.isolate">isolate (viser.uplot.Legend attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.ITALIC">ITALIC (viser.Icon attribute)</a>
 </li>
     </ul></td>
@@ -6336,12 +6550,18 @@
 </li>
         <li><a href="../icons/#viser.Icon.KEY">KEY (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.KEY_OFF">KEY_OFF (viser.Icon attribute)</a>
+        <li><a href="../uplot/#viser.uplot.Cursor_Sync.key">key (viser.uplot.Cursor_Sync attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Scale.key">(viser.uplot.Scale attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.KEYBOARD">KEYBOARD (viser.Icon attribute)</a>
+        </ul></li>
+        <li><a href="../icons/#viser.Icon.KEY_OFF">KEY_OFF (viser.Icon attribute)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.KEYBOARD">KEYBOARD (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.KEYBOARD_HIDE">KEYBOARD_HIDE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.KEYBOARD_OFF">KEYBOARD_OFF (viser.Icon attribute)</a>
@@ -6397,8 +6617,18 @@
 </li>
           <li><a href="../gui_handles/#viser.GuiVector3Handle.label">(viser.GuiVector3Handle attribute)</a>
 </li>
+          <li><a href="../uplot/#viser.uplot.Axis.label">(viser.uplot.Axis attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series.label">(viser.uplot.Series attribute)</a>
+</li>
         </ul></li>
+        <li><a href="../uplot/#viser.uplot.Axis.labelFont">labelFont (viser.uplot.Axis attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Axis.labelGap">labelGap (viser.uplot.Axis attribute)</a>
+</li>
         <li><a href="../scene_handles/#viser.LabelHandle">LabelHandle (class in viser)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Axis.labelSize">labelSize (viser.uplot.Axis attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.LADDER">LADDER (viser.Icon attribute)</a>
 </li>
@@ -6516,6 +6746,18 @@
 </li>
         <li><a href="../icons/#viser.Icon.LEAF_OFF">LEAF_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Cursor.left">left (viser.uplot.Cursor attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Select.left">(viser.uplot.Select attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="../uplot/#viser.uplot.Legend">Legend (class in viser.uplot)</a>
+</li>
+        <li><a href="../gui_handles/#viser.GuiUplotHandle.legend">legend (viser.GuiUplotHandle attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Legend_Markers">Legend_Markers (class in viser.uplot)</a>
+</li>
         <li><a href="../icons/#viser.Icon.LEGO">LEGO (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.LEGO_OFF">LEGO_OFF (viser.Icon attribute)</a>
@@ -6560,14 +6802,14 @@
 </li>
         <li><a href="../icons/#viser.Icon.LETTER_N">LETTER_N (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.LETTER_O">LETTER_O (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.LETTER_P">LETTER_P (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.LETTER_Q">LETTER_Q (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.LETTER_R">LETTER_R (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.LETTER_S">LETTER_S (viser.Icon attribute)</a>
@@ -6616,6 +6858,8 @@
           <li><a href="../scene_handles/#viser.TransformControlsHandle.line_width">(viser.TransformControlsHandle attribute)</a>
 </li>
         </ul></li>
+        <li><a href="../uplot/#viser.uplot.Axis.lineGap">lineGap (viser.uplot.Axis attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.LINK">LINK (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.LINK_OFF">LINK_OFF (viser.Icon attribute)</a>
@@ -6631,6 +6875,8 @@
         <li><a href="../icons/#viser.Icon.LIST_SEARCH">LIST_SEARCH (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.LIST_TREE">LIST_TREE (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Legend.live">live (viser.uplot.Legend attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.LIVE_PHOTO">LIVE_PHOTO (viser.Icon attribute)</a>
 </li>
@@ -6659,6 +6905,8 @@
         <li><a href="../icons/#viser.Icon.LOCATION_OFF">LOCATION_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.LOCK">LOCK (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor.lock">lock (viser.uplot.Cursor attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.LOCK_ACCESS">LOCK_ACCESS (viser.Icon attribute)</a>
 </li>
@@ -6720,6 +6968,8 @@
           <li><a href="../scene_handles/#viser.BatchedMeshHandle.lod">(viser.BatchedMeshHandle attribute)</a>
 </li>
         </ul></li>
+        <li><a href="../uplot/#viser.uplot.Scale.log">log (viser.uplot.Scale attribute)</a>
+</li>
         <li><a href="../transforms/#viser.transforms.MatrixLieGroup.log">log() (viser.transforms.MatrixLieGroup method)</a>
 
         <ul>
@@ -6908,6 +7158,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.MARKDOWN_OFF">MARKDOWN_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Legend.markers">markers (viser.uplot.Legend attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.MARQUEE">MARQUEE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.MARQUEE_2">MARQUEE_2 (viser.Icon attribute)</a>
@@ -6927,6 +7179,8 @@
         <li><a href="../icons/#viser.Icon.MASKS_THEATER_OFF">MASKS_THEATER_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.MASSAGE">MASSAGE (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Sync.match">match (viser.uplot.Cursor_Sync attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.MATCHSTICK">MATCHSTICK (viser.Icon attribute)</a>
 </li>
@@ -7029,6 +7283,10 @@
 </li>
           <li><a href="../gui_handles/#viser.GuiVector3Handle.max">(viser.GuiVector3Handle attribute)</a>
 </li>
+          <li><a href="../uplot/#viser.uplot.Scale.max">(viser.uplot.Scale attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series.max">(viser.uplot.Series attribute)</a>
+</li>
         </ul></li>
         <li><a href="../icons/#viser.Icon.MAXIMIZE">MAXIMIZE (viser.Icon attribute)</a>
 </li>
@@ -7128,8 +7386,6 @@
 </li>
         <li><a href="../icons/#viser.Icon.MESSAGE_CIRCLE">MESSAGE_CIRCLE (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.MESSAGE_CIRCLE_2">MESSAGE_CIRCLE_2 (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.MESSAGE_CIRCLE_2_FILLED">MESSAGE_CIRCLE_2_FILLED (viser.Icon attribute)</a>
@@ -7138,6 +7394,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.MESSAGE_CIRCLE_CANCEL">MESSAGE_CIRCLE_CANCEL (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.MESSAGE_CIRCLE_CHECK">MESSAGE_CIRCLE_CHECK (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.MESSAGE_CIRCLE_CODE">MESSAGE_CIRCLE_CODE (viser.Icon attribute)</a>
@@ -7271,6 +7529,10 @@
 </li>
           <li><a href="../gui_handles/#viser.GuiVector3Handle.min">(viser.GuiVector3Handle attribute)</a>
 </li>
+          <li><a href="../uplot/#viser.uplot.Scale.min">(viser.uplot.Scale attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series.min">(viser.uplot.Series attribute)</a>
+</li>
         </ul></li>
         <li><a href="../gui_handles/#viser.GuiMultiSliderHandle.min_range">min_range (viser.GuiMultiSliderHandle attribute)</a>
 </li>
@@ -7288,6 +7550,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.MOBILEDATA_OFF">MOBILEDATA_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../gui_handles/#viser.GuiUplotHandle.mode">mode (viser.GuiUplotHandle attribute)</a>
+</li>
         <li>
     module
 
@@ -7296,7 +7560,11 @@
 </li>
           <li><a href="../infrastructure/#module-viser.infra">viser.infra</a>
 </li>
+          <li><a href="../theme/#module-viser.theme">viser.theme</a>
+</li>
           <li><a href="../transforms/#module-viser.transforms">viser.transforms</a>
+</li>
+          <li><a href="../uplot/#module-viser.uplot">viser.uplot</a>
 </li>
         </ul></li>
         <li><a href="../icons/#viser.Icon.MONEYBAG">MONEYBAG (viser.Icon attribute)</a>
@@ -7423,6 +7691,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.MOTORBIKE">MOTORBIKE (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Legend.mount">mount (viser.uplot.Legend attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.MOUNTAIN">MOUNTAIN (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.MOUNTAIN_OFF">MOUNTAIN_OFF (viser.Icon attribute)</a>
@@ -7433,7 +7703,19 @@
 </li>
         <li><a href="../icons/#viser.Icon.MOUSE_OFF">MOUSE_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Bind.mousedown">mousedown (viser.uplot.Cursor_Bind attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Bind.mouseenter">mouseenter (viser.uplot.Cursor_Bind attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Bind.mouseleave">mouseleave (viser.uplot.Cursor_Bind attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Bind.mousemove">mousemove (viser.uplot.Cursor_Bind attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Bind.mouseup">mouseup (viser.uplot.Cursor_Bind attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.MOUSTACHE">MOUSTACHE (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor.move">move (viser.uplot.Cursor attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.MOVIE">MOVIE (viser.Icon attribute)</a>
 </li>
@@ -7747,6 +8029,8 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../gui_handles/#viser.GuiUploadButtonHandle.on_upload">on_upload() (viser.GuiUploadButtonHandle method)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Points.one">one (viser.uplot.Cursor_Points attribute)</a>
+</li>
         <li><a href="../scene_handles/#viser.BatchedMeshHandle.opacity">opacity (viser.BatchedMeshHandle attribute)</a>
 
         <ul>
@@ -7800,11 +8084,15 @@
 </li>
           <li><a href="../gui_handles/#viser.GuiUploadButtonHandle.order">(viser.GuiUploadButtonHandle attribute)</a>
 </li>
+          <li><a href="../gui_handles/#viser.GuiUplotHandle.order">(viser.GuiUplotHandle attribute)</a>
+</li>
           <li><a href="../gui_handles/#viser.GuiVector2Handle.order">(viser.GuiVector2Handle attribute)</a>
 </li>
           <li><a href="../gui_handles/#viser.GuiVector3Handle.order">(viser.GuiVector3Handle attribute)</a>
 </li>
         </ul></li>
+        <li><a href="../uplot/#viser.uplot.Scale.ori">ori (viser.uplot.Scale attribute)</a>
+</li>
         <li><a href="../scene_handles/#viser.FrameHandle.origin_color">origin_color (viser.FrameHandle attribute)</a>
 </li>
         <li><a href="../scene_handles/#viser.FrameHandle.origin_radius">origin_radius (viser.FrameHandle attribute)</a>
@@ -7820,6 +8108,8 @@
         <li><a href="../icons/#viser.Icon.OVAL_VERTICAL">OVAL_VERTICAL (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.OVAL_VERTICAL_FILLED">OVAL_VERTICAL_FILLED (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Select.over">over (viser.uplot.Select attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.OVERLINE">OVERLINE (viser.Icon attribute)</a>
 </li>
@@ -7915,6 +8205,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.PASSWORD">PASSWORD (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Series.paths">paths (viser.uplot.Series attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Series_Points.paths">(viser.uplot.Series_Points attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.PAW">PAW (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.PAW_FILLED">PAW_FILLED (viser.Icon attribute)</a>
@@ -8121,12 +8417,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.PLAY_CARD_OFF">PLAY_CARD_OFF (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.PLAY_FOOTBALL">PLAY_FOOTBALL (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.PLAY_HANDBALL">PLAY_HANDBALL (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.PLAY_VOLLEYBALL">PLAY_VOLLEYBALL (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.PLAYER_EJECT">PLAYER_EJECT (viser.Icon attribute)</a>
@@ -8260,7 +8556,13 @@
         <li><a href="../scene_handles/#viser.PointLightHandle">PointLightHandle (class in viser)</a>
 </li>
         <li><a href="../scene_handles/#viser.PointCloudHandle.points">points (viser.PointCloudHandle attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Cursor.points">(viser.uplot.Cursor attribute)</a>
 </li>
+          <li><a href="../uplot/#viser.uplot.Series.points">(viser.uplot.Series attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.POKEBALL">POKEBALL (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.POKEBALL_OFF">POKEBALL_OFF (viser.Icon attribute)</a>
@@ -8401,6 +8703,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.PROPELLER_OFF">PROPELLER_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Focus.prox">prox (viser.uplot.Cursor_Focus attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Cursor_Hover.prox">(viser.uplot.Cursor_Hover attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.PUMPKIN_SCARY">PUMPKIN_SCARY (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.PUZZLE">PUZZLE (viser.Icon attribute)</a>
@@ -8410,6 +8718,8 @@
         <li><a href="../icons/#viser.Icon.PUZZLE_FILLED">PUZZLE_FILLED (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.PUZZLE_OFF">PUZZLE_OFF (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Series.pxAlign">pxAlign (viser.uplot.Series attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.PYRAMID">PYRAMID (viser.Icon attribute)</a>
 </li>
@@ -8480,6 +8790,8 @@
         <li><a href="../icons/#viser.Icon.RAINBOW">RAINBOW (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.RAINBOW_OFF">RAINBOW_OFF (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Scale.range">range (viser.uplot.Scale attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.RATING_12_PLUS">RATING_12_PLUS (viser.Icon attribute)</a>
 </li>
@@ -8659,6 +8971,8 @@
           <li><a href="../gui_handles/#viser.GuiTextHandle.remove">(viser.GuiTextHandle method)</a>
 </li>
           <li><a href="../gui_handles/#viser.GuiUploadButtonHandle.remove">(viser.GuiUploadButtonHandle method)</a>
+</li>
+          <li><a href="../gui_handles/#viser.GuiUplotHandle.remove">(viser.GuiUplotHandle method)</a>
 </li>
           <li><a href="../gui_handles/#viser.GuiVector2Handle.remove">(viser.GuiVector2Handle method)</a>
 </li>
@@ -8881,6 +9195,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.ROTATE">ROTATE (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Axis.rotate">rotate (viser.uplot.Axis attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.ROTATE_2">ROTATE_2 (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.ROTATE_360">ROTATE_360 (viser.Icon attribute)</a>
@@ -8987,6 +9303,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.SAUSAGE">SAUSAGE (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Scale">Scale (class in viser.uplot)</a>
+</li>
         <li><a href="../scene_handles/#viser.BatchedGlbHandle.scale">scale (viser.BatchedGlbHandle attribute)</a>
 
         <ul>
@@ -8998,13 +9316,27 @@
         <li><a href="../icons/#viser.Icon.SCALE">SCALE (viser.Icon attribute)</a>
 </li>
         <li><a href="../scene_handles/#viser.TransformControlsHandle.scale">scale (viser.TransformControlsHandle attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Axis.scale">(viser.uplot.Axis attribute)</a>
 </li>
+          <li><a href="../uplot/#viser.uplot.Series.scale">(viser.uplot.Series attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series_Facet.scale">(viser.uplot.Series_Facet attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.SCALE_OFF">SCALE_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SCALE_OUTLINE">SCALE_OUTLINE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SCALE_OUTLINE_OFF">SCALE_OUTLINE_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../gui_handles/#viser.GuiUplotHandle.scales">scales (viser.GuiUplotHandle attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Cursor_Sync.scales">(viser.uplot.Cursor_Sync attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.SCAN">SCAN (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SCAN_EYE">SCAN_EYE (viser.Icon attribute)</a>
@@ -9103,6 +9435,8 @@
           <li><a href="../scene_handles/#viser.SplineCubicBezierHandle.segments">(viser.SplineCubicBezierHandle attribute)</a>
 </li>
         </ul></li>
+        <li><a href="../uplot/#viser.uplot.Select">Select (class in viser.uplot)</a>
+</li>
         <li><a href="../icons/#viser.Icon.SELECT">SELECT (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SELECT_ALL">SELECT_ALL (viser.Icon attribute)</a>
@@ -9129,6 +9463,18 @@
 </li>
         <li><a href="../infrastructure/#viser.infra.StateSerializer.serialize">serialize() (viser.infra.StateSerializer method)</a>, <a href="../state_serializer/#viser.infra.StateSerializer.serialize">[1]</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Series">Series (class in viser.uplot)</a>
+</li>
+        <li><a href="../gui_handles/#viser.GuiUplotHandle.series">series (viser.GuiUplotHandle attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Band.series">(viser.uplot.Band attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="../uplot/#viser.uplot.Series_Facet">Series_Facet (class in viser.uplot)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Series_Points">Series_Points (class in viser.uplot)</a>
+</li>
         <li><a href="../icons/#viser.Icon.SERVER">SERVER (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SERVER_2">SERVER_2 (viser.Icon attribute)</a>
@@ -9150,6 +9496,10 @@
         <li><a href="../gui_api/#viser.GuiApi.set_panel_label">set_panel_label() (viser.GuiApi method)</a>
 </li>
         <li><a href="../scene_api/#viser.SceneApi.set_up_direction">set_up_direction() (viser.SceneApi method)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Drag.setScale">setScale (viser.uplot.Cursor_Drag attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Sync.setSeries">setSeries (viser.uplot.Cursor_Sync attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SETTINGS">SETTINGS (viser.Icon attribute)</a>
 </li>
@@ -9313,6 +9663,30 @@
 </li>
         <li><a href="../icons/#viser.Icon.SHOVEL">SHOVEL (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Axis.show">show (viser.uplot.Axis attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Axis_Border.show">(viser.uplot.Axis_Border attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Axis_Grid.show">(viser.uplot.Axis_Grid attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Axis_Ticks.show">(viser.uplot.Axis_Ticks attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Cursor.show">(viser.uplot.Cursor attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Cursor_Points.show">(viser.uplot.Cursor_Points attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Legend.show">(viser.uplot.Legend attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Legend_Markers.show">(viser.uplot.Legend_Markers attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Select.show">(viser.uplot.Select attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series.show">(viser.uplot.Series attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series_Points.show">(viser.uplot.Series_Points attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../scene_handles/#viser.FrameHandle.show_axes">show_axes (viser.FrameHandle attribute)</a>
 </li>
         <li><a href="../extras/#viser.extras.ViserUrdf.show_collision">show_collision (viser.extras.ViserUrdf property)</a>
@@ -9327,6 +9701,8 @@
           <li><a href="../scene_handles/#viser.MeshHandle.side">(viser.MeshHandle attribute)</a>
 </li>
           <li><a href="../scene_handles/#viser.MeshSkinnedHandle.side">(viser.MeshSkinnedHandle attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Axis.side">(viser.uplot.Axis attribute)</a>
 </li>
         </ul></li>
         <li><a href="../icons/#viser.Icon.SIGN_LEFT">SIGN_LEFT (viser.Icon attribute)</a>
@@ -9367,6 +9743,16 @@
 </li>
         <li><a href="../icons/#viser.Icon.SITEMAP_OFF">SITEMAP_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Axis.size">size (viser.uplot.Axis attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Axis_Ticks.size">(viser.uplot.Axis_Ticks attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Cursor_Points.size">(viser.uplot.Cursor_Points attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series_Points.size">(viser.uplot.Series_Points attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.SKATEBOARD">SKATEBOARD (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SKATEBOARD_OFF">SKATEBOARD_OFF (viser.Icon attribute)</a>
@@ -9376,6 +9762,8 @@
         <li><a href="../scene_handles/#viser.MeshSkinnedHandle.skin_indices">skin_indices (viser.MeshSkinnedHandle attribute)</a>
 </li>
         <li><a href="../scene_handles/#viser.MeshSkinnedHandle.skin_weights">skin_weights (viser.MeshSkinnedHandle attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Hover.skip">skip (viser.uplot.Cursor_Hover attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SKULL">SKULL (viser.Icon attribute)</a>
 </li>
@@ -9453,6 +9841,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.SORT_Z_A">SORT_Z_A (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Series.sorted">sorted (viser.uplot.Series attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Series_Facet.sorted">(viser.uplot.Series_Facet attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.SOS">SOS (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SOUP">SOUP (viser.Icon attribute)</a>
@@ -9463,6 +9857,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.SPACE">SPACE (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Axis.space">space (viser.uplot.Axis attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Series_Points.space">(viser.uplot.Series_Points attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../transforms/#viser.transforms.MatrixLieGroup.space_dim">space_dim (viser.transforms.MatrixLieGroup attribute)</a>
 
         <ul>
@@ -9479,6 +9879,8 @@
           <li><a href="../transforms/#viser.transforms.SOBase.space_dim">(viser.transforms.SOBase attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.SPACE_OFF">SPACE_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SPACING_HORIZONTAL">SPACING_HORIZONTAL (viser.Icon attribute)</a>
@@ -9489,10 +9891,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.SPADE_FILLED">SPADE_FILLED (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Series.spanGaps">spanGaps (viser.uplot.Series attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.SPARKLES">SPARKLES (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.SPEAKERPHONE">SPEAKERPHONE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SPEEDBOAT">SPEEDBOAT (viser.Icon attribute)</a>
@@ -9512,6 +9914,8 @@
         <li><a href="../scene_handles/#viser.SplineCatmullRomHandle">SplineCatmullRomHandle (class in viser)</a>
 </li>
         <li><a href="../scene_handles/#viser.SplineCubicBezierHandle">SplineCubicBezierHandle (class in viser)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Axis.splits">splits (viser.uplot.Axis attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SPORT_BILLARD">SPORT_BILLARD (viser.Icon attribute)</a>
 </li>
@@ -9971,6 +10375,24 @@
 </li>
         <li><a href="../icons/#viser.Icon.STRIKETHROUGH">STRIKETHROUGH (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Axis.stroke">stroke (viser.uplot.Axis attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Axis_Border.stroke">(viser.uplot.Axis_Border attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Axis_Grid.stroke">(viser.uplot.Axis_Grid attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Axis_Ticks.stroke">(viser.uplot.Axis_Ticks attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Cursor_Points.stroke">(viser.uplot.Cursor_Points attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Legend_Markers.stroke">(viser.uplot.Legend_Markers attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series.stroke">(viser.uplot.Series attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series_Points.stroke">(viser.uplot.Series_Points attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.SUBMARINE">SUBMARINE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SUBSCRIPT">SUBSCRIPT (viser.Icon attribute)</a>
@@ -10026,6 +10448,8 @@
         <li><a href="../icons/#viser.Icon.SWORD_OFF">SWORD_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SWORDS">SWORDS (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Cursor.sync">sync (viser.uplot.Cursor attribute)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -10158,7 +10582,11 @@
         <li><a href="../icons/#viser.Icon.TEX">TEX (viser.Icon attribute)</a>
 </li>
         <li><a href="../scene_handles/#viser.LabelHandle.text">text (viser.LabelHandle attribute)</a>
+
+        <ul>
+          <li><a href="../theme/#viser.theme.TitlebarButton.text">(viser.theme.TitlebarButton attribute)</a>
 </li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.TEXT_CAPTION">TEXT_CAPTION (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.TEXT_COLOR">TEXT_COLOR (viser.Icon attribute)</a>
@@ -10211,6 +10639,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.TICKET_OFF">TICKET_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Axis.ticks">ticks (viser.uplot.Axis attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.TIE">TIE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.TILDE">TILDE (viser.Icon attribute)</a>
@@ -10218,6 +10648,8 @@
         <li><a href="../icons/#viser.Icon.TILT_SHIFT">TILT_SHIFT (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.TILT_SHIFT_OFF">TILT_SHIFT_OFF (viser.Icon attribute)</a>
+</li>
+        <li><a href="../uplot/#viser.uplot.Scale.time">time (viser.uplot.Scale attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.TIME_DURATION_0">TIME_DURATION_0 (viser.Icon attribute)</a>
 </li>
@@ -10237,10 +10669,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.TIME_DURATION_OFF">TIME_DURATION_OFF (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.TIMELINE">TIMELINE (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.TIMELINE_EVENT">TIMELINE_EVENT (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.TIMELINE_EVENT_EXCLAMATION">TIMELINE_EVENT_EXCLAMATION (viser.Icon attribute)</a>
@@ -10255,7 +10687,17 @@
 </li>
         <li><a href="../icons/#viser.Icon.TIR">TIR (viser.Icon attribute)</a>
 </li>
-        <li><a href="../client_handles/#viser.NotificationHandle.title">title (viser.NotificationHandle attribute)</a>
+        <li><a href="../gui_handles/#viser.GuiUplotHandle.title">title (viser.GuiUplotHandle attribute)</a>
+
+        <ul>
+          <li><a href="../client_handles/#viser.NotificationHandle.title">(viser.NotificationHandle attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="../theme/#viser.theme.TitlebarButton">TitlebarButton (class in viser.theme)</a>
+</li>
+        <li><a href="../theme/#viser.theme.TitlebarConfig">TitlebarConfig (class in viser.theme)</a>
+</li>
+        <li><a href="../theme/#viser.theme.TitlebarImage">TitlebarImage (class in viser.theme)</a>
 </li>
         <li><a href="../icons/#viser.Icon.TOGGLE_LEFT">TOGGLE_LEFT (viser.Icon attribute)</a>
 </li>
@@ -10283,6 +10725,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.TOOLTIP">TOOLTIP (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Cursor.top">top (viser.uplot.Cursor attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Select.top">(viser.uplot.Select attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.TOPOLOGY_BUS">TOPOLOGY_BUS (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.TOPOLOGY_COMPLEX">TOPOLOGY_COMPLEX (viser.Icon attribute)</a>
@@ -10459,6 +10907,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.UNDERLINE">UNDERLINE (viser.Icon attribute)</a>
 </li>
+        <li><a href="../uplot/#viser.uplot.Cursor_Drag.uni">uni (viser.uplot.Cursor_Drag attribute)</a>
+</li>
         <li><a href="../transforms/#viser.transforms.SO2.unit_complex">unit_complex (viser.transforms.SO2 attribute)</a>
 </li>
         <li><a href="../transforms/#viser.transforms.SE2.unit_complex_xy">unit_complex_xy (viser.transforms.SE2 attribute)</a>
@@ -10513,10 +10963,10 @@
         </ul></li>
         <li><a href="../icons/#viser.Icon.UPLOAD">UPLOAD (viser.Icon attribute)</a>
 </li>
-        <li><a href="../gui_handles/#viser.UploadedFile">UploadedFile (class in viser)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../gui_handles/#viser.UploadedFile">UploadedFile (class in viser)</a>
+</li>
         <li><a href="../icons/#viser.Icon.URGENT">URGENT (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.USB">USB (viser.Icon attribute)</a>
@@ -10626,6 +11076,8 @@
 </li>
           <li><a href="../gui_handles/#viser.GuiVector3Handle.value">(viser.GuiVector3Handle attribute)</a>
 </li>
+          <li><a href="../uplot/#viser.uplot.Series.value">(viser.uplot.Series attribute)</a>
+</li>
         </ul></li>
         <li><a href="../icons/#viser.Icon.VARIABLE">VARIABLE (viser.Icon attribute)</a>
 </li>
@@ -10708,8 +11160,6 @@
           <li><a href="../extras/#module-viser.extras">module</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li>
     viser.infra
 
@@ -10717,11 +11167,27 @@
           <li><a href="../infrastructure/#module-viser.infra">module</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    viser.theme
+
+        <ul>
+          <li><a href="../theme/#module-viser.theme">module</a>
+</li>
+        </ul></li>
         <li>
     viser.transforms
 
         <ul>
           <li><a href="../transforms/#module-viser.transforms">module</a>
+</li>
+        </ul></li>
+        <li>
+    viser.uplot
+
+        <ul>
+          <li><a href="../uplot/#module-viser.uplot">module</a>
 </li>
         </ul></li>
         <li><a href="../server/#viser.ViserServer">ViserServer (class in viser)</a>
@@ -10784,6 +11250,8 @@
           <li><a href="../gui_handles/#viser.GuiTextHandle.visible">(viser.GuiTextHandle attribute)</a>
 </li>
           <li><a href="../gui_handles/#viser.GuiUploadButtonHandle.visible">(viser.GuiUploadButtonHandle attribute)</a>
+</li>
+          <li><a href="../gui_handles/#viser.GuiUplotHandle.visible">(viser.GuiUplotHandle attribute)</a>
 </li>
           <li><a href="../gui_handles/#viser.GuiVector2Handle.visible">(viser.GuiVector2Handle attribute)</a>
 </li>
@@ -10947,6 +11415,22 @@
         <ul>
           <li><a href="../scene_handles/#viser.RectAreaLightHandle.width">(viser.RectAreaLightHandle attribute)</a>
 </li>
+          <li><a href="../uplot/#viser.uplot.Axis_Border.width">(viser.uplot.Axis_Border attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Axis_Grid.width">(viser.uplot.Axis_Grid attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Axis_Ticks.width">(viser.uplot.Axis_Ticks attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Cursor_Points.width">(viser.uplot.Cursor_Points attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Legend_Markers.width">(viser.uplot.Legend_Markers attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Select.width">(viser.uplot.Select attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series.width">(viser.uplot.Series attribute)</a>
+</li>
+          <li><a href="../uplot/#viser.uplot.Series_Points.width">(viser.uplot.Series_Points attribute)</a>
+</li>
         </ul></li>
         <li><a href="../scene_handles/#viser.GridHandle.width_segments">width_segments (viser.GridHandle attribute)</a>
 </li>
@@ -10970,6 +11454,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.WINDMILL_OFF">WINDMILL_OFF (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.WINDOW">WINDOW (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.WINDOW_MAXIMIZE">WINDOW_MAXIMIZE (viser.Icon attribute)</a>
@@ -10978,8 +11464,6 @@
 </li>
         <li><a href="../icons/#viser.Icon.WINDOW_OFF">WINDOW_OFF (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.WINDSOCK">WINDSOCK (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.WIPER">WIPER (viser.Icon attribute)</a>
@@ -11132,12 +11616,18 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.X">X (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.XBOX_A">XBOX_A (viser.Icon attribute)</a>
+        <li><a href="../uplot/#viser.uplot.Cursor.x">x (viser.uplot.Cursor attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Cursor_Drag.x">(viser.uplot.Cursor_Drag attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.XBOX_B">XBOX_B (viser.Icon attribute)</a>
+        </ul></li>
+        <li><a href="../icons/#viser.Icon.XBOX_A">XBOX_A (viser.Icon attribute)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.XBOX_B">XBOX_B (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.XBOX_X">XBOX_X (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.XBOX_Y">XBOX_Y (viser.Icon attribute)</a>
@@ -11152,10 +11642,16 @@
   <h2>Y</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="../icons/#viser.Icon.YIN_YANG">YIN_YANG (viser.Icon attribute)</a>
+        <li><a href="../uplot/#viser.uplot.Cursor.y">y (viser.uplot.Cursor attribute)</a>
+
+        <ul>
+          <li><a href="../uplot/#viser.uplot.Cursor_Drag.y">(viser.uplot.Cursor_Drag attribute)</a>
 </li>
+        </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.YIN_YANG">YIN_YANG (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.YIN_YANG_FILLED">YIN_YANG_FILLED (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.YOGA">YOGA (viser.Icon attribute)</a>

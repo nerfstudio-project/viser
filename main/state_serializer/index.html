@@ -314,6 +314,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../icons/">Icons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../theme/">Theme Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../uplot/">uPlot Types</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Auxiliary)</span></p>
 <ul>
@@ -400,12 +402,12 @@
 scene state so it can be shared/embedded in static webpages.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.infra.StateSerializer.insert_sleep">
-<span class="sig-name descname"><span class="pre">insert_sleep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#StateSerializer.insert_sleep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.StateSerializer.insert_sleep" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">insert_sleep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#StateSerializer.insert_sleep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.StateSerializer.insert_sleep" title="Link to this definition">¶</a></dt>
 <dd><p>Insert a sleep into the recorded file. This can be useful for
 dynamic 3D data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>duration</strong> (<em>float</em>)</p>
+<dd class="field-odd"><p><strong>duration</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -415,7 +417,7 @@ dynamic 3D data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.infra.StateSerializer.serialize">
-<span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#StateSerializer.serialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.StateSerializer.serialize" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#StateSerializer.serialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.StateSerializer.serialize" title="Link to this definition">¶</a></dt>
 <dd><p>Serialize saved messages. Should only be called once. Our convention
 is to write this binary format to a file with a <code class="docutils literal notranslate"><span class="pre">.viser</span></code> extension,
 for example via <code class="docutils literal notranslate"><span class="pre">pathlib.Path(&quot;file.viser&quot;).write_bytes(...)</span></code>.</p>
@@ -424,7 +426,7 @@ for example via <code class="docutils literal notranslate"><span class="pre">pat
 <dd class="field-odd"><p>The recording as bytes.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>bytes</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)">bytes</a></p>
 </dd>
 </dl>
 </dd></dl>

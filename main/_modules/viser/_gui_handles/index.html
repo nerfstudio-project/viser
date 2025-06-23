@@ -313,6 +313,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../icons/">Icons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../theme/">Theme Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../uplot/">uPlot Types</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Auxiliary)</span></p>
 <ul>
@@ -435,6 +437,7 @@
     <span class="n">GuiTabGroupProps</span><span class="p">,</span>
     <span class="n">GuiTextProps</span><span class="p">,</span>
     <span class="n">GuiUpdateMessage</span><span class="p">,</span>
+    <span class="n">GuiUplotProps</span><span class="p">,</span>
     <span class="n">GuiVector2Props</span><span class="p">,</span>
     <span class="n">GuiVector3Props</span><span class="p">,</span>
 <span class="p">)</span>
@@ -1259,6 +1262,15 @@
         <span class="n">json_str</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">json_str</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_plotly_json_str</span> <span class="o">=</span> <span class="n">json_str</span></div>
+
+
+
+<div class="viewcode-block" id="GuiUplotHandle">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiUplotHandle">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiUplotHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">GuiUplotProps</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for updating and removing Uplot figures.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
 
 
 

@@ -313,6 +313,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../icons/">Icons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../theme/">Theme Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../uplot/">uPlot Types</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Auxiliary)</span></p>
 <ul>
@@ -419,7 +421,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">theme</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_messages</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_messages</span><span class="p">,</span> <span class="n">uplot</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._gui_handles</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">GuiButtonGroupHandle</span><span class="p">,</span>
     <span class="n">GuiButtonHandle</span><span class="p">,</span>
@@ -442,6 +444,7 @@
     <span class="n">GuiTabGroupHandle</span><span class="p">,</span>
     <span class="n">GuiTextHandle</span><span class="p">,</span>
     <span class="n">GuiUploadButtonHandle</span><span class="p">,</span>
+    <span class="n">GuiUplotHandle</span><span class="p">,</span>
     <span class="n">GuiVector2Handle</span><span class="p">,</span>
     <span class="n">GuiVector3Handle</span><span class="p">,</span>
     <span class="n">SupportsRemoveProtocol</span><span class="p">,</span>
@@ -1137,6 +1140,10 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a Plotly figure to the GUI. Requires the `plotly` package to be</span>
 <span class="sd">        installed.</span>
 
+<span class="sd">        .. note::</span>
+<span class="sd">           Updates to Plotly figures can be slow when you have many plots or frequent updates. For real-time visualization, consider using</span>
+<span class="sd">           :meth:`add_uplot` instead.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            figure: Plotly figure to display.</span>
 <span class="sd">            aspect: Aspect ratio of the plot in the control panel (width/height).</span>
@@ -1204,6 +1211,135 @@
         <span class="n">handle</span><span class="o">.</span><span class="n">figure</span> <span class="o">=</span> <span class="n">figure</span>
         <span class="n">handle</span><span class="o">.</span><span class="n">aspect</span> <span class="o">=</span> <span class="n">aspect</span>
         <span class="k">return</span> <span class="n">handle</span></div>
+
+
+<div class="viewcode-block" id="GuiApi.add_uplot">
+<a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_uplot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_uplot</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">series</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">uplot</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">bands</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">uplot</span><span class="o">.</span><span class="n">Band</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">scales</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">uplot</span><span class="o">.</span><span class="n">Scale</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">axes</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">uplot</span><span class="o">.</span><span class="n">Axis</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">legend</span><span class="p">:</span> <span class="n">uplot</span><span class="o">.</span><span class="n">Legend</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cursor</span><span class="p">:</span> <span class="n">uplot</span><span class="o">.</span><span class="n">Cursor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">focus</span><span class="p">:</span> <span class="n">uplot</span><span class="o">.</span><span class="n">Focus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">aspect</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiUplotHandle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a uPlot chart to the GUI for high-performance time-series visualization.</span>
+
+<span class="sd">        uPlot is optimized for plotting large datasets with smooth pan/zoom interactions.</span>
+<span class="sd">        All configuration options follow the standard uPlot API. For comprehensive</span>
+<span class="sd">        documentation, see: https://github.com/leeoniya/uPlot/tree/1.6.32/docs</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">           Configuration types are exposed under the :mod:`viser.uplot` module for convenience:</span>
+<span class="sd">           :class:`viser.uplot.Series`, :class:`viser.uplot.Scale`, :class:`viser.uplot.Axis`,</span>
+<span class="sd">           :class:`viser.uplot.Band`, :class:`viser.uplot.Legend`, :class:`viser.uplot.Cursor`,</span>
+<span class="sd">           and :class:`viser.uplot.Focus`. These are :py:class:`~typing.TypedDict` types;</span>
+<span class="sd">           standard dictionaries can also be used.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Tuple of 1D numpy arrays containing chart data. The first array provides</span>
+<span class="sd">                x-axis values, and subsequent arrays contain y-axis data for</span>
+<span class="sd">                each series. All arrays must have identical length. Minimum 2</span>
+<span class="sd">                arrays.</span>
+<span class="sd">            series: Series configuration objects defining visual appearance and behavior.</span>
+<span class="sd">                Must match the length of data tuple.</span>
+<span class="sd">            mode: Chart layout mode. 1 = aligned (default) where all series share axes,</span>
+<span class="sd">                2 = faceted where each series gets its own subplot panel.</span>
+<span class="sd">            title: Chart title displayed at the top.</span>
+<span class="sd">            bands: High/low range visualizations between data series. Useful for showing</span>
+<span class="sd">                confidence intervals, error bounds, or min/max ranges. Each band connects</span>
+<span class="sd">                two adjacent series indices.</span>
+<span class="sd">            scales: Scale definitions controlling data-to-pixel mapping and axis ranges.</span>
+<span class="sd">                Key features include auto-ranging, manual min/max, time-based scaling,</span>
+<span class="sd">                and logarithmic distributions. Multiple scales enable dual-axis charts.</span>
+<span class="sd">            axes: Axis configuration for labels, ticks, grids, and positioning.</span>
+<span class="sd">                Controls which side axes appear (top/right/bottom/left), tick formatting,</span>
+<span class="sd">                grid line styling, and spacing between tick marks.</span>
+<span class="sd">            legend: Legend display options including positioning, styling, and custom</span>
+<span class="sd">                value formatting functions for hover states.</span>
+<span class="sd">            cursor: Interactive cursor behavior including hover proximity detection,</span>
+<span class="sd">                drag-to-zoom, and crosshair appearance. Controls how users interact</span>
+<span class="sd">                with the chart through mouse/touch.</span>
+<span class="sd">            focus: Visual highlighting when hovering over series. Controls the alpha</span>
+<span class="sd">                transparency of non-focused series to emphasize the active one.</span>
+<span class="sd">            aspect: Width-to-height ratio for the chart display in the control panel.</span>
+<span class="sd">                1.0 creates a square chart, values &gt; 1.0 create wider charts.</span>
+<span class="sd">            order: Display ordering relative to other GUI elements (lower values first).</span>
+<span class="sd">            visible: Whether the chart is visible in the interface.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A handle for programmatically updating chart properties and data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Validate data structure</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s2">&quot;data must have at least 2 arrays (x-data + at least one y-data series)&quot;</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">data</span><span class="p">),</span> <span class="p">(</span>
+            <span class="s2">&quot;all data elements must be numpy arrays&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Validate data dimensions and shapes</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;data[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">] must be a 1D array, got shape </span><span class="si">{</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Check that all arrays have the same length</span>
+        <span class="n">lengths</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">length</span> <span class="o">==</span> <span class="n">lengths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">length</span> <span class="ow">in</span> <span class="n">lengths</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;All data arrays must have the same length. Got lengths: </span><span class="si">{</span><span class="n">lengths</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Validate series configuration</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;series must not be empty&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Length of series (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span><span class="si">}</span><span class="s2">) must match length of data (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2">). &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Each array in data needs a corresponding series configuration.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Convert arrays to float64 as expected by GuiUplotProps</span>
+        <span class="n">data_float64</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="n">_messages</span><span class="o">.</span><span class="n">GuiUplotMessage</span><span class="p">(</span>
+            <span class="n">uuid</span><span class="o">=</span><span class="n">_make_uuid</span><span class="p">(),</span>
+            <span class="n">container_uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_container_uuid</span><span class="p">(),</span>
+            <span class="n">props</span><span class="o">=</span><span class="n">_messages</span><span class="o">.</span><span class="n">GuiUplotProps</span><span class="p">(</span>
+                <span class="n">order</span><span class="o">=</span><span class="n">_apply_default_order</span><span class="p">(</span><span class="n">order</span><span class="p">),</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">data_float64</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                <span class="n">series</span><span class="o">=</span><span class="n">series</span><span class="p">,</span>
+                <span class="n">bands</span><span class="o">=</span><span class="n">bands</span><span class="p">,</span>
+                <span class="n">scales</span><span class="o">=</span><span class="n">scales</span><span class="p">,</span>
+                <span class="n">axes</span><span class="o">=</span><span class="n">axes</span><span class="p">,</span>
+                <span class="n">legend</span><span class="o">=</span><span class="n">legend</span><span class="p">,</span>
+                <span class="n">cursor</span><span class="o">=</span><span class="n">cursor</span><span class="p">,</span>
+                <span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">,</span>
+                <span class="n">aspect</span><span class="o">=</span><span class="n">aspect</span><span class="p">,</span>
+                <span class="n">visible</span><span class="o">=</span><span class="n">visible</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">GuiUplotHandle</span><span class="p">(</span>
+            <span class="n">_GuiHandleState</span><span class="p">(</span>
+                <span class="n">message</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">props</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">props</span><span class="p">,</span>
+                <span class="n">parent_container_id</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">container_uuid</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GuiApi.add_button">

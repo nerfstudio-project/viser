@@ -313,6 +313,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../icons/">Icons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../theme/">Theme Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../uplot/">uPlot Types</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Auxiliary)</span></p>
 <ul>
@@ -449,12 +451,6 @@
 
     <span class="c1"># Recursively handle tuples.</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-            <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="p">(</span>
-                <span class="s2">&quot;Expected a tuple, but got an array... missing a cast somewhere?&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-
         <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">tuple</span><span class="p">:</span>
             <span class="n">args</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
