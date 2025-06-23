@@ -13,7 +13,7 @@ Display different types of notifications to users including persistent, timed, a
 
 **Source:** ``examples/02_gui/07_notifications.py``
 
-.. figure:: ../../../_static/examples/02_gui_07_notifications.png
+.. figure:: ../_static/examples/02_gui_07_notifications.png
    :width: 100%
    :alt: Notifications
 

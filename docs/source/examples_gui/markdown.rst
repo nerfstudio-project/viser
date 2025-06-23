@@ -14,7 +14,7 @@ Display rich text content with markdown support in GUI panels.
 
 **Source:** ``examples/02_gui/03_markdown.py``
 
-.. figure:: ../../../_static/examples/02_gui_03_markdown.png
+.. figure:: ../_static/examples/02_gui_03_markdown.png
    :width: 100%
    :alt: Markdown support
 

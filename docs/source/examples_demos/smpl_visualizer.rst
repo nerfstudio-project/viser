@@ -15,7 +15,7 @@ Requires a .npz model file. See here for download instructions:
 
 **Source:** ``examples/04_demos/03_smpl_visualizer.py``
 
-.. figure:: ../../../_static/examples/04_demos_03_smpl_visualizer.png
+.. figure:: ../_static/examples/04_demos_03_smpl_visualizer.png
    :width: 100%
    :alt: SMPL human model
 

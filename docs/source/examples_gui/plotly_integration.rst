@@ -12,7 +12,7 @@ Embed interactive Plotly charts and graphs directly in the GUI interface.
 
 **Source:** ``examples/02_gui/08_plotly_integration.py``
 
-.. figure:: ../../../_static/examples/02_gui_08_plotly_integration.png
+.. figure:: ../_static/examples/02_gui_08_plotly_integration.png
    :width: 100%
    :alt: Plotly integration
 

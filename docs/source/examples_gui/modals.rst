@@ -12,7 +12,7 @@ Create popup modal dialogs for user input, confirmations, or detailed informatio
 
 **Source:** ``examples/02_gui/04_modals.py``
 
-.. figure:: ../../../_static/examples/02_gui_04_modals.png
+.. figure:: ../_static/examples/02_gui_04_modals.png
    :width: 100%
    :alt: Modal dialogs
 

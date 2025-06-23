@@ -13,7 +13,7 @@ Add directional lights and ambient lighting to illuminate 3D meshes with realist
 
 **Source:** ``examples/01_scene/06_lighting.py``
 
-.. figure:: ../../../_static/examples/01_scene_06_lighting.png
+.. figure:: ../_static/examples/01_scene_06_lighting.png
    :width: 100%
    :alt: Lighting and shadows
 

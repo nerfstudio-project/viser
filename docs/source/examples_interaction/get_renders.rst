@@ -12,7 +12,7 @@ Capture rendered images from client viewports for processing or saving.
 
 **Source:** ``examples/03_interaction/02_get_renders.py``
 
-.. figure:: ../../../_static/examples/03_interaction_02_get_renders.png
+.. figure:: ../_static/examples/03_interaction_02_get_renders.png
    :width: 100%
    :alt: Get renders
 

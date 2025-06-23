@@ -17,7 +17,7 @@ The example shows how to create clickable frames that smoothly animate the camer
 
 **Source:** ``examples/03_interaction/04_camera_commands.py``
 
-.. figure:: ../../../_static/examples/03_interaction_04_camera_commands.png
+.. figure:: ../_static/examples/03_interaction_04_camera_commands.png
    :width: 100%
    :alt: Programmatic camera control
 

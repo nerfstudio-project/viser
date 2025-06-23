@@ -12,7 +12,7 @@ Control the global up direction for camera navigation and scene orientation.
 
 **Source:** ``examples/01_scene/08_set_up_direction.py``
 
-.. figure:: ../../../_static/examples/01_scene_08_set_up_direction.png
+.. figure:: ../_static/examples/01_scene_08_set_up_direction.png
    :width: 100%
    :alt: Set up direction
 

@@ -12,7 +12,7 @@ Capture mouse pointer events to create rays for 3D scene interaction and ray-mes
 
 **Source:** ``examples/03_interaction/01_scene_pointer.py``
 
-.. figure:: ../../../_static/examples/03_interaction_01_scene_pointer.png
+.. figure:: ../_static/examples/03_interaction_01_scene_pointer.png
    :width: 100%
    :alt: Scene pointer events
 

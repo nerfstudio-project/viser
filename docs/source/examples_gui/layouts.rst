@@ -12,7 +12,7 @@ Organize GUI controls using folders, tabs, and nested structures for better user
 
 **Source:** ``examples/02_gui/02_layouts.py``
 
-.. figure:: ../../../_static/examples/02_gui_02_layouts.png
+.. figure:: ../_static/examples/02_gui_02_layouts.png
    :width: 100%
    :alt: GUI layouts
 

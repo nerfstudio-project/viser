@@ -16,7 +16,7 @@ The example shows two ways to display the same mesh: using raw vertices/faces ar
 
 **Source:** ``examples/01_scene/02_meshes.py``
 
-.. figure:: ../../../_static/examples/01_scene_02_meshes.png
+.. figure:: ../_static/examples/01_scene_02_meshes.png
    :width: 100%
    :alt: 3D mesh visualization
 

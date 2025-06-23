@@ -12,7 +12,7 @@ Display background images that can occlude 3D geometry based on depth values.
 
 **Source:** ``examples/01_scene/07_background_composite.py``
 
-.. figure:: ../../../_static/examples/01_scene_07_background_composite.png
+.. figure:: ../_static/examples/01_scene_07_background_composite.png
    :width: 100%
    :alt: Depth compositing
 

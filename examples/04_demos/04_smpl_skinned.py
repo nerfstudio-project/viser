@@ -5,7 +5,9 @@
 # - https://github.com/python/mypy/pull/11643
 """SMPL skinned mesh
 
-Visualize SMPL human body models using GPU-accelerated skinned mesh deformation.
+Visualize SMPL human body models using skinned mesh deformation. For
+visualizing human motion sequences, updating bone transformations should be
+much faster than updating the entire mesh.
 
 See here for download instructions:
     https://github.com/vchoutas/smplx?tab=readme-ov-file#downloading-the-model
@@ -13,9 +15,7 @@ See here for download instructions:
 **Features:**
 
 * SMPL skinned mesh with real-time deformation
-* GPU-accelerated vertex skinning
 * Interactive pose parameter controls
-* Advanced mesh rendering with proper normals
 """
 
 from __future__ import annotations

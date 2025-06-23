@@ -17,7 +17,7 @@ Batched meshes have some limitations: GLB animations are not supported, hierarch
 
 **Source:** ``examples/01_scene/05_meshes_batched.py``
 
-.. figure:: ../../../_static/examples/01_scene_05_meshes_batched.png
+.. figure:: ../_static/examples/01_scene_05_meshes_batched.png
    :width: 100%
    :alt: Batched mesh rendering
 

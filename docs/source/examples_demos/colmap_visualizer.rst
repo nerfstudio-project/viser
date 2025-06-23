@@ -12,7 +12,7 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see `../assets
 
 **Source:** ``examples/04_demos/01_colmap_visualizer.py``
 
-.. figure:: ../../../_static/examples/04_demos_01_colmap_visualizer.png
+.. figure:: ../_static/examples/04_demos_01_colmap_visualizer.png
    :width: 100%
    :alt: COLMAP
 

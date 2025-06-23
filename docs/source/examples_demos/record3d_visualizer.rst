@@ -12,7 +12,7 @@ Parse and stream Record3D captures. To get demo data, see `../assets/download_re
 
 **Source:** ``examples/04_demos/00_record3d_visualizer.py``
 
-.. figure:: ../../../_static/examples/04_demos_00_record3d_visualizer.png
+.. figure:: ../_static/examples/04_demos_00_record3d_visualizer.png
    :width: 100%
    :alt: Record3D
 

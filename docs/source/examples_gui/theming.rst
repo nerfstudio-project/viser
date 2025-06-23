@@ -12,7 +12,7 @@ Customize the appearance with custom titles, logos, and navigation buttons.
 
 **Source:** ``examples/02_gui/05_theming.py``
 
-.. figure:: ../../../_static/examples/02_gui_05_theming.png
+.. figure:: ../_static/examples/02_gui_05_theming.png
    :width: 100%
    :alt: Theming
 

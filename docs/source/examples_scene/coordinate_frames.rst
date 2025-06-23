@@ -15,7 +15,7 @@ The hierarchical structure allows for complex transformations where moving a par
 
 **Source:** ``examples/01_scene/00_coordinate_frames.py``
 
-.. figure:: ../../../_static/examples/01_scene_00_coordinate_frames.png
+.. figure:: ../_static/examples/01_scene_00_coordinate_frames.png
    :width: 100%
    :alt: Coordinate frames
 

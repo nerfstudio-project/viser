@@ -15,7 +15,7 @@ See here for download instructions:
 
 **Source:** ``examples/04_demos/04_smpl_skinned.py``
 
-.. figure:: ../../../_static/examples/04_demos_04_smpl_skinned.png
+.. figure:: ../_static/examples/04_demos_04_smpl_skinned.png
    :width: 100%
    :alt: SMPL skinned mesh
 
@@ -135,6 +135,7 @@ Code
                mesh_handle.vertices = v_tpose
                mesh_handle.bone_positions = j_tpose
    
+           mesh_handle.color = gui_elements.gui_rgb.value
            gui_elements.changed = False
            gui_elements.betas_changed = False
    

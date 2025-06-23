@@ -15,7 +15,7 @@ The example shows performance best practices: batching many line segments into a
 
 **Source:** ``examples/01_scene/03_lines.py``
 
-.. figure:: ../../../_static/examples/01_scene_03_lines.png
+.. figure:: ../_static/examples/01_scene_03_lines.png
    :width: 100%
    :alt: Line visualization
 

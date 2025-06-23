@@ -12,7 +12,7 @@ GUI controls can be connected to scene objects using event handlers (:meth:`vise
 
 **Source:** ``examples/00_getting_started/01_core_concepts.py``
 
-.. figure:: ../../../_static/examples/00_getting_started_01_core_concepts.png
+.. figure:: ../_static/examples/00_getting_started_01_core_concepts.png
    :width: 100%
    :alt: Core concepts
 

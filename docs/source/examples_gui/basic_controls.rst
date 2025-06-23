@@ -29,7 +29,7 @@ The example shows how to read control values with ``.value``, manage visibility 
 
 **Source:** ``examples/02_gui/00_basic_controls.py``
 
-.. figure:: ../../../_static/examples/02_gui_00_basic_controls.png
+.. figure:: ../_static/examples/02_gui_00_basic_controls.png
    :width: 100%
    :alt: Basic GUI controls
 

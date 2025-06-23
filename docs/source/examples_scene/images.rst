@@ -14,7 +14,7 @@ Display background images and 3D image textures positioned in world space.
 
 **Source:** ``examples/01_scene/04_images.py``
 
-.. figure:: ../../../_static/examples/01_scene_04_images.png
+.. figure:: ../_static/examples/01_scene_04_images.png
    :width: 100%
    :alt: Image overlays
 

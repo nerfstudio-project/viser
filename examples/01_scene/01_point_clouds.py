@@ -21,7 +21,7 @@ def main():
     server = viser.ViserServer()
 
     # Generate a simple point cloud - a spiral
-    num_points = 1000
+    num_points = 200
     t = np.linspace(0, 10, num_points)
     spiral_positions = np.column_stack(
         [
@@ -50,9 +50,7 @@ def main():
 
     # Add a second point cloud - random noise points
     num_noise_points = 500
-    noise_positions = np.random.normal(0, 1, (num_noise_points, 3)) + np.array(
-        [3, 0, 1]
-    )
+    noise_positions = np.random.normal(0, 1, (num_noise_points, 3))
     noise_colors = np.random.randint(0, 255, (num_noise_points, 3), dtype=np.uint8)
 
     server.scene.add_point_cloud(

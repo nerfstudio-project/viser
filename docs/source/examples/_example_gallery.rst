@@ -12,7 +12,7 @@
    </style>
    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin: 20px 0;">
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_getting_started/00_getting_started_00_hello_world/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/getting_started/00_getting_started_00_hello_world/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/00_getting_started_00_hello_world.png" alt="Hello world" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Hello world</h4>
@@ -21,7 +21,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_getting_started/00_getting_started_01_core_concepts/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/getting_started/00_getting_started_01_core_concepts/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/00_getting_started_01_core_concepts.png" alt="Core concepts" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Core concepts</h4>
@@ -41,7 +41,7 @@
    </style>
    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin: 20px 0;">
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_scene/coordinate_frames/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/scene/coordinate_frames/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/01_scene_00_coordinate_frames.png" alt="Coordinate frames" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Coordinate frames</h4>
@@ -50,7 +50,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_scene/point_clouds/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/scene/point_clouds/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/01_scene_01_point_clouds.png" alt="Point cloud visualization" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Point cloud visualization</h4>
@@ -59,7 +59,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_scene/meshes/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/scene/meshes/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/01_scene_02_meshes.png" alt="3D mesh visualization" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">3D mesh visualization</h4>
@@ -68,7 +68,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_scene/lines/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/scene/lines/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/01_scene_03_lines.png" alt="Line visualization" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Line visualization</h4>
@@ -77,7 +77,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_scene/images/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/scene/images/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/01_scene_04_images.png" alt="Image overlays" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Image overlays</h4>
@@ -86,7 +86,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_scene/meshes_batched/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/scene/meshes_batched/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/01_scene_05_meshes_batched.png" alt="Batched mesh rendering" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Batched mesh rendering</h4>
@@ -95,7 +95,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_scene/lighting/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/scene/lighting/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/01_scene_06_lighting.png" alt="Lighting and shadows" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Lighting and shadows</h4>
@@ -104,7 +104,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_scene/background_composite/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/scene/background_composite/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/01_scene_07_background_composite.png" alt="Depth compositing" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Depth compositing</h4>
@@ -113,11 +113,20 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_scene/set_up_direction/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/scene/set_up_direction/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/01_scene_08_set_up_direction.png" alt="Set up direction" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Set up direction</h4>
                    <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Control the global up direction for camera navigation and scene orientation.</p>
+               </div>
+           </a>
+       </div>
+       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples/scene/gaussian_splats/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/01_scene_09_gaussian_splats.png" alt="Gaussian splats" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+               <div style="padding: 15px;">
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Gaussian splats</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Viser includes a WebGL-based Gaussian splat renderer.</p>
                </div>
            </a>
        </div>
@@ -133,7 +142,7 @@
    </style>
    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin: 20px 0;">
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_gui/basic_controls/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/gui/basic_controls/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/02_gui_00_basic_controls.png" alt="Basic GUI controls" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Basic GUI controls</h4>
@@ -142,7 +151,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_gui/callbacks/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/gui/callbacks/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/02_gui_01_callbacks.png" alt="GUI callbacks" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">GUI callbacks</h4>
@@ -151,7 +160,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_gui/layouts/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/gui/layouts/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/02_gui_02_layouts.png" alt="GUI layouts" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">GUI layouts</h4>
@@ -160,7 +169,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_gui/markdown/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/gui/markdown/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/02_gui_03_markdown.png" alt="Markdown support" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Markdown support</h4>
@@ -169,7 +178,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_gui/modals/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/gui/modals/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/02_gui_04_modals.png" alt="Modal dialogs" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Modal dialogs</h4>
@@ -178,7 +187,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_gui/theming/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/gui/theming/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/02_gui_05_theming.png" alt="Theming" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Theming</h4>
@@ -187,7 +196,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_gui/gui_in_scene/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/gui/gui_in_scene/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/02_gui_06_gui_in_scene.png" alt="3D GUI elements" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">3D GUI elements</h4>
@@ -196,7 +205,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_gui/notifications/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/gui/notifications/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/02_gui_07_notifications.png" alt="Notifications" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Notifications</h4>
@@ -205,7 +214,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_gui/plotly_integration/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/gui/plotly_integration/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/02_gui_08_plotly_integration.png" alt="Plotly integration" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Plotly integration</h4>
@@ -214,7 +223,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_gui/plots_as_images/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/gui/plots_as_images/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/02_gui_09_plots_as_images.png" alt="Plots as images" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Plots as images</h4>
@@ -234,7 +243,7 @@
    </style>
    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin: 20px 0;">
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_interaction/click_meshes/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/interaction/click_meshes/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/03_interaction_00_click_meshes.png" alt="Mesh click events" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Mesh click events</h4>
@@ -243,7 +252,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_interaction/scene_pointer/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/interaction/scene_pointer/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/03_interaction_01_scene_pointer.png" alt="Scene pointer events" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Scene pointer events</h4>
@@ -252,7 +261,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_interaction/get_renders/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/interaction/get_renders/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/03_interaction_02_get_renders.png" alt="Get renders" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Get renders</h4>
@@ -261,7 +270,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_interaction/camera_poses/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/interaction/camera_poses/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/03_interaction_03_camera_poses.png" alt="Camera pose tracking" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Camera pose tracking</h4>
@@ -270,7 +279,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_interaction/camera_commands/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/interaction/camera_commands/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/03_interaction_04_camera_commands.png" alt="Programmatic camera control" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Programmatic camera control</h4>
@@ -290,7 +299,7 @@
    </style>
    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin: 20px 0;">
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_demos/record3d_visualizer/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/demos/record3d_visualizer/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/04_demos_00_record3d_visualizer.png" alt="Record3D" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Record3D</h4>
@@ -299,7 +308,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_demos/colmap_visualizer/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/demos/colmap_visualizer/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/04_demos_01_colmap_visualizer.png" alt="COLMAP" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">COLMAP</h4>
@@ -308,7 +317,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_demos/urdf_visualizer/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/demos/urdf_visualizer/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/04_demos_02_urdf_visualizer.png" alt="URDF robot visualizer" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">URDF robot visualizer</h4>
@@ -317,7 +326,7 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_demos/smpl_visualizer/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/demos/smpl_visualizer/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/04_demos_03_smpl_visualizer.png" alt="SMPL human model" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">SMPL human model</h4>
@@ -326,16 +335,16 @@
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_demos/smpl_skinned/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/demos/smpl_skinned/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/04_demos_04_smpl_skinned.png" alt="SMPL skinned mesh" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">SMPL skinned mesh</h4>
-                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Visualize SMPL human body models using GPU-accelerated skinned mesh deformation.</p>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Visualize SMPL human body models using skinned mesh deformation.</p>
                </div>
            </a>
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples_demos/games/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/demos/games/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/04_demos_05_games.png" alt="Games" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Games</h4>

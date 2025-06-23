@@ -16,7 +16,7 @@ This pattern is useful for building interactive 3D applications where users can 
 
 **Source:** ``examples/03_interaction/00_click_meshes.py``
 
-.. figure:: ../../../_static/examples/03_interaction_00_click_meshes.png
+.. figure:: ../_static/examples/03_interaction_00_click_meshes.png
    :width: 100%
    :alt: Mesh click events
 

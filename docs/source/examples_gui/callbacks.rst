@@ -22,7 +22,7 @@ The pattern shown hereâ€”connecting GUI controls to scene updates via callbacksâ
 
 **Source:** ``examples/02_gui/01_callbacks.py``
 
-.. figure:: ../../../_static/examples/02_gui_01_callbacks.png
+.. figure:: ../_static/examples/02_gui_01_callbacks.png
    :width: 100%
    :alt: GUI callbacks
 

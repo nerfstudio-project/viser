@@ -14,7 +14,7 @@ We also add a coordinate frame using :meth:`viser.SceneApi.add_frame` to provide
 
 **Source:** ``examples/01_scene/01_point_clouds.py``
 
-.. figure:: ../../../_static/examples/01_scene_01_point_clouds.png
+.. figure:: ../_static/examples/01_scene_01_point_clouds.png
    :width: 100%
    :alt: Point cloud visualization
 
@@ -25,7 +25,6 @@ Code
    :linenos:
 
    import numpy as np
-   
    import viser
    
    
@@ -33,7 +32,7 @@ Code
        server = viser.ViserServer()
    
        # Generate a simple point cloud - a spiral
-       num_points = 1000
+       num_points = 200
        t = np.linspace(0, 10, num_points)
        spiral_positions = np.column_stack(
            [
@@ -62,9 +61,7 @@ Code
    
        # Add a second point cloud - random noise points
        num_noise_points = 500
-       noise_positions = np.random.normal(0, 1, (num_noise_points, 3)) + np.array(
-           [3, 0, 1]
-       )
+       noise_positions = np.random.normal(0, 1, (num_noise_points, 3))
        noise_colors = np.random.randint(0, 255, (num_noise_points, 3), dtype=np.uint8)
    
        server.scene.add_point_cloud(

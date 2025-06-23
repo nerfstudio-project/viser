@@ -12,7 +12,7 @@ Embed GUI controls directly in the 3D scene positioned relative to scene objects
 
 **Source:** ``examples/02_gui/06_gui_in_scene.py``
 
-.. figure:: ../../../_static/examples/02_gui_06_gui_in_scene.png
+.. figure:: ../_static/examples/02_gui_06_gui_in_scene.png
    :width: 100%
    :alt: 3D GUI elements
 

@@ -12,7 +12,7 @@ The server runs indefinitely until interrupted with Ctrl+C.
 
 **Source:** ``examples/00_getting_started/00_hello_world.py``
 
-.. figure:: ../../../_static/examples/00_getting_started_00_hello_world.png
+.. figure:: ../_static/examples/00_getting_started_00_hello_world.png
    :width: 100%
    :alt: Hello world
 

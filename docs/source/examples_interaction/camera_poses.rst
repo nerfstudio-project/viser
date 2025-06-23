@@ -16,7 +16,7 @@ The example shows how to access camera intrinsics (FOV, aspect ratio, canvas siz
 
 **Source:** ``examples/03_interaction/03_camera_poses.py``
 
-.. figure:: ../../../_static/examples/03_interaction_03_camera_poses.png
+.. figure:: ../_static/examples/03_interaction_03_camera_poses.png
    :width: 100%
    :alt: Camera pose tracking
 

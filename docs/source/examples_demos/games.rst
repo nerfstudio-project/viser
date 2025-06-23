@@ -12,7 +12,7 @@ Two-player games demonstrating click interactions and game state management.
 
 **Source:** ``examples/04_demos/05_games.py``
 
-.. figure:: ../../../_static/examples/04_demos_05_games.png
+.. figure:: ../_static/examples/04_demos_05_games.png
    :width: 100%
    :alt: Games
 
