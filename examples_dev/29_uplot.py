@@ -22,7 +22,7 @@ def main(num_plots: int = 5, num_timesteps: int = 100, num_lines: int = 3) -> No
     time_step = 1.0 / 60.0
 
     # Data for uPlot: tuple of arrays where first is x-data, rest are y-data
-    x_data = time_step * np.arange(num_timesteps)
+    x_data = time_step * np.arange(num_timesteps, dtype=np.float64)
     data = (x_data, *[y(x_data, i) for i in range(num_lines)])
     print("Data shapes:", [arr.shape for arr in data])
 
