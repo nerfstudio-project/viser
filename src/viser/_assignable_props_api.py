@@ -33,19 +33,42 @@ class AssignablePropsBase(Generic[TImpl]):
 
     _impl: TImpl
 
+    def _cast_value_recursive(self, hint: Any, value: Any, prop_name: str) -> Any:
+        """Recursively cast values to match type hints, handling arrays and tuples."""
+        # Handle numpy arrays
+        if isinstance(value, np.ndarray):
+            if hint == npt.NDArray[np.float32]:
+                return value.astype(np.float32)
+            elif hint == npt.NDArray[np.float16]:
+                return value.astype(np.float16)
+            elif hint == npt.NDArray[np.float64]:
+                return value.astype(np.float64)
+            elif hint == npt.NDArray[np.uint8] and "color" in prop_name:
+                return colors_to_uint8(value)
+            return value
+
+        # Handle tuple[T, ...] pattern
+        if (
+            isinstance(value, tuple)
+            and hasattr(hint, "__origin__")
+            and hint.__origin__ is tuple
+            and hasattr(hint, "__args__")
+            and len(hint.__args__) == 2
+            and hint.__args__[1] is ...
+        ):
+            element_type = hint.__args__[0]
+            return tuple(
+                self._cast_value_recursive(element_type, item, prop_name)
+                for item in value
+            )
+
+        return value
+
     def _cast_array_dtypes(
         self, prop_hints: Dict[str, Any], prop_name: str, value: np.ndarray
     ) -> np.ndarray:
         """Helper to cast array values to the correct data type."""
-        hint = prop_hints[prop_name]
-        if hint == npt.NDArray[np.float32]:
-            return value.astype(np.float32)
-        elif hint == npt.NDArray[np.float16]:
-            return value.astype(np.float16)
-        if hint == npt.NDArray[np.uint8] and "color" in prop_name:
-            # ^TODO: revisit name heuristic here...
-            value = colors_to_uint8(value)
-        return value
+        return self._cast_value_recursive(prop_hints[prop_name], value, prop_name)
 
     @cached_property
     def _prop_hints(self) -> Dict[str, Any]:
@@ -68,18 +91,17 @@ def props_setattr(self, name: str, value: Any) -> None:
 
     # Try to handle as a props field.
     if name in self._prop_hints:
-        # Handle array type casting.
-        if isinstance(value, np.ndarray):
-            value = self._cast_array_dtypes(self._prop_hints, name, value)
-
+        # Handle type casting (arrays, tuples of arrays, etc.).
+        value = self._cast_value_recursive(self._prop_hints[name], value, name)
         current_value = getattr(self._impl.props, name)
 
         # Skip update if value hasn't changed.
-        if isinstance(current_value, np.ndarray):
-            if np.array_equal(current_value, value):
+        try:
+            hash(current_value)
+            if current_value == value:
                 return
-        elif current_value == value:
-            return
+        except TypeError:
+            pass
 
         # Update the value based on type.
         if isinstance(value, np.ndarray):

@@ -32,7 +32,7 @@ from typing_extensions import (
 
 from viser import theme
 
-from . import _messages
+from . import _messages, uplot
 from ._gui_handles import (
     GuiButtonGroupHandle,
     GuiButtonHandle,
@@ -55,6 +55,7 @@ from ._gui_handles import (
     GuiTabGroupHandle,
     GuiTextHandle,
     GuiUploadButtonHandle,
+    GuiUplotHandle,
     GuiVector2Handle,
     GuiVector3Handle,
     SupportsRemoveProtocol,
@@ -719,6 +720,10 @@ class GuiApi:
         """Add a Plotly figure to the GUI. Requires the `plotly` package to be
         installed.
 
+        .. note::
+           Updates to Plotly figures can be slow when you have many plots or frequent updates. For real-time visualization, consider using
+           :meth:`add_uplot` instead.
+
         Args:
             figure: Plotly figure to display.
             aspect: Aspect ratio of the plot in the control panel (width/height).
@@ -786,6 +791,132 @@ class GuiApi:
         handle.figure = figure
         handle.aspect = aspect
         return handle
+
+    def add_uplot(
+        self,
+        data: tuple[np.ndarray, ...],
+        series: tuple[uplot.Series, ...],
+        *,
+        mode: Literal[1, 2] | None = None,
+        title: str | None = None,
+        bands: tuple[uplot.Band, ...] | None = None,
+        scales: dict[str, uplot.Scale] | None = None,
+        axes: tuple[uplot.Axis, ...] | None = None,
+        legend: uplot.Legend | None = None,
+        cursor: uplot.Cursor | None = None,
+        focus: uplot.Focus | None = None,
+        aspect: float = 1.0,
+        order: float | None = None,
+        visible: bool = True,
+    ) -> GuiUplotHandle:
+        """Add a uPlot chart to the GUI for high-performance time-series visualization.
+
+        uPlot is optimized for plotting large datasets with smooth pan/zoom interactions.
+        All configuration options follow the standard uPlot API. For comprehensive
+        documentation, see: https://github.com/leeoniya/uPlot/tree/1.6.32/docs
+
+        .. note::
+           Configuration types are exposed under the :mod:`viser.uplot` module for convenience:
+           :class:`viser.uplot.Series`, :class:`viser.uplot.Scale`, :class:`viser.uplot.Axis`,
+           :class:`viser.uplot.Band`, :class:`viser.uplot.Legend`, :class:`viser.uplot.Cursor`,
+           and :class:`viser.uplot.Focus`. These are :py:class:`~typing.TypedDict` types;
+           standard dictionaries can also be used.
+
+        Args:
+            data: Tuple of 1D numpy arrays containing chart data. The first array provides
+                x-axis values, and subsequent arrays contain y-axis data for
+                each series. All arrays must have identical length. Minimum 2
+                arrays.
+            series: Series configuration objects defining visual appearance and behavior.
+                Must match the length of data tuple.
+            mode: Chart layout mode. 1 = aligned (default) where all series share axes,
+                2 = faceted where each series gets its own subplot panel.
+            title: Chart title displayed at the top.
+            bands: High/low range visualizations between data series. Useful for showing
+                confidence intervals, error bounds, or min/max ranges. Each band connects
+                two adjacent series indices.
+            scales: Scale definitions controlling data-to-pixel mapping and axis ranges.
+                Key features include auto-ranging, manual min/max, time-based scaling,
+                and logarithmic distributions. Multiple scales enable dual-axis charts.
+            axes: Axis configuration for labels, ticks, grids, and positioning.
+                Controls which side axes appear (top/right/bottom/left), tick formatting,
+                grid line styling, and spacing between tick marks.
+            legend: Legend display options including positioning, styling, and custom
+                value formatting functions for hover states.
+            cursor: Interactive cursor behavior including hover proximity detection,
+                drag-to-zoom, and crosshair appearance. Controls how users interact
+                with the chart through mouse/touch.
+            focus: Visual highlighting when hovering over series. Controls the alpha
+                transparency of non-focused series to emphasize the active one.
+            aspect: Width-to-height ratio for the chart display in the control panel.
+                1.0 creates a square chart, values > 1.0 create wider charts.
+            order: Display ordering relative to other GUI elements (lower values first).
+            visible: Whether the chart is visible in the interface.
+
+        Returns:
+            A handle for programmatically updating chart properties and data.
+        """
+
+        # Validate data structure
+        assert len(data) >= 2, (
+            "data must have at least 2 arrays (x-data + at least one y-data series)"
+        )
+        assert all(isinstance(arr, np.ndarray) for arr in data), (
+            "all data elements must be numpy arrays"
+        )
+
+        # Validate data dimensions and shapes
+        for i, arr in enumerate(data):
+            assert arr.ndim == 1, f"data[{i}] must be a 1D array, got shape {arr.shape}"
+
+        # Check that all arrays have the same length
+        lengths = [len(arr) for arr in data]
+        if not all(length == lengths[0] for length in lengths):
+            raise ValueError(
+                f"All data arrays must have the same length. Got lengths: {lengths}"
+            )
+
+        # Validate series configuration
+        assert len(series) > 0, "series must not be empty"
+        if len(series) != len(data):
+            raise ValueError(
+                f"Length of series ({len(series)}) must match length of data ({len(data)}). "
+                f"Each array in data needs a corresponding series configuration."
+            )
+
+        # Convert arrays to float64 as expected by GuiUplotProps
+        data_float64 = tuple(arr.astype(np.float64) for arr in data)
+
+        message = _messages.GuiUplotMessage(
+            uuid=_make_uuid(),
+            container_uuid=self._get_container_uuid(),
+            props=_messages.GuiUplotProps(
+                order=_apply_default_order(order),
+                data=data_float64,
+                mode=mode,
+                title=title,
+                series=series,
+                bands=bands,
+                scales=scales,
+                axes=axes,
+                legend=legend,
+                cursor=cursor,
+                focus=focus,
+                aspect=aspect,
+                visible=visible,
+            ),
+        )
+        self._websock_interface.queue_message(message)
+
+        return GuiUplotHandle(
+            _GuiHandleState(
+                message.uuid,
+                self,
+                value=None,
+                props=message.props,
+                parent_container_id=message.container_uuid,
+            ),
+        )
 
     def add_button(
         self,
