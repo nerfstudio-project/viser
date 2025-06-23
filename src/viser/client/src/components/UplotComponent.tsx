@@ -88,6 +88,9 @@ export default function UplotComponent(message: GuiUplotMessage) {
   // Modal state.
   const [opened, { open, close }] = useDisclosure(false);
 
+  // Visibility check
+  if (message.props.visible === false) return null;
+
   return (
     <Box>
       {/* Small plot with expand button. */}
