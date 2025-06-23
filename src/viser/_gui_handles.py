@@ -48,6 +48,7 @@ from ._messages import (
     GuiTabGroupProps,
     GuiTextProps,
     GuiUpdateMessage,
+    GuiUplotProps,
     GuiVector2Props,
     GuiVector3Props,
 )
@@ -780,6 +781,12 @@ class GuiPlotlyHandle(_GuiHandle[None], GuiPlotlyProps):
         json_str = figure.to_json()
         assert isinstance(json_str, str)
         self._plotly_json_str = json_str
+
+
+class GuiUplotHandle(_GuiHandle[None], GuiUplotProps):
+    """Handle for updating and removing Uplot figures."""
+
+    pass
 
 
 class GuiImageHandle(_GuiHandle[None], GuiImageProps):

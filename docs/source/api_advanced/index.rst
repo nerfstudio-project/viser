@@ -12,3 +12,5 @@ Advanced features for complex applications.
    scene_handles
    events
    icons
+   theme
+   uplot

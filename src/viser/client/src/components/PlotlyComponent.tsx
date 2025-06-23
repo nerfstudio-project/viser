@@ -1,8 +1,9 @@
 import React from "react";
 import { GuiPlotlyMessage } from "../WebsocketMessages";
 import { useDisclosure } from "@mantine/hooks";
-import { Modal, Box, Paper, Tooltip } from "@mantine/core";
+import { Modal, Box, Paper, Tooltip, ActionIcon } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
+import { IconMaximize } from "@tabler/icons-react";
 
 // When drawing border around the plot, it should be aligned with the folder's.
 import { folderWrapper } from "./Folder.css";
@@ -10,12 +11,15 @@ import { folderWrapper } from "./Folder.css";
 const PlotWithAspect = React.memo(function PlotWithAspect({
   jsonStr,
   aspectRatio,
-  staticPlot,
+  onExpand,
 }: {
   jsonStr: string;
   aspectRatio: number;
-  staticPlot: boolean;
+  onExpand?: () => void;
 }) {
+  // Hover state for expand button
+  const [isHovered, setIsHovered] = React.useState(false);
+
   // Catch if the jsonStr is empty; if so, render an empty div.
   if (jsonStr === "") return <div></div>;
 
@@ -30,18 +34,6 @@ const PlotWithAspect = React.memo(function PlotWithAspect({
   const { ref, width } = useElementSize();
   plotJson.layout.width = width;
   plotJson.layout.height = width * aspectRatio;
-
-  // Make the plot non-interactable, if specified.
-  // Ideally, we would use `staticplot`, but this has a known bug with 3D plots:
-  // - https://github.com/plotly/plotly.js/issues/457
-  // In the meantime, we choose to disable all interactions.
-  if (staticPlot) {
-    if (plotJson.config === undefined) plotJson.config = {};
-    plotJson.config.displayModeBar = false;
-    plotJson.layout.dragmode = false;
-    plotJson.layout.hovermode = false;
-    plotJson.layout.clickmode = "none";
-  }
 
   // Use React hooks to update the plotly object, when the plot data changes.
   // based on https://github.com/plotly/react-plotly.js/issues/242.
@@ -62,21 +54,31 @@ const PlotWithAspect = React.memo(function PlotWithAspect({
       className={folderWrapper}
       withBorder
       style={{ position: "relative" }}
+      onMouseEnter={onExpand ? () => setIsHovered(true) : undefined}
+      onMouseLeave={onExpand ? () => setIsHovered(false) : undefined}
     >
       <div ref={plotRef} />
-      {/* Add a div on top of the plot, to prevent interaction + cursor changes. */}
-      {staticPlot ? (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 1000,
-          }}
-        />
-      ) : null}
+      {/* Show expand icon on hover */}
+      {onExpand && isHovered && (
+        <Tooltip label="Expand plot">
+          <ActionIcon
+            onClick={onExpand}
+            variant="subtle"
+            color="gray"
+            size="sm"
+            style={{
+              position: "absolute",
+              bottom: 8,
+              right: 8,
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              backdropFilter: "blur(4px)",
+              zIndex: 1001,
+            }}
+          >
+            <IconMaximize size={14} />
+          </ActionIcon>
+        </Tooltip>
+      )}
     </Paper>
   );
 });
@@ -90,32 +92,16 @@ export default function PlotlyComponent({
   const [opened, { open, close }] = useDisclosure(false);
   return (
     <Box>
-      {/* Draw static plot in the controlpanel, which can be clicked. */}
-      <Tooltip.Floating zIndex={100} label={"Click to expand"}>
-        <Box
-          style={{
-            cursor: "pointer",
-            flexShrink: 0,
-            position: "relative",
-          }}
-          onClick={open}
-        >
-          <PlotWithAspect
-            jsonStr={plotly_json_str}
-            aspectRatio={aspect}
-            staticPlot={true}
-          />
-        </Box>
-      </Tooltip.Floating>
+      {/* Draw interactive plot in the controlpanel with hover-to-expand icon */}
+      <PlotWithAspect
+        jsonStr={plotly_json_str}
+        aspectRatio={aspect}
+        onExpand={open}
+      />
 
-      {/* Modal contents. keepMounted makes state changes (eg zoom) to the plot
-      persistent. */}
-      <Modal opened={opened} onClose={close} size="xl" keepMounted>
-        <PlotWithAspect
-          jsonStr={plotly_json_str}
-          aspectRatio={aspect}
-          staticPlot={false}
-        />
+      {/* Modal contents. */}
+      <Modal opened={opened} onClose={close} size="xl">
+        <PlotWithAspect jsonStr={plotly_json_str} aspectRatio={aspect} />
       </Modal>
     </Box>
   );

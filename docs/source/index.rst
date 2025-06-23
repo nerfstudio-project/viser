@@ -53,7 +53,6 @@ Install with: ``pip install viser[examples]``
    ./development.rst
    ./embedded_visualizations.rst
 
-
 .. |pyright| image:: https://github.com/nerfstudio-project/viser/actions/workflows/pyright.yml/badge.svg
    :alt: Pyright status icon
    :target: https://github.com/nerfstudio-project/viser

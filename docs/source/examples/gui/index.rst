@@ -15,4 +15,5 @@ Examples demonstrating interactive GUI elements.
    gui_in_scene
    notifications
    plotly_integration
+   uplot
    plots_as_images
