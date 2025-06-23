@@ -40,6 +40,7 @@ Install with: ``pip install viser[examples]``
    :titlesonly:
 
    api_core/index
+   api_handles/index
    api_advanced/index
    api_auxiliary/index
 
