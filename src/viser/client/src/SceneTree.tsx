@@ -765,12 +765,12 @@ export function SceneNodeThreeObject(props: { name: string }) {
     return true;
   }
 
-  // Pose needs to be updated whenever component is remounted.
+  // Pose needs to be updated whenever component is remounted / object is re-created.
   React.useEffect(() => {
     updateNodeAttributes(props.name, {
       poseUpdateState: "needsUpdate",
     });
-  }, []);
+  }, [objNode]);
 
   // Update attributes on a per-frame basis. Currently does redundant work,
   // although this shouldn't be a bottleneck.
