@@ -150,124 +150,136 @@ function EditNodeProps({
           {nodeName}
         </Box>
       </Box>
-      {Object.entries(props).map(([key, value]) => {
-        if (value instanceof Uint8Array) {
-          return null;
-        }
+      <ScrollArea.Autosize
+        mah="30vh"
+        scrollbarSize={6}
+        offsetScrollbars="present"
+        type="auto"
+      >
+        <Box
+          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+        >
+          {Object.entries(props).map(([key, value]) => {
+            if (value instanceof Uint8Array) {
+              return null;
+            }
 
-        const isDirty = form.values[key] !== initialValues[key];
+            const isDirty = form.values[key] !== initialValues[key];
 
-        return (
-          <Flex key={key} align="center">
-            <Box style={{ flexGrow: "1" }} fz="xs">
-              {key.charAt(0).toUpperCase() + key.slice(1).split("_").join(" ")}
-            </Box>
-            <Flex gap="xs" style={{ width: "9em" }}>
-              {(() => {
-                // Check if this is a color property
-                try {
-                  const parsedValue = parse(form.values[key]);
-                  const isColorProp =
-                    key.toLowerCase().includes("color") &&
-                    Array.isArray(parsedValue) &&
-                    parsedValue.length === 3 &&
-                    parsedValue.every((v) => typeof v === "number");
+            return (
+              <Flex key={key} align="center">
+                <Box style={{ flexGrow: "1" }} fz="xs">
+                  {key.charAt(0).toUpperCase() +
+                    key.slice(1).split("_").join(" ")}
+                </Box>
+                <Flex gap="xs" style={{ width: "9em" }}>
+                  {(() => {
+                    // Check if this is a color property
+                    try {
+                      const parsedValue = parse(form.values[key]);
+                      const isColorProp =
+                        key.toLowerCase().includes("color") &&
+                        Array.isArray(parsedValue) &&
+                        parsedValue.length === 3 &&
+                        parsedValue.every((v) => typeof v === "number");
 
-                  if (isColorProp) {
-                    // Convert RGB array [0-1] to hex color
-                    const rgbToHex = (r: number, g: number, b: number) => {
-                      const toHex = (n: number) => {
-                        const hex = Math.round(n).toString(16);
-                        return hex.length === 1 ? "0" + hex : hex;
-                      };
-                      return "#" + toHex(r) + toHex(g) + toHex(b);
-                    };
+                      if (isColorProp) {
+                        // Convert RGB array [0-1] to hex color
+                        const rgbToHex = (r: number, g: number, b: number) => {
+                          const toHex = (n: number) => {
+                            const hex = Math.round(n).toString(16);
+                            return hex.length === 1 ? "0" + hex : hex;
+                          };
+                          return "#" + toHex(r) + toHex(g) + toHex(b);
+                        };
 
-                    // Convert hex color to RGB array [0-1]
-                    const hexToRgb = (hex: string) => {
-                      const r = parseInt(hex.slice(1, 3), 16);
-                      const g = parseInt(hex.slice(3, 5), 16);
-                      const b = parseInt(hex.slice(5, 7), 16);
-                      return [r, g, b];
-                    };
+                        // Convert hex color to RGB array [0-1]
+                        const hexToRgb = (hex: string) => {
+                          const r = parseInt(hex.slice(1, 3), 16);
+                          const g = parseInt(hex.slice(3, 5), 16);
+                          const b = parseInt(hex.slice(5, 7), 16);
+                          return [r, g, b];
+                        };
 
+                        return (
+                          <ColorInput
+                            size="xs"
+                            styles={{
+                              input: {
+                                height: "1.625rem",
+                                minHeight: "1.625rem",
+                              },
+                              // icon: { transform: "scale(0.8)" },
+                            }}
+                            style={{ width: "100%" }}
+                            value={rgbToHex(
+                              parsedValue[0],
+                              parsedValue[1],
+                              parsedValue[2],
+                            )}
+                            onChange={(hex) => {
+                              const rgb = hexToRgb(hex);
+                              form.setFieldValue(key, stringify(rgb));
+                              form.onSubmit(handleSubmit)();
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                form.onSubmit(handleSubmit)();
+                              }
+                            }}
+                          />
+                        );
+                      }
+                    } catch (e) {
+                      // If parsing fails, fall back to TextInput
+                    }
+
+                    // Default TextInput for non-color properties
                     return (
-                      <ColorInput
+                      <TextInput
                         size="xs"
                         styles={{
                           input: {
                             height: "1.625rem",
                             minHeight: "1.625rem",
+                            width: "100%",
                           },
                           // icon: { transform: "scale(0.8)" },
                         }}
                         style={{ width: "100%" }}
-                        value={rgbToHex(
-                          parsedValue[0],
-                          parsedValue[1],
-                          parsedValue[2],
-                        )}
-                        onChange={(hex) => {
-                          const rgb = hexToRgb(hex);
-                          form.setFieldValue(key, stringify(rgb));
-                          form.onSubmit(handleSubmit)();
-                        }}
+                        {...form.getInputProps(key)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
                             form.onSubmit(handleSubmit)();
                           }
                         }}
+                        rightSection={
+                          <IconDeviceFloppy
+                            style={{
+                              width: "1rem",
+                              height: "1rem",
+                              opacity: isDirty ? 1.0 : 0.3,
+                              cursor: isDirty ? "pointer" : "default",
+                            }}
+                            onClick={() => {
+                              if (isDirty) {
+                                form.onSubmit(handleSubmit)();
+                              }
+                            }}
+                          />
+                        }
                       />
                     );
-                  }
-                } catch (e) {
-                  // If parsing fails, fall back to TextInput
-                }
-
-                // Default TextInput for non-color properties
-                return (
-                  <TextInput
-                    size="xs"
-                    styles={{
-                      input: {
-                        height: "1.625rem",
-                        minHeight: "1.625rem",
-                        width: "100%",
-                      },
-                      // icon: { transform: "scale(0.8)" },
-                    }}
-                    style={{ width: "100%" }}
-                    {...form.getInputProps(key)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        form.onSubmit(handleSubmit)();
-                      }
-                    }}
-                    rightSection={
-                      <IconDeviceFloppy
-                        style={{
-                          width: "1rem",
-                          height: "1rem",
-                          opacity: isDirty ? 1.0 : 0.3,
-                          cursor: isDirty ? "pointer" : "default",
-                        }}
-                        onClick={() => {
-                          if (isDirty) {
-                            form.onSubmit(handleSubmit)();
-                          }
-                        }}
-                      />
-                    }
-                  />
-                );
-              })()}
-            </Flex>
-          </Flex>
-        );
-      })}
-      <Box style={{ opacity: "0.4" }} fz="xs">
+                  })()}
+                </Flex>
+              </Flex>
+            );
+          })}
+        </Box>
+      </ScrollArea.Autosize>
+      <Box style={{ opacity: "0.4", marginTop: "0.5rem" }} fz="xs">
         Updates from the server will overwrite local changes.
       </Box>
     </Box>
@@ -550,9 +562,10 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
           withArrow
           shadow="sm"
           arrowSize={10}
-          trapFocus
           opened={openPopoverNodeName === props.nodeName}
           onDismiss={closePropsPopover}
+          middlewares={{ flip: true, shift: true }}
+          withinPortal
         >
           <Popover.Target>
             <Box

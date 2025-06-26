@@ -1,4 +1,4 @@
-import { Box, Collapse, Divider, Paper } from "@mantine/core";
+import { Box, Collapse, Divider, Paper, ScrollArea } from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";
 
@@ -36,6 +36,7 @@ export default function BottomPanel({
         />
         <Paper
           radius="0"
+          shadow="0 0 1em 0 rgba(0,0,0,0.1)"
           style={{
             boxSizing: "border-box",
             width: "100%",
@@ -44,14 +45,15 @@ export default function BottomPanel({
             bottom: 0,
             left: 0,
             margin: 0,
-            overflow: "scroll",
             minHeight: "3.5em",
             maxHeight: "60%",
             transition: "height 0.3s linear",
           }}
           ref={panelWrapperRef}
         >
-          {children}
+          <ScrollArea.Autosize offsetScrollbars="present">
+            {children}
+          </ScrollArea.Autosize>
         </Paper>
       </>
     </BottomPanelContext.Provider>
@@ -65,7 +67,6 @@ BottomPanel.Handle = function BottomPanelHandle({
   const panelContext = React.useContext(BottomPanelContext)!;
   return (
     <Box
-      color="red"
       style={{
         cursor: "pointer",
         position: "relative",
@@ -81,7 +82,6 @@ BottomPanel.Handle = function BottomPanelHandle({
       }}
     >
       {children}
-      {panelContext.expanded && <Divider />}
     </Box>
   );
 };
@@ -93,7 +93,12 @@ BottomPanel.Contents = function BottomPanelContents({
   children: string | React.ReactNode;
 }) {
   const panelContext = React.useContext(BottomPanelContext)!;
-  return <Collapse in={panelContext.expanded}>{children}</Collapse>;
+  return (
+    <Collapse in={panelContext.expanded}>
+      <Divider mx="xs" />
+      {children}
+    </Collapse>
+  );
 };
 
 /** Hides contents when panel is collapsed. */
