@@ -29,7 +29,7 @@ def y(x: np.ndarray, offset: float) -> np.ndarray:
 
 def main(num_plots: int = 5, num_timesteps: int = 100, num_lines: int = 3) -> None:
     """Create multiple uPlot charts with animated sine waves.
-    
+
     Args:
         num_plots: Number of synchronized plot widgets to create.
         num_timesteps: Number of data points in each time series.

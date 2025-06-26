@@ -767,13 +767,9 @@ export function SceneNodeThreeObject(props: { name: string }) {
 
   // Pose needs to be updated whenever component is remounted.
   React.useEffect(() => {
-    const currentAttrs =
-      viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
-    if (currentAttrs !== undefined) {
-      updateNodeAttributes(props.name, {
-        poseUpdateState: "needsUpdate",
-      });
-    }
+    updateNodeAttributes(props.name, {
+      poseUpdateState: "needsUpdate",
+    });
   }, []);
 
   // Update attributes on a per-frame basis. Currently does redundant work,

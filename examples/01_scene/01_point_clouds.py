@@ -42,7 +42,7 @@ def main():
 
     # Add the point cloud to the scene
     server.scene.add_point_cloud(
-        name="spiral_cloud",
+        name="/spiral_cloud",
         points=spiral_positions,
         colors=colors,
         point_size=0.05,
@@ -54,7 +54,7 @@ def main():
     noise_colors = np.random.randint(0, 255, (num_noise_points, 3), dtype=np.uint8)
 
     server.scene.add_point_cloud(
-        name="noise_cloud",
+        name="/noise_cloud",
         points=noise_positions,
         colors=noise_colors,
         point_size=0.03,
@@ -62,7 +62,7 @@ def main():
 
     # Add a coordinate frame for reference
     server.scene.add_frame(
-        name="origin",
+        name="/origin",
         show_axes=True,
         axes_length=1.0,
         axes_radius=0.02,
