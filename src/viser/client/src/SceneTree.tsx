@@ -792,6 +792,9 @@ export function SceneNodeThreeObject(props: { name: string }) {
         const displayed = isDisplayed();
         if (displayed && unmount) {
           if (objRef.current !== null) objRef.current.visible = false;
+          updateNodeAttributes(props.name, {
+            poseUpdateState: "needsUpdate",
+          });
           setUnmount(false);
         }
         if (!displayed && !unmount) {
