@@ -575,12 +575,48 @@ class SplineCatmullRomHandle(
 ):
     """Handle for Catmull-Rom splines."""
 
+    @property
+    def positions(self) -> tuple[tuple[float, float, float], ...]:
+        return self._positions
+
+    @positions.setter
+    def positions(
+        self, positions: tuple[tuple[float, float, float], ...] | np.ndarray
+    ) -> None:
+        from ._scene_api import cast_vector
+
+        self._positions = tuple(cast_vector(p, 3) for p in positions)
+
 
 class SplineCubicBezierHandle(
     SceneNodeHandle,
     _messages.CubicBezierSplineProps,
 ):
     """Handle for cubic Bezier splines."""
+
+    @property
+    def positions(self) -> tuple[tuple[float, float, float], ...]:
+        return self._positions
+
+    @positions.setter
+    def positions(
+        self, positions: tuple[tuple[float, float, float], ...] | np.ndarray
+    ) -> None:
+        from ._scene_api import cast_vector
+
+        self._positions = tuple(cast_vector(p, 3) for p in positions)
+
+    @property
+    def control_points(self) -> tuple[tuple[float, float, float], ...]:
+        return self._control_points
+
+    @control_points.setter
+    def control_points(
+        self, control_points: tuple[tuple[float, float, float], ...] | np.ndarray
+    ) -> None:
+        from ._scene_api import cast_vector
+
+        self._control_points = tuple(cast_vector(p, 3) for p in control_points)
 
 
 class GlbHandle(

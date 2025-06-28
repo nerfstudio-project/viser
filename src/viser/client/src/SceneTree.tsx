@@ -510,7 +510,7 @@ function createObjectFactory(
           return (
             <group ref={ref}>
               <CatmullRomLine
-                points={message.props.positions}
+                points={message.props._positions}
                 closed={message.props.closed}
                 curveType={message.props.curve_type}
                 tension={message.props.tension}
@@ -529,13 +529,13 @@ function createObjectFactory(
       return {
         makeObject: (ref, children) => (
           <group ref={ref}>
-            {[...Array(message.props.positions.length - 1).keys()].map((i) => (
+            {[...Array(message.props._positions.length - 1).keys()].map((i) => (
               <CubicBezierLine
                 key={i}
-                start={message.props.positions[i]}
-                end={message.props.positions[i + 1]}
-                midA={message.props.control_points[2 * i]}
-                midB={message.props.control_points[2 * i + 1]}
+                start={message.props._positions[i]}
+                end={message.props._positions[i + 1]}
+                midA={message.props._control_points[2 * i]}
+                midB={message.props._control_points[2 * i + 1]}
                 lineWidth={message.props.line_width}
                 color={rgbToInt(message.props.color)}
                 // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
