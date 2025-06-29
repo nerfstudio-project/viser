@@ -95,11 +95,11 @@ def _(client: viser.ClientHandle) -> None:
         paint_button_handle.disabled = True
 
         @client.scene.on_pointer_event(event_type="rect-select")
-        def _(message: viser.ScenePointerEvent) -> None:
+        def _(event: viser.ScenePointerEvent) -> None:
             client.scene.remove_pointer_callback()
 
             global mesh_handle
-            camera = message.client.camera
+            camera = event.client.camera
 
             # Put the mesh in the camera frame.
             R_world_mesh = tf.SO3(mesh_handle.wxyz)
@@ -126,8 +126,8 @@ def _(client: viser.ClientHandle) -> None:
 
             # Select the vertices that lie inside the 2D selected box, once projected.
             mask = (
-                (vertices_proj > np.array(message.screen_pos[0]))
-                & (vertices_proj < np.array(message.screen_pos[1]))
+                (vertices_proj > np.array(event.screen_pos[0]))
+                & (vertices_proj < np.array(event.screen_pos[1]))
             ).all(axis=1)[..., None]
 
             # Update the mesh color based on whether the vertices are inside the box
