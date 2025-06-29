@@ -6,11 +6,20 @@ import time
 import warnings
 from collections.abc import Coroutine
 from concurrent.futures import ThreadPoolExecutor
-from typing import TYPE_CHECKING, Callable, Tuple, TypeVar, Union, cast, get_args
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
+    get_args,
+    overload,
+)
 
 import imageio.v3 as iio
 import numpy as np
-from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
+from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never, deprecated
 
 from . import _messages
 from . import transforms as tf
@@ -675,13 +684,40 @@ class SceneApi:
         )
         return LineSegmentsHandle._make(self, message, name, wxyz, position, visible)
 
-    # Important: this method is redeclared in a `if TYPE_CHECKING:` block below.
-    # The 'official' API is the redeclared version, which has stricter type hints.
-    #
-    # The implementation version here is looser for backwards compatibility reasons.
-    # It will be changed in the future to match the redeclared version.
-    #
-    def add_spline_catmull_rom(  # pyright: ignore[reportRedeclaration]
+    @overload
+    def add_spline_catmull_rom(
+        self,
+        name: str,
+        points: tuple[tuple[float, float, float], ...] | np.ndarray,
+        curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
+        tension: float = 0.5,
+        closed: bool = False,
+        line_width: float = 1,
+        color: RgbTupleOrArray = (20, 20, 20),
+        segments: int | None = None,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> SplineCatmullRomHandle: ...
+
+    @overload
+    @deprecated("The `positions` parameter is deprecated. Use `points` instead.")
+    def add_spline_catmull_rom(
+        self,
+        name: str,
+        positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
+        tension: float = 0.5,
+        closed: bool = False,
+        line_width: float = 1,
+        color: RgbTupleOrArray = (20, 20, 20),
+        segments: int | None = None,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> SplineCatmullRomHandle: ...
+
+    def add_spline_catmull_rom(  # pyright: ignore[reportInconsistentOverload]
         self,
         name: str,
         # `points` is actually required, we are keeping it optional at runtime for backwards-compatibility purposes.
@@ -706,6 +742,10 @@ class SceneApi:
 
             If many splines are needed, :meth:`add_line_segments()` supports
             batching and will be more efficient.
+
+        .. warning::
+
+            The `positions` parameter is deprecated and will be removed in the future. Use `points` instead.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
@@ -732,7 +772,7 @@ class SceneApi:
                 )
             points = _deprecated_kwargs.pop("positions")
             warnings.warn(
-                "The 'positions' parameter has been deprecated and renamed. Use 'points' instead.",
+                "The 'positions' parameter is deprecated. Use 'points' instead.",
                 DeprecationWarning,
                 stacklevel=2,
             )
@@ -768,30 +808,44 @@ class SceneApi:
             self, message, name, wxyz, position, visible
         )
 
-    if TYPE_CHECKING:
-
-        def add_spline_catmull_rom(
-            self,
-            name: str,
-            points: tuple[tuple[float, float, float], ...] | np.ndarray,
-            curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
-            tension: float = 0.5,
-            closed: bool = False,
-            line_width: float = 1,
-            color: RgbTupleOrArray = (20, 20, 20),
-            segments: int | None = None,
-            wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
-            position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
-            visible: bool = True,
-        ) -> SplineCatmullRomHandle: ...
-
     # Important: this method is redeclared in a `if TYPE_CHECKING:` block below.
     # The 'official' API is the redeclared version, which has stricter type hints.
     #
     # The implementation version here is looser for backwards compatibility reasons.
     # It will be changed in the future to match the redeclared version.
     #
-    def add_spline_cubic_bezier(  # pyright: ignore[reportRedeclaration]
+    @overload
+    def add_spline_cubic_bezier(
+        self,
+        name: str,
+        points: tuple[tuple[float, float, float], ...] | np.ndarray,
+        control_points: tuple[tuple[float, float, float], ...] | np.ndarray,
+        line_width: float = 1.0,
+        color: RgbTupleOrArray = (20, 20, 20),
+        segments: int | None = None,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> SplineCubicBezierHandle: ...
+
+    @overload
+    @deprecated(
+        "The `positions` parameter is deprecated. Use `points` instead.",
+    )
+    def add_spline_cubic_bezier(
+        self,
+        name: str,
+        positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        control_points: tuple[tuple[float, float, float], ...] | np.ndarray,
+        line_width: float = 1.0,
+        color: RgbTupleOrArray = (20, 20, 20),
+        segments: int | None = None,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> SplineCubicBezierHandle: ...
+
+    def add_spline_cubic_bezier(  # pyright: ignore[reportInconsistentOverload]
         self,
         name: str,
         # `points` and `control_points` are actually required, we are keeping
@@ -816,6 +870,10 @@ class SceneApi:
 
             If many splines are needed, :meth:`add_line_segments()` supports
             batching and will be more efficient.
+
+        .. warning::
+
+            The `positions` parameter is deprecated and will be removed in the future. Use `points` instead.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
@@ -843,7 +901,7 @@ class SceneApi:
                 )
             points = _deprecated_kwargs.pop("positions")
             warnings.warn(
-                "The 'positions' parameter has been deprecated and renamed. Use 'points' instead.",
+                "The 'positions' parameter is deprecated. Use 'points' instead.",
                 DeprecationWarning,
                 stacklevel=2,
             )
@@ -885,21 +943,6 @@ class SceneApi:
         return SplineCubicBezierHandle._make(
             self, message, name, wxyz, position, visible
         )
-
-    if TYPE_CHECKING:
-
-        def add_spline_cubic_bezier(
-            self,
-            name: str,
-            points: tuple[tuple[float, float, float], ...] | np.ndarray,
-            control_points: tuple[tuple[float, float, float], ...] | np.ndarray,
-            line_width: float = 1.0,
-            color: RgbTupleOrArray = (20, 20, 20),
-            segments: int | None = None,
-            wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
-            position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
-            visible: bool = True,
-        ) -> SplineCubicBezierHandle: ...
 
     def add_camera_frustum(
         self,
