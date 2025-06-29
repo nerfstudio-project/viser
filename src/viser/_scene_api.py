@@ -126,6 +126,10 @@ def cast_vector(vector: TVector | np.ndarray, length: int) -> TVector:
     return cast(TVector, tuple(map(float, vector)))
 
 
+MISSING_SENTINEL = "MISSING"
+MISSING_SENTINEL_TYPE = Literal["MISSING"]
+
+
 class SceneApi:
     """Interface for adding 3D primitives to the scene.
 
@@ -688,7 +692,7 @@ class SceneApi:
     def add_spline_catmull_rom(
         self,
         name: str,
-        points: tuple[tuple[float, float, float], ...] | np.ndarray,
+        points: np.ndarray,
         curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
         tension: float = 0.5,
         closed: bool = False,
@@ -705,7 +709,7 @@ class SceneApi:
     def add_spline_catmull_rom(
         self,
         name: str,
-        positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        positions: tuple[tuple[float, float, float], ...],
         curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
         tension: float = 0.5,
         closed: bool = False,
@@ -721,7 +725,7 @@ class SceneApi:
         self,
         name: str,
         # `points` is actually required, we are keeping it optional at runtime for backwards-compatibility purposes.
-        points: tuple[tuple[float, float, float], ...] | np.ndarray = (),
+        points: np.ndarray | MISSING_SENTINEL_TYPE = MISSING_SENTINEL,
         curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
         tension: float = 0.5,
         closed: bool = False,
@@ -766,7 +770,7 @@ class SceneApi:
         """
         # Handle backward compatibility: support old 'positions' parameter
         if "positions" in _deprecated_kwargs:
-            if points != ():
+            if points is not MISSING_SENTINEL:
                 raise ValueError(
                     "Cannot specify both 'points' and 'positions' parameters"
                 )
@@ -780,22 +784,14 @@ class SceneApi:
             raise TypeError(
                 f"Unexpected keyword arguments: {list(_deprecated_kwargs.keys())}"
             )
-        if points == ():
+        if points is MISSING_SENTINEL:
             raise ValueError(
                 "The 'points' parameter must be provided for a Catmull-Rom spline."
             )
-
-        if isinstance(points, np.ndarray):
-            assert len(points.shape) == 2 and points.shape[1] == 3
-            points = tuple(map(tuple, points))  # type: ignore
-        elif isinstance(points, list):
-            points = tuple(tuple(p) if isinstance(p, list) else p for p in points)
-        assert len(points[0]) == 3
-        assert isinstance(points, tuple)
         message = _messages.CatmullRomSplineMessage(
             name,
             _messages.CatmullRomSplineProps(
-                _points=points,
+                points=np.asarray(points).astype(np.float32),
                 curve_type=curve_type,
                 tension=tension,
                 closed=closed,
@@ -818,8 +814,8 @@ class SceneApi:
     def add_spline_cubic_bezier(
         self,
         name: str,
-        points: tuple[tuple[float, float, float], ...] | np.ndarray,
-        control_points: tuple[tuple[float, float, float], ...] | np.ndarray,
+        points: np.ndarray,
+        control_points: np.ndarray,
         line_width: float = 1.0,
         color: RgbTupleOrArray = (20, 20, 20),
         segments: int | None = None,
@@ -835,8 +831,8 @@ class SceneApi:
     def add_spline_cubic_bezier(
         self,
         name: str,
-        positions: tuple[tuple[float, float, float], ...] | np.ndarray,
-        control_points: tuple[tuple[float, float, float], ...] | np.ndarray,
+        positions: tuple[tuple[float, float, float], ...],
+        control_points: tuple[tuple[float, float, float], ...],
         line_width: float = 1.0,
         color: RgbTupleOrArray = (20, 20, 20),
         segments: int | None = None,
@@ -850,8 +846,12 @@ class SceneApi:
         name: str,
         # `points` and `control_points` are actually required, we are keeping
         # them optional at runtime for backwards-compatibility purposes.
-        points: tuple[tuple[float, float, float], ...] | np.ndarray = (),
-        control_points: tuple[tuple[float, float, float], ...] | np.ndarray = (),
+        points: tuple[tuple[float, float, float], ...]
+        | np.ndarray
+        | MISSING_SENTINEL_TYPE = MISSING_SENTINEL,
+        control_points: tuple[tuple[float, float, float], ...]
+        | np.ndarray
+        | MISSING_SENTINEL_TYPE = MISSING_SENTINEL,
         line_width: float = 1.0,
         color: RgbTupleOrArray = (20, 20, 20),
         segments: int | None = None,
@@ -895,7 +895,7 @@ class SceneApi:
         """
         # Handle backward compatibility: support old 'positions' parameter
         if "positions" in _deprecated_kwargs:
-            if points != ():
+            if points is not MISSING_SENTINEL:
                 raise ValueError(
                     "Cannot specify both 'points' and 'positions' parameters"
                 )
@@ -909,32 +909,16 @@ class SceneApi:
             raise TypeError(
                 f"Unexpected keyword arguments: {list(_deprecated_kwargs.keys())}"
             )
-        if points == () or control_points == ():
+        if points is MISSING_SENTINEL or control_points is MISSING_SENTINEL:
             raise ValueError(
                 "Both 'points' and 'control_points' must be provided for a cubic Bezier spline."
             )
-
-        if isinstance(points, np.ndarray):
-            assert len(points.shape) == 2 and points.shape[1] == 3
-            points = tuple(map(tuple, points))  # type: ignore
-        elif isinstance(points, list):
-            points = tuple(tuple(p) if isinstance(p, list) else p for p in points)
-        if isinstance(control_points, np.ndarray):
-            assert len(control_points.shape) == 2 and control_points.shape[1] == 3
-            control_points = tuple(map(tuple, control_points))  # type: ignore
-        elif isinstance(control_points, list):
-            control_points = tuple(
-                tuple(p) if isinstance(p, list) else p for p in control_points
-            )  # type: ignore
-
-        assert isinstance(points, tuple)
-        assert isinstance(control_points, tuple)
         assert len(control_points) == (2 * len(points) - 2)
         message = _messages.CubicBezierSplineMessage(
             name,
             _messages.CubicBezierSplineProps(
-                _points=points,
-                _control_points=control_points,
+                points=np.asarray(points).astype(np.float32),
+                control_points=np.asarray(control_points).astype(np.float32),
                 line_width=line_width,
                 color=_encode_rgb(color),
                 segments=segments,

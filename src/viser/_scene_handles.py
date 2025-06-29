@@ -581,44 +581,33 @@ class SplineCatmullRomHandle(
     """Handle for Catmull-Rom splines."""
 
     @property
-    def points(self) -> tuple[tuple[float, float, float], ...]:
-        """Get the spline points. This is the preferred property name."""
-        return self._points
-
-    @points.setter
-    def points(
-        self, points: tuple[tuple[float, float, float], ...] | np.ndarray
-    ) -> None:
-        """Set the spline points. This is the preferred property name."""
-        from ._scene_api import cast_vector
-
-        self._points = tuple(cast_vector(p, 3) for p in points)
-
-    @property
     @deprecated("The 'positions' property is deprecated. Use 'points' instead.")
     def positions(self) -> tuple[tuple[float, float, float], ...]:
         """Get the spline positions. Deprecated: use 'points' instead.
 
         .. deprecated::
-            The 'positions' property is deprecated. Use 'points' instead.
+            "The 'positions' tuple property is deprecated. Use the 'points' numpy array instead.",
         """
-        return self._points
-
-    @positions.setter
-    @deprecated("The 'positions' property is deprecated. Use 'points' instead.")
-    def positions(
-        self, positions: tuple[tuple[float, float, float], ...] | np.ndarray
-    ) -> None:
         import warnings
 
-        from ._scene_api import cast_vector
-
         warnings.warn(
-            "The 'positions' property is deprecated. Use 'points' instead.",
+            "The 'positions' tuple property is deprecated. Use the 'points' numpy array instead.",
             DeprecationWarning,
             stacklevel=2,
         )
-        self._points = tuple(cast_vector(p, 3) for p in positions)
+        return tuple(tuple(x) for x in self.points.tolist())  # type: ignore
+
+    @positions.setter
+    @deprecated("The 'positions' property is deprecated. Use 'points' instead.")
+    def positions(self, positions: tuple[tuple[float, float, float], ...]) -> None:
+        import warnings
+
+        warnings.warn(
+            "The 'positions' tuple property is deprecated. Use the 'points' numpy array instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.points = np.asarray(positions)
 
 
 class SplineCubicBezierHandle(
@@ -628,56 +617,30 @@ class SplineCubicBezierHandle(
     """Handle for cubic Bezier splines."""
 
     @property
-    def points(self) -> tuple[tuple[float, float, float], ...]:
-        """Get the spline points. This is the preferred property name."""
-        return self._points
-
-    @points.setter
-    def points(
-        self, points: tuple[tuple[float, float, float], ...] | np.ndarray
-    ) -> None:
-        """Set the spline points. This is the preferred property name."""
-        from ._scene_api import cast_vector
-
-        self._points = tuple(cast_vector(p, 3) for p in points)
-
-    @property
-    @deprecated("The 'positions' property is deprecated. Use 'points' instead.")
+    @deprecated(
+        "The 'positions' tuple property is deprecated. Use 'points' numpy array instead."
+    )
     def positions(self) -> tuple[tuple[float, float, float], ...]:
         """Get the spline positions. Deprecated: use 'points' instead.
 
         .. deprecated::
-            The 'positions' property is deprecated. Use 'points' instead.
+            The 'positions' tuple property is deprecated. Use the 'points' numpy array instead.
         """
-        return self._points
+        return tuple(tuple(p) for p in self.points.tolist())  # type: ignore
 
     @positions.setter
-    @deprecated("The 'positions' property is deprecated. Use 'points' instead.")
-    def positions(
-        self, positions: tuple[tuple[float, float, float], ...] | np.ndarray
-    ) -> None:
+    @deprecated(
+        "The 'positions' tuple property is deprecated. Use the 'points' numpy array instead."
+    )
+    def positions(self, positions: tuple[tuple[float, float, float], ...]) -> None:
         import warnings
 
-        from ._scene_api import cast_vector
-
         warnings.warn(
-            "The 'positions' property is deprecated. Use 'points' instead.",
+            "The 'positions' tuple property is deprecated. Use the 'points' numpy array instead.",
             DeprecationWarning,
             stacklevel=2,
         )
-        self._points = tuple(cast_vector(p, 3) for p in positions)
-
-    @property
-    def control_points(self) -> tuple[tuple[float, float, float], ...]:
-        return self._control_points
-
-    @control_points.setter
-    def control_points(
-        self, control_points: tuple[tuple[float, float, float], ...] | np.ndarray
-    ) -> None:
-        from ._scene_api import cast_vector
-
-        self._control_points = tuple(cast_vector(p, 3) for p in control_points)
+        self.points = np.asarray(positions)
 
 
 class GlbHandle(
