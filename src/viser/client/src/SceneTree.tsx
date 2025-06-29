@@ -85,21 +85,15 @@ function SceneNodeLabel(props: { name: string }) {
   ) : null;
 }
 
-function tripletListFromFloat32Buffer(buffer: Uint8Array) {
-  const array = new Float32Array(
-    buffer.buffer.slice(
-      buffer.byteOffset,
-      buffer.byteOffset + buffer.byteLength,
-    ),
-  );
-  if (array.length % 3 !== 0) {
-    throw new Error(
-      `CatmullRomSplineMessage: points buffer length must be a multiple of 3, got ${array.length}`,
-    );
-  }
+function tripletListFromFloat32Buffer(data: Uint8Array<ArrayBufferLike>) {
+  const arrayView = new DataView(data.buffer, data.byteOffset, data.byteLength);
   const triplets: [number, number, number][] = [];
-  for (let i = 0; i < array.length; i += 3) {
-    triplets.push([array[i], array[i + 1], array[i + 2]]);
+  for (let i = 0; i < arrayView.byteLength; i += 12) {
+    triplets.push([
+      arrayView.getFloat32(i, true), // little-endian
+      arrayView.getFloat32(i + 4, true),
+      arrayView.getFloat32(i + 8, true),
+    ]);
   }
   return triplets;
 }
