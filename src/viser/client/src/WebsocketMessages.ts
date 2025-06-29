@@ -390,7 +390,7 @@ export interface CatmullRomSplineMessage {
   type: "CatmullRomSplineMessage";
   name: string;
   props: {
-    _positions: [number, number, number][];
+    _points: [number, number, number][];
     curve_type: "centripetal" | "chordal" | "catmullrom";
     tension: number;
     closed: boolean;
@@ -407,7 +407,7 @@ export interface CubicBezierSplineMessage {
   type: "CubicBezierSplineMessage";
   name: string;
   props: {
-    _positions: [number, number, number][];
+    _points: [number, number, number][];
     _control_points: [number, number, number][];
     line_width: number;
     color: [number, number, number];

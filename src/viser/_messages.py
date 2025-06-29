@@ -1482,7 +1482,7 @@ class CatmullRomSplineMessage(_CreateSceneNodeMessage):
 @dataclasses.dataclass
 class CatmullRomSplineProps:
     # TODO: consider renaming positions to points and using numpy arrays for consistency with LineSegmentsProps.
-    _positions: Tuple[Tuple[float, float, float], ...]
+    _points: Tuple[Tuple[float, float, float], ...]
     """A tuple of 3D positions (x, y, z) defining the spline's path. Synchronized automatically when assigned."""
     curve_type: Literal["centripetal", "chordal", "catmullrom"]
     """Type of the curve ('centripetal', 'chordal', 'catmullrom'). Synchronized automatically when assigned."""
@@ -1507,7 +1507,7 @@ class CubicBezierSplineMessage(_CreateSceneNodeMessage):
 
 @dataclasses.dataclass
 class CubicBezierSplineProps:
-    _positions: Tuple[Tuple[float, float, float], ...]
+    _points: Tuple[Tuple[float, float, float], ...]
     """A tuple of 3D positions (x, y, z) defining the spline's key points. Synchronized automatically when assigned."""
     _control_points: Tuple[Tuple[float, float, float], ...]
     """A tuple of control points for Bezier curve shaping. Synchronized automatically when assigned."""

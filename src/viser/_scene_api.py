@@ -630,7 +630,7 @@ class SceneApi:
         self,
         name: str,
         points: np.ndarray,
-        colors: np.ndarray | tuple[float, float, float],
+        colors: np.ndarray | RgbTupleOrArray,
         line_width: float = 1,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
@@ -643,8 +643,9 @@ class SceneApi:
                 be used to define a kinematic tree.
             points: A numpy array of shape (N, 2, 3) defining start/end points
                 for each of N line segments.
-            colors: Colors of points. Should have shape (N, 2, 3) or be
-                broadcastable to it.
+            colors: Colors of the line segments. Can be a single color as an RGB tuple or
+                np.ndarray of shape (3,) to apply to all segments, or an np.ndarray of
+                shape (N, 2, 3) to specify colors for each point of each segment.
             line_width: Width of the lines.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
@@ -674,11 +675,17 @@ class SceneApi:
         )
         return LineSegmentsHandle._make(self, message, name, wxyz, position, visible)
 
-    def add_spline_catmull_rom(
+    # Important: this method is redeclared in a `if TYPE_CHECKING:` block below.
+    # The 'official' API is the redeclared version, which has stricter type hints.
+    #
+    # The implementation version here is looser for backwards compatibility reasons.
+    # It will be changed in the future to match the redeclared version.
+    #
+    def add_spline_catmull_rom(  # pyright: ignore[reportRedeclaration]
         self,
         name: str,
-        # The naming inconsistency here compared to add_line_segments is unfortunate...
-        positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        # `points` is actually required, we are keeping it optional at runtime for backwards-compatibility purposes.
+        points: tuple[tuple[float, float, float], ...] | np.ndarray = (),
         curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
         tension: float = 0.5,
         closed: bool = False,
@@ -688,10 +695,11 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        **_deprecated_kwargs,
     ) -> SplineCatmullRomHandle:
         """Add a spline to the scene using Catmull-Rom interpolation.
 
-        This method creates a spline based on a set of positions and interpolates
+        This method creates a spline based on a set of points and interpolates
         them using the Catmull-Rom algorithm. This can be used to create smooth curves.
 
         .. note::
@@ -702,7 +710,7 @@ class SceneApi:
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
                 define a kinematic tree.
-            positions: A tuple of 3D positions (x, y, z) defining the spline's path.
+            points: A tuple of 3D points (x, y, z) defining the spline's path.
             curve_type: Type of the curve ('centripetal', 'chordal', 'catmullrom').
             tension: Tension of the curve. Affects the tightness of the curve.
             closed: Boolean indicating if the spline is closed (forms a loop).
@@ -716,20 +724,43 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-        if isinstance(positions, np.ndarray):
-            assert len(positions.shape) == 2 and positions.shape[1] == 3
-            positions = tuple(map(tuple, positions))  # type: ignore
-        assert len(positions[0]) == 3
-        assert isinstance(positions, tuple)
+        # Handle backward compatibility: support old 'positions' parameter
+        if "positions" in _deprecated_kwargs:
+            if points != ():
+                raise ValueError(
+                    "Cannot specify both 'points' and 'positions' parameters"
+                )
+            points = _deprecated_kwargs.pop("positions")
+            warnings.warn(
+                "The 'positions' parameter has been deprecated and renamed. Use 'points' instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        if _deprecated_kwargs:
+            raise TypeError(
+                f"Unexpected keyword arguments: {list(_deprecated_kwargs.keys())}"
+            )
+        if points == ():
+            raise ValueError(
+                "The 'points' parameter must be provided for a Catmull-Rom spline."
+            )
+
+        if isinstance(points, np.ndarray):
+            assert len(points.shape) == 2 and points.shape[1] == 3
+            points = tuple(map(tuple, points))  # type: ignore
+        elif isinstance(points, list):
+            points = tuple(tuple(p) if isinstance(p, list) else p for p in points)
+        assert len(points[0]) == 3
+        assert isinstance(points, tuple)
         message = _messages.CatmullRomSplineMessage(
             name,
             _messages.CatmullRomSplineProps(
-                positions,
-                curve_type,
-                tension,
-                closed,
-                line_width,
-                _encode_rgb(color),
+                _points=points,
+                curve_type=curve_type,
+                tension=tension,
+                closed=closed,
+                line_width=line_width,
+                color=_encode_rgb(color),
                 segments=segments,
             ),
         )
@@ -737,22 +768,48 @@ class SceneApi:
             self, message, name, wxyz, position, visible
         )
 
-    def add_spline_cubic_bezier(
+    if TYPE_CHECKING:
+
+        def add_spline_catmull_rom(
+            self,
+            name: str,
+            points: tuple[tuple[float, float, float], ...] | np.ndarray,
+            curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
+            tension: float = 0.5,
+            closed: bool = False,
+            line_width: float = 1,
+            color: RgbTupleOrArray = (20, 20, 20),
+            segments: int | None = None,
+            wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+            position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+            visible: bool = True,
+        ) -> SplineCatmullRomHandle: ...
+
+    # Important: this method is redeclared in a `if TYPE_CHECKING:` block below.
+    # The 'official' API is the redeclared version, which has stricter type hints.
+    #
+    # The implementation version here is looser for backwards compatibility reasons.
+    # It will be changed in the future to match the redeclared version.
+    #
+    def add_spline_cubic_bezier(  # pyright: ignore[reportRedeclaration]
         self,
         name: str,
-        positions: tuple[tuple[float, float, float], ...] | np.ndarray,
-        control_points: tuple[tuple[float, float, float], ...] | np.ndarray,
+        # `points` and `control_points` are actually required, we are keeping
+        # them optional at runtime for backwards-compatibility purposes.
+        points: tuple[tuple[float, float, float], ...] | np.ndarray = (),
+        control_points: tuple[tuple[float, float, float], ...] | np.ndarray = (),
         line_width: float = 1.0,
         color: RgbTupleOrArray = (20, 20, 20),
         segments: int | None = None,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        **_deprecated_kwargs,
     ) -> SplineCubicBezierHandle:
         """Add a spline to the scene using Cubic Bezier interpolation.
 
         This method allows for the creation of a cubic Bezier spline based on given
-        positions and control points. It is useful for creating complex, smooth,
+        points and control points. It is useful for creating complex, smooth,
         curving shapes.
 
         .. note::
@@ -763,8 +820,11 @@ class SceneApi:
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
                 define a kinematic tree.
-            positions: A tuple of 3D positions (x, y, z) defining the spline's key points.
-            control_points: A tuple of control points for Bezier curve shaping.
+            points: A tuple of 3D points (x, y, z) defining the spline's key points.
+            control_points: A tuple of control points for Bezier curve shaping. Must have
+                exactly `2 * len(points) - 2` control points. For a cubic Bezier with N
+                points, the curve passes through points[0], points[1], ..., points[N-1],
+                with two control points between each consecutive pair of points.
             line_width: Width of the spline line.
             color: Color of the spline as an RGB tuple.
             segments: Number of segments to divide the spline into.
@@ -775,30 +835,71 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
+        # Handle backward compatibility: support old 'positions' parameter
+        if "positions" in _deprecated_kwargs:
+            if points != ():
+                raise ValueError(
+                    "Cannot specify both 'points' and 'positions' parameters"
+                )
+            points = _deprecated_kwargs.pop("positions")
+            warnings.warn(
+                "The 'positions' parameter has been deprecated and renamed. Use 'points' instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        if _deprecated_kwargs:
+            raise TypeError(
+                f"Unexpected keyword arguments: {list(_deprecated_kwargs.keys())}"
+            )
+        if points == () or control_points == ():
+            raise ValueError(
+                "Both 'points' and 'control_points' must be provided for a cubic Bezier spline."
+            )
 
-        if isinstance(positions, np.ndarray):
-            assert len(positions.shape) == 2 and positions.shape[1] == 3
-            positions = tuple(map(tuple, positions))  # type: ignore
+        if isinstance(points, np.ndarray):
+            assert len(points.shape) == 2 and points.shape[1] == 3
+            points = tuple(map(tuple, points))  # type: ignore
+        elif isinstance(points, list):
+            points = tuple(tuple(p) if isinstance(p, list) else p for p in points)
         if isinstance(control_points, np.ndarray):
             assert len(control_points.shape) == 2 and control_points.shape[1] == 3
             control_points = tuple(map(tuple, control_points))  # type: ignore
+        elif isinstance(control_points, list):
+            control_points = tuple(
+                tuple(p) if isinstance(p, list) else p for p in control_points
+            )  # type: ignore
 
-        assert isinstance(positions, tuple)
+        assert isinstance(points, tuple)
         assert isinstance(control_points, tuple)
-        assert len(control_points) == (2 * len(positions) - 2)
+        assert len(control_points) == (2 * len(points) - 2)
         message = _messages.CubicBezierSplineMessage(
             name,
             _messages.CubicBezierSplineProps(
-                positions,
-                control_points,
-                line_width,
-                _encode_rgb(color),
+                _points=points,
+                _control_points=control_points,
+                line_width=line_width,
+                color=_encode_rgb(color),
                 segments=segments,
             ),
         )
         return SplineCubicBezierHandle._make(
             self, message, name, wxyz, position, visible
         )
+
+    if TYPE_CHECKING:
+
+        def add_spline_cubic_bezier(
+            self,
+            name: str,
+            points: tuple[tuple[float, float, float], ...] | np.ndarray,
+            control_points: tuple[tuple[float, float, float], ...] | np.ndarray,
+            line_width: float = 1.0,
+            color: RgbTupleOrArray = (20, 20, 20),
+            segments: int | None = None,
+            wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+            position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+            visible: bool = True,
+        ) -> SplineCubicBezierHandle: ...
 
     def add_camera_frustum(
         self,
@@ -816,7 +917,6 @@ class SceneApi:
         visible: bool = True,
         cast_shadow: bool = True,
         receive_shadow: bool = True,
-        *_removed_kwargs,
     ) -> CameraFrustumHandle:
         """Add a camera frustum to the scene for visualization.
 
@@ -847,13 +947,6 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-
-        if "line_thickness" in _removed_kwargs:
-            warnings.warn(
-                "The 'line_thickness' argument has been removed. Please use 'line_width' instead. Note that the units have been changed from world space to screen space.",
-                DeprecationWarning,
-            )
-
         if image is not None:
             media_type, binary = _encode_image_binary(
                 image, format, jpeg_quality=jpeg_quality
@@ -1090,7 +1183,7 @@ class SceneApi:
         self,
         name: str,
         points: np.ndarray,
-        colors: np.ndarray | tuple[float, float, float],
+        colors: np.ndarray | RgbTupleOrArray,
         point_size: float = 0.1,
         point_shape: Literal[
             "square", "diamond", "circle", "rounded", "sparkle"
@@ -1105,7 +1198,9 @@ class SceneApi:
         Args:
             name: Name of scene node. Determines location in kinematic tree.
             points: Location of points. Should have shape (N, 3).
-            colors: Colors of points. Should have shape (N, 3) or (3,).
+            colors: Colors of the points. Can be a single color as an RGB tuple or
+                np.ndarray of shape (3,) to apply to all points, or an np.ndarray of
+                shape (N, 3) to specify colors for each point.
             point_size: Size of each point.
             point_shape: Shape to draw each point.
             precision: Precision of the point cloud data. The input points array

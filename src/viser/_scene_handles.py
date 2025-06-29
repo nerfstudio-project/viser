@@ -576,16 +576,32 @@ class SplineCatmullRomHandle(
     """Handle for Catmull-Rom splines."""
 
     @property
+    def points(self) -> tuple[tuple[float, float, float], ...]:
+        """Get the spline points. This is the preferred property name."""
+        return self._points
+
+    @points.setter
+    def points(
+        self, points: tuple[tuple[float, float, float], ...] | np.ndarray
+    ) -> None:
+        """Set the spline points. This is the preferred property name."""
+        from ._scene_api import cast_vector
+
+        self._points = tuple(cast_vector(p, 3) for p in points)
+
+    @property
     def positions(self) -> tuple[tuple[float, float, float], ...]:
-        return self._positions
+        """Get the spline positions. Deprecated: use 'points' instead."""
+        return self._points
 
     @positions.setter
     def positions(
         self, positions: tuple[tuple[float, float, float], ...] | np.ndarray
     ) -> None:
+        """Set the spline positions. Deprecated: use 'points' instead."""
         from ._scene_api import cast_vector
 
-        self._positions = tuple(cast_vector(p, 3) for p in positions)
+        self._points = tuple(cast_vector(p, 3) for p in positions)
 
 
 class SplineCubicBezierHandle(
@@ -595,16 +611,32 @@ class SplineCubicBezierHandle(
     """Handle for cubic Bezier splines."""
 
     @property
+    def points(self) -> tuple[tuple[float, float, float], ...]:
+        """Get the spline points. This is the preferred property name."""
+        return self._points
+
+    @points.setter
+    def points(
+        self, points: tuple[tuple[float, float, float], ...] | np.ndarray
+    ) -> None:
+        """Set the spline points. This is the preferred property name."""
+        from ._scene_api import cast_vector
+
+        self._points = tuple(cast_vector(p, 3) for p in points)
+
+    @property
     def positions(self) -> tuple[tuple[float, float, float], ...]:
-        return self._positions
+        """Get the spline positions. Deprecated: use 'points' instead."""
+        return self._points
 
     @positions.setter
     def positions(
         self, positions: tuple[tuple[float, float, float], ...] | np.ndarray
     ) -> None:
+        """Set the spline positions. Deprecated: use 'points' instead."""
         from ._scene_api import cast_vector
 
-        self._positions = tuple(cast_vector(p, 3) for p in positions)
+        self._points = tuple(cast_vector(p, 3) for p in positions)
 
     @property
     def control_points(self) -> tuple[tuple[float, float, float], ...]:
