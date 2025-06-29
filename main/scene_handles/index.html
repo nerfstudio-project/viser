@@ -1943,6 +1943,20 @@ based on the current precision value. Updates to <cite>points</cite> should ther
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">SplineCatmullRomHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#SplineCatmullRomHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.SplineCatmullRomHandle" title="Link to this definition">¶</a></dt>
 <dd><p>Handle for Catmull-Rom splines.</p>
 <dl class="py property">
+<dt class="sig sig-object py" id="viser.SplineCatmullRomHandle.positions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCatmullRomHandle.positions" title="Link to this definition">¶</a></dt>
+<dd><p>use ‘points’ instead.</p>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version “The: </span>‘positions’ tuple property is deprecated. Use the ‘points’ numpy array instead.”,</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Get the spline positions. Deprecated</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="viser.SplineCatmullRomHandle.name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#viser.SplineCatmullRomHandle.name" title="Link to this definition">¶</a></dt>
 <dd><p>Read-only name of the scene node.</p>
@@ -1980,9 +1994,10 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="viser.SplineCatmullRomHandle.positions">
-<span class="sig-name descname"><span class="pre">positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCatmullRomHandle.positions" title="Link to this definition">¶</a></dt>
-<dd><p>A tuple of 3D positions (x, y, z) defining the spline’s path. Synchronized automatically when assigned.</p>
+<dt class="sig sig-object py" id="viser.SplineCatmullRomHandle.points">
+<span class="sig-name descname"><span class="pre">points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCatmullRomHandle.points" title="Link to this definition">¶</a></dt>
+<dd><p>Array with shape (N, 3) defining the spline’s path. Synchronized
+automatically when assigned.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2028,6 +2043,20 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">SplineCubicBezierHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#SplineCubicBezierHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.SplineCubicBezierHandle" title="Link to this definition">¶</a></dt>
 <dd><p>Handle for cubic Bezier splines.</p>
 <dl class="py property">
+<dt class="sig sig-object py" id="viser.SplineCubicBezierHandle.positions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCubicBezierHandle.positions" title="Link to this definition">¶</a></dt>
+<dd><p>use ‘points’ instead.</p>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version The: </span>‘positions’ tuple property is deprecated. Use the ‘points’ numpy array instead.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Get the spline positions. Deprecated</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="viser.SplineCubicBezierHandle.name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#viser.SplineCubicBezierHandle.name" title="Link to this definition">¶</a></dt>
 <dd><p>Read-only name of the scene node.</p>
@@ -2065,15 +2094,16 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="viser.SplineCubicBezierHandle.positions">
-<span class="sig-name descname"><span class="pre">positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCubicBezierHandle.positions" title="Link to this definition">¶</a></dt>
-<dd><p>A tuple of 3D positions (x, y, z) defining the spline’s key points. Synchronized automatically when assigned.</p>
+<dt class="sig sig-object py" id="viser.SplineCubicBezierHandle.points">
+<span class="sig-name descname"><span class="pre">points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCubicBezierHandle.points" title="Link to this definition">¶</a></dt>
+<dd><p>Array of shape (N, 3) defining the spline’s key points. Synchronized
+automatically when assigned.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SplineCubicBezierHandle.control_points">
-<span class="sig-name descname"><span class="pre">control_points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCubicBezierHandle.control_points" title="Link to this definition">¶</a></dt>
-<dd><p>A tuple of control points for Bezier curve shaping. Synchronized automatically when assigned.</p>
+<span class="sig-name descname"><span class="pre">control_points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCubicBezierHandle.control_points" title="Link to this definition">¶</a></dt>
+<dd><p>Array of shape (2*N-2, 3) defining control points for Bezier curve shaping. Synchronized automatically when assigned.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3107,12 +3137,13 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.SplineCatmullRomHandle"><code class="docutils literal notranslate"><span class="pre">SplineCatmullRomHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.SplineCatmullRomHandle.positions"><code class="docutils literal notranslate"><span class="pre">SplineCatmullRomHandle.positions</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCatmullRomHandle.name"><code class="docutils literal notranslate"><span class="pre">SplineCatmullRomHandle.name</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCatmullRomHandle.position"><code class="docutils literal notranslate"><span class="pre">SplineCatmullRomHandle.position</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCatmullRomHandle.remove"><code class="docutils literal notranslate"><span class="pre">SplineCatmullRomHandle.remove()</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCatmullRomHandle.visible"><code class="docutils literal notranslate"><span class="pre">SplineCatmullRomHandle.visible</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCatmullRomHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">SplineCatmullRomHandle.wxyz</span></code></a></li>
-<li><a class="reference internal" href="#viser.SplineCatmullRomHandle.positions"><code class="docutils literal notranslate"><span class="pre">SplineCatmullRomHandle.positions</span></code></a></li>
+<li><a class="reference internal" href="#viser.SplineCatmullRomHandle.points"><code class="docutils literal notranslate"><span class="pre">SplineCatmullRomHandle.points</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCatmullRomHandle.curve_type"><code class="docutils literal notranslate"><span class="pre">SplineCatmullRomHandle.curve_type</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCatmullRomHandle.tension"><code class="docutils literal notranslate"><span class="pre">SplineCatmullRomHandle.tension</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCatmullRomHandle.closed"><code class="docutils literal notranslate"><span class="pre">SplineCatmullRomHandle.closed</span></code></a></li>
@@ -3122,12 +3153,13 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.SplineCubicBezierHandle"><code class="docutils literal notranslate"><span class="pre">SplineCubicBezierHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.SplineCubicBezierHandle.positions"><code class="docutils literal notranslate"><span class="pre">SplineCubicBezierHandle.positions</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCubicBezierHandle.name"><code class="docutils literal notranslate"><span class="pre">SplineCubicBezierHandle.name</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCubicBezierHandle.position"><code class="docutils literal notranslate"><span class="pre">SplineCubicBezierHandle.position</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCubicBezierHandle.remove"><code class="docutils literal notranslate"><span class="pre">SplineCubicBezierHandle.remove()</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCubicBezierHandle.visible"><code class="docutils literal notranslate"><span class="pre">SplineCubicBezierHandle.visible</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCubicBezierHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">SplineCubicBezierHandle.wxyz</span></code></a></li>
-<li><a class="reference internal" href="#viser.SplineCubicBezierHandle.positions"><code class="docutils literal notranslate"><span class="pre">SplineCubicBezierHandle.positions</span></code></a></li>
+<li><a class="reference internal" href="#viser.SplineCubicBezierHandle.points"><code class="docutils literal notranslate"><span class="pre">SplineCubicBezierHandle.points</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCubicBezierHandle.control_points"><code class="docutils literal notranslate"><span class="pre">SplineCubicBezierHandle.control_points</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCubicBezierHandle.line_width"><code class="docutils literal notranslate"><span class="pre">SplineCubicBezierHandle.line_width</span></code></a></li>
 <li><a class="reference internal" href="#viser.SplineCubicBezierHandle.color"><code class="docutils literal notranslate"><span class="pre">SplineCubicBezierHandle.color</span></code></a></li>
