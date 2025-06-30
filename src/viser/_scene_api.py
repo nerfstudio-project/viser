@@ -98,6 +98,7 @@ def _encode_image_binary(
 ) -> tuple[Literal["image/png", "image/jpeg"], bytes]:
     media_type: Literal["image/png", "image/jpeg"]
     image = colors_to_uint8(image)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)  # opencv assumes BGR
     if format in ("png", "image/png"):
         media_type = "image/png"
         success, encoded = cv2.imencode(".png", image)
