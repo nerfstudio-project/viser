@@ -17,7 +17,7 @@ from typing import (
     overload,
 )
 
-import imageio.v3 as iio
+import cv2
 import numpy as np
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never, deprecated
 
@@ -97,22 +97,26 @@ def _encode_image_binary(
 ) -> tuple[Literal["image/png", "image/jpeg"], bytes]:
     media_type: Literal["image/png", "image/jpeg"]
     image = colors_to_uint8(image)
-    with io.BytesIO() as data_buffer:
-        if format in ("png", "image/png"):
-            media_type = "image/png"
-            iio.imwrite(data_buffer, image, extension=".png")
-        elif format in ("jpeg", "image/jpeg"):
-            media_type = "image/jpeg"
-            iio.imwrite(
-                data_buffer,
-                image[..., :3],  # Strip alpha.
-                extension=".jpeg",
-                quality=75 if jpeg_quality is None else jpeg_quality,
-            )
-        else:
-            assert_never(format)
-        binary = data_buffer.getvalue()
-    return media_type, binary
+
+    # Convert RGB to BGR for OpenCV encoding.
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    if format in ("png", "image/png"):
+        media_type = "image/png"
+        success, encoded = cv2.imencode(".png", image)
+    elif format in ("jpeg", "image/jpeg"):
+        media_type = "image/jpeg"
+        encode_param = [
+            int(cv2.IMWRITE_JPEG_QUALITY),
+            75 if jpeg_quality is None else jpeg_quality,
+        ]
+        success, encoded = cv2.imencode(".jpg", image[..., :3], encode_param)
+    else:
+        assert_never(format)
+
+    if not success:
+        raise ValueError(f"Failed to encode image to {format}")
+
+    return media_type, encoded.tobytes()
 
 
 TVector = TypeVar("TVector", bound=tuple)
@@ -1887,9 +1891,14 @@ class SceneApi:
             assert depth is not None  # Appease mypy.
             intdepth: np.ndarray = depth.reshape((*depth.shape[:2], 1)).view(np.uint8)
             assert intdepth.shape == (*depth.shape[:2], 4)
-            with io.BytesIO() as data_buffer:
-                iio.imwrite(data_buffer, intdepth[:, :, :3], extension=".png")
-                depth_bytes = data_buffer.getvalue()
+
+            # Important: cv2 expects BGR format, so we'll need to re-order on
+            # the client side.
+            depth_bgr = intdepth
+            success, encoded = cv2.imencode(".png", depth_bgr)
+            if not success:
+                raise ValueError("Failed to encode depth image to PNG")
+            depth_bytes = encoded.tobytes()
 
         self._websock_interface.queue_message(
             _messages.BackgroundImageMessage(

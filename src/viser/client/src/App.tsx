@@ -734,7 +734,8 @@ function BackgroundImage() {
 
     float readDepth(sampler2D depthMap, vec2 coord) {
       vec4 rgbPacked = texture(depthMap, coord);
-      float depth = rgbPacked.r * 0.00255 + rgbPacked.g * 0.6528 + rgbPacked.b * 167.1168;
+      // Important: BGR format, because buffer was encoded using OpenCV.
+      float depth = rgbPacked.b * 0.00255 + rgbPacked.g * 0.6528 + rgbPacked.r * 167.1168;
       return depth;
     }
 
