@@ -17,6 +17,7 @@ from typing import (
     overload,
 )
 
+import cv2
 import imageio.v3 as iio
 import numpy as np
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never, deprecated
@@ -96,23 +97,23 @@ def _encode_image_binary(
     jpeg_quality: int | None = None,
 ) -> tuple[Literal["image/png", "image/jpeg"], bytes]:
     media_type: Literal["image/png", "image/jpeg"]
+
     image = colors_to_uint8(image)
-    with io.BytesIO() as data_buffer:
-        if format in ("png", "image/png"):
-            media_type = "image/png"
-            iio.imwrite(data_buffer, image, extension=".png")
-        elif format in ("jpeg", "image/jpeg"):
-            media_type = "image/jpeg"
-            iio.imwrite(
-                data_buffer,
-                image[..., :3],  # Strip alpha.
-                extension=".jpeg",
-                quality=75 if jpeg_quality is None else jpeg_quality,
-            )
-        else:
-            assert_never(format)
-        binary = data_buffer.getvalue()
-    return media_type, binary
+
+    if format in ("jpeg", "image/jpeg"):
+        media_type = "image/jpeg"
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 75 if jpeg_quality is None else jpeg_quality]
+        success, encoded = cv2.imencode(".jpg", image[..., :3], encode_param)
+    elif format in ("png", "image/png"):
+        media_type = "image/png"
+        success, encoded = cv2.imencode(".png", image)
+    else:
+        assert_never(format)
+
+    if not success:
+        raise ValueError(f"Failed to encode image to {format}")
+
+    return media_type, encoded.tobytes()
 
 
 TVector = TypeVar("TVector", bound=tuple)
