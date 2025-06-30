@@ -406,7 +406,7 @@
     <span class="n">overload</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">imageio.v3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">iio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">ParamSpec</span><span class="p">,</span> <span class="n">TypeAlias</span><span class="p">,</span> <span class="n">assert_never</span><span class="p">,</span> <span class="n">deprecated</span>
 
@@ -486,22 +486,26 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;image/png&quot;</span><span class="p">,</span> <span class="s2">&quot;image/jpeg&quot;</span><span class="p">],</span> <span class="nb">bytes</span><span class="p">]:</span>
     <span class="n">media_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;image/png&quot;</span><span class="p">,</span> <span class="s2">&quot;image/jpeg&quot;</span><span class="p">]</span>
     <span class="n">image</span> <span class="o">=</span> <span class="n">colors_to_uint8</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">data_buffer</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">format</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;image/png&quot;</span><span class="p">):</span>
-            <span class="n">media_type</span> <span class="o">=</span> <span class="s2">&quot;image/png&quot;</span>
-            <span class="n">iio</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">data_buffer</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.png&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">format</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;image/jpeg&quot;</span><span class="p">):</span>
-            <span class="n">media_type</span> <span class="o">=</span> <span class="s2">&quot;image/jpeg&quot;</span>
-            <span class="n">iio</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span>
-                <span class="n">data_buffer</span><span class="p">,</span>
-                <span class="n">image</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span>  <span class="c1"># Strip alpha.</span>
-                <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.jpeg&quot;</span><span class="p">,</span>
-                <span class="n">quality</span><span class="o">=</span><span class="mi">75</span> <span class="k">if</span> <span class="n">jpeg_quality</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">jpeg_quality</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">assert_never</span><span class="p">(</span><span class="nb">format</span><span class="p">)</span>
-        <span class="n">binary</span> <span class="o">=</span> <span class="n">data_buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">media_type</span><span class="p">,</span> <span class="n">binary</span>
+
+    <span class="c1"># Convert RGB to BGR for OpenCV encoding.</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_RGB2BGR</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;image/png&quot;</span><span class="p">):</span>
+        <span class="n">media_type</span> <span class="o">=</span> <span class="s2">&quot;image/png&quot;</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">encoded</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imencode</span><span class="p">(</span><span class="s2">&quot;.png&quot;</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">format</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;image/jpeg&quot;</span><span class="p">):</span>
+        <span class="n">media_type</span> <span class="o">=</span> <span class="s2">&quot;image/jpeg&quot;</span>
+        <span class="n">encode_param</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">IMWRITE_JPEG_QUALITY</span><span class="p">),</span>
+            <span class="mi">75</span> <span class="k">if</span> <span class="n">jpeg_quality</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">jpeg_quality</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">encoded</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imencode</span><span class="p">(</span><span class="s2">&quot;.jpg&quot;</span><span class="p">,</span> <span class="n">image</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">encode_param</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">assert_never</span><span class="p">(</span><span class="nb">format</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to encode image to </span><span class="si">{</span><span class="nb">format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">media_type</span><span class="p">,</span> <span class="n">encoded</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
 
 
 <span class="n">TVector</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;TVector&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="nb">tuple</span><span class="p">)</span>
@@ -2370,9 +2374,14 @@
             <span class="k">assert</span> <span class="n">depth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>  <span class="c1"># Appease mypy.</span>
             <span class="n">intdepth</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">depth</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">*</span><span class="n">depth</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
             <span class="k">assert</span> <span class="n">intdepth</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="o">*</span><span class="n">depth</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="mi">4</span><span class="p">)</span>
-            <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">data_buffer</span><span class="p">:</span>
-                <span class="n">iio</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">data_buffer</span><span class="p">,</span> <span class="n">intdepth</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.png&quot;</span><span class="p">)</span>
-                <span class="n">depth_bytes</span> <span class="o">=</span> <span class="n">data_buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+            <span class="c1"># Important: cv2 expects BGR format, so we&#39;ll need to re-order on</span>
+            <span class="c1"># the client side.</span>
+            <span class="n">depth_bgr</span> <span class="o">=</span> <span class="n">intdepth</span>
+            <span class="n">success</span><span class="p">,</span> <span class="n">encoded</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imencode</span><span class="p">(</span><span class="s2">&quot;.png&quot;</span><span class="p">,</span> <span class="n">depth_bgr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to encode depth image to PNG&quot;</span><span class="p">)</span>
+            <span class="n">depth_bytes</span> <span class="o">=</span> <span class="n">encoded</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
             <span class="n">_messages</span><span class="o">.</span><span class="n">BackgroundImageMessage</span><span class="p">(</span>
