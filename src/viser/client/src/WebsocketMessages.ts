@@ -1507,6 +1507,34 @@ export interface SetGuiPanelLabelMessage {
   type: "SetGuiPanelLabelMessage";
   label: string | null;
 }
+/** Message from server->client to configure camera access.
+ *
+ * (automatically generated)
+ */
+export interface CameraAccessConfigMessage {
+  type: "CameraAccessConfigMessage";
+  enabled: boolean;
+  facing_mode: "user" | "environment" | null;
+}
+/** Message from server->client requesting a camera frame.
+ *
+ * (automatically generated)
+ */
+export interface CameraFrameRequestMessage {
+  type: "CameraFrameRequestMessage";
+  request_id: string;
+}
+/** Message from client->server responding with a camera frame.
+ *
+ * (automatically generated)
+ */
+export interface CameraFrameResponseMessage {
+  type: "CameraFrameResponseMessage";
+  request_id: string;
+  frame_data: Uint8Array | null;
+  timestamp: number;
+  error: string | null;
+}
 
 export type Message =
   | CameraFrustumMessage
@@ -1598,7 +1626,10 @@ export type Message =
   | ShareUrlRequest
   | ShareUrlUpdated
   | ShareUrlDisconnect
-  | SetGuiPanelLabelMessage;
+  | SetGuiPanelLabelMessage
+  | CameraAccessConfigMessage
+  | CameraFrameRequestMessage
+  | CameraFrameResponseMessage;
 export type SceneNodeMessage =
   | CameraFrustumMessage
   | GlbMessage
