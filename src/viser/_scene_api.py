@@ -18,7 +18,6 @@ from typing import (
 )
 
 import cv2
-import imageio.v3 as iio
 import numpy as np
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never, deprecated
 
@@ -98,7 +97,9 @@ def _encode_image_binary(
 ) -> tuple[Literal["image/png", "image/jpeg"], bytes]:
     media_type: Literal["image/png", "image/jpeg"]
     image = colors_to_uint8(image)
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)  # opencv assumes BGR
+
+    # Convert RGB to BGR for OpenCV encoding.
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     if format in ("png", "image/png"):
         media_type = "image/png"
         success, encoded = cv2.imencode(".png", image)
@@ -1890,9 +1891,14 @@ class SceneApi:
             assert depth is not None  # Appease mypy.
             intdepth: np.ndarray = depth.reshape((*depth.shape[:2], 1)).view(np.uint8)
             assert intdepth.shape == (*depth.shape[:2], 4)
-            with io.BytesIO() as data_buffer:
-                iio.imwrite(data_buffer, intdepth[:, :, :3], extension=".png")
-                depth_bytes = data_buffer.getvalue()
+
+            # Important: cv2 expects BGR format, so we'll need to re-order on
+            # the client side.
+            depth_bgr = intdepth
+            success, encoded = cv2.imencode(".png", depth_bgr)
+            if not success:
+                raise ValueError("Failed to encode depth image to PNG")
+            depth_bytes = encoded.tobytes()
 
         self._websock_interface.queue_message(
             _messages.BackgroundImageMessage(
