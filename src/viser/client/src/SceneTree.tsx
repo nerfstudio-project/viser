@@ -698,7 +698,7 @@ export function SceneNodeThreeObject(props: {
   // although this shouldn't be a bottleneck.
 
   // SHAPE OF MOTION: Get track number from name, which should be formatted like `/tracks/{t}`.
-  const trackFrameNumber = parseInt(message.name.split("/").at(-1));
+  const trackFrameNumber = parseInt(message!.name.split("/").at(-1)!);
 
   useFrame(
     () => {
