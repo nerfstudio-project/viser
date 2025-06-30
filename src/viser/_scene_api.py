@@ -97,16 +97,14 @@ def _encode_image_binary(
     jpeg_quality: int | None = None,
 ) -> tuple[Literal["image/png", "image/jpeg"], bytes]:
     media_type: Literal["image/png", "image/jpeg"]
-
     image = colors_to_uint8(image)
-
-    if format in ("jpeg", "image/jpeg"):
+    if format in ("png", "image/png"):
+        media_type = "image/png"
+        success, encoded = cv2.imencode(".png", image)
+    elif format in ("jpeg", "image/jpeg"):
         media_type = "image/jpeg"
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 75 if jpeg_quality is None else jpeg_quality]
         success, encoded = cv2.imencode(".jpg", image[..., :3], encode_param)
-    elif format in ("png", "image/png"):
-        media_type = "image/png"
-        success, encoded = cv2.imencode(".png", image)
     else:
         assert_never(format)
 
