@@ -372,16 +372,7 @@ def generate_screenshot_includes(
                     category, "examples/getting_started"
                 )
                 # Generate clean URL name by removing numbered prefixes
-                clean_name = safe_name
-                if "_" in clean_name:
-                    # Remove numbered prefixes like "02_gui_01_" to get just "callbacks"
-                    parts = clean_name.split("_")
-                    if len(parts) >= 3 and parts[0].isdigit() and parts[2].isdigit():
-                        clean_name = "_".join(
-                            parts[3:]
-                        )  # Remove category and number prefixes
-                    elif len(parts) >= 2 and parts[1].isdigit():
-                        clean_name = "_".join(parts[2:])  # Remove just number prefix
+                clean_name = example_name.split("/")[-1].partition("_")[2]
                 code_page_url = f"{category_dir}/{clean_name}/"
 
                 # Clean text for HTML: remove line breaks and escape quotes
@@ -501,18 +492,11 @@ def generate_organized_rst_files(examples: List[Tuple[str, Path, str, str, str]]
         else:
             category_key = example_name
 
-        category_dir = categories.get(category_key, "examples_getting_started")
+        category_dir = categories[category_key]
         safe_name = example_name.replace("/", "_")
 
         # Generate clean filename by removing numbered prefixes
-        clean_name = safe_name
-        if "_" in clean_name:
-            # Remove numbered prefixes like "02_gui_01_" to get just "callbacks"
-            parts = clean_name.split("_")
-            if len(parts) >= 3 and parts[0].isdigit() and parts[2].isdigit():
-                clean_name = "_".join(parts[3:])  # Remove category and number prefixes
-            elif len(parts) >= 2 and parts[1].isdigit():
-                clean_name = "_".join(parts[2:])  # Remove just number prefix
+        clean_name = example_name.split("/")[-1].partition("_")[2]
 
         # Create RST file path with clean name
         rst_path = source_dir / category_dir / f"{clean_name}.rst"
@@ -611,54 +595,16 @@ def generate_subdirectory_indexes(examples: List[Tuple[str, Path, str, str, str]
     """Generate index.rst files for each subdirectory."""
     source_dir = Path(__file__).parent / "source"
 
-    # API directories and their files
-    api_dirs = {
-        "api_core": {
-            "title": "Core API",
-            "description": "Core viser functionality for basic usage.",
-            "files": ["server", "scene_api", "gui_api", "state_serializer"],
-        },
-        "api_advanced": {
-            "title": "Advanced API",
-            "description": "Advanced features for complex applications.",
-            "files": [
-                "client_handles",
-                "camera_handles",
-                "gui_handles",
-                "scene_handles",
-                "events",
-                "icons",
-            ],
-        },
-        "api_auxiliary": {
-            "title": "Auxiliary API",
-            "description": "Supporting utilities and extensions.",
-            "files": ["transforms", "infrastructure", "extras"],
-        },
-    }
-
-    # Generate API directory indexes
-    for dir_name, info in api_dirs.items():
-        index_path = source_dir / dir_name / "index.rst"
-        with open(index_path, "w") as f:
-            f.write(f"{info['title']}\n")
-            f.write("=" * len(info["title"]) + "\n\n")
-            f.write(f"{info['description']}\n\n")
-            f.write(".. toctree::\n")
-            f.write("   :maxdepth: 1\n\n")
-            for file_name in info["files"]:
-                f.write(f"   {file_name}\n")
-
     # Group examples by category for subdirectory indexes
     example_categories = {
         "examples/getting_started": {
             "title": "Getting Started",
-            "description": "Basic examples to get you started with viser.",
+            "description": "Basic examples for getting started with Viser.",
             "files": [],
         },
         "examples/scene": {
             "title": "Scene Visualization",
-            "description": "Examples showing 3D scene visualization capabilities.",
+            "description": "Examples showing 3D scene visualization in Viser.",
             "files": [],
         },
         "examples/gui": {
@@ -673,7 +619,7 @@ def generate_subdirectory_indexes(examples: List[Tuple[str, Path, str, str, str]
         },
         "examples/demos": {
             "title": "Demos",
-            "description": "Demo applications showcasing viser capabilities.",
+            "description": "More complete demo applications.",
             "files": [],
         },
     }
@@ -694,19 +640,10 @@ def generate_subdirectory_indexes(examples: List[Tuple[str, Path, str, str, str]
             "03_interaction": "examples/interaction",
             "04_demos": "examples/demos",
         }
-
         category_dir = category_mapping.get(category_key, "examples/getting_started")
-        safe_name = example_name.replace("/", "_")
 
         # Generate clean filename by removing numbered prefixes
-        clean_name = safe_name
-        if "_" in clean_name:
-            # Remove numbered prefixes like "02_gui_01_" to get just "callbacks"
-            parts = clean_name.split("_")
-            if len(parts) >= 3 and parts[0].isdigit() and parts[2].isdigit():
-                clean_name = "_".join(parts[3:])  # Remove category and number prefixes
-            elif len(parts) >= 2 and parts[1].isdigit():
-                clean_name = "_".join(parts[2:])  # Remove just number prefix
+        clean_name = example_name.split("/")[-1].partition("_")[2]
 
         if category_dir in example_categories:
             example_categories[category_dir]["files"].append(clean_name)
@@ -722,16 +659,7 @@ def generate_subdirectory_indexes(examples: List[Tuple[str, Path, str, str, str]
                 f.write(".. toctree::\n")
                 f.write("   :maxdepth: 1\n\n")
 
-                # Sort files numerically based on their original numbering
-                def extract_number(filename):
-                    # Extract number from filenames like "00_hello_world" or "01_point_clouds"
-                    parts = filename.split("_")
-                    for i, part in enumerate(parts):
-                        if part.isdigit():
-                            return int(part)
-                    return 999  # fallback for files without numbers
-
-                for file_name in sorted(info["files"], key=extract_number):
+                for file_name in info["files"]:
                     f.write(f"   {file_name}\n")
 
     print("Generated index.rst files for all subdirectories")
