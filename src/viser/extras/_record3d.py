@@ -12,12 +12,6 @@ import numpy.typing as npt
 import skimage.transform
 from scipy.spatial.transform import Rotation
 
-try:
-    import liblzfse
-except ImportError:
-    print("liblzfse is missing. Please install with `pip install pyliblzfse`.")
-    sys.exit(1)
-
 
 class Record3dLoader:
     """Helper for loading frames for Record3D captures."""
@@ -59,6 +53,14 @@ class Record3dLoader:
         return len(self.rgb_paths)
 
     def get_frame(self, index: int) -> Record3dFrame:
+        # `pyliblzfse` can be hard to install on some Windows systems and is
+        # only needed for Record3D, so we don't do a global import.
+        try:
+            import liblzfse
+        except ImportError:
+            print("liblzfse is missing. Please install with `pip install pyliblzfse`.")
+            sys.exit(1)
+
         # Read conf.
         conf: np.ndarray = np.frombuffer(
             liblzfse.decompress(self.conf_paths[index].read_bytes()), dtype=np.uint8
