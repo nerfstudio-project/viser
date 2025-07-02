@@ -586,7 +586,7 @@ async def _message_producer(
                     "messages": tuple(
                         message.as_serializable_dict() for message in outgoing
                     ),
-                    "timestamp": time.perf_counter(),
+                    "timestampSec": time.perf_counter(),
                 }
             )
             assert isinstance(serialized, bytes)
