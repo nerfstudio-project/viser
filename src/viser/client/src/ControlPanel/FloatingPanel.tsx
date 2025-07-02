@@ -129,8 +129,7 @@ export default function FloatingPanel({
           parent.clientHeight,
         );
 
-      const newMaxHeight =
-        parent.clientHeight - panelBoundaryPad * 2 - 2.5 * 16;
+      const newMaxHeight = parent.clientHeight - panelBoundaryPad * 2;
       maxHeight !== newMaxHeight && setMaxHeight(newMaxHeight);
 
       let newX = unfixedOffset.current.x;
@@ -278,7 +277,6 @@ FloatingPanel.Handle = function FloatingPanelHandle({
       >
         {children}
       </Box>
-      {panelContext.expanded && <Divider mx="xs" />}
     </>
   );
 };
@@ -291,15 +289,16 @@ FloatingPanel.Contents = function FloatingPanelContents({
   const context = React.useContext(FloatingPanelContext)!;
   return (
     <Collapse in={context.expanded}>
-      <ScrollArea.Autosize mah={context.maxHeight}>
-        <Box
-          /* Prevent internals from getting too wide. Needs to match the
-           * width of the wrapper element above. */
-          style={{ width: context.width }}
-        >
+      <Divider mx="xs" />
+      <Box
+        /* Prevent internals from getting too wide. Needs to match the
+         * width of the wrapper element above. */
+        style={{ width: context.width }}
+      >
+        <ScrollArea.Autosize mah={context.maxHeight}>
           {children}
-        </Box>
-      </ScrollArea.Autosize>
+        </ScrollArea.Autosize>
+      </Box>
     </Collapse>
   );
 };
