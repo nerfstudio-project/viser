@@ -1,4 +1,8 @@
-"""uPlot type definitions and enums."""
+"""Configuration types for uPlot charts in viser.
+
+For comprehensive documentation about uPlot options, see:
+https://github.com/leeoniya/uPlot/tree/1.6.32/docs
+"""
 
 from ._uplot_types import Axis as Axis
 from ._uplot_types import Axis_Border as Axis_Border

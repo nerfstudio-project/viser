@@ -350,7 +350,6 @@ function useMessageHandler(): (message: Message) => void {
             ? "needsUpdate"
             : currentAttrs.poseUpdateState;
         updateNodeAttributes(message.name, {
-          ...currentAttrs,
           position: message.position,
           poseUpdateState: newPoseUpdateState,
         });

@@ -126,6 +126,20 @@ export function Root() {
   // If dummy window dimensions are specified, wrap content in MacWindowWrapper.
   if (!dummyWindowParam) return content;
 
+  // Handle "fill" flag to make window full size
+  if (dummyWindowParam === "fill") {
+    return (
+      <MacWindowWrapper 
+        title={dummyWindowTitle} 
+        width={window.innerWidth} 
+        height={window.innerHeight}
+        fill={true}
+      >
+        {content}
+      </MacWindowWrapper>
+    );
+  }
+
   const [width, height] = dummyWindowParam.split("x").map(Number);
   if (isNaN(width) || isNaN(height)) return content;
 
@@ -151,6 +165,7 @@ function ViewerRoot() {
   const playbackPath = searchParams.get("playbackPath");
   const darkMode = searchParams.get("darkMode") !== null;
   const showStats = searchParams.get("showStats") !== null;
+  const hideViserLogo = searchParams.get("hideViserLogo") !== null;
 
   // Create a message source string.
   const messageSource = playbackPath === null ? "websocket" : "file_playback";
@@ -213,7 +228,7 @@ function ViewerRoot() {
 
   return (
     <ViewerContext.Provider value={viewer}>
-      <ViewerContents>
+      <ViewerContents hideViserLogo={hideViserLogo}>
         {messageSource === "websocket" && <WebsocketMessageProducer />}
         {messageSource === "file_playback" && (
           <PlaybackFromFile fileUrl={playbackPath!} />
@@ -227,7 +242,7 @@ function ViewerRoot() {
 /**
  * Main content wrapper with theme and layout.
  */
-function ViewerContents({ children }: { children: React.ReactNode }) {
+function ViewerContents({ children, hideViserLogo }: { children: React.ReactNode; hideViserLogo: boolean }) {
   const viewer = React.useContext(ViewerContext)!;
   const darkMode = viewer.useGui((state) => state.theme.dark_mode);
   const colors = viewer.useGui((state) => state.theme.colors);
@@ -299,7 +314,7 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
               <ViewerCanvas>
                 <FrameSynchronizedMessageHandler />
               </ViewerCanvas>
-              {showLogo && messageSource === "websocket" && <ViserLogo />}
+              {showLogo && !hideViserLogo && messageSource === "websocket" && <ViserLogo />}
             </Box>
             {messageSource === "websocket" && (
               <ControlPanel control_layout={controlLayout} />
