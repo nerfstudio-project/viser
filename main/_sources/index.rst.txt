@@ -13,8 +13,9 @@ Features include:
 - Programmatic camera control and rendering
 - An entirely web-based client, for easy use over SSH!
 
-Examples Gallery
-----------------
+
+Examples
+--------
 
 Install with: ``pip install viser[examples]``
 
