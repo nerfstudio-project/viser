@@ -12,7 +12,7 @@ Getting Started
    </style>
    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin: 20px 0;">
        <div class="example-card" style="border-radius: 3px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples/getting_started/00_getting_started_00_hello_world/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/getting_started/hello_world/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/00_getting_started_00_hello_world.png" alt="Hello world" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Hello world</h4>
@@ -21,7 +21,7 @@ Getting Started
            </a>
        </div>
        <div class="example-card" style="border-radius: 3px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples/getting_started/00_getting_started_01_core_concepts/" style="text-decoration: none; color: inherit; display: block;">
+           <a href="examples/getting_started/core_concepts/" style="text-decoration: none; color: inherit; display: block;">
                <img src="_static/examples/thumbs/00_getting_started_01_core_concepts.png" alt="Core concepts" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Core concepts</h4>

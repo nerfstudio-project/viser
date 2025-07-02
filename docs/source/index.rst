@@ -13,11 +13,14 @@ Features include:
 - Programmatic camera control and rendering
 - An entirely web-based client, for easy use over SSH!
 
+|
 
 Examples
 --------
 
 Install with: ``pip install viser[examples]``
+
+|
 
 .. include:: examples/_example_gallery.rst
 
@@ -28,11 +31,11 @@ Install with: ``pip install viser[examples]``
    :maxdepth: 1
    :titlesonly:
 
-   examples_getting_started/index
-   examples_scene/index
-   examples_gui/index
-   examples_interaction/index
-   examples_demos/index
+   examples/getting_started/index
+   examples/scene/index
+   examples/gui/index
+   examples/interaction/index
+   examples/demos/index
 
 .. toctree::
    :caption: API Reference
@@ -40,10 +43,10 @@ Install with: ``pip install viser[examples]``
    :maxdepth: 1
    :titlesonly:
 
-   api_core/index
-   api_handles/index
-   api_advanced/index
-   api_auxiliary/index
+   api/core/index
+   api/handles/index
+   api/advanced/index
+   api/auxiliary/index
 
 .. toctree::
    :caption: Notes
