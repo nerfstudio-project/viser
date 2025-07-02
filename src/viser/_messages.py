@@ -1481,9 +1481,9 @@ class CatmullRomSplineMessage(_CreateSceneNodeMessage):
 
 @dataclasses.dataclass
 class CatmullRomSplineProps:
-    # TODO: consider renaming positions to points and using numpy arrays for consistency with LineSegmentsProps.
-    positions: Tuple[Tuple[float, float, float], ...]
-    """A tuple of 3D positions (x, y, z) defining the spline's path. Synchronized automatically when assigned."""
+    points: npt.NDArray[np.float32]
+    """Array with shape (N, 3) defining the spline's path. Synchronized
+    automatically when assigned."""
     curve_type: Literal["centripetal", "chordal", "catmullrom"]
     """Type of the curve ('centripetal', 'chordal', 'catmullrom'). Synchronized automatically when assigned."""
     tension: float
@@ -1507,10 +1507,11 @@ class CubicBezierSplineMessage(_CreateSceneNodeMessage):
 
 @dataclasses.dataclass
 class CubicBezierSplineProps:
-    positions: Tuple[Tuple[float, float, float], ...]
-    """A tuple of 3D positions (x, y, z) defining the spline's key points. Synchronized automatically when assigned."""
-    control_points: Tuple[Tuple[float, float, float], ...]
-    """A tuple of control points for Bezier curve shaping. Synchronized automatically when assigned."""
+    points: npt.NDArray[np.float32]
+    """Array of shape (N, 3) defining the spline's key points. Synchronized
+    automatically when assigned."""
+    control_points: npt.NDArray[np.float32]
+    """Array of shape (2*N-2, 3) defining control points for Bezier curve shaping. Synchronized automatically when assigned."""
     line_width: float
     """Width of the spline line. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]

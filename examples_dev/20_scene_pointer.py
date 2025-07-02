@@ -1,13 +1,9 @@
-"""Scene pointer events
+"""Scene pointer events.
 
-Capture mouse pointer events to create rays for 3D scene interaction and ray-mesh intersections.
+This example shows how to use scene pointer events to specify rays, and how they can be
+used to interact with the scene (e.g., ray-mesh intersections).
 
-**Features:**
-
-* :meth:`viser.ViserServer.on_scene_pointer` for mouse ray events
-* Ray-mesh intersection calculations with trimesh
-* Dynamic mesh highlighting based on ray hits
-* Real-time pointer coordinate display
+To get the demo data, see `./assets/download_dragon_mesh.sh`.
 """
 
 from __future__ import annotations
@@ -23,14 +19,17 @@ import trimesh.ray
 
 import viser
 import viser.transforms as tf
+from viser.theme import TitlebarConfig
 
 server = viser.ViserServer()
-server.gui.configure_theme(brand_color=(130, 0, 150))
+server.gui.configure_theme(
+    brand_color=(130, 0, 150),
+    titlebar_content=TitlebarConfig(buttons=(), image=None),
+)
 server.scene.set_up_direction("+y")
 
 mesh = cast(
-    trimesh.Trimesh,
-    trimesh.load_mesh(str(Path(__file__).parent / "../assets/dragon.obj")),
+    trimesh.Trimesh, trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
 )
 mesh.apply_scale(0.05)
 

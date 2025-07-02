@@ -19,7 +19,7 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from typing_extensions import Self, override
+from typing_extensions import Self, deprecated, override
 
 from . import _messages
 from ._assignable_props_api import AssignablePropsBase
@@ -52,8 +52,13 @@ class ScenePointerEvent:
     For a box selection, this includes the min- and max- corners of the box."""
 
     @property
+    @deprecated("The `event` property is deprecated. Use `event_type` instead.")
     def event(self):
-        """Deprecated. Use `event_type` instead."""
+        """Deprecated. Use `event_type` instead.
+
+        .. deprecated::
+            The `event` property is deprecated. Use `event_type` instead.
+        """
         return self.event_type
 
 
@@ -575,12 +580,67 @@ class SplineCatmullRomHandle(
 ):
     """Handle for Catmull-Rom splines."""
 
+    @property
+    @deprecated("The 'positions' property is deprecated. Use 'points' instead.")
+    def positions(self) -> tuple[tuple[float, float, float], ...]:
+        """Get the spline positions. Deprecated: use 'points' instead.
+
+        .. deprecated::
+            "The 'positions' tuple property is deprecated. Use the 'points' numpy array instead.",
+        """
+        import warnings
+
+        warnings.warn(
+            "The 'positions' tuple property is deprecated. Use the 'points' numpy array instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return tuple(tuple(x) for x in self.points.tolist())  # type: ignore
+
+    @positions.setter
+    @deprecated("The 'positions' property is deprecated. Use 'points' instead.")
+    def positions(self, positions: tuple[tuple[float, float, float], ...]) -> None:
+        import warnings
+
+        warnings.warn(
+            "The 'positions' tuple property is deprecated. Use the 'points' numpy array instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.points = np.asarray(positions)
+
 
 class SplineCubicBezierHandle(
     SceneNodeHandle,
     _messages.CubicBezierSplineProps,
 ):
     """Handle for cubic Bezier splines."""
+
+    @property
+    @deprecated(
+        "The 'positions' tuple property is deprecated. Use 'points' numpy array instead."
+    )
+    def positions(self) -> tuple[tuple[float, float, float], ...]:
+        """Get the spline positions. Deprecated: use 'points' instead.
+
+        .. deprecated::
+            The 'positions' tuple property is deprecated. Use the 'points' numpy array instead.
+        """
+        return tuple(tuple(p) for p in self.points.tolist())  # type: ignore
+
+    @positions.setter
+    @deprecated(
+        "The 'positions' tuple property is deprecated. Use the 'points' numpy array instead."
+    )
+    def positions(self, positions: tuple[tuple[float, float, float], ...]) -> None:
+        import warnings
+
+        warnings.warn(
+            "The 'positions' tuple property is deprecated. Use the 'points' numpy array instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.points = np.asarray(positions)
 
 
 class GlbHandle(
