@@ -9,6 +9,14 @@ Viser includes a WebGL-based Gaussian splat renderer.
 * Correct sorting when multiple splat objects are present
 * Compositing with other scene objects
 
+.. note::
+    This example requires external assets. To download them, run:
+
+    .. code-block:: bash
+
+        cd /path/to/viser/examples/assets
+        ./download_assets.sh
+
 **Source:** ``examples/01_scene/09_gaussian_splats.py``
 
 .. figure:: ../../_static/examples/01_scene_09_gaussian_splats.png

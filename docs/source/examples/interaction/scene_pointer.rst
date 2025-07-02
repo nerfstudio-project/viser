@@ -10,6 +10,14 @@ Capture mouse pointer events to create rays for 3D scene interaction and ray-mes
 * Dynamic mesh highlighting based on ray hits
 * Real-time pointer coordinate display
 
+.. note::
+    This example requires external assets. To download them, run:
+
+    .. code-block:: bash
+
+        cd /path/to/viser/examples/assets
+        ./download_assets.sh
+
 **Source:** ``examples/03_interaction/01_scene_pointer.py``
 
 .. figure:: ../../_static/examples/03_interaction_01_scene_pointer.png
@@ -32,6 +40,7 @@ Code
    import trimesh
    import trimesh.creation
    import trimesh.ray
+   
    import viser
    import viser.transforms as tf
    

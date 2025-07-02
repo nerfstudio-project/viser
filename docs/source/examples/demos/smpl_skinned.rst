@@ -13,6 +13,14 @@ See here for download instructions:
 * SMPL skinned mesh with real-time deformation
 * Interactive pose parameter controls
 
+.. note::
+    This example requires external assets. To download them, run:
+
+    .. code-block:: bash
+
+        cd /path/to/viser/examples/assets
+        ./download_assets.sh
+
 **Source:** ``examples/04_demos/04_smpl_skinned.py``
 
 .. figure:: ../../_static/examples/04_demos_04_smpl_skinned.png
@@ -95,7 +103,9 @@ Code
            return SmplFkOutputs(T_world_joint, T_parent_joint)
    
    
-   def main(model_path: Path) -> None:
+   def main(
+       model_path: Path = Path(__file__).parent / "../assets/SMPLH_NEUTRAL.npz",
+   ) -> None:
        server = viser.ViserServer()
        server.scene.set_up_direction("+y")
    

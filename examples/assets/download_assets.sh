@@ -28,7 +28,7 @@ echo ""
 echo "==========================================================="
 echo "Download colmap_garden..."
 wget -nv https://brentyi.github.io/viser-example-assets/colmap_garden.zip -O "$SCRIPT_DIR/colmap_garden.zip"
-unzip -qo "$SCRIPT_DIR/colmap_garden.zip" -d "$SCRIPT_DIR/colmap_garden"
+unzip -qo "$SCRIPT_DIR/colmap_garden.zip" -d "$SCRIPT_DIR/"  # Already contains a subdirectory.
 echo ""
 
 echo "==========================================================="

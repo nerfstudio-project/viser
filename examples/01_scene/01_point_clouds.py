@@ -20,7 +20,7 @@ import viser
 def main():
     server = viser.ViserServer()
 
-    # Generate a simple point cloud - a spiral
+    # Generate a spiral point cloud.
     num_points = 200
     t = np.linspace(0, 10, num_points)
     spiral_positions = np.column_stack(
@@ -31,16 +31,16 @@ def main():
         ]
     )
 
-    # Create colors based on height (z-coordinate)
+    # Create colors based on height (z-coordinate).
     z_min, z_max = spiral_positions[:, 2].min(), spiral_positions[:, 2].max()
     normalized_z = (spiral_positions[:, 2] - z_min) / (z_max - z_min)
 
-    # Color gradient from blue (bottom) to red (top)
+    # Color gradient from blue (bottom) to red (top).
     colors = np.zeros((num_points, 3), dtype=np.uint8)
-    colors[:, 0] = (normalized_z * 255).astype(np.uint8)  # Red channel
-    colors[:, 2] = ((1 - normalized_z) * 255).astype(np.uint8)  # Blue channel
+    colors[:, 0] = (normalized_z * 255).astype(np.uint8)  # Red channel.
+    colors[:, 2] = ((1 - normalized_z) * 255).astype(np.uint8)  # Blue channel.
 
-    # Add the point cloud to the scene
+    # Add the point cloud to the scene.
     server.scene.add_point_cloud(
         name="/spiral_cloud",
         points=spiral_positions,
@@ -48,7 +48,7 @@ def main():
         point_size=0.05,
     )
 
-    # Add a second point cloud - random noise points
+    # Add a second point cloud - random noise points.
     num_noise_points = 500
     noise_positions = np.random.normal(0, 1, (num_noise_points, 3))
     noise_colors = np.random.randint(0, 255, (num_noise_points, 3), dtype=np.uint8)
@@ -58,14 +58,6 @@ def main():
         points=noise_positions,
         colors=noise_colors,
         point_size=0.03,
-    )
-
-    # Add a coordinate frame for reference
-    server.scene.add_frame(
-        name="/origin",
-        show_axes=True,
-        axes_length=1.0,
-        axes_radius=0.02,
     )
 
     print("Point cloud visualization loaded!")

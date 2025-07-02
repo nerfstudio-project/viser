@@ -10,6 +10,14 @@ Display background images and 3D image textures positioned in world space.
 * :meth:`viser.SceneApi.add_image` for 3D-positioned image planes in world coordinates
 * Static images from files and dynamic procedural content
 * Image positioning, scaling, and orientation in 3D space
+
+.. note::
+    This example requires external assets. To download them, run:
+
+    .. code-block:: bash
+
+        cd /path/to/viser/examples/assets
+        ./download_assets.sh
 """
 
 import time

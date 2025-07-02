@@ -14,6 +14,14 @@ This example demonstrates how to load and visualize 3D meshes using viser's mesh
 
 The example shows two ways to display the same mesh: using raw vertices/faces arrays or directly from a trimesh object. This flexibility allows integration with various 3D processing pipelines and file formats supported by trimesh.
 
+.. note::
+    This example requires external assets. To download them, run:
+
+    .. code-block:: bash
+
+        cd /path/to/viser/examples/assets
+        ./download_assets.sh
+
 **Source:** ``examples/01_scene/02_meshes.py``
 
 .. figure:: ../../_static/examples/01_scene_02_meshes.png

@@ -15,6 +15,14 @@ This example demonstrates batched mesh rendering, which is essential for visuali
 
 Batched meshes have some limitations: GLB animations are not supported, hierarchy is flattened, and each mesh in a GLB is instanced separately. However, they excel at rendering thousands of objects efficiently.
 
+.. note::
+    This example requires external assets. To download them, run:
+
+    .. code-block:: bash
+
+        cd /path/to/viser/examples/assets
+        ./download_assets.sh
+
 **Source:** ``examples/01_scene/05_meshes_batched.py``
 
 .. figure:: ../../_static/examples/01_scene_05_meshes_batched.png

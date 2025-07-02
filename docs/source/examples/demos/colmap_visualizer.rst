@@ -1,7 +1,7 @@
 COLMAP
 ======
 
-Visualize COLMAP sparse reconstruction outputs. To get demo data, see `../assets/download_colmap_garden.sh`.
+Visualize COLMAP sparse reconstruction outputs. To get demo data, see `../assets/download_assets.sh`.
 
 **Features:**
 
@@ -9,6 +9,14 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see `../assets
 * Camera frustum visualization with :meth:`viser.SceneApi.add_camera_frustum`
 * 3D point cloud display from structure-from-motion
 * Interactive camera and point visibility controls
+
+.. note::
+    This example requires external assets. To download them, run:
+
+    .. code-block:: bash
+
+        cd /path/to/viser/examples/assets
+        ./download_assets.sh
 
 **Source:** ``examples/04_demos/01_colmap_visualizer.py``
 
@@ -92,10 +100,10 @@ Code
            min=1,
            max=len(images),
            step=1,
-           initial_value=min(len(images), 100),
+           initial_value=min(len(images), 50),
        )
        gui_point_size = server.gui.add_slider(
-           "Point size", min=0.01, max=0.1, step=0.001, initial_value=0.05
+           "Point size", min=0.01, max=0.1, step=0.001, initial_value=0.02
        )
    
        point_mask = np.random.choice(points.shape[0], gui_points.value, replace=False)

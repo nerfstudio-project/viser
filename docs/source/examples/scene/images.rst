@@ -12,6 +12,14 @@ Display background images and 3D image textures positioned in world space.
 * Static images from files and dynamic procedural content
 * Image positioning, scaling, and orientation in 3D space
 
+.. note::
+    This example requires external assets. To download them, run:
+
+    .. code-block:: bash
+
+        cd /path/to/viser/examples/assets
+        ./download_assets.sh
+
 **Source:** ``examples/01_scene/04_images.py``
 
 .. figure:: ../../_static/examples/01_scene_04_images.png

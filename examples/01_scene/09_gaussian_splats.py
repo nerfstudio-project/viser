@@ -7,6 +7,14 @@ Viser includes a WebGL-based Gaussian splat renderer.
 * :meth:`viser.SceneApi.add_gaussian_splats` to add a Gaussian splat object
 * Correct sorting when multiple splat objects are present
 * Compositing with other scene objects
+
+.. note::
+    This example requires external assets. To download them, run:
+
+    .. code-block:: bash
+
+        cd /path/to/viser/examples/assets
+        ./download_assets.sh
 """
 
 from __future__ import annotations

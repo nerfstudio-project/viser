@@ -27,7 +27,7 @@ except ImportError:
 
 
 async def capture_screenshot_playwright(
-    url: str, output_path: Path, wait_time: float = 3.0
+    url: str, output_path: Path, wait_time: float = 10.0
 ) -> bool:
     """Capture screenshot using Playwright. Generates both full-size and thumbnail versions."""
     async with async_playwright() as p:
@@ -185,13 +185,6 @@ async def run_example_and_capture(
 
     # Build command with special arguments for certain examples
     cmd = [sys.executable, str(example_path)]
-
-    # Add special arguments for SMPL examples
-    if "smpl" in example_name.lower():
-        # Use relative path to model from the examples directory
-        model_path = str(example_path.parent.parent / "assets" / "SMPLH_NEUTRAL.npz")
-        cmd.extend(["--model-path", model_path])
-
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -202,7 +195,7 @@ async def run_example_and_capture(
 
     try:
         # Wait a bit for the server to start
-        await asyncio.sleep(2.0)
+        await asyncio.sleep(5.0)
 
         # Check if process is still running
         if process.poll() is not None:
@@ -286,7 +279,7 @@ async def capture_all_screenshots(batch_size: int = 8):
 
         # Small delay between batches
         if i + batch_size < len(examples):
-            await asyncio.sleep(1.0)
+            await asyncio.sleep(2.0)
 
     # Summary
     print("\n" + "=" * 50)
@@ -406,7 +399,7 @@ def generate_screenshot_includes(
                 )
 
                 f.write(
-                    '       <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">\n'
+                    '       <div class="example-card" style="border-radius: 3px; overflow: hidden; background: white; transition: transform 0.2s;">\n'
                 )
                 f.write(
                     f'           <a href="{code_page_url}" style="text-decoration: none; color: inherit; display: block;">\n'

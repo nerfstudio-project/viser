@@ -33,6 +33,15 @@ Code
    def main():
        server = viser.ViserServer()
    
+       # Shared across all clients.
+       server.scene.add_spline_catmull_rom(
+           "/catmull_initial",
+           np.random.normal(size=(30, 3)),
+           tension=0.5,
+           line_width=3.0,
+           color=np.random.uniform(size=3),
+       )
+   
        button = server.gui.add_button("Render a GIF")
    
        @button.on_click
@@ -45,10 +54,10 @@ Code
            images = []
    
            for i in range(20):
-               positions = np.random.normal(size=(30, 3))
+               # Add spline to just this client.
                client.scene.add_spline_catmull_rom(
                    f"/catmull_{i}",
-                   positions,
+                   np.random.normal(size=(30, 3)),
                    tension=0.5,
                    line_width=3.0,
                    color=np.random.uniform(size=3),

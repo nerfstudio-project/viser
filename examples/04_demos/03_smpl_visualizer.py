@@ -11,6 +11,14 @@ Requires a .npz model file. See here for download instructions:
 * Interactive pose parameter sliders
 * Real-time body shape and pose updates
 * 3D mesh visualization with :meth:`viser.SceneApi.add_mesh_simple`
+
+.. note::
+    This example requires external assets. To download them, run:
+
+    .. code-block:: bash
+
+        cd /path/to/viser/examples/assets
+        ./download_assets.sh
 """
 
 from __future__ import annotations
@@ -80,7 +88,9 @@ class SmplHelper:
         return SmplOutputs(v_posed, self.faces, T_world_joint, T_parent_joint)
 
 
-def main(model_path: Path) -> None:
+def main(
+    model_path: Path = Path(__file__).parent / "../assets/SMPLH_NEUTRAL.npz",
+) -> None:
     server = viser.ViserServer()
     server.scene.set_up_direction("+y")
     server.scene.add_grid("/grid", position=(0.0, -1.3, 0.0), plane="xz")

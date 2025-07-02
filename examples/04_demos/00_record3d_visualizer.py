@@ -1,6 +1,6 @@
 """Record3D
 
-Parse and stream Record3D captures. To get demo data, see `../assets/download_record3d_dance.sh`.
+Parse and stream Record3D captures. To get demo data, see `../assets/download_assets.sh`.
 
 **Features:**
 
@@ -8,6 +8,14 @@ Parse and stream Record3D captures. To get demo data, see `../assets/download_re
 * Point cloud visualization from depth maps
 * Camera pose trajectory display
 * Temporal playback controls with scrubbing
+
+.. note::
+    This example requires external assets. To download them, run:
+
+    .. code-block:: bash
+
+        cd /path/to/viser/examples/assets
+        ./download_assets.sh
 """
 
 import time
@@ -35,6 +43,12 @@ def main(
     print("Loading frames!")
     loader = viser.extras.Record3dLoader(data_path)
     num_frames = min(max_frames, loader.num_frames())
+
+    # Initial camera pose.
+    @server.on_client_connect
+    def _(client: viser.ClientHandle) -> None:
+        client.camera.position = (-1.554, -1.013, 1.142)
+        client.camera.look_at = (-0.005, 2.283, -0.156)
 
     # Add playback UI.
     with server.gui.add_folder("Playback"):

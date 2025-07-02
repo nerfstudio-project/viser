@@ -34,7 +34,7 @@ Install with: ``pip install viser[examples]``
    examples_demos/index
 
 .. toctree::
-   :caption: API
+   :caption: API Reference
    :hidden:
    :maxdepth: 1
    :titlesonly:

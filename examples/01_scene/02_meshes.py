@@ -12,6 +12,14 @@ This example demonstrates how to load and visualize 3D meshes using viser's mesh
 * Mesh transformation using viser's transform utilities
 
 The example shows two ways to display the same mesh: using raw vertices/faces arrays or directly from a trimesh object. This flexibility allows integration with various 3D processing pipelines and file formats supported by trimesh.
+
+.. note::
+    This example requires external assets. To download them, run:
+
+    .. code-block:: bash
+
+        cd /path/to/viser/examples/assets
+        ./download_assets.sh
 """
 
 import time

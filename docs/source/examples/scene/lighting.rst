@@ -11,6 +11,14 @@ Add directional lights and ambient lighting to illuminate 3D meshes with realist
 * :attr:`viser.SceneNodeHandle.cast_shadow` to enable shadow casting
 * Dynamic light control with GUI sliders
 
+.. note::
+    This example requires external assets. To download them, run:
+
+    .. code-block:: bash
+
+        cd /path/to/viser/examples/assets
+        ./download_assets.sh
+
 **Source:** ``examples/01_scene/06_lighting.py``
 
 .. figure:: ../../_static/examples/01_scene_06_lighting.png
