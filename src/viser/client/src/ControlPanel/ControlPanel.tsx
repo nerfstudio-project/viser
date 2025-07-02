@@ -114,6 +114,7 @@ export default function ControlPanel(props: {
       <BottomPanel>
         <BottomPanel.Handle>
           <ConnectionStatus />
+          <CameraStatus />
           <BottomPanel.HideWhenCollapsed>
             <ShareButton />
             {generatedServerToggleButton}
@@ -128,6 +129,7 @@ export default function ControlPanel(props: {
       <FloatingPanel width={controlWidth}>
         <FloatingPanel.Handle>
           <ConnectionStatus />
+          <CameraStatus />
           <FloatingPanel.HideWhenCollapsed>
             <ShareButton />
             {generatedServerToggleButton}
@@ -145,6 +147,7 @@ export default function ControlPanel(props: {
       >
         <SidebarPanel.Handle>
           <ConnectionStatus />
+          <CameraStatus />
           <ShareButton />
           {generatedServerToggleButton}
         </SidebarPanel.Handle>
@@ -190,6 +193,60 @@ function ConnectionStatus() {
         {label !== "" ? label : connected ? "Connected" : "Connecting..."}
       </Box>
     </>
+  );
+}
+
+function CameraStatus() {
+  const viewer = React.useContext(ViewerContext)!;
+  const connected = viewer.useGui((state) => state.websocketConnected);
+  const cameraEnabled = viewer.useGui((state) => state.cameraEnabled);
+  const cameraReady = viewer.useGui((state) => state.cameraReady);
+  const setCameraEnabled = viewer.useGui((state) => state.setCameraEnabled);
+
+  // Don't show anything if server is disconnected.
+  if (!connected) { return null; }
+
+  const handleToggleCamera = (evt: React.MouseEvent) => {
+    evt.stopPropagation();
+    const newEnabled = !cameraEnabled;
+    setCameraEnabled(newEnabled);
+  };
+
+  const getStatusColor = () => {
+    if (!cameraEnabled) return "#888";  // Gray - disabled.
+    if (cameraReady) return "#0b0";     // Green - ready.
+    return "#f80";                      // Orange - enabled but not ready.
+  };
+
+  const getStatusLabel = () => {
+    if (!cameraEnabled) return "Click to enable camera";
+    if (cameraReady) return "Camera ready - click to disable";
+    return "Camera enabled but not ready - click to disable";
+  };
+
+  return (
+    <Tooltip 
+      label={getStatusLabel()} 
+      withinPortal
+    >
+      <ActionIcon
+        onClick={handleToggleCamera}
+        style={{
+          transform: "translateY(0.05em)",
+          marginRight: "0.25em",
+        }}
+        size="md"
+      >
+        <div
+          style={{
+            width: "0.75em",
+            height: "0.75em",
+            borderRadius: "50%",
+            backgroundColor: getStatusColor(),
+          }}
+        />
+      </ActionIcon>
+    </Tooltip>
   );
 }
 

@@ -17,6 +17,7 @@ import imageio.v3 as iio
 import numpy as np
 import numpy.typing as npt
 import rich
+from PIL import Image
 from rich import box, style
 from rich.panel import Panel
 from rich.table import Table
@@ -446,6 +447,66 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             )
             self.flush()
 
+    def capture_frame(
+        self,
+        timeout: float = 2.0,
+    ) -> Image.Image | None:
+        """Request a camera frame from this client.
+
+        Args:
+            timeout: Maximum time to wait for frame capture in seconds.
+
+        Returns:
+            PIL Image when frame is captured.
+            
+        Raises:
+            TimeoutError: If frame capture takes longer than timeout.
+            RuntimeError: If camera capture fails.
+        """
+        frame_ready_event = threading.Event()
+        frame: Image.Image | None = None
+
+        connection = self._websock_connection
+
+        def got_frame_cb(
+            client_id: int, message: _messages.CameraFrameResponseMessage
+        ) -> None:
+            del client_id
+            connection.unregister_handler(_messages.CameraFrameResponseMessage, got_frame_cb)
+            nonlocal frame
+            if message.frame_data is None:
+                frame = None
+            else:
+                frame = Image.open(io.BytesIO(message.frame_data))
+            frame_ready_event.set()
+
+        connection.register_handler(_messages.CameraFrameResponseMessage, got_frame_cb)
+        
+        self._websock_connection.queue_message(
+            _messages.CameraFrameRequestMessage(
+                request_id=_make_uuid(),
+            )
+        )
+        frame_ready_event.wait(timeout=timeout)
+        return frame
+
+    def configure_camera_access(
+        self, 
+        enabled: bool, 
+        facing_mode: Literal["user", "environment"] | None = None
+    ) -> None:
+        """Configure camera access for this client.
+
+        Args:
+            enabled: Whether to enable camera access. When True, the client will
+                    request camera permissions and make the camera available for
+                    frame capture. When False, camera access is disabled.
+            facing_mode: Camera facing mode ("user" for front camera, "environment" for back camera).
+        """
+        self._websock_connection.queue_message(
+            _messages.CameraAccessConfigMessage(enabled=enabled, facing_mode=facing_mode)
+        )
+
     def add_notification(
         self,
         title: str,
@@ -686,6 +747,7 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                     first = False
                     with self._client_lock:
                         self._connected_clients[conn.client_id] = client
+                        
                         for cb in self._client_connect_cb:
                             if asyncio.iscoroutinefunction(cb):
                                 await cb(client)

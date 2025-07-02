@@ -44,6 +44,9 @@ function useMessageHandler(): (message: Message) => void {
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
   const updateUploadState = viewer.useGui((state) => state.updateUploadState);
+  const setCameraEnabled = viewer.useGui((state) => state.setCameraEnabled);
+  const setCameraFacingMode = viewer.useGui((state) => state.setCameraFacingMode);
+  const setCameraRequest = viewer.useGui((state) => state.setCameraRequest);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
@@ -154,6 +157,19 @@ function useMessageHandler(): (message: Message) => void {
       // Set the GUI panel label.
       case "SetGuiPanelLabelMessage": {
         viewer.useGui.setState({ label: message.label ?? "" });
+        return;
+      }
+      // Handle camera access configuration
+      case "CameraAccessConfigMessage": {
+        setCameraEnabled(message.enabled);
+        setCameraFacingMode(message.facing_mode);
+        return;
+      }
+      // Handle camera frame requests
+      case "CameraFrameRequestMessage": {
+        setCameraRequest({
+          request_id: message.request_id,
+        });
         return;
       }
       // Configure the theme.

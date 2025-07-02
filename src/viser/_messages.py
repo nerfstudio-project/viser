@@ -1663,3 +1663,36 @@ class SetGuiPanelLabelMessage(Message):
     """Message from server->client to set the label of the GUI panel."""
 
     label: Optional[str]
+
+
+@dataclasses.dataclass
+class CameraAccessConfigMessage(Message):
+    """Message from server->client to configure camera access."""
+
+    enabled: bool
+    facing_mode: Optional[Literal["user", "environment"]] = None
+
+
+@dataclasses.dataclass
+class CameraFrameRequestMessage(Message):
+    """Message from server->client requesting a camera frame."""
+
+    request_id: str
+
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + self.request_id
+
+
+@dataclasses.dataclass
+class CameraFrameResponseMessage(Message):
+    """Message from client->server responding with a camera frame."""
+
+    request_id: str
+    frame_data: Optional[bytes]  # None if capture failed
+    timestamp: float
+    error: Optional[str]  # Error message if capture failed
+
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + self.request_id

@@ -45,6 +45,7 @@ import { BrowserWarning } from "./BrowserWarning";
 import { MacWindowWrapper } from "./MacWindowWrapper";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
 import { VISER_VERSION } from "./VersionInfo";
+import { CameraStream } from "./CameraStream";
 
 // ======= Utility functions =======
 
@@ -213,6 +214,11 @@ function ViewerRoot() {
 
     // Global hover state tracking.
     hoveredElementsCount: 0,
+
+    // Camera stream state.
+    cameraStreamConfig: {
+      enabled: false,
+    },
   });
 
   // Create the context value with hooks and single ref.
@@ -254,6 +260,8 @@ function ViewerContents({
   const colors = viewer.useGui((state) => state.theme.colors);
   const controlLayout = viewer.useGui((state) => state.theme.control_layout);
   const showLogo = viewer.useGui((state) => state.theme.show_logo);
+  const connected = viewer.useGui((state) => state.websocketConnected);
+  const cameraEnabled = viewer.useGui((state) => state.cameraEnabled);
   const { messageSource } = viewer;
 
   // Create Mantine theme with custom colors if provided.
@@ -329,6 +337,7 @@ function ViewerContents({
             )}
           </Box>
         </Box>
+        {connected && cameraEnabled && <CameraStream />}
       </MantineProvider>
     </>
   );

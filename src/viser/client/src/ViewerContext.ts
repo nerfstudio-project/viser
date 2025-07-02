@@ -57,6 +57,14 @@ export type ViewerMutable = {
 
   // Global hover state tracking.
   hoveredElementsCount: number;
+
+  // Camera stream state.
+  cameraStreamConfig: {
+    enabled: boolean;
+    videoConstraints?: MediaStreamConstraints["video"];
+    captureFps?: number;
+    maxResolution?: number | null;
+  };
 };
 
 export type ViewerContextContents = {

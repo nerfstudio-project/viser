@@ -21,6 +21,7 @@ from typing import (
 
 import imageio.v3 as iio
 import numpy as np
+from PIL.Image import Image
 from typing_extensions import Protocol, override
 
 from ._assignable_props_api import AssignablePropsBase
@@ -816,3 +817,18 @@ class GuiImageHandle(_GuiHandle[None], GuiImageProps):
         )
         self._data = data
         del media_type
+
+
+@dataclasses.dataclass(frozen=True)
+class CameraStreamFrameEvent:
+    """Event passed to camera stream frame callbacks."""
+
+    client: ClientHandle
+    """Client that sent this frame."""
+    client_id: int
+    """ID of client that sent this frame."""
+    image: Image
+    """Frame as PIL image."""
+    timestamp: float
+    """Timestamp when the frame was captured."""
+
