@@ -12,14 +12,15 @@
     </a>
 </p>
 
-**viser** is a library for 3D visualization in Python.
+**viser** is a library for interactive 3D visualization in Python.
 
-Features:
+Features include:
 
-- **Web-based viewer:** easy to use across platforms and on headless machines
-- **3D scene primitives:** visualize point clouds, meshes, images, etc with 1~2 lines of code
-- **2D GUI primitives:** buttons, sliders, text inputs, ...
-- **Interactive controls:** clickable objects, transform gizmos, programmable camera control, ...
+- API for visualizing 3D primitives
+- GUI building blocks: buttons, checkboxes, text inputs, sliders, etc.
+- Scene interaction tools (clicks, selection, transform gizmos)
+- Programmatic camera control and rendering
+- An entirely web-based client, for easy use over SSH!
 
 Docs and examples: https://viser.studio.
 
