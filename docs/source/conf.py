@@ -58,14 +58,23 @@ extensions = [
     "sphinxcontrib.programoutput",
     "sphinxcontrib.ansi",
     "sphinxcontrib.googleanalytics",  # google analytics extension https://github.com/sphinx-contrib/googleanalytics/tree/master
+    "sphinx_copybutton",  # adds copy buttons to code blocks
 ]
 programoutput_use_ansi = True
 html_ansi_stylesheet = "black-on-white.css"
+
+# -- Options for sphinx-copybutton extension ---------------------------------
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+copybutton_prompt_is_regexp = True
+copybutton_only_copy_prompt_lines = True
+copybutton_remove_prompts = True
+copybutton_copy_empty_lines = False
 
 # Intersphinx mapping for cross-references to external documentation
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", (None, "python-inv.txt"))
 }
+
 html_static_path = ["_static"]
 html_theme_options = {
     "light_css_variables": {

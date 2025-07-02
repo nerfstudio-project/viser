@@ -13,23 +13,36 @@ Features include:
 - Programmatic camera control and rendering
 - An entirely web-based client, for easy use over SSH!
 
-Installation
------------
+Examples Gallery
+----------------
 
-You can install ``viser`` with ``pip``:
+Install with: ``pip install viser[examples]``
 
-.. code-block:: bash
+.. include:: examples/_example_gallery.rst
 
-   pip install viser
 
-To include example dependencies:
+.. toctree::
+   :caption: Examples
+   :hidden:
+   :maxdepth: 1
+   :titlesonly:
 
-.. code-block:: bash
+   examples_getting_started/index
+   examples_scene/index
+   examples_gui/index
+   examples_interaction/index
+   examples_demos/index
 
-   pip install viser[examples]
+.. toctree::
+   :caption: API Reference
+   :hidden:
+   :maxdepth: 1
+   :titlesonly:
 
-After an example script is running, you can connect by navigating to the printed
-URL (default: ``http://localhost:8080``).
+   api_core/index
+   api_handles/index
+   api_advanced/index
+   api_auxiliary/index
 
 .. toctree::
    :caption: Notes
@@ -40,54 +53,6 @@ URL (default: ``http://localhost:8080``).
    ./conventions.rst
    ./development.rst
    ./embedded_visualizations.rst
-
-.. toctree::
-   :caption: API (Basics)
-   :hidden:
-   :maxdepth: 1
-   :titlesonly:
-
-   ./server.rst
-   ./scene_api.rst
-   ./gui_api.rst
-   ./state_serializer.rst
-
-
-.. toctree::
-   :caption: API (Advanced)
-   :hidden:
-   :maxdepth: 1
-   :titlesonly:
-
-   ./client_handles.rst
-   ./camera_handles.rst
-   ./gui_handles.rst
-   ./scene_handles.rst
-   ./events.rst
-   ./icons.rst
-   ./theme.rst
-   ./uplot.rst
-
-
-.. toctree::
-   :caption: API (Auxiliary)
-   :hidden:
-   :maxdepth: 1
-   :titlesonly:
-
-   ./transforms.rst
-   ./infrastructure.rst
-   ./extras.rst
-
-.. toctree::
-   :caption: Examples
-   :hidden:
-   :maxdepth: 1
-   :titlesonly:
-   :glob:
-
-   examples/*
-
 
 .. |pyright| image:: https://github.com/nerfstudio-project/viser/actions/workflows/pyright.yml/badge.svg
    :alt: Pyright status icon

@@ -12,17 +12,16 @@
     </a>
 </p>
 
-`viser` is a library for interactive 3D visualization in Python.
+**viser** is a library for 3D visualization in Python.
 
-Features include:
+Features:
 
-- API for visualizing 3D primitives
-- GUI building blocks: buttons, checkboxes, text inputs, sliders, etc.
-- Scene interaction tools (clicks, selection, transform gizmos)
-- Programmatic camera control and rendering
-- An entirely web-based client, for easy use over SSH!
+- **Web-based viewer:** easy to use across platforms and on headless machines
+- **3D scene primitives:** visualize point clouds, meshes, images, etc with 1~2 lines of code
+- **2D GUI primitives:** buttons, sliders, text inputs, ...
+- **Interactive controls:** clickable objects, transform gizmos, programmable camera control, ...
 
-For usage and API reference, see our <a href="https://viser.studio/main">documentation</a>.
+Docs and examples: https://viser.studio.
 
 ## Installation
 
@@ -42,29 +41,6 @@ After an example script is running, you can connect by navigating to the printed
 URL (default: `http://localhost:8080`).
 
 See also: our [development docs](https://viser.studio/main/development/).
-
-## Examples
-
-**Point cloud visualization**
-
-https://github.com/nerfstudio-project/viser/assets/6992947/df35c6ee-78a3-43ad-a2c7-1dddf83f7458
-
-Source: `./examples/07_record3d_visualizer.py`
-
-**Gaussian splatting visualization**
-
-https://github.com/nerfstudio-project/viser/assets/6992947/c51b4871-6cc8-4987-8751-2bf186bcb1ae
-
-Source:
-[WangFeng18/3d-gaussian-splatting](https://github.com/WangFeng18/3d-gaussian-splatting)
-and
-[heheyas/gaussian_splatting_3d](https://github.com/heheyas/gaussian_splatting_3d).
-
-**SMPLX visualizer**
-
-https://github.com/nerfstudio-project/viser/assets/6992947/78ba0e09-612d-4678-abf3-beaeeffddb01
-
-Source: `./example/08_smpl_visualizer.py`
 
 ## Acknowledgements
 

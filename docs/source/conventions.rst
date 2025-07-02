@@ -1,63 +1,86 @@
 Frame Conventions
 =================
 
-In this note, we describe the coordinate frame conventions used in ``viser``.
+This page describes the coordinate frame conventions used in ``viser``.
 
-Scene tree naming
+Scene Tree Naming
 -----------------
 
-Each object that we add to the scene in viser is instantiated as a node in a
-scene tree. The structure of this tree is determined by the names assigned to
-the nodes.
+Each object added to the scene in viser is instantiated as a node in a hierarchical scene tree. The structure of this tree is determined by the names assigned to the nodes.
 
-If we add a coordinate frame called ``/base_link/shoulder/wrist``, it signifies
-three nodes: the ``wrist`` is a child of the ``shoulder`` which is a child of the
-``base_link``.
+If we add a coordinate frame called ``/base_link/shoulder/wrist``, it creates three nodes:
 
-If we set the transformation of a given node like ``/base_link/shoulder``, both
-it and its child ``/base_link/shoulder/wrist`` will move. Its parent,
-``/base_link``, will be unaffected.
+- ``wrist`` is a child of ``shoulder``
+- ``shoulder`` is a child of ``base_link``
+- ``base_link`` is the root node
+
+When we set the transformation of a parent node like ``/base_link/shoulder``:
+
+- ✅ Both the node **and all its children** (e.g., ``/base_link/shoulder/wrist``) will move
+- ❌ Its parent (``/base_link``) remains **unaffected**
 
 Poses
 -----
 
-Poses in ``viser`` are defined using a pair of fields:
+Poses in ``viser`` are defined using two components:
 
-- ``wxyz``, a unit quaternion orientation term. This should always be 4D.
-- ``position``, a translation term. This should always be 3D.
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
 
-These correspond to a transformation from coordinates in the local frame to the
-parent frame:
+   * - Field
+     - Description
+   * - ``wxyz``
+     - Unit quaternion orientation term (always 4D: w, x, y, z)
+   * - ``position``
+     - Translation vector (always 3D: x, y, z)
+
+These correspond to a transformation from coordinates in the local frame to the parent frame:
 
 .. math::
 
    p_\mathrm{parent} = \begin{bmatrix} R & t \end{bmatrix}\begin{bmatrix}p_\mathrm{local} \\ 1\end{bmatrix}
 
-where ``wxyz`` is the quaternion form of the :math:`\mathrm{SO}(3)` matrix
-:math:`R` and ``position`` is the :math:`\mathbb{R}^3` translation term
-:math:`t`.
+where ``wxyz`` represents the quaternion form of the :math:`\mathrm{SO}(3)` rotation matrix :math:`R` and ``position`` represents the :math:`\mathbb{R}^3` translation vector :math:`t`.
 
-World coordinates
+World Coordinates
 -----------------
 
-In the world coordinate space, +Z points upward by default. This can be
-overridden with :func:`viser.SceneApi.set_up_direction()`.
+In the world coordinate space, +Z points upward by default. This can be overridden with :func:`viser.SceneApi.set_up_direction()`.
 
-Cameras
--------
+Camera Conventions
+------------------
 
-In ``viser``, all camera parameters exposed to the Python API use the
-COLMAP/OpenCV convention:
+In ``viser``, all camera parameters use the **COLMAP/OpenCV convention**:
 
-- Forward: +Z
-- Up: -Y
-- Right: +X
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
-Confusingly, this is different from Nerfstudio, which adopts the OpenGL/Blender
-convention:
+   * - Axis
+     - Direction
+   * - **Forward**
+     - +Z
+   * - **Up**
+     - -Y
+   * - **Right**
+     - +X
 
-- Forward: -Z
-- Up: +Y
-- Right: +X
+.. note::
+   **Difference from Nerfstudio**
 
-Conversion between the two is a simple 180 degree rotation around the local X-axis.
+   This is different from Nerfstudio, which uses the OpenGL/Blender convention:
+
+   - Forward: -Z, Up: +Y, Right: +X
+
+   **Conversion**: A simple **180° rotation around the local X-axis** converts between the two conventions.
+
+----
+
+.. seealso::
+
+   **Related Documentation**
+
+   - :class:`~viser.ViserServer` for scene management
+   - :func:`~viser.SceneApi.set_up_direction` for coordinate system configuration
+   - :mod:`~viser.transforms` for transformation utilities
