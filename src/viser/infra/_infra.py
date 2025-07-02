@@ -10,6 +10,7 @@ import logging
 import mimetypes
 import queue
 import threading
+import time
 from asyncio.events import AbstractEventLoop
 from collections.abc import Coroutine
 from pathlib import Path
@@ -581,7 +582,12 @@ async def _message_producer(
         outgoing = await window_generator.__anext__()
         if client_api_version == 1:
             serialized = msgspec.msgpack.encode(
-                tuple(message.as_serializable_dict() for message in outgoing)
+                {
+                    "messages": tuple(
+                        message.as_serializable_dict() for message in outgoing
+                    ),
+                    "timestamp": time.perf_counter(),
+                }
             )
             assert isinstance(serialized, bytes)
             await websocket.send(serialized)

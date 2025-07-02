@@ -33,6 +33,7 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
   }
   return buffers;
 }
+
 {
   let server: string | null = null;
   let ws: WebSocket | null = null;
@@ -53,6 +54,12 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
     const protocol = `viser-v${VISER_VERSION}`;
     console.log(`Connecting to: ${server!} with protocol: ${protocol}`);
     ws = new WebSocket(server!, [protocol]);
+
+    const state: {
+      prevPythonTimestamp?: number;
+      prevJsReceiveTimestamp?: number;
+      avgDeviation: number;
+    } = { avgDeviation: 0.0 };
 
     // Timeout is necessary when we're connecting to an SSH/tunneled port.
     const retryTimeout = setTimeout(() => {
@@ -103,26 +110,81 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
       }
     };
 
+    let lastIdealSendTime: number | null = null;
+
     ws.onmessage = async (event) => {
-      // Reduce websocket backpressure.
-      const messagePromise = new Promise<Message[]>((resolve) => {
+      type SerializedStruct = {
+        messages: Message[];
+        timestamp: number;
+      };
+      const jsReceiveTimestamp = performance.now();
+      const dataPromise = new Promise<SerializedStruct>((resolve) => {
         (event.data.arrayBuffer() as Promise<ArrayBuffer>).then((buffer) => {
-          resolve(decode(new Uint8Array(buffer)) as Message[]);
+          resolve(decode(new Uint8Array(buffer)) as SerializedStruct);
         });
       });
 
-      // Try our best to handle messages in order. If this takes more than 1 second, we give up. :)
+      // Try our best to handle messages in order. If this takes more than 10 seconds, we give up. :)
       await orderLock.acquireAsync({ timeout: 10000 }).catch(() => {
         console.log("Order lock timed out.");
         orderLock.release();
       });
       try {
-        const messages = await messagePromise;
+        const data = await dataPromise;
+        const messages = data.messages;
         const arrayBuffers = collectArrayBuffers(messages, new Set());
-        postOutgoing(
-          { type: "message_batch", messages: messages },
-          Array.from(arrayBuffers),
-        );
+
+        const currentPythonTimestamp = data.timestamp * 1000.0;
+        const expectedPythonTimeDeltaMs =
+          currentPythonTimestamp -
+          (state.prevPythonTimestamp ?? data.timestamp);
+        const jsReceiveTimeDeltaMs =
+          jsReceiveTimestamp -
+          (state.prevJsReceiveTimestamp ?? jsReceiveTimestamp);
+
+        // Smooth average deviation.
+        state.avgDeviation =
+          0.9 * state.avgDeviation +
+          0.1 * Math.abs(jsReceiveTimeDeltaMs - expectedPythonTimeDeltaMs);
+
+        // Update the state with the latest timestamps.
+        state.prevPythonTimestamp = currentPythonTimestamp;
+        state.prevJsReceiveTimestamp = jsReceiveTimestamp;
+
+        // How long are we willing to wait before sending the next message?
+        const maxDelayBeforeSending = Math.min(state.avgDeviation * 5, 300);
+        const sendFn = () =>
+          postOutgoing(
+            { type: "message_batch", messages: messages },
+            Array.from(arrayBuffers),
+          );
+
+        // Send the message with a timeout to smooth out framerates from delta
+        // time deviations.
+        const now = performance.now();
+        if (lastIdealSendTime !== null && expectedPythonTimeDeltaMs > 0) {
+          // Calculate when we should ideally send the next message
+          const idealNextSendTime =
+            lastIdealSendTime + expectedPythonTimeDeltaMs;
+          const timeUntilIdealSend = Math.min(
+            idealNextSendTime - now,
+            maxDelayBeforeSending,
+          );
+          console.log(timeUntilIdealSend);
+          // If we're early (burst scenario), delay to smooth out the rate
+          if (timeUntilIdealSend > 1) {
+            setTimeout(sendFn, timeUntilIdealSend);
+            lastIdealSendTime = now + timeUntilIdealSend;
+          } else {
+            // We're late or on time, send immediately
+            sendFn();
+            lastIdealSendTime = now;
+          }
+        } else {
+          // First message or no expected delta, send immediately
+          sendFn();
+          lastIdealSendTime = now;
+        }
       } finally {
         orderLock.acquired && orderLock.release();
       }
