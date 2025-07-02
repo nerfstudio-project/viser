@@ -36,7 +36,6 @@ def main(num_plots: int = 5, num_timesteps: int = 100, num_lines: int = 3) -> No
         num_lines: Number of sine wave series per plot.
     """
     server = viser.ViserServer()
-    server.gui.configure_theme(control_layout="fixed")
     time_step = 1.0 / 60.0
 
     # Data for uPlot: tuple of arrays where first is x-data, rest are y-data.
