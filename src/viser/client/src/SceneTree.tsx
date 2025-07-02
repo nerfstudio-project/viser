@@ -85,6 +85,19 @@ function SceneNodeLabel(props: { name: string }) {
   ) : null;
 }
 
+function tripletListFromFloat32Buffer(data: Uint8Array<ArrayBufferLike>) {
+  const arrayView = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const triplets: [number, number, number][] = [];
+  for (let i = 0; i < arrayView.byteLength; i += 12) {
+    triplets.push([
+      arrayView.getFloat32(i, true), // little-endian
+      arrayView.getFloat32(i + 4, true),
+      arrayView.getFloat32(i + 8, true),
+    ]);
+  }
+  return triplets;
+}
+
 export type MakeObject = (
   ref: React.Ref<any>,
   children: React.ReactNode,
@@ -510,7 +523,7 @@ function createObjectFactory(
           return (
             <group ref={ref}>
               <CatmullRomLine
-                points={message.props.positions}
+                points={tripletListFromFloat32Buffer(message.props.points)}
                 closed={message.props.closed}
                 curveType={message.props.curve_type}
                 tension={message.props.tension}
@@ -527,24 +540,30 @@ function createObjectFactory(
     }
     case "CubicBezierSplineMessage": {
       return {
-        makeObject: (ref, children) => (
-          <group ref={ref}>
-            {[...Array(message.props.positions.length - 1).keys()].map((i) => (
-              <CubicBezierLine
-                key={i}
-                start={message.props.positions[i]}
-                end={message.props.positions[i + 1]}
-                midA={message.props.control_points[2 * i]}
-                midB={message.props.control_points[2 * i + 1]}
-                lineWidth={message.props.line_width}
-                color={rgbToInt(message.props.color)}
-                // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
-                segments={(message.props.segments ?? undefined) as undefined}
-              ></CubicBezierLine>
-            ))}
-            {children}
-          </group>
-        ),
+        makeObject: (ref, children) => {
+          const points = tripletListFromFloat32Buffer(message.props.points);
+          const controlPoints = tripletListFromFloat32Buffer(
+            message.props.control_points,
+          );
+          return (
+            <group ref={ref}>
+              {[...Array(points.length - 1).keys()].map((i) => (
+                <CubicBezierLine
+                  key={i}
+                  start={points[i]}
+                  end={points[i + 1]}
+                  midA={controlPoints[2 * i]}
+                  midB={controlPoints[2 * i + 1]}
+                  lineWidth={message.props.line_width}
+                  color={rgbToInt(message.props.color)}
+                  // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
+                  segments={(message.props.segments ?? undefined) as undefined}
+                ></CubicBezierLine>
+              ))}
+              {children}
+            </group>
+          );
+        },
       };
     }
     case "GaussianSplatsMessage": {
@@ -792,6 +811,9 @@ export function SceneNodeThreeObject(props: { name: string }) {
         const displayed = isDisplayed();
         if (displayed && unmount) {
           if (objRef.current !== null) objRef.current.visible = false;
+          updateNodeAttributes(props.name, {
+            poseUpdateState: "needsUpdate",
+          });
           setUnmount(false);
         }
         if (!displayed && !unmount) {

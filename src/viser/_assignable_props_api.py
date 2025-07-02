@@ -36,15 +36,15 @@ class AssignablePropsBase(Generic[TImpl]):
     def _cast_value_recursive(self, hint: Any, value: Any, prop_name: str) -> Any:
         """Recursively cast values to match type hints, handling arrays and tuples."""
         # Handle numpy arrays
+        if hint == npt.NDArray[np.float16]:
+            return np.asarray(value).astype(np.float16)
+        elif hint == npt.NDArray[np.float32]:
+            return np.asarray(value).astype(np.float32)
+        elif hint == npt.NDArray[np.float64]:
+            return np.asarray(value).astype(np.float64)
+        elif hint == npt.NDArray[np.uint8] and "color" in prop_name:
+            return colors_to_uint8(value)
         if isinstance(value, np.ndarray):
-            if hint == npt.NDArray[np.float32]:
-                return value.astype(np.float32)
-            elif hint == npt.NDArray[np.float16]:
-                return value.astype(np.float16)
-            elif hint == npt.NDArray[np.float64]:
-                return value.astype(np.float64)
-            elif hint == npt.NDArray[np.uint8] and "color" in prop_name:
-                return colors_to_uint8(value)
             return value
 
         # Handle tuple[T, ...] pattern
