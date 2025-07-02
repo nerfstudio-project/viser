@@ -37,14 +37,19 @@ export default function BottomPanel({
             margin: 0,
             minHeight: "3.5em",
             maxHeight: "60%",
-            width: "100%",
-            maxWidth: "20em",
+            width: "20em",
             transition: "height 0.3s linear",
           }}
           ref={panelWrapperRef}
         >
           <ScrollArea.Autosize offsetScrollbars="present">
-            {children}
+            <Box
+              /* Prevent internals from getting too wide. Needs to match the
+               * width of the wrapper element above. */
+              style={{ width: "20em" }}
+            >
+              {children}
+            </Box>
           </ScrollArea.Autosize>
         </Paper>
       </>

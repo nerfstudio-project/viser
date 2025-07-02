@@ -290,15 +290,15 @@ FloatingPanel.Contents = function FloatingPanelContents({
   return (
     <Collapse in={context.expanded}>
       <Divider mx="xs" />
-      <Box
-        /* Prevent internals from getting too wide. Needs to match the
-         * width of the wrapper element above. */
-        style={{ width: context.width }}
-      >
-        <ScrollArea.Autosize mah={context.maxHeight}>
+      <ScrollArea.Autosize mah={context.maxHeight}>
+        <Box
+          /* Prevent internals from getting too wide. Needs to match the
+           * width of the wrapper element above. */
+          style={{ width: context.width }}
+        >
           {children}
-        </ScrollArea.Autosize>
-      </Box>
+        </Box>
+      </ScrollArea.Autosize>
     </Collapse>
   );
 };
