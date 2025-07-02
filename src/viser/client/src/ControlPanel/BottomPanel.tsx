@@ -25,28 +25,20 @@ export default function BottomPanel({
       }}
     >
       <>
-        <Divider
-          style={{
-            position: "fixed",
-            bottom: "0",
-            left: "0",
-            width: "100%",
-            zIndex: 11,
-          }}
-        />
         <Paper
           radius="0"
           shadow="0 0 1em 0 rgba(0,0,0,0.1)"
           style={{
             boxSizing: "border-box",
-            width: "100%",
             zIndex: 10,
             position: "fixed",
             bottom: 0,
-            left: 0,
+            right: 0,
             margin: 0,
             minHeight: "3.5em",
             maxHeight: "60%",
+            width: "100%",
+            maxWidth: "20em",
             transition: "height 0.3s linear",
           }}
           ref={panelWrapperRef}
