@@ -129,9 +129,9 @@ export function Root() {
   // Handle "fill" flag to make window full size
   if (dummyWindowParam === "fill") {
     return (
-      <MacWindowWrapper 
-        title={dummyWindowTitle} 
-        width={window.innerWidth} 
+      <MacWindowWrapper
+        title={dummyWindowTitle}
+        width={window.innerWidth}
         height={window.innerHeight}
         fill={true}
       >
@@ -242,7 +242,13 @@ function ViewerRoot() {
 /**
  * Main content wrapper with theme and layout.
  */
-function ViewerContents({ children, hideViserLogo }: { children: React.ReactNode; hideViserLogo: boolean }) {
+function ViewerContents({
+  children,
+  hideViserLogo,
+}: {
+  children: React.ReactNode;
+  hideViserLogo: boolean;
+}) {
   const viewer = React.useContext(ViewerContext)!;
   const darkMode = viewer.useGui((state) => state.theme.dark_mode);
   const colors = viewer.useGui((state) => state.theme.colors);
@@ -314,7 +320,9 @@ function ViewerContents({ children, hideViserLogo }: { children: React.ReactNode
               <ViewerCanvas>
                 <FrameSynchronizedMessageHandler />
               </ViewerCanvas>
-              {showLogo && !hideViserLogo && messageSource === "websocket" && <ViserLogo />}
+              {showLogo && !hideViserLogo && messageSource === "websocket" && (
+                <ViserLogo />
+              )}
             </Box>
             {messageSource === "websocket" && (
               <ControlPanel control_layout={controlLayout} />
