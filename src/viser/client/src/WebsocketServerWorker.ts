@@ -129,64 +129,70 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
         console.log("Order lock timed out.");
         orderLock.release();
       });
-      try {
-        const data = await dataPromise;
-        const messages = data.messages;
-        const arrayBuffers = collectArrayBuffers(messages, new Set());
+      const data = await dataPromise;
+      const messages = data.messages;
+      const arrayBuffers = collectArrayBuffers(messages, new Set());
 
-        const currentPythonTimestamp = data.timestamp * 1000.0;
-        const expectedPythonTimeDeltaMs =
-          currentPythonTimestamp -
-          (state.prevPythonTimestamp ?? data.timestamp);
-        const jsReceiveTimeDeltaMs =
-          jsReceiveTimestamp -
-          (state.prevJsReceiveTimestamp ?? jsReceiveTimestamp);
+      const currentPythonTimestamp = data.timestamp * 1000.0;
+      const expectedPythonTimeDeltaMs =
+        currentPythonTimestamp - (state.prevPythonTimestamp ?? data.timestamp);
+      const jsReceiveTimeDeltaMs =
+        jsReceiveTimestamp -
+        (state.prevJsReceiveTimestamp ?? jsReceiveTimestamp);
 
-        // Smooth average deviation.
-        state.avgDeviation =
-          0.9 * state.avgDeviation +
-          0.1 * Math.abs(jsReceiveTimeDeltaMs - expectedPythonTimeDeltaMs);
-
-        // Update the state with the latest timestamps.
-        state.prevPythonTimestamp = currentPythonTimestamp;
-        state.prevJsReceiveTimestamp = jsReceiveTimestamp;
-
-        // How long are we willing to wait before sending the next message?
-        const maxDelayBeforeSending = Math.min(state.avgDeviation * 5, 300);
-        const sendFn = () =>
-          postOutgoing(
-            { type: "message_batch", messages: messages },
-            Array.from(arrayBuffers),
+      // Smooth average deviation.
+      state.avgDeviation =
+        0.9 * state.avgDeviation +
+        0.1 *
+          Math.min(
+            Math.abs(jsReceiveTimeDeltaMs - expectedPythonTimeDeltaMs),
+            100,
           );
 
-        // Send the message with a timeout to smooth out framerates from delta
-        // time deviations.
-        const now = performance.now();
-        if (lastIdealSendTime !== null && expectedPythonTimeDeltaMs > 0) {
-          // Calculate when we should ideally send the next message
-          const idealNextSendTime =
-            lastIdealSendTime + expectedPythonTimeDeltaMs;
-          const timeUntilIdealSend = Math.min(
-            idealNextSendTime - now,
-            maxDelayBeforeSending,
-          );
-          console.log(timeUntilIdealSend);
+      // Update the state with the latest timestamps.
+      state.prevPythonTimestamp = currentPythonTimestamp;
+      state.prevJsReceiveTimestamp = jsReceiveTimestamp;
+
+      // How long are we willing to wait before sending the next message?
+      const maxDelayBeforeSending = Math.min(state.avgDeviation * 5, 300);
+      const sendFn = () => {
+        postOutgoing(
+          { type: "message_batch", messages: messages },
+          Array.from(arrayBuffers),
+        );
+        orderLock.release();
+      };
+
+      // Send the message with a timeout to smooth out framerates from delta
+      // time deviations.
+      const now = performance.now();
+      if (lastIdealSendTime !== null && expectedPythonTimeDeltaMs > 0) {
+        // Calculate when we should ideally send the next message
+        const idealNextSendTime = lastIdealSendTime + expectedPythonTimeDeltaMs;
+        const timeUntilIdealSend = Math.min(
+          idealNextSendTime - now,
+          maxDelayBeforeSending,
+        );
+        console.log(timeUntilIdealSend, maxDelayBeforeSending);
+
+        if (timeUntilIdealSend > 5) {
           // If we're early (burst scenario), delay to smooth out the rate
-          if (timeUntilIdealSend > 1) {
-            setTimeout(sendFn, timeUntilIdealSend);
-            lastIdealSendTime = now + timeUntilIdealSend;
-          } else {
-            // We're late or on time, send immediately
-            sendFn();
-            lastIdealSendTime = now;
-          }
+          setTimeout(sendFn, timeUntilIdealSend);
+          lastIdealSendTime = now + timeUntilIdealSend - 5;
+        } else if (timeUntilIdealSend < 0) {
+          // If we're late, send immediately. And give ourselves a little
+          // buffer for future message windows.
+          sendFn();
+          lastIdealSendTime = now + 5;
         } else {
-          // First message or no expected delta, send immediately
+          // On time: send immediately.
           sendFn();
           lastIdealSendTime = now;
         }
-      } finally {
-        orderLock.acquired && orderLock.release();
+      } else {
+        // First message or no expected delta, send immediately.
+        sendFn();
+        lastIdealSendTime = now;
       }
     };
   };
