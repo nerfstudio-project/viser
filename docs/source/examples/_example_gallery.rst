@@ -2,8 +2,8 @@
 .. Include this in your documentation with: .. include:: _example_gallery.rst
 
 
-👋 Getting Started
-~~~~~~~~~~~~~~~~~~~~
+Getting Started
+~~~~~~~~~~~~~~~
 
 .. raw:: html
 
@@ -31,8 +31,8 @@
        </div>
    </div>
 
-🎯 Scene Fundamentals
-~~~~~~~~~~~~~~~~~~~~~~~
+Scene Fundamentals
+~~~~~~~~~~~~~~~~~~
 
 .. raw:: html
 
@@ -132,8 +132,8 @@
        </div>
    </div>
 
-🎛️ GUI Controls
-~~~~~~~~~~~~~~~~~~~~
+GUI Controls
+~~~~~~~~~~~~
 
 .. raw:: html
 
@@ -224,10 +224,10 @@
        </div>
        <div class="example-card" style="border-radius: 8px; overflow: hidden; background: white; transition: transform 0.2s;">
            <a href="examples/gui/uplot/" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/thumbs/02_gui_09_uplot.png" alt="uPlot" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+               <img src="_static/examples/thumbs/02_gui_09_uplot.png" alt="uPlot integration" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">uPlot</h4>
-                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Examples of visualizing uPlot plots in Viser.</p>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">uPlot integration</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Embed lightweight, fast uPlot charts directly in the GUI interface.</p>
                </div>
            </a>
        </div>
@@ -242,8 +242,8 @@
        </div>
    </div>
 
-🖱️ User Interaction
-~~~~~~~~~~~~~~~~~~~~~~~~
+User Interaction
+~~~~~~~~~~~~~~~~
 
 .. raw:: html
 
@@ -298,8 +298,8 @@
        </div>
    </div>
 
-🚀 Demos
-~~~~~~~~~~
+Demos
+~~~~~
 
 .. raw:: html
 

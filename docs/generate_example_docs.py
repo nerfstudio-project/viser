@@ -189,9 +189,7 @@ async def run_example_and_capture(
     # Add special arguments for SMPL examples
     if "smpl" in example_name.lower():
         # Use relative path to model from the examples directory
-        model_path = str(
-            example_path.parent.parent / "assets" / "smplh" / "SMPLH_NEUTRAL.npz"
-        )
+        model_path = str(example_path.parent.parent / "assets" / "SMPLH_NEUTRAL.npz")
         cmd.extend(["--model-path", model_path])
 
     process = subprocess.Popen(
@@ -255,7 +253,7 @@ async def process_batch(
     return await asyncio.gather(*tasks)
 
 
-async def capture_all_screenshots(batch_size: int = 16):
+async def capture_all_screenshots(batch_size: int = 8):
     """Main function to capture screenshots for all examples."""
     # Create output directory
     output_dir = Path(__file__).parent / "source" / "_static" / "examples"
@@ -314,11 +312,11 @@ def generate_screenshot_includes(
 
     # Category metadata
     categories = {
-        "00_getting_started": ("👋 Getting Started", 0),
-        "01_scene": ("🎯 Scene Fundamentals", 1),
-        "02_gui": ("🎛️ GUI Controls", 2),
-        "03_interaction": ("🖱️ User Interaction", 3),
-        "04_demos": ("🚀 Demos", 4),
+        "00_getting_started": ("Getting Started", 0),
+        "01_scene": ("Scene Fundamentals", 1),
+        "02_gui": ("GUI Controls", 2),
+        "03_interaction": ("User Interaction", 3),
+        "04_demos": ("Demos", 4),
     }
 
     # Group examples by category

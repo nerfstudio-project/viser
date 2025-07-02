@@ -6,8 +6,9 @@ Advanced features for complex applications.
 .. toctree::
    :maxdepth: 1
 
-   state_serializer
+   client_handles
+   camera_handles
+   gui_handles
+   scene_handles
    events
    icons
-   theme
-   uplot

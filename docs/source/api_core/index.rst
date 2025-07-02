@@ -9,3 +9,4 @@ Core viser functionality for basic usage.
    server
    scene_api
    gui_api
+   state_serializer

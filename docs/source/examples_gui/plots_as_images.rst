@@ -12,7 +12,7 @@ Display matplotlib and OpenCV-generated plots as images in the GUI for better pe
 
 **Source:** ``examples/02_gui/09_plots_as_images.py``
 
-.. figure:: ../_static/examples/02_gui_09_plots_as_images.png
+.. figure:: ../_static/examples/02_gui_10_plots_as_images.png
    :width: 100%
    :alt: Plots as images
 

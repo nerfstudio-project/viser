@@ -114,7 +114,7 @@ class SO3(
         constructor.
 
         Args:
-            xyzw: xyzw quaternion. Shape should be (*, 4).
+            xyzw: xyzw quaternion. Shape should be ``(*, 4)``.
 
         Returns:
             Output.

@@ -57,7 +57,7 @@ Code
            points = np.random.normal(size=(30, 3)) * 3.0
            server.scene.add_spline_catmull_rom(
                f"/catmull/{i}",
-               positions=points,
+               points=points,
                tension=0.5,
                line_width=3.0,
                color=np.random.uniform(size=3),
@@ -67,7 +67,7 @@ Code
            control_points = np.random.normal(size=(30 * 2 - 2, 3)) * 3.0
            server.scene.add_spline_cubic_bezier(
                f"/cubic_bezier/{i}",
-               positions=points,
+               points=points,
                control_points=control_points,
                line_width=3.0,
                color=np.random.uniform(size=3),

@@ -27,7 +27,17 @@ here = Path(__file__).absolute().parent
 button = server.gui.add_button("Remove blurb")
 checkbox = server.gui.add_checkbox("Visibility", initial_value=True)
 
-markdown_source = (here / "../assets/mdx_example.mdx").read_text()
+markdown_source = """
+Viser has full support for the GFM markdown spec, including **bold**, _italics_,
+~~strikethrough~~, and many other features.
+
+Here's a [masked link](https://github.com/nerfstudio-project/viser), and a
+normal one: https://pypi.org/project/viser/
+
+In inline code blocks, you can show off colors with color chips: `#FED363`
+`hsl(0, 0%, 82%)` `rgb(255, 255, 255)`
+"""
+
 markdown_blurb = server.gui.add_markdown(
     content=markdown_source,
     image_root=here,

@@ -1,11 +1,22 @@
-uPlot
-=====
+uPlot integration
+=================
+
+Embed lightweight, fast uPlot charts directly in the GUI interface.
+
+This example demonstrates real-time data visualization using :meth:`viser.GuiApi.add_uplot` with multiple animated sine wave plots. uPlot provides efficient rendering for time-series data with smooth 60fps updates.
+
+**Features demonstrated:**
+
+* Multiple synchronized plots with :class:`viser.uplot.Series` configuration
+* Real-time data streaming and chart updates
+* Custom scales and styling options
+* Legend display with :class:`viser.uplot.Legend`
 
 **Source:** ``examples/02_gui/09_uplot.py``
 
 .. figure:: ../../_static/examples/02_gui_09_uplot.png
    :width: 100%
-   :alt: uPlot
+   :alt: uPlot integration
 
 Code
 ----
@@ -32,7 +43,7 @@ Code
        server = viser.ViserServer()
        time_step = 1.0 / 60.0
    
-       # Data for uPlot: tuple of arrays where first is x-data, rest are y-data
+       # Data for uPlot: tuple of arrays where first is x-data, rest are y-data.
        x_data = time_step * np.arange(num_timesteps, dtype=np.float64)
        data = (x_data, *[y(x_data, i) for i in range(num_lines)])
        print("Data shapes:", [arr.shape for arr in data])
