@@ -425,12 +425,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">skimage.transform</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rotation</span>
 
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">liblzfse</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;liblzfse is missing. Please install with `pip install pyliblzfse`.&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
 
 <div class="viewcode-block" id="Record3dLoader">
 <a class="viewcode-back" href="../../../../api_auxiliary/extras/#viser.extras.Record3dLoader">[docs]</a>
@@ -479,6 +473,14 @@
 <div class="viewcode-block" id="Record3dLoader.get_frame">
 <a class="viewcode-back" href="../../../../api_auxiliary/extras/#viser.extras.Record3dLoader.get_frame">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Record3dFrame</span><span class="p">:</span>
+        <span class="c1"># `pyliblzfse` can be hard to install on some Windows systems and is</span>
+        <span class="c1"># only needed for Record3D, so we don&#39;t do a global import.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">liblzfse</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;liblzfse is missing. Please install with `pip install pyliblzfse`.&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
         <span class="c1"># Read conf.</span>
         <span class="n">conf</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span>
             <span class="n">liblzfse</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conf_paths</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span>
