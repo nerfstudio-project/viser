@@ -31,8 +31,8 @@ Getting Started
        </div>
    </div>
 
-Scene Fundamentals
-~~~~~~~~~~~~~~~~~~
+Scene Visualization
+~~~~~~~~~~~~~~~~~~~
 
 .. raw:: html
 

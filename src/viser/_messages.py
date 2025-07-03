@@ -246,6 +246,8 @@ class CameraFrustumProps:
     """Whether or not to cast shadows. Synchronized automatically when assigned."""
     receive_shadow: bool
     """Whether or not to receive shadows. Synchronized automatically when assigned."""
+    variant: Literal["wireframe", "filled"] = "wireframe"
+    """Variant of the frustum visualization. 'wireframe' shows lines only, 'filled' adds semi-transparent faces. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -772,8 +774,15 @@ class BatchedGlbMessage(_CreateSceneNodeMessage):
 
 
 @dataclasses.dataclass
-class BatchedGlbProps(GlbProps, _BatchedMeshExtraProps):
+class BatchedGlbProps(_BatchedMeshExtraProps):
     """Batched GLB message."""
+
+    glb_data: bytes
+    """A binary payload containing the GLB data. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass

@@ -14,6 +14,7 @@ import { ViewerMutable } from "./ViewerContext";
 import {
   Anchor,
   Box,
+  Divider,
   Image,
   MantineProvider,
   Modal,
@@ -44,7 +45,7 @@ import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
 import { MacWindowWrapper } from "./MacWindowWrapper";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
-import { VISER_VERSION } from "./VersionInfo";
+import { VISER_VERSION, GITHUB_CONTRIBUTORS, Contributor } from "./VersionInfo";
 
 // ======= Utility functions =======
 
@@ -880,34 +881,56 @@ function ViserLogo() {
         withCloseButton={false}
         size="xl"
         style={{ textAlign: "center" }}
+        trapFocus={false}
       >
-        <Box>
-          <p>Viser is a 3D visualization toolkit developed at UC Berkeley.</p>
-          <p>
-            <Anchor
-              href="https://github.com/nerfstudio-project/"
-              target="_blank"
-              style={{ fontWeight: "600" }}
-            >
-              Nerfstudio
-            </Anchor>
-            &nbsp;&nbsp;&bull;&nbsp;&nbsp;
-            <Anchor
-              href="https://github.com/nerfstudio-project/viser"
-              target="_blank"
-              style={{ fontWeight: "600" }}
-            >
-              GitHub
-            </Anchor>
-            &nbsp;&nbsp;&bull;&nbsp;&nbsp;
-            <Anchor
-              href="https://viser.studio/main"
-              target="_blank"
-              style={{ fontWeight: "600" }}
-            >
-              Documentation
-            </Anchor>
-          </p>
+        <Box pt="lg" pb="xs">
+          Viser is a 3D visualization toolkit developed at UC Berkeley.
+        </Box>
+        <Box pb="lg">
+          <Anchor
+            href="https://viser.studio/main"
+            target="_blank"
+            style={{ fontWeight: "600" }}
+          >
+            Documentation
+          </Anchor>
+          &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+          <Anchor
+            href="https://github.com/nerfstudio-project/viser"
+            target="_blank"
+            style={{ fontWeight: "600" }}
+          >
+            GitHub
+          </Anchor>
+        </Box>
+        <Divider />
+        <Box
+          style={{
+            textAlign: "left",
+            maxHeight: "120px",
+            overflowY: "auto",
+            lineHeight: "1",
+            fontSize: "0.8rem",
+            opacity: "0.75",
+          }}
+          px="md"
+          pt="sm"
+        >
+          Thanks to our contributors:{" "}
+          {GITHUB_CONTRIBUTORS.map(
+            (contributor: Contributor, index: number) => (
+              <span key={contributor.login}>
+                <Anchor
+                  href={contributor.html_url}
+                  target="_blank"
+                  style={{ textDecoration: "none", fontSize: "0.75rem" }}
+                >
+                  {contributor.login}
+                </Anchor>
+                {index < GITHUB_CONTRIBUTORS.length - 1 && ", "}
+              </span>
+            ),
+          )}
         </Box>
       </Modal>
     </>

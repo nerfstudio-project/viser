@@ -126,7 +126,6 @@ export const BatchedMeshBase = React.forwardRef<
     receive_shadow: boolean;
 
     // Optional props.
-    scale?: THREE.Vector3 | [number, number, number] | number;
     clickable?: boolean;
   }
 >(function BatchedMeshBase(props, ref) {
@@ -147,17 +146,6 @@ export const BatchedMeshBase = React.forwardRef<
     const newMesh = new InstancedMesh2(props.geometry, props.material, {
       capacity: 1,
     });
-
-    // Set initial properties.
-    if (props.scale) {
-      if (typeof props.scale === "number") {
-        newMesh.scale.setScalar(props.scale);
-      } else if (Array.isArray(props.scale)) {
-        newMesh.scale.set(...props.scale);
-      } else {
-        newMesh.scale.copy(props.scale);
-      }
-    }
 
     // Create LODs if needed.
     let lodGeometries: THREE.BufferGeometry[] = [];

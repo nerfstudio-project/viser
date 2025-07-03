@@ -319,7 +319,7 @@ def generate_screenshot_includes(
     # Category metadata
     categories = {
         "00_getting_started": ("Getting Started", 0),
-        "01_scene": ("Scene Fundamentals", 1),
+        "01_scene": ("Scene Visualization", 1),
         "02_gui": ("GUI Controls", 2),
         "03_interaction": ("User Interaction", 3),
         "04_demos": ("Demos", 4),

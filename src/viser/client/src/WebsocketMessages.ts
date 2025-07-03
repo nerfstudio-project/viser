@@ -19,6 +19,7 @@ export interface CameraFrustumMessage {
     _image_data: Uint8Array | null;
     cast_shadow: boolean;
     receive_shadow: boolean;
+    variant: "wireframe" | "filled";
   };
 }
 /** GlTF message.
@@ -331,7 +332,6 @@ export interface BatchedGlbMessage {
     batched_scales: Uint8Array | null;
     lod: "auto" | "off" | [number, number][];
     glb_data: Uint8Array;
-    scale: number;
     cast_shadow: boolean;
     receive_shadow: boolean;
   };
