@@ -948,6 +948,7 @@ class SceneApi:
         visible: bool = True,
         cast_shadow: bool = True,
         receive_shadow: bool = True,
+        variant: Literal["wireframe", "filled"] = "wireframe",
     ) -> CameraFrustumHandle:
         """Add a camera frustum to the scene for visualization.
 
@@ -974,6 +975,7 @@ class SceneApi:
             visible: Whether or not this scene node is initially visible.
             cast_shadow: Whether this frustum should cast shadows.
             receive_shadow: Whether this frustum should receive shadows.
+            variant: Variant of the frustum visualization. 'wireframe' shows lines only, 'filled' adds semi-transparent faces.
 
         Returns:
             Handle for manipulating scene node.
@@ -998,6 +1000,7 @@ class SceneApi:
                 _image_data=binary,
                 cast_shadow=cast_shadow,
                 receive_shadow=receive_shadow,
+                variant=variant,
             ),
         )
         handle = CameraFrustumHandle._make(self, message, name, wxyz, position, visible)
@@ -1729,7 +1732,7 @@ class SceneApi:
     def add_box(
         self,
         name: str,
-        color: RgbTupleOrArray,
+        color: RgbTupleOrArray = (255, 0, 0),
         dimensions: tuple[float, float, float] | np.ndarray = (1.0, 1.0, 1.0),
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
@@ -1800,8 +1803,8 @@ class SceneApi:
     def add_icosphere(
         self,
         name: str,
-        radius: float,
-        color: RgbTupleOrArray,
+        radius: float = 1.0,
+        color: RgbTupleOrArray = (255, 0, 0),
         subdivisions: int = 3,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
