@@ -34,12 +34,12 @@ function opencvXyFromPointerXy(
   return mouseVector;
 }
 import {
-  CameraFrustum,
   CoordinateFrame,
   InstancedAxes,
   PointCloud,
   ViserImage,
 } from "./ThreeAssets";
+import { CameraFrustumComponent } from "./CameraFrustumVariants";
 import { SceneNodeMessage } from "./WebsocketMessages";
 import { SplatObject } from "./Splatting/GaussianSplats";
 import { Paper } from "@mantine/core";
@@ -300,9 +300,9 @@ function createObjectFactory(
     case "CameraFrustumMessage": {
       return {
         makeObject: (ref, children) => (
-          <CameraFrustum ref={ref} {...message}>
+          <CameraFrustumComponent ref={ref} {...message}>
             {children}
-          </CameraFrustum>
+          </CameraFrustumComponent>
         ),
       };
     }

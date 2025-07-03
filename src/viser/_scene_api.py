@@ -948,6 +948,7 @@ class SceneApi:
         visible: bool = True,
         cast_shadow: bool = True,
         receive_shadow: bool = True,
+        variant: Literal["wireframe", "filled"] = "wireframe",
     ) -> CameraFrustumHandle:
         """Add a camera frustum to the scene for visualization.
 
@@ -974,6 +975,7 @@ class SceneApi:
             visible: Whether or not this scene node is initially visible.
             cast_shadow: Whether this frustum should cast shadows.
             receive_shadow: Whether this frustum should receive shadows.
+            variant: Variant of the frustum visualization. 'wireframe' shows lines only, 'filled' adds semi-transparent faces.
 
         Returns:
             Handle for manipulating scene node.
@@ -998,6 +1000,7 @@ class SceneApi:
                 _image_data=binary,
                 cast_shadow=cast_shadow,
                 receive_shadow=receive_shadow,
+                variant=variant,
             ),
         )
         handle = CameraFrustumHandle._make(self, message, name, wxyz, position, visible)
