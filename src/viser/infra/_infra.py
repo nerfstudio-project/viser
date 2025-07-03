@@ -446,14 +446,19 @@ class WebsockServer(WebsockMessageHandler):
             request: Request,
         ) -> Response | None:
             # <Hack>
-            # Suppress errors for: https://github.com/python-websockets/websockets/issues/1513
-            # TODO: remove this when websockets behavior changes upstream.
+            # Suppress errors for:
+            # - https://github.com/python-websockets/websockets/issues/1513
+            #    - (fixed in newer versions of websockets)
+            # - https://github.com/python-websockets/websockets/issues/1606
             nonlocal filter_added
             if not filter_added:
 
                 class NoHttpErrors(logging.Filter):
                     def filter(self, record):
-                        return not record.getMessage() == "opening handshake failed"
+                        return record.getMessage() not in (
+                            "opening handshake failed",
+                            "connection rejected (200 OK)",
+                        )
 
                 connection.logger.logger.addFilter(NoHttpErrors())  # type: ignore
                 filter_added = True
