@@ -1729,7 +1729,7 @@ class SceneApi:
     def add_box(
         self,
         name: str,
-        color: RgbTupleOrArray,
+        color: RgbTupleOrArray = (255, 0, 0),
         dimensions: tuple[float, float, float] | np.ndarray = (1.0, 1.0, 1.0),
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
@@ -1800,8 +1800,8 @@ class SceneApi:
     def add_icosphere(
         self,
         name: str,
-        radius: float,
-        color: RgbTupleOrArray,
+        radius: float = 1.0,
+        color: RgbTupleOrArray = (255, 0, 0),
         subdivisions: int = 3,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
