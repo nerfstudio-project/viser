@@ -1417,6 +1417,7 @@
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">cast_shadow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">receive_shadow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">variant</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;wireframe&quot;</span><span class="p">,</span> <span class="s2">&quot;filled&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;wireframe&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraFrustumHandle</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a camera frustum to the scene for visualization.</span>
 
@@ -1443,6 +1444,7 @@
 <span class="sd">            visible: Whether or not this scene node is initially visible.</span>
 <span class="sd">            cast_shadow: Whether this frustum should cast shadows.</span>
 <span class="sd">            receive_shadow: Whether this frustum should receive shadows.</span>
+<span class="sd">            variant: Variant of the frustum visualization. &#39;wireframe&#39; shows lines only, &#39;filled&#39; adds semi-transparent faces.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Handle for manipulating scene node.</span>
@@ -1467,6 +1469,7 @@
                 <span class="n">_image_data</span><span class="o">=</span><span class="n">binary</span><span class="p">,</span>
                 <span class="n">cast_shadow</span><span class="o">=</span><span class="n">cast_shadow</span><span class="p">,</span>
                 <span class="n">receive_shadow</span><span class="o">=</span><span class="n">receive_shadow</span><span class="p">,</span>
+                <span class="n">variant</span><span class="o">=</span><span class="n">variant</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
         <span class="n">handle</span> <span class="o">=</span> <span class="n">CameraFrustumHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span>
