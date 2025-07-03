@@ -331,7 +331,6 @@ export interface BatchedGlbMessage {
     batched_scales: Uint8Array | null;
     lod: "auto" | "off" | [number, number][];
     glb_data: Uint8Array;
-    scale: number;
     cast_shadow: boolean;
     receive_shadow: boolean;
   };

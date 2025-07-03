@@ -1593,7 +1593,6 @@ class SceneApi:
         batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
         batched_scales: tuple[float, ...] | np.ndarray | None = None,
         lod: Literal["auto", "off"] | tuple[tuple[float, float], ...] = "auto",
-        scale: float = 1.0,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1617,7 +1616,6 @@ class SceneApi:
             batched_positions: Float array of shape (N, 3) for positions.
             batched_scales: Float array of shape (N,) for uniform scales or (N,3) for per-axis (XYZ) scales. None means scale of 1.0.
             lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
-            scale: A scale for resizing the mesh.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -1645,7 +1643,6 @@ class SceneApi:
                 name=name,
                 props=_messages.BatchedGlbProps(
                     glb_data=glb_data,
-                    scale=scale,
                     batched_wxyzs=batched_wxyzs.astype(np.float32),
                     batched_positions=batched_positions.astype(np.float32),
                     batched_scales=batched_scales,
@@ -1664,7 +1661,6 @@ class SceneApi:
         batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
         batched_scales: tuple[float, ...] | np.ndarray | None = None,
         lod: Literal["auto", "off"] | tuple[tuple[float, float], ...] = "auto",
-        scale: float = 1.0,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1688,7 +1684,6 @@ class SceneApi:
             batched_positions: Float array of shape (N, 3) for positions.
             batched_scales: Float array of shape (N,) for uniform scales or (N,3) for per-axis (XYZ) scales. None means scale of 1.0.
             lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
-            scale: A scale for resizing the GLB asset.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -1713,7 +1708,6 @@ class SceneApi:
             name=name,
             props=_messages.BatchedGlbProps(
                 glb_data=glb_data,
-                scale=scale,
                 batched_wxyzs=batched_wxyzs.astype(np.float32),
                 batched_positions=batched_positions.astype(np.float32),
                 batched_scales=batched_scales,

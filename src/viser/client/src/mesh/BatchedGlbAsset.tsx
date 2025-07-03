@@ -71,7 +71,6 @@ export const BatchedGlbAsset = React.forwardRef<
         lod={message.props.lod}
         cast_shadow={message.props.cast_shadow}
         receive_shadow={message.props.receive_shadow}
-        scale={message.props.scale}
         clickable={clickable}
       />
       {children}
