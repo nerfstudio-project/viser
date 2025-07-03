@@ -1656,6 +1656,74 @@ class SceneApi:
             )
             return BatchedGlbHandle._make(self, message, name, wxyz, position, visible)
 
+    def add_batched_glb(
+        self,
+        name: str,
+        glb_data: bytes,
+        batched_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
+        batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        batched_scales: tuple[float, ...] | np.ndarray | None = None,
+        lod: Literal["auto", "off"] | tuple[tuple[float, float], ...] = "auto",
+        scale: float = 1.0,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
+    ) -> BatchedGlbHandle:
+        """Add batched GLB assets to the scene.
+
+        Note:
+            Batched GLB instances are optimized for rendering many instances of the
+            same GLB asset. However, there are some limitations:
+            - Animations in the GLB file are not supported
+            - The node hierarchy from the GLB file is flattened
+            - Each mesh in the GLB is instanced separately
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+              define a kinematic tree.
+            glb_data: A binary GLB payload.
+            batched_wxyzs: Float array of shape (N, 4) for orientations.
+            batched_positions: Float array of shape (N, 3) for positions.
+            batched_scales: Float array of shape (N,) for uniform scales or (N,3) for per-axis (XYZ) scales. None means scale of 1.0.
+            lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
+            scale: A scale for resizing the GLB asset.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+            cast_shadow: Whether these GLB assets should cast shadows.
+            receive_shadow: Whether these GLB assets should receive shadows.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+        batched_wxyzs = np.asarray(batched_wxyzs)
+        batched_positions = np.asarray(batched_positions)
+
+        num_instances = batched_wxyzs.shape[0]
+        assert batched_wxyzs.shape == (num_instances, 4)
+        assert batched_positions.shape == (num_instances, 3)
+
+        if batched_scales is not None:
+            batched_scales = np.asarray(batched_scales).astype(np.float32)
+            assert batched_scales.shape in ((num_instances,), (num_instances, 3))
+
+        message = _messages.BatchedGlbMessage(
+            name=name,
+            props=_messages.BatchedGlbProps(
+                glb_data=glb_data,
+                scale=scale,
+                batched_wxyzs=batched_wxyzs.astype(np.float32),
+                batched_positions=batched_positions.astype(np.float32),
+                batched_scales=batched_scales,
+                lod=lod,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
+            ),
+        )
+        return BatchedGlbHandle._make(self, message, name, wxyz, position, visible)
+
     def _add_gaussian_splats(self, *args, **kwargs) -> GaussianSplatHandle:
         """Backwards compatibility shim. Use `add_gaussian_splats()` instead."""
         return self.add_gaussian_splats(*args, **kwargs)
