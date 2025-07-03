@@ -739,8 +739,29 @@ class _BatchedMeshExtraProps:
 
 
 @dataclasses.dataclass
-class BatchedMeshesProps(MeshProps, _BatchedMeshExtraProps):
+class BatchedMeshesProps(_BatchedMeshExtraProps):
     """Batched meshes message."""
+
+    vertices: npt.NDArray[np.float32]
+    """A numpy array of vertex positions. Should have shape (V, 3). Synchronized automatically when assigned."""
+    faces: npt.NDArray[np.uint32]
+    """A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). Synchronized automatically when assigned."""
+    batched_colors: npt.NDArray[np.uint8]
+    """A numpy array of colors, where each color is represented by RGB integers. Should have shape (N, 3) or (3,). Synchronized automatically when assigned."""
+    wireframe: bool
+    """Boolean indicating if the mesh should be rendered as a wireframe. Synchronized automatically when assigned."""
+    opacity: Optional[float]
+    """Opacity of the mesh. None means opaque. Synchronized automatically when assigned."""
+    flat_shading: bool
+    """Whether to do flat shading. Synchronized automatically when assigned."""
+    side: Literal["front", "back", "double"]
+    """Side of the surface to render. Synchronized automatically when assigned."""
+    material: Literal["standard", "toon3", "toon5"]
+    """Material type of the mesh. Synchronized automatically when assigned."""
+    cast_shadow: bool
+    """Whether or not to cast shadows. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """Whether or not to receive shadows. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass

@@ -112,6 +112,7 @@ export const BatchedMeshBase = React.forwardRef<
     batched_positions: Uint8Array;
     batched_wxyzs: Uint8Array;
     batched_scales: Uint8Array | null;
+    batched_colors: Uint8Array | null;
 
     // Geometry info.
     geometry: THREE.BufferGeometry;
@@ -281,6 +282,33 @@ export const BatchedMeshBase = React.forwardRef<
     props.batched_scales,
     mesh,
   ]);
+
+  // Update instances when colors change.
+  React.useEffect(() => {
+    if (mesh === null || props.batched_colors === null) return;
+    for (let i = 0; i < mesh.instancesCount; i++) {
+      let color;
+      if (props.batched_colors.byteLength == 3) {
+        color = new THREE.Color(
+          props.batched_colors[0] / 255,
+          props.batched_colors[1] / 255,
+          props.batched_colors[2] / 255,
+        );
+      } else if (props.batched_colors.byteLength === mesh.instancesCount * 3) {
+        color = new THREE.Color(
+          props.batched_colors[i * 3] / 255,
+          props.batched_colors[i * 3 + 1] / 255,
+          props.batched_colors[i * 3 + 2] / 255,
+        );
+      } else {
+        console.error(
+          `Invalid batched_colors length: ${props.batched_colors.byteLength}, expected 3 or ${mesh.instancesCount * 3}`,
+        );
+        color = new THREE.Color(1, 1, 1); // Default to white.
+      }
+      mesh.setColorAt(i, color);
+    }
+  }, [props.batched_colors, mesh]);
 
   // Update shadow settings.
   useEffect(() => {

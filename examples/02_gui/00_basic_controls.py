@@ -30,7 +30,6 @@ The example shows how to read control values with ``.value``, manage visibility 
 import time
 
 import numpy as np
-
 import viser
 
 

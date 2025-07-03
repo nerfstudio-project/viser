@@ -1,4 +1,4 @@
-"""Image overlays
+"""Images
 
 Display background images and 3D image textures in the scene.
 
@@ -25,7 +25,6 @@ from pathlib import Path
 
 import imageio.v3 as iio
 import numpy as np
-
 import viser
 
 
