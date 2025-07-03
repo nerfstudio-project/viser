@@ -325,14 +325,16 @@ def main():
             colors = generate_per_instance_colors(positions, color_mode="rainbow")
 
         # Animate if enabled.
+        positions_t = positions.copy()
         if animate_checkbox.value:
             # Animate positions.
-            positions[:, :2] += np.random.uniform(-0.01, 0.01, (n, 2))
+            t = time.perf_counter() * 2.0
+            positions_t[:, 0] += np.cos(t * 0.5)
+            positions_t[:, 1] += np.sin(t * 0.5)
 
             # Animate scales with wave effect.
             if per_axis_scale_checkbox.value:
-                t = time.perf_counter() * 2.0
-                scales = np.linalg.norm(positions, axis=-1)
+                scales = np.linalg.norm(positions_t, axis=-1)
                 scales = np.stack(
                     [
                         np.sin(scales * 1.5 - t) * 0.5 + 1.0,
@@ -343,8 +345,7 @@ def main():
                 )
                 assert scales.shape == (n, 3)
             else:
-                t = time.perf_counter() * 2.0
-                scales = np.linalg.norm(positions, axis=-1)
+                scales = np.linalg.norm(positions_t, axis=-1)
                 scales = np.sin(scales * 1.5 - t) * 0.5 + 1.0
                 assert scales.shape == (n,)
 
@@ -352,18 +353,19 @@ def main():
             if color_mode == "Animated":
                 animation_style = animated_color_dropdown.value.lower()
                 colors = generate_animated_colors(
-                    positions, t, animation_mode=animation_style
+                    positions_t, t, animation_mode=animation_style
                 )
 
         # Update mesh properties.
         with server.atomic():
-            mesh_handle.batched_positions = positions
+            mesh_handle.batched_positions = positions_t
             mesh_handle.batched_scales = scales
             mesh_handle.batched_colors = colors
-            axes_handle.batched_positions = positions
+
+            axes_handle.batched_positions = positions_t
             axes_handle.batched_scales = scales
 
-        time.sleep(1.0 / 30.0)
+        time.sleep(1.0 / 60.0)
 
 
 if __name__ == "__main__":
