@@ -883,24 +883,24 @@ function ViserLogo() {
         style={{ textAlign: "center" }}
         trapFocus={false}
       >
-        <Box pt="sm">
+        <Box pt="lg" pb="xs">
           Viser is a 3D visualization toolkit developed at UC Berkeley.
         </Box>
-        <Box pt="xs" pb="sm">
-          <Anchor
-            href="https://github.com/nerfstudio-project/viser"
-            target="_blank"
-            style={{ fontWeight: "600" }}
-          >
-            GitHub
-          </Anchor>
-          &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+        <Box pb="lg">
           <Anchor
             href="https://viser.studio/main"
             target="_blank"
             style={{ fontWeight: "600" }}
           >
             Documentation
+          </Anchor>
+          &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+          <Anchor
+            href="https://github.com/nerfstudio-project/viser"
+            target="_blank"
+            style={{ fontWeight: "600" }}
+          >
+            GitHub
           </Anchor>
         </Box>
         <Divider />
@@ -916,7 +916,7 @@ function ViserLogo() {
           px="md"
           pt="sm"
         >
-          Contributors:{" "}
+          Thanks to our contributors:{" "}
           {GITHUB_CONTRIBUTORS.map(
             (contributor: Contributor, index: number) => (
               <span key={contributor.login}>
