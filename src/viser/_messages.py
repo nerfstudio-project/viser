@@ -246,6 +246,8 @@ class CameraFrustumProps:
     """Whether or not to cast shadows. Synchronized automatically when assigned."""
     receive_shadow: bool
     """Whether or not to receive shadows. Synchronized automatically when assigned."""
+    variant: Literal["wireframe", "filled"] = "wireframe"
+    """Variant of the frustum visualization. 'wireframe' shows lines only, 'filled' adds semi-transparent faces. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
