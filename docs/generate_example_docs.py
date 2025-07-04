@@ -264,7 +264,7 @@ async def capture_all_screenshots(name_filter: str | None, batch_size: int = 8):
         examples = [
             ex
             for ex in all_examples
-            if name_filter is None or name_filter.lower() in ex[0].lower()
+            if name_filter is not None and name_filter.lower() in ex[0].lower()
         ]
     else:
         examples = all_examples

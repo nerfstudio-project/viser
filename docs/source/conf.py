@@ -300,7 +300,7 @@ def skip_dict_methods(app, what, name, obj, skip, options):
 
 
 def process_git_clone_commands():
-    """Replace git clone commands in RST files with version-aware ones when VISER_VERSION_STR_OVERRIDE is set."""
+    """Replace git clone commands in RST files with version-aware ones when VISER_RELEASE_WORKFLOW_VERSION is set."""
     version_override = os.environ.get("VISER_RELEASE_WORKFLOW_VERSION", None)
     if version_override is None:
         return  # Only process when version override is set.
