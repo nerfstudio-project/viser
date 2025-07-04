@@ -298,32 +298,9 @@ def skip_dict_methods(app, what, name, obj, skip, options):
     return skip
 
 
-def filter_handles_by_page(app, what, name, obj, skip, options):
-    """Filter handles based on which RST file is being processed.
-    
-    Uses obj.__module__ to categorize handles:
-    - viser._gui_handles: GUI handles  
-    - viser._scene_handles: Scene handles
-    - viser._viser: Camera/Client handles
-    """
-    if what == "class" and name.endswith("Handle"):
-        docname = getattr(app.env, 'docname', '')
-        
-        if 'gui_handles' in docname:
-            # Only include handles from _gui_handles module
-            return getattr(obj, '__module__', '') != 'viser._gui_handles'
-        elif 'scene_handles' in docname:
-            # Only include handles from _scene_handles module  
-            return getattr(obj, '__module__', '') != 'viser._scene_handles'
-        # Keep camera/client handles pages hardcoded
-    
-    return skip
-
-
 def setup(app):
     app.add_css_file("css/custom.css")
     app.connect("autodoc-skip-member", skip_dict_methods)
-    app.connect("autodoc-skip-member", filter_handles_by_page)
 
 
 # -- Napoleon settings -------------------------------------------------------
