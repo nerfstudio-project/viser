@@ -10,9 +10,9 @@ Embed GUI controls directly in the 3D scene positioned relative to scene objects
 * Context-sensitive controls attached to scene objects
 * Dynamic GUI panel visibility and positioning
 
-**Source:** ``examples/02_gui/06_gui_in_scene.py``
+**Source:** ``examples/03_interaction/05_gui_in_scene.py``
 
-.. figure:: ../../_static/examples/02_gui_06_gui_in_scene.png
+.. figure:: ../../_static/examples/03_interaction_05_gui_in_scene.png
    :width: 100%
    :alt: 3D GUI elements
 

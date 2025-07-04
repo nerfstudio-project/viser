@@ -196,17 +196,8 @@ GUI Controls
            </a>
        </div>
        <div class="example-card" style="border-radius: 3px; overflow: hidden; background: white; transition: transform 0.2s;">
-           <a href="examples/gui/gui_in_scene/" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/thumbs/02_gui_06_gui_in_scene.png" alt="3D GUI elements" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
-               <div style="padding: 15px;">
-                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">3D GUI elements</h4>
-                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Embed GUI controls directly in the 3D scene positioned relative to scene objects.</p>
-               </div>
-           </a>
-       </div>
-       <div class="example-card" style="border-radius: 3px; overflow: hidden; background: white; transition: transform 0.2s;">
            <a href="examples/gui/notifications/" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/thumbs/02_gui_07_notifications.png" alt="Notifications" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+               <img src="_static/examples/thumbs/02_gui_06_notifications.png" alt="Notifications" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Notifications</h4>
                    <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Display different types of notifications to users including persistent, timed, and loading indicators.</p>
@@ -215,7 +206,7 @@ GUI Controls
        </div>
        <div class="example-card" style="border-radius: 3px; overflow: hidden; background: white; transition: transform 0.2s;">
            <a href="examples/gui/plotly_integration/" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/thumbs/02_gui_08_plotly_integration.png" alt="Plotly integration" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+               <img src="_static/examples/thumbs/02_gui_07_plotly_integration.png" alt="Plotly integration" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Plotly integration</h4>
                    <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Embed interactive Plotly charts and graphs directly in the GUI interface.</p>
@@ -224,7 +215,7 @@ GUI Controls
        </div>
        <div class="example-card" style="border-radius: 3px; overflow: hidden; background: white; transition: transform 0.2s;">
            <a href="examples/gui/uplot/" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/thumbs/02_gui_09_uplot.png" alt="uPlot integration" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+               <img src="_static/examples/thumbs/02_gui_08_uplot.png" alt="uPlot integration" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">uPlot integration</h4>
                    <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Embed lightweight, fast uPlot charts directly in the GUI interface.</p>
@@ -233,7 +224,7 @@ GUI Controls
        </div>
        <div class="example-card" style="border-radius: 3px; overflow: hidden; background: white; transition: transform 0.2s;">
            <a href="examples/gui/plots_as_images/" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/thumbs/02_gui_10_plots_as_images.png" alt="Plots as images" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+               <img src="_static/examples/thumbs/02_gui_09_plots_as_images.png" alt="Plots as images" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Plots as images</h4>
                    <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Display OpenCV-generated plots as images in the GUI.</p>
@@ -293,6 +284,15 @@ User Interaction
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Programmatic camera control</h4>
                    <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Control camera position, orientation, and parameters programmatically.</p>
+               </div>
+           </a>
+       </div>
+       <div class="example-card" style="border-radius: 3px; overflow: hidden; background: white; transition: transform 0.2s;">
+           <a href="examples/interaction/gui_in_scene/" style="text-decoration: none; color: inherit; display: block;">
+               <img src="_static/examples/thumbs/03_interaction_05_gui_in_scene.png" alt="3D GUI elements" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+               <div style="padding: 15px;">
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">3D GUI elements</h4>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Embed GUI controls directly in the 3D scene positioned relative to scene objects.</p>
                </div>
            </a>
        </div>
