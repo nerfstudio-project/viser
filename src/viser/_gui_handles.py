@@ -113,8 +113,8 @@ class _GuiHandleState(Generic[T]):
 
 
 class _GuiHandle(Generic[T], AssignablePropsBase[_GuiHandleState]):
-    def __init__(self, _impl: _GuiHandleState[T]) -> None:
-        self._impl = _impl
+    def __init__(self, impl: _GuiHandleState[T]) -> None:
+        super().__init__(impl=impl)
         parent = self._impl.gui_api._container_handle_from_uuid[
             self._impl.parent_container_id
         ]
