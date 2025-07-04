@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-Basic examples to get you started with viser.
+Basic examples for getting started with Viser.
 
 .. toctree::
    :maxdepth: 1

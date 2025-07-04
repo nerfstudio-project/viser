@@ -1,5 +1,5 @@
-Image overlays
-==============
+Images
+======
 
 Display background images and 3D image textures in the scene.
 
@@ -24,7 +24,7 @@ Display background images and 3D image textures positioned in world space.
 
 .. figure:: ../../_static/examples/01_scene_04_images.png
    :width: 100%
-   :alt: Image overlays
+   :alt: Images
 
 Code
 ----
@@ -37,7 +37,6 @@ Code
    
    import imageio.v3 as iio
    import numpy as np
-   
    import viser
    
    

@@ -1,7 +1,7 @@
 Scene Visualization
 ===================
 
-Examples showing 3D scene visualization capabilities.
+Examples showing 3D scene visualization in Viser.
 
 .. toctree::
    :maxdepth: 1

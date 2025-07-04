@@ -305,7 +305,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/scene/point_clouds/">Point cloud visualization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/scene/meshes/">3D mesh visualization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/scene/lines/">Line visualization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../examples/scene/images/">Image overlays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/scene/images/">Images</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/scene/meshes_batched/">Batched mesh rendering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/scene/lighting/">Lighting and shadows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/scene/background_composite/">Depth compositing</a></li>
@@ -514,9 +514,6 @@
 <a class="viewcode-back" href="../../../api/handles/scene_handles/#viser.SceneNodeHandle">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SceneNodeHandle</span><span class="p">(</span><span class="n">AssignablePropsBase</span><span class="p">[</span><span class="n">_SceneNodeHandleState</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle base class for interacting with scene nodes.&quot;&quot;&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">impl</span><span class="p">:</span> <span class="n">_SceneNodeHandleState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span> <span class="o">=</span> <span class="n">impl</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_queue_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

@@ -8,9 +8,9 @@ Display rich text content with markdown support in GUI panels.
 **Features:**
 
 * :meth:`viser.GuiApi.add_markdown` for markdown content
-* :meth:`viser.GuiApi.add_html` for raw HTML content
-* :meth:`viser.GuiApi.add_image` for displaying images
-* Dynamic content updates and relative image paths
+
+.. note::
+    Also relevant: :meth:`viser.GuiApi.add_html` and :meth:`viser.GuiApi.add_image`.
 
 **Source:** ``examples/02_gui/03_markdown.py``
 

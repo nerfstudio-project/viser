@@ -306,7 +306,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../scene/point_clouds/">Point cloud visualization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../scene/meshes/">3D mesh visualization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../scene/lines/">Line visualization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../scene/images/">Image overlays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../scene/images/">Images</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../scene/meshes_batched/">Batched mesh rendering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../scene/lighting/">Lighting and shadows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../scene/background_composite/">Depth compositing</a></li>
@@ -423,13 +423,14 @@
         <article role="main" id="furo-main-content">
           <section id="core-concepts">
 <h1>Core concepts<a class="headerlink" href="#core-concepts" title="Link to this heading">¶</a></h1>
-<p>This example demonstrates the fundamental concepts of viser: creating a server, adding 3D objects to the scene, and building interactive GUI controls.</p>
-<p>We start by creating a <a class="reference internal" href="../../../api/core/server/#viser.ViserServer" title="viser.ViserServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">viser.ViserServer</span></code></a> instance, which automatically opens a web interface at <a class="reference external" href="http://localhost:8080">http://localhost:8080</a>. The server provides two main APIs:</p>
+<p>Creating a server, adding 3D objects to the scene, and building interactive GUI controls.</p>
+<p>We start by creating a <a class="reference internal" href="../../../api/core/server/#viser.ViserServer" title="viser.ViserServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">viser.ViserServer</span></code></a> instance, which automatically
+opens a web interface at <a class="reference external" href="http://localhost:8080">http://localhost:8080</a>. The server provides two main
+APIs:</p>
 <ul class="simple">
 <li><p><strong>Scene API</strong> (<a class="reference internal" href="../../../api/core/server/#viser.ViserServer.scene" title="viser.ViserServer.scene"><code class="xref py py-attr docutils literal notranslate"><span class="pre">viser.ViserServer.scene</span></code></a>): Add 3D objects like meshes, point clouds, and primitive shapes using methods like <a class="reference internal" href="../../../api/core/scene_api/#viser.SceneApi.add_icosphere" title="viser.SceneApi.add_icosphere"><code class="xref py py-meth docutils literal notranslate"><span class="pre">viser.SceneApi.add_icosphere()</span></code></a> and <a class="reference internal" href="../../../api/core/scene_api/#viser.SceneApi.add_box" title="viser.SceneApi.add_box"><code class="xref py py-meth docutils literal notranslate"><span class="pre">viser.SceneApi.add_box()</span></code></a>.</p></li>
 <li><p><strong>GUI API</strong> (<a class="reference internal" href="../../../api/core/server/#viser.ViserServer.gui" title="viser.ViserServer.gui"><code class="xref py py-attr docutils literal notranslate"><span class="pre">viser.ViserServer.gui</span></code></a>): Create interactive controls like sliders, buttons, and color pickers using methods like <a class="reference internal" href="../../../api/core/gui_api/#viser.GuiApi.add_slider" title="viser.GuiApi.add_slider"><code class="xref py py-meth docutils literal notranslate"><span class="pre">viser.GuiApi.add_slider()</span></code></a> and <a class="reference internal" href="../../../api/core/gui_api/#viser.GuiApi.add_rgb" title="viser.GuiApi.add_rgb"><code class="xref py py-meth docutils literal notranslate"><span class="pre">viser.GuiApi.add_rgb()</span></code></a>.</p></li>
 </ul>
-<p>GUI controls can be connected to scene objects using event handlers (<a class="reference internal" href="../../../api/handles/gui_handles/#viser.GuiInputHandle.on_update" title="viser.GuiInputHandle.on_update"><code class="xref py py-meth docutils literal notranslate"><span class="pre">viser.GuiInputHandle.on_update()</span></code></a>), enabling real-time interaction.</p>
 <p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">examples/00_getting_started/01_core_concepts.py</span></code></p>
 <figure class="align-default">
 <a class="reference internal image-reference" href="../../../_images/00_getting_started_01_core_concepts.png"><img alt="Core concepts" src="../../../_images/00_getting_started_01_core_concepts.png" style="width: 100%;" /></a>

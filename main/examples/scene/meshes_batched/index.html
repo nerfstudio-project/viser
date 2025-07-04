@@ -12,7 +12,7 @@
         gtag('js', new Date());
         gtag('config', 'G-RRGY51J5ZH');
     </script>
-    <link rel="index" title="Index" href="../../../genindex/" /><link rel="search" title="Search" href="../../../search/" /><link rel="next" title="Lighting and shadows" href="../lighting/" /><link rel="prev" title="Image overlays" href="../images/" />
+    <link rel="index" title="Index" href="../../../genindex/" /><link rel="search" title="Search" href="../../../search/" /><link rel="next" title="Lighting and shadows" href="../lighting/" /><link rel="prev" title="Images" href="../images/" />
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Batched mesh rendering - viser</title>
@@ -306,7 +306,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../point_clouds/">Point cloud visualization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../meshes/">3D mesh visualization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lines/">Line visualization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../images/">Image overlays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../images/">Images</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Batched mesh rendering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lighting/">Lighting and shadows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../background_composite/">Depth compositing</a></li>
@@ -423,13 +423,14 @@
         <article role="main" id="furo-main-content">
           <section id="batched-mesh-rendering">
 <h1>Batched mesh rendering<a class="headerlink" href="#batched-mesh-rendering" title="Link to this heading">¶</a></h1>
-<p>Efficiently render many instances of the same mesh with different transforms.</p>
+<p>Efficiently render many instances of the same mesh with different transforms and colors.</p>
 <p>This example demonstrates batched mesh rendering, which is essential for visualizing large numbers of similar objects like particles, forest scenes, or crowd simulations. Batched rendering is dramatically more efficient than creating individual scene objects.</p>
 <p><strong>Key features:</strong></p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../../../api/core/scene_api/#viser.SceneApi.add_batched_meshes_simple" title="viser.SceneApi.add_batched_meshes_simple"><code class="xref py py-meth docutils literal notranslate"><span class="pre">viser.SceneApi.add_batched_meshes_simple()</span></code></a> for instanced mesh rendering</p></li>
 <li><p><a class="reference internal" href="../../../api/core/scene_api/#viser.SceneApi.add_batched_axes" title="viser.SceneApi.add_batched_axes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">viser.SceneApi.add_batched_axes()</span></code></a> for coordinate frame instances</p></li>
 <li><p>Per-instance transforms (position, rotation, scale)</p></li>
+<li><p>Per-instance colors with the <cite>batched_colors</cite> parameter (supports both per-instance and shared colors)</p></li>
 <li><p>Level-of-detail (LOD) optimization for performance</p></li>
 <li><p>Real-time animation of instance properties</p></li>
 </ul>
@@ -464,7 +465,7 @@
 <span class="linenos"> 14</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="linenos"> 15</span>    <span class="n">grid_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">num_instances</span><span class="p">)))</span>
 <span class="linenos"> 16</span>
-<span class="linenos"> 17</span>    <span class="c1"># Create grid positions</span>
+<span class="linenos"> 17</span>    <span class="c1"># Create grid positions.</span>
 <span class="linenos"> 18</span>    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">grid_size</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">grid_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 <span class="linenos"> 19</span>    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">grid_size</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">grid_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 <span class="linenos"> 20</span>    <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -475,7 +476,7 @@
 <span class="linenos"> 25</span>    <span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
 <span class="linenos"> 26</span>    <span class="n">positions</span> <span class="o">=</span> <span class="n">positions</span><span class="p">[:</span><span class="n">num_instances</span><span class="p">]</span>
 <span class="linenos"> 27</span>
-<span class="linenos"> 28</span>    <span class="c1"># All instances have identity rotation</span>
+<span class="linenos"> 28</span>    <span class="c1"># All instances have identity rotation.</span>
 <span class="linenos"> 29</span>    <span class="n">rotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_instances</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 <span class="linenos"> 30</span>    <span class="n">rotations</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># w component = 1</span>
 <span class="linenos"> 31</span>
@@ -485,120 +486,285 @@
 <span class="linenos"> 35</span>    <span class="k">return</span> <span class="n">positions</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">scales</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 <span class="linenos"> 36</span>
 <span class="linenos"> 37</span>
-<span class="linenos"> 38</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-<span class="linenos"> 39</span>    <span class="c1"># Load and prepare mesh data.</span>
-<span class="linenos"> 40</span>    <span class="n">dragon_mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">load_mesh</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;../assets/dragon.obj&quot;</span><span class="p">))</span>
-<span class="linenos"> 41</span>    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dragon_mesh</span><span class="p">,</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">Trimesh</span><span class="p">)</span>
-<span class="linenos"> 42</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">apply_scale</span><span class="p">(</span><span class="mf">0.005</span><span class="p">)</span>
-<span class="linenos"> 43</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">vertices</span> <span class="o">-=</span> <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">centroid</span>
-<span class="linenos"> 44</span>
-<span class="linenos"> 45</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">apply_transform</span><span class="p">(</span>
-<span class="linenos"> 46</span>        <span class="n">trimesh</span><span class="o">.</span><span class="n">transformations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-<span class="linenos"> 47</span>    <span class="p">)</span>
-<span class="linenos"> 48</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">apply_translation</span><span class="p">(</span><span class="o">-</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">centroid</span><span class="p">)</span>
-<span class="linenos"> 49</span>
-<span class="linenos"> 50</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
-<span class="linenos"> 51</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">configure_default_lights</span><span class="p">()</span>
-<span class="linenos"> 52</span>    <span class="n">grid_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_grid</span><span class="p">(</span>
-<span class="linenos"> 53</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;grid&quot;</span><span class="p">,</span>
-<span class="linenos"> 54</span>        <span class="n">width</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
-<span class="linenos"> 55</span>        <span class="n">height</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
-<span class="linenos"> 56</span>        <span class="n">width_segments</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
-<span class="linenos"> 57</span>        <span class="n">height_segments</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
-<span class="linenos"> 58</span>    <span class="p">)</span>
-<span class="linenos"> 59</span>
-<span class="linenos"> 60</span>    <span class="c1"># Add GUI controls.</span>
-<span class="linenos"> 61</span>    <span class="n">instance_count_slider</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_slider</span><span class="p">(</span>
-<span class="linenos"> 62</span>        <span class="s2">&quot;# of instances&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mi">100</span>
-<span class="linenos"> 63</span>    <span class="p">)</span>
-<span class="linenos"> 64</span>
-<span class="linenos"> 65</span>    <span class="n">animate_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Animate&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos"> 66</span>    <span class="n">per_axis_scale_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span>
-<span class="linenos"> 67</span>        <span class="s2">&quot;Per-axis scale during animation&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span>
-<span class="linenos"> 68</span>    <span class="p">)</span>
-<span class="linenos"> 69</span>    <span class="n">lod_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Enable LOD&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos"> 70</span>    <span class="n">cast_shadow_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Cast shadow&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos"> 71</span>
-<span class="linenos"> 72</span>    <span class="c1"># Initialize transforms.</span>
-<span class="linenos"> 73</span>    <span class="n">positions</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">scales</span> <span class="o">=</span> <span class="n">create_grid_transforms</span><span class="p">(</span><span class="n">instance_count_slider</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="linenos"> 38</span><span class="k">def</span><span class="w"> </span><span class="nf">generate_per_instance_colors</span><span class="p">(</span>
+<span class="linenos"> 39</span>    <span class="n">positions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">color_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;rainbow&quot;</span>
+<span class="linenos"> 40</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="linenos"> 41</span>    <span class="n">n</span> <span class="o">=</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos"> 42</span>
+<span class="linenos"> 43</span>    <span class="k">if</span> <span class="n">color_mode</span> <span class="o">==</span> <span class="s2">&quot;rainbow&quot;</span><span class="p">:</span>
+<span class="linenos"> 44</span>        <span class="c1"># Rainbow colors based on instance index.</span>
+<span class="linenos"> 45</span>        <span class="n">hues</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="linenos"> 46</span>        <span class="n">colors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="linenos"> 47</span>        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">hue</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">hues</span><span class="p">):</span>
+<span class="linenos"> 48</span>            <span class="c1"># Convert HSV to RGB (simplified).</span>
+<span class="linenos"> 49</span>            <span class="n">c</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># Saturation.</span>
+<span class="linenos"> 50</span>            <span class="n">x</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">((</span><span class="n">hue</span> <span class="o">*</span> <span class="mi">6</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+<span class="linenos"> 51</span>
+<span class="linenos"> 52</span>            <span class="k">if</span> <span class="n">hue</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">6</span><span class="p">:</span>
+<span class="linenos"> 53</span>                <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="linenos"> 54</span>            <span class="k">elif</span> <span class="n">hue</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">6</span><span class="p">:</span>
+<span class="linenos"> 55</span>                <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="linenos"> 56</span>            <span class="k">elif</span> <span class="n">hue</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">6</span><span class="p">:</span>
+<span class="linenos"> 57</span>                <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span>
+<span class="linenos"> 58</span>            <span class="k">elif</span> <span class="n">hue</span> <span class="o">&lt;</span> <span class="mi">4</span> <span class="o">/</span> <span class="mi">6</span><span class="p">:</span>
+<span class="linenos"> 59</span>                <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+<span class="linenos"> 60</span>            <span class="k">elif</span> <span class="n">hue</span> <span class="o">&lt;</span> <span class="mi">5</span> <span class="o">/</span> <span class="mi">6</span><span class="p">:</span>
+<span class="linenos"> 61</span>                <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+<span class="linenos"> 62</span>            <span class="k">else</span><span class="p">:</span>
+<span class="linenos"> 63</span>                <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span>
+<span class="linenos"> 64</span>        <span class="k">return</span> <span class="p">(</span><span class="n">colors</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="linenos"> 65</span>
+<span class="linenos"> 66</span>    <span class="k">elif</span> <span class="n">color_mode</span> <span class="o">==</span> <span class="s2">&quot;position&quot;</span><span class="p">:</span>
+<span class="linenos"> 67</span>        <span class="c1"># Colors based on position (cosine of position for smooth gradients).</span>
+<span class="linenos"> 68</span>        <span class="n">colors</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">255</span>
+<span class="linenos"> 69</span>        <span class="k">return</span> <span class="n">colors</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="linenos"> 70</span>
+<span class="linenos"> 71</span>    <span class="k">else</span><span class="p">:</span>
+<span class="linenos"> 72</span>        <span class="c1"># Default to white.</span>
+<span class="linenos"> 73</span>        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="mi">255</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
 <span class="linenos"> 74</span>
-<span class="linenos"> 75</span>    <span class="c1"># Create batched mesh visualization.</span>
-<span class="linenos"> 76</span>    <span class="n">axes_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_batched_axes</span><span class="p">(</span>
-<span class="linenos"> 77</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;axes&quot;</span><span class="p">,</span>
-<span class="linenos"> 78</span>        <span class="n">batched_positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
-<span class="linenos"> 79</span>        <span class="n">batched_wxyzs</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
-<span class="linenos"> 80</span>        <span class="n">batched_scales</span><span class="o">=</span><span class="n">scales</span><span class="p">,</span>
-<span class="linenos"> 81</span>    <span class="p">)</span>
-<span class="linenos"> 82</span>    <span class="n">mesh_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_batched_meshes_simple</span><span class="p">(</span>
-<span class="linenos"> 83</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;dragon&quot;</span><span class="p">,</span>
-<span class="linenos"> 84</span>        <span class="n">vertices</span><span class="o">=</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span>
-<span class="linenos"> 85</span>        <span class="n">faces</span><span class="o">=</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">faces</span><span class="p">,</span>
-<span class="linenos"> 86</span>        <span class="n">batched_positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
-<span class="linenos"> 87</span>        <span class="n">batched_wxyzs</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
-<span class="linenos"> 88</span>        <span class="n">batched_scales</span><span class="o">=</span><span class="n">scales</span><span class="p">,</span>
-<span class="linenos"> 89</span>        <span class="n">lod</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-<span class="linenos"> 90</span>    <span class="p">)</span>
-<span class="linenos"> 91</span>
-<span class="linenos"> 92</span>    <span class="c1"># Animation loop.</span>
-<span class="linenos"> 93</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos"> 94</span>        <span class="n">n</span> <span class="o">=</span> <span class="n">instance_count_slider</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos"> 95</span>
-<span class="linenos"> 96</span>        <span class="c1"># Update props based on GUI controls.</span>
-<span class="linenos"> 97</span>        <span class="n">mesh_handle</span><span class="o">.</span><span class="n">lod</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span> <span class="k">if</span> <span class="n">lod_checkbox</span><span class="o">.</span><span class="n">value</span> <span class="k">else</span> <span class="s2">&quot;off&quot;</span>
-<span class="linenos"> 98</span>        <span class="n">mesh_handle</span><span class="o">.</span><span class="n">cast_shadow</span> <span class="o">=</span> <span class="n">cast_shadow_checkbox</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos"> 99</span>
-<span class="linenos">100</span>        <span class="c1"># Recreate transforms if instance count changed.</span>
-<span class="linenos">101</span>        <span class="k">if</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
-<span class="linenos">102</span>            <span class="n">positions</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">scales</span> <span class="o">=</span> <span class="n">create_grid_transforms</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-<span class="linenos">103</span>            <span class="n">grid_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
-<span class="linenos">104</span>
-<span class="linenos">105</span>            <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">atomic</span><span class="p">():</span>
-<span class="linenos">106</span>                <span class="c1"># Update grid size.</span>
-<span class="linenos">107</span>                <span class="n">grid_handle</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">grid_handle</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">grid_size</span> <span class="o">+</span> <span class="mi">2</span>
-<span class="linenos">108</span>                <span class="n">grid_handle</span><span class="o">.</span><span class="n">width_segments</span> <span class="o">=</span> <span class="n">grid_handle</span><span class="o">.</span><span class="n">height_segments</span> <span class="o">=</span> <span class="n">grid_size</span> <span class="o">+</span> <span class="mi">2</span>
-<span class="linenos">109</span>
-<span class="linenos">110</span>                <span class="c1"># Update all transforms.</span>
-<span class="linenos">111</span>                <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_positions</span> <span class="o">=</span> <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_positions</span> <span class="o">=</span> <span class="p">(</span>
-<span class="linenos">112</span>                    <span class="n">positions</span>
-<span class="linenos">113</span>                <span class="p">)</span>
-<span class="linenos">114</span>                <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_wxyzs</span> <span class="o">=</span> <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_wxyzs</span> <span class="o">=</span> <span class="n">rotations</span>
-<span class="linenos">115</span>                <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_scales</span> <span class="o">=</span> <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_scales</span> <span class="o">=</span> <span class="n">scales</span>
-<span class="linenos">116</span>
-<span class="linenos">117</span>        <span class="c1"># Animate if enabled.</span>
-<span class="linenos">118</span>        <span class="k">elif</span> <span class="n">animate_checkbox</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
-<span class="linenos">119</span>            <span class="c1"># Animate positions.</span>
-<span class="linenos">120</span>            <span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-<span class="linenos">121</span>
-<span class="linenos">122</span>            <span class="c1"># Animate scales with wave effect.</span>
-<span class="linenos">123</span>            <span class="k">if</span> <span class="n">per_axis_scale_checkbox</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
-<span class="linenos">124</span>                <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">*</span> <span class="mf">2.0</span>
-<span class="linenos">125</span>                <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-<span class="linenos">126</span>                <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
-<span class="linenos">127</span>                    <span class="p">[</span>
-<span class="linenos">128</span>                        <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">scales</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="o">-</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span>
-<span class="linenos">129</span>                        <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">scales</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="o">-</span> <span class="n">t</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span>
-<span class="linenos">130</span>                        <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">scales</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="o">-</span> <span class="n">t</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span>
-<span class="linenos">131</span>                    <span class="p">],</span>
-<span class="linenos">132</span>                    <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
-<span class="linenos">133</span>                <span class="p">)</span>
-<span class="linenos">134</span>                <span class="k">assert</span> <span class="n">scales</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="linenos">135</span>            <span class="k">else</span><span class="p">:</span>
-<span class="linenos">136</span>                <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">*</span> <span class="mf">2.0</span>
-<span class="linenos">137</span>                <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-<span class="linenos">138</span>                <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">scales</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="o">-</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">1.0</span>
-<span class="linenos">139</span>                <span class="k">assert</span> <span class="n">scales</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">n</span><span class="p">,)</span>
-<span class="linenos">140</span>
-<span class="linenos">141</span>            <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">atomic</span><span class="p">():</span>
-<span class="linenos">142</span>                <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_positions</span> <span class="o">=</span> <span class="n">positions</span>
-<span class="linenos">143</span>                <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_scales</span> <span class="o">=</span> <span class="n">scales</span>
-<span class="linenos">144</span>                <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_positions</span> <span class="o">=</span> <span class="n">positions</span>
-<span class="linenos">145</span>                <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_scales</span> <span class="o">=</span> <span class="n">scales</span>
-<span class="linenos">146</span>
-<span class="linenos">147</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">30.0</span><span class="p">)</span>
-<span class="linenos">148</span>
-<span class="linenos">149</span>
-<span class="linenos">150</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-<span class="linenos">151</span>    <span class="n">main</span><span class="p">()</span>
+<span class="linenos"> 75</span>
+<span class="linenos"> 76</span><span class="k">def</span><span class="w"> </span><span class="nf">generate_shared_color</span><span class="p">(</span><span class="n">color_rgb</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="linenos"> 77</span>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">color_rgb</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="linenos"> 78</span>
+<span class="linenos"> 79</span>
+<span class="linenos"> 80</span><span class="k">def</span><span class="w"> </span><span class="nf">generate_animated_colors</span><span class="p">(</span>
+<span class="linenos"> 81</span>    <span class="n">positions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">animation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;wave&quot;</span>
+<span class="linenos"> 82</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="linenos"> 83</span>    <span class="n">n</span> <span class="o">=</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos"> 84</span>
+<span class="linenos"> 85</span>    <span class="k">if</span> <span class="n">animation_mode</span> <span class="o">==</span> <span class="s2">&quot;wave&quot;</span><span class="p">:</span>
+<span class="linenos"> 86</span>        <span class="c1"># Wave pattern based on distance from center.</span>
+<span class="linenos"> 87</span>        <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos"> 88</span>        <span class="n">wave</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">distances</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">t</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span>
+<span class="linenos"> 89</span>        <span class="n">colors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="linenos"> 90</span>        <span class="n">colors</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">wave</span>  <span class="c1"># Red channel.</span>
+<span class="linenos"> 91</span>        <span class="n">colors</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">distances</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">t</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span>  <span class="c1"># Green.</span>
+<span class="linenos"> 92</span>        <span class="n">colors</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos"> 93</span>            <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">distances</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">t</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span>
+<span class="linenos"> 94</span>        <span class="p">)</span>  <span class="c1"># Blue.</span>
+<span class="linenos"> 95</span>        <span class="k">return</span> <span class="p">(</span><span class="n">colors</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="linenos"> 96</span>
+<span class="linenos"> 97</span>    <span class="k">elif</span> <span class="n">animation_mode</span> <span class="o">==</span> <span class="s2">&quot;pulse&quot;</span><span class="p">:</span>
+<span class="linenos"> 98</span>        <span class="c1"># Pulsing color based on position.</span>
+<span class="linenos"> 99</span>        <span class="n">pulse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span>
+<span class="linenos">100</span>        <span class="n">colors</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">pulse</span>
+<span class="linenos">101</span>        <span class="k">return</span> <span class="p">(</span><span class="n">colors</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="linenos">102</span>
+<span class="linenos">103</span>    <span class="k">elif</span> <span class="n">animation_mode</span> <span class="o">==</span> <span class="s2">&quot;cycle&quot;</span><span class="p">:</span>
+<span class="linenos">104</span>        <span class="c1"># Cycling through hues over time.</span>
+<span class="linenos">105</span>        <span class="n">hue_shift</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">%</span> <span class="mf">1.0</span>
+<span class="linenos">106</span>        <span class="n">hues</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">+</span> <span class="n">hue_shift</span><span class="p">)</span> <span class="o">%</span> <span class="mf">1.0</span>
+<span class="linenos">107</span>        <span class="n">colors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="linenos">108</span>        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">hue</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">hues</span><span class="p">):</span>
+<span class="linenos">109</span>            <span class="c1"># Convert HSV to RGB (simplified).</span>
+<span class="linenos">110</span>            <span class="n">c</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># Saturation.</span>
+<span class="linenos">111</span>            <span class="n">x</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">((</span><span class="n">hue</span> <span class="o">*</span> <span class="mi">6</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+<span class="linenos">112</span>
+<span class="linenos">113</span>            <span class="k">if</span> <span class="n">hue</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">6</span><span class="p">:</span>
+<span class="linenos">114</span>                <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="linenos">115</span>            <span class="k">elif</span> <span class="n">hue</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">6</span><span class="p">:</span>
+<span class="linenos">116</span>                <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="linenos">117</span>            <span class="k">elif</span> <span class="n">hue</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">6</span><span class="p">:</span>
+<span class="linenos">118</span>                <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span>
+<span class="linenos">119</span>            <span class="k">elif</span> <span class="n">hue</span> <span class="o">&lt;</span> <span class="mi">4</span> <span class="o">/</span> <span class="mi">6</span><span class="p">:</span>
+<span class="linenos">120</span>                <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+<span class="linenos">121</span>            <span class="k">elif</span> <span class="n">hue</span> <span class="o">&lt;</span> <span class="mi">5</span> <span class="o">/</span> <span class="mi">6</span><span class="p">:</span>
+<span class="linenos">122</span>                <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+<span class="linenos">123</span>            <span class="k">else</span><span class="p">:</span>
+<span class="linenos">124</span>                <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span>
+<span class="linenos">125</span>        <span class="k">return</span> <span class="p">(</span><span class="n">colors</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="linenos">126</span>
+<span class="linenos">127</span>    <span class="k">else</span><span class="p">:</span>
+<span class="linenos">128</span>        <span class="c1"># Default to white.</span>
+<span class="linenos">129</span>        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="mi">255</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="linenos">130</span>
+<span class="linenos">131</span>
+<span class="linenos">132</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<span class="linenos">133</span>    <span class="c1"># Load and prepare mesh data.</span>
+<span class="linenos">134</span>    <span class="n">dragon_mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">load_mesh</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;../assets/dragon.obj&quot;</span><span class="p">))</span>
+<span class="linenos">135</span>    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dragon_mesh</span><span class="p">,</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">Trimesh</span><span class="p">)</span>
+<span class="linenos">136</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">apply_scale</span><span class="p">(</span><span class="mf">0.005</span><span class="p">)</span>
+<span class="linenos">137</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">vertices</span> <span class="o">-=</span> <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">centroid</span>
+<span class="linenos">138</span>
+<span class="linenos">139</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">apply_transform</span><span class="p">(</span>
+<span class="linenos">140</span>        <span class="n">trimesh</span><span class="o">.</span><span class="n">transformations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="linenos">141</span>    <span class="p">)</span>
+<span class="linenos">142</span>    <span class="n">dragon_mesh</span><span class="o">.</span><span class="n">apply_translation</span><span class="p">(</span><span class="o">-</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">centroid</span><span class="p">)</span>
+<span class="linenos">143</span>
+<span class="linenos">144</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
+<span class="linenos">145</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">configure_default_lights</span><span class="p">()</span>
+<span class="linenos">146</span>    <span class="n">grid_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_grid</span><span class="p">(</span>
+<span class="linenos">147</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;grid&quot;</span><span class="p">,</span>
+<span class="linenos">148</span>        <span class="n">width</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+<span class="linenos">149</span>        <span class="n">height</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+<span class="linenos">150</span>        <span class="n">width_segments</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+<span class="linenos">151</span>        <span class="n">height_segments</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+<span class="linenos">152</span>    <span class="p">)</span>
+<span class="linenos">153</span>
+<span class="linenos">154</span>    <span class="c1"># Add GUI controls.</span>
+<span class="linenos">155</span>    <span class="n">instance_count_slider</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_slider</span><span class="p">(</span>
+<span class="linenos">156</span>        <span class="s2">&quot;# of instances&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mi">100</span>
+<span class="linenos">157</span>    <span class="p">)</span>
+<span class="linenos">158</span>
+<span class="linenos">159</span>    <span class="n">animate_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Animate&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">160</span>    <span class="n">per_axis_scale_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span>
+<span class="linenos">161</span>        <span class="s2">&quot;Per-axis scale during animation&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span>
+<span class="linenos">162</span>    <span class="p">)</span>
+<span class="linenos">163</span>    <span class="n">lod_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Enable LOD&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">164</span>    <span class="n">cast_shadow_checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Cast shadow&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">165</span>
+<span class="linenos">166</span>    <span class="c1"># Color controls.</span>
+<span class="linenos">167</span>    <span class="n">color_mode_dropdown</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_dropdown</span><span class="p">(</span>
+<span class="linenos">168</span>        <span class="s2">&quot;Color mode&quot;</span><span class="p">,</span>
+<span class="linenos">169</span>        <span class="n">options</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Per-instance&quot;</span><span class="p">,</span> <span class="s2">&quot;Shared&quot;</span><span class="p">,</span> <span class="s2">&quot;Animated&quot;</span><span class="p">),</span>
+<span class="linenos">170</span>        <span class="n">initial_value</span><span class="o">=</span><span class="s2">&quot;Per-instance&quot;</span><span class="p">,</span>
+<span class="linenos">171</span>    <span class="p">)</span>
+<span class="linenos">172</span>
+<span class="linenos">173</span>    <span class="c1"># Per-instance color controls.</span>
+<span class="linenos">174</span>    <span class="n">per_instance_color_dropdown</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_dropdown</span><span class="p">(</span>
+<span class="linenos">175</span>        <span class="s2">&quot;Per-instance style&quot;</span><span class="p">,</span>
+<span class="linenos">176</span>        <span class="n">options</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Rainbow&quot;</span><span class="p">,</span> <span class="s2">&quot;Position&quot;</span><span class="p">),</span>
+<span class="linenos">177</span>        <span class="n">initial_value</span><span class="o">=</span><span class="s2">&quot;Rainbow&quot;</span><span class="p">,</span>
+<span class="linenos">178</span>    <span class="p">)</span>
+<span class="linenos">179</span>
+<span class="linenos">180</span>    <span class="c1"># Shared color controls.</span>
+<span class="linenos">181</span>    <span class="n">shared_color_rgb</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_rgb</span><span class="p">(</span><span class="s2">&quot;Shared color&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">))</span>
+<span class="linenos">182</span>
+<span class="linenos">183</span>    <span class="c1"># Animated color controls.</span>
+<span class="linenos">184</span>    <span class="n">animated_color_dropdown</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_dropdown</span><span class="p">(</span>
+<span class="linenos">185</span>        <span class="s2">&quot;Animation style&quot;</span><span class="p">,</span>
+<span class="linenos">186</span>        <span class="n">options</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Wave&quot;</span><span class="p">,</span> <span class="s2">&quot;Pulse&quot;</span><span class="p">,</span> <span class="s2">&quot;Cycle&quot;</span><span class="p">),</span>
+<span class="linenos">187</span>        <span class="n">initial_value</span><span class="o">=</span><span class="s2">&quot;Wave&quot;</span><span class="p">,</span>
+<span class="linenos">188</span>    <span class="p">)</span>
+<span class="linenos">189</span>
+<span class="linenos">190</span>    <span class="c1"># Initialize transforms.</span>
+<span class="linenos">191</span>    <span class="n">positions</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">scales</span> <span class="o">=</span> <span class="n">create_grid_transforms</span><span class="p">(</span><span class="n">instance_count_slider</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="linenos">192</span>
+<span class="linenos">193</span>    <span class="c1"># Create batched mesh visualization.</span>
+<span class="linenos">194</span>    <span class="n">axes_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_batched_axes</span><span class="p">(</span>
+<span class="linenos">195</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;axes&quot;</span><span class="p">,</span>
+<span class="linenos">196</span>        <span class="n">batched_positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
+<span class="linenos">197</span>        <span class="n">batched_wxyzs</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
+<span class="linenos">198</span>        <span class="n">batched_scales</span><span class="o">=</span><span class="n">scales</span><span class="p">,</span>
+<span class="linenos">199</span>    <span class="p">)</span>
+<span class="linenos">200</span>
+<span class="linenos">201</span>    <span class="c1"># Create initial colors based on default mode.</span>
+<span class="linenos">202</span>    <span class="n">initial_colors</span> <span class="o">=</span> <span class="n">generate_per_instance_colors</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">color_mode</span><span class="o">=</span><span class="s2">&quot;rainbow&quot;</span><span class="p">)</span>
+<span class="linenos">203</span>
+<span class="linenos">204</span>    <span class="n">mesh_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_batched_meshes_simple</span><span class="p">(</span>
+<span class="linenos">205</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;dragon&quot;</span><span class="p">,</span>
+<span class="linenos">206</span>        <span class="n">vertices</span><span class="o">=</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span>
+<span class="linenos">207</span>        <span class="n">faces</span><span class="o">=</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">faces</span><span class="p">,</span>
+<span class="linenos">208</span>        <span class="n">batched_positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
+<span class="linenos">209</span>        <span class="n">batched_wxyzs</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
+<span class="linenos">210</span>        <span class="n">batched_scales</span><span class="o">=</span><span class="n">scales</span><span class="p">,</span>
+<span class="linenos">211</span>        <span class="n">batched_colors</span><span class="o">=</span><span class="n">initial_colors</span><span class="p">,</span>
+<span class="linenos">212</span>        <span class="n">lod</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+<span class="linenos">213</span>    <span class="p">)</span>
+<span class="linenos">214</span>
+<span class="linenos">215</span>    <span class="c1"># Track previous color mode to avoid redundant disabled state updates.</span>
+<span class="linenos">216</span>    <span class="n">prev_color_mode</span> <span class="o">=</span> <span class="n">color_mode_dropdown</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">217</span>
+<span class="linenos">218</span>    <span class="c1"># Animation loop.</span>
+<span class="linenos">219</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">220</span>        <span class="n">n</span> <span class="o">=</span> <span class="n">instance_count_slider</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">221</span>
+<span class="linenos">222</span>        <span class="c1"># Update props based on GUI controls.</span>
+<span class="linenos">223</span>        <span class="n">mesh_handle</span><span class="o">.</span><span class="n">lod</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span> <span class="k">if</span> <span class="n">lod_checkbox</span><span class="o">.</span><span class="n">value</span> <span class="k">else</span> <span class="s2">&quot;off&quot;</span>
+<span class="linenos">224</span>        <span class="n">mesh_handle</span><span class="o">.</span><span class="n">cast_shadow</span> <span class="o">=</span> <span class="n">cast_shadow_checkbox</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">225</span>
+<span class="linenos">226</span>        <span class="c1"># Recreate transforms if instance count changed.</span>
+<span class="linenos">227</span>        <span class="k">if</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
+<span class="linenos">228</span>            <span class="n">positions</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">scales</span> <span class="o">=</span> <span class="n">create_grid_transforms</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="linenos">229</span>            <span class="n">grid_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
+<span class="linenos">230</span>
+<span class="linenos">231</span>            <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">atomic</span><span class="p">():</span>
+<span class="linenos">232</span>                <span class="c1"># Update grid size.</span>
+<span class="linenos">233</span>                <span class="n">grid_handle</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">grid_handle</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">grid_size</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="linenos">234</span>                <span class="n">grid_handle</span><span class="o">.</span><span class="n">width_segments</span> <span class="o">=</span> <span class="n">grid_handle</span><span class="o">.</span><span class="n">height_segments</span> <span class="o">=</span> <span class="n">grid_size</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="linenos">235</span>
+<span class="linenos">236</span>                <span class="c1"># Update all transforms.</span>
+<span class="linenos">237</span>                <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_positions</span> <span class="o">=</span> <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_positions</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos">238</span>                    <span class="n">positions</span>
+<span class="linenos">239</span>                <span class="p">)</span>
+<span class="linenos">240</span>                <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_wxyzs</span> <span class="o">=</span> <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_wxyzs</span> <span class="o">=</span> <span class="n">rotations</span>
+<span class="linenos">241</span>                <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_scales</span> <span class="o">=</span> <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_scales</span> <span class="o">=</span> <span class="n">scales</span>
+<span class="linenos">242</span>
+<span class="linenos">243</span>        <span class="c1"># Generate colors based on current mode.</span>
+<span class="linenos">244</span>        <span class="n">color_mode</span> <span class="o">=</span> <span class="n">color_mode_dropdown</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">245</span>
+<span class="linenos">246</span>        <span class="c1"># Update disabled state for color controls only when mode changes.</span>
+<span class="linenos">247</span>        <span class="k">if</span> <span class="n">color_mode</span> <span class="o">!=</span> <span class="n">prev_color_mode</span><span class="p">:</span>
+<span class="linenos">248</span>            <span class="n">per_instance_color_dropdown</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">color_mode</span> <span class="o">!=</span> <span class="s2">&quot;Per-instance&quot;</span>
+<span class="linenos">249</span>            <span class="n">shared_color_rgb</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">color_mode</span> <span class="o">!=</span> <span class="s2">&quot;Shared&quot;</span>
+<span class="linenos">250</span>            <span class="n">animated_color_dropdown</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">color_mode</span> <span class="o">!=</span> <span class="s2">&quot;Animated&quot;</span>
+<span class="linenos">251</span>            <span class="n">prev_color_mode</span> <span class="o">=</span> <span class="n">color_mode</span>
+<span class="linenos">252</span>
+<span class="linenos">253</span>        <span class="k">if</span> <span class="n">color_mode</span> <span class="o">==</span> <span class="s2">&quot;Per-instance&quot;</span><span class="p">:</span>
+<span class="linenos">254</span>            <span class="c1"># Per-instance colors with different styles.</span>
+<span class="linenos">255</span>            <span class="n">per_instance_style</span> <span class="o">=</span> <span class="n">per_instance_color_dropdown</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="linenos">256</span>            <span class="n">colors</span> <span class="o">=</span> <span class="n">generate_per_instance_colors</span><span class="p">(</span>
+<span class="linenos">257</span>                <span class="n">positions</span><span class="p">,</span> <span class="n">color_mode</span><span class="o">=</span><span class="n">per_instance_style</span>
+<span class="linenos">258</span>            <span class="p">)</span>
+<span class="linenos">259</span>        <span class="k">elif</span> <span class="n">color_mode</span> <span class="o">==</span> <span class="s2">&quot;Shared&quot;</span><span class="p">:</span>
+<span class="linenos">260</span>            <span class="c1"># Single shared color for all instances.</span>
+<span class="linenos">261</span>            <span class="n">colors</span> <span class="o">=</span> <span class="n">generate_shared_color</span><span class="p">(</span><span class="n">shared_color_rgb</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="linenos">262</span>        <span class="k">elif</span> <span class="n">color_mode</span> <span class="o">==</span> <span class="s2">&quot;Animated&quot;</span><span class="p">:</span>
+<span class="linenos">263</span>            <span class="c1"># Animated colors with time-based effects.</span>
+<span class="linenos">264</span>            <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="linenos">265</span>            <span class="n">animation_style</span> <span class="o">=</span> <span class="n">animated_color_dropdown</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="linenos">266</span>            <span class="n">colors</span> <span class="o">=</span> <span class="n">generate_animated_colors</span><span class="p">(</span>
+<span class="linenos">267</span>                <span class="n">positions</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">animation_mode</span><span class="o">=</span><span class="n">animation_style</span>
+<span class="linenos">268</span>            <span class="p">)</span>
+<span class="linenos">269</span>        <span class="k">else</span><span class="p">:</span>
+<span class="linenos">270</span>            <span class="c1"># Default fallback.</span>
+<span class="linenos">271</span>            <span class="n">colors</span> <span class="o">=</span> <span class="n">generate_per_instance_colors</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">color_mode</span><span class="o">=</span><span class="s2">&quot;rainbow&quot;</span><span class="p">)</span>
+<span class="linenos">272</span>
+<span class="linenos">273</span>        <span class="c1"># Animate if enabled.</span>
+<span class="linenos">274</span>        <span class="k">if</span> <span class="n">animate_checkbox</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+<span class="linenos">275</span>            <span class="c1"># Animate positions.</span>
+<span class="linenos">276</span>            <span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="linenos">277</span>
+<span class="linenos">278</span>            <span class="c1"># Animate scales with wave effect.</span>
+<span class="linenos">279</span>            <span class="k">if</span> <span class="n">per_axis_scale_checkbox</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+<span class="linenos">280</span>                <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">*</span> <span class="mf">2.0</span>
+<span class="linenos">281</span>                <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos">282</span>                <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+<span class="linenos">283</span>                    <span class="p">[</span>
+<span class="linenos">284</span>                        <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">scales</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="o">-</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span>
+<span class="linenos">285</span>                        <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">scales</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="o">-</span> <span class="n">t</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span>
+<span class="linenos">286</span>                        <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">scales</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="o">-</span> <span class="n">t</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span>
+<span class="linenos">287</span>                    <span class="p">],</span>
+<span class="linenos">288</span>                    <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+<span class="linenos">289</span>                <span class="p">)</span>
+<span class="linenos">290</span>                <span class="k">assert</span> <span class="n">scales</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="linenos">291</span>            <span class="k">else</span><span class="p">:</span>
+<span class="linenos">292</span>                <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">*</span> <span class="mf">2.0</span>
+<span class="linenos">293</span>                <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos">294</span>                <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">scales</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="o">-</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">1.0</span>
+<span class="linenos">295</span>                <span class="k">assert</span> <span class="n">scales</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">n</span><span class="p">,)</span>
+<span class="linenos">296</span>
+<span class="linenos">297</span>            <span class="c1"># Update colors for animated mode during animation.</span>
+<span class="linenos">298</span>            <span class="k">if</span> <span class="n">color_mode</span> <span class="o">==</span> <span class="s2">&quot;Animated&quot;</span><span class="p">:</span>
+<span class="linenos">299</span>                <span class="n">animation_style</span> <span class="o">=</span> <span class="n">animated_color_dropdown</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="linenos">300</span>                <span class="n">colors</span> <span class="o">=</span> <span class="n">generate_animated_colors</span><span class="p">(</span>
+<span class="linenos">301</span>                    <span class="n">positions</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">animation_mode</span><span class="o">=</span><span class="n">animation_style</span>
+<span class="linenos">302</span>                <span class="p">)</span>
+<span class="linenos">303</span>
+<span class="linenos">304</span>        <span class="c1"># Update mesh properties.</span>
+<span class="linenos">305</span>        <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">atomic</span><span class="p">():</span>
+<span class="linenos">306</span>            <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_positions</span> <span class="o">=</span> <span class="n">positions</span>
+<span class="linenos">307</span>            <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_scales</span> <span class="o">=</span> <span class="n">scales</span>
+<span class="linenos">308</span>            <span class="n">mesh_handle</span><span class="o">.</span><span class="n">batched_colors</span> <span class="o">=</span> <span class="n">colors</span>
+<span class="linenos">309</span>            <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_positions</span> <span class="o">=</span> <span class="n">positions</span>
+<span class="linenos">310</span>            <span class="n">axes_handle</span><span class="o">.</span><span class="n">batched_scales</span> <span class="o">=</span> <span class="n">scales</span>
+<span class="linenos">311</span>
+<span class="linenos">312</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">30.0</span><span class="p">)</span>
+<span class="linenos">313</span>
+<span class="linenos">314</span>
+<span class="linenos">315</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">316</span>    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -625,7 +791,7 @@
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Image overlays</div>
+                <div class="title">Images</div>
                 
               </div>
             </a>
