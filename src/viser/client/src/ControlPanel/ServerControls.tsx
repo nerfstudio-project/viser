@@ -22,6 +22,7 @@ export default function ServerControls() {
   const viewer = React.useContext(ViewerContext)!;
   const viewerMutable = viewer.mutable.current; // Get mutable once
   const [showStats, setShowStats] = React.useState(false);
+  const controlWidth = viewer.useGui((state) => state.theme.control_width);
 
   return (
     <>
@@ -108,7 +109,10 @@ export default function ServerControls() {
               }
             }}
             flex={1}
-            leftSection={<IconPhoto size="1rem" />}
+            leftSection={
+              controlWidth === "small" ? undefined : <IconPhoto size="1rem" />
+            }
+            px="0"
             style={{ height: "1.875rem" }}
           >
             Save Canvas
@@ -118,7 +122,12 @@ export default function ServerControls() {
               viewerMutable.resetCameraView!();
             }}
             flex={1}
-            leftSection={<IconHomeMove size="1rem" />}
+            leftSection={
+              controlWidth === "small" ? undefined : (
+                <IconHomeMove size="1rem" />
+              )
+            }
+            px="0"
             style={{ height: "1.875rem" }}
           >
             Reset View

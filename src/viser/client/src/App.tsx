@@ -916,7 +916,7 @@ function ViserLogo() {
           px="md"
           pt="sm"
         >
-          Thanks to our contributors:{" "}
+          Thanks to our contributors!{" "}
           {GITHUB_CONTRIBUTORS.map(
             (contributor: Contributor, index: number) => (
               <span key={contributor.login}>

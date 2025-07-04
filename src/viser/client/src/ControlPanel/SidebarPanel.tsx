@@ -162,9 +162,5 @@ SidebarPanel.Contents = function SidebarPanelContents({
 }: {
   children: string | React.ReactNode;
 }) {
-  return (
-    <ScrollArea style={{ flexGrow: 1 }} offsetScrollbars>
-      {children}
-    </ScrollArea>
-  );
+  return <ScrollArea style={{ flexGrow: 1 }}>{children}</ScrollArea>;
 };
