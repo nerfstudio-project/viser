@@ -15,8 +15,10 @@ Capture mouse pointer events to create rays for 3D scene interaction and ray-mes
 
     .. code-block:: bash
 
-        cd /path/to/viser/examples/assets
-        ./download_assets.sh
+        git clone https://github.com/nerfstudio-project/viser.git
+        cd viser/examples
+        ./assets/download_assets.sh
+        python 03_interaction/01_scene_pointer.py  # With viser installed.
 
 **Source:** ``examples/03_interaction/01_scene_pointer.py``
 

@@ -250,7 +250,7 @@ async def process_batch(
     return await asyncio.gather(*tasks)
 
 
-async def capture_all_screenshots(name_filter: str, batch_size: int = 8):
+async def capture_all_screenshots(name_filter: str | None, batch_size: int = 8):
     """Main function to capture screenshots for filtered examples."""
     # Create output directory
     output_dir = Path(__file__).parent / "source" / "_static" / "examples"
@@ -261,7 +261,11 @@ async def capture_all_screenshots(name_filter: str, batch_size: int = 8):
 
     # Filter examples based on name_filter
     if name_filter:
-        examples = [ex for ex in all_examples if name_filter.lower() in ex[0].lower()]
+        examples = [
+            ex
+            for ex in all_examples
+            if name_filter is not None and name_filter.lower() in ex[0].lower()
+        ]
     else:
         examples = all_examples
 
@@ -700,7 +704,7 @@ def update_index_rst(examples: List[Tuple[str, Path, str, str, str]]):
 
 
 def main(
-    screenshot_if_name_contains: str,
+    screenshot_if_name_contains: str | None = None,
     batch_size: int = 8,
 ) -> None:
     """Generate example documentation and capture screenshots for filtered examples.

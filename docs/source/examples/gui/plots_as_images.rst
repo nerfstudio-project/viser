@@ -9,9 +9,9 @@ Display OpenCV-generated plots as images in the GUI.
 * OpenCV-based plot generation and visualization
 * Real-time plot updates with image streaming
 
-**Source:** ``examples/02_gui/10_plots_as_images.py``
+**Source:** ``examples/02_gui/09_plots_as_images.py``
 
-.. figure:: ../../_static/examples/02_gui_10_plots_as_images.png
+.. figure:: ../../_static/examples/02_gui_09_plots_as_images.png
    :width: 100%
    :alt: Plots as images
 

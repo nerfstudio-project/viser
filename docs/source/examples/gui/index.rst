@@ -12,7 +12,6 @@ Examples demonstrating interactive GUI elements.
    markdown
    modals
    theming
-   gui_in_scene
    notifications
    plotly_integration
    uplot

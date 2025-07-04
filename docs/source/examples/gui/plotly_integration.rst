@@ -10,9 +10,9 @@ Embed interactive Plotly charts and graphs directly in the GUI interface.
 * Interactive charts with zoom, pan, and hover
 * Multiple chart types (line plots, 3D surfaces, heatmaps)
 
-**Source:** ``examples/02_gui/08_plotly_integration.py``
+**Source:** ``examples/02_gui/07_plotly_integration.py``
 
-.. figure:: ../../_static/examples/02_gui_08_plotly_integration.png
+.. figure:: ../../_static/examples/02_gui_07_plotly_integration.png
    :width: 100%
    :alt: Plotly integration
 

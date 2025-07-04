@@ -16,8 +16,10 @@ Add directional lights and ambient lighting to illuminate 3D meshes with realist
 
     .. code-block:: bash
 
-        cd /path/to/viser/examples/assets
-        ./download_assets.sh
+        git clone https://github.com/nerfstudio-project/viser.git
+        cd viser/examples
+        ./assets/download_assets.sh
+        python 01_scene/06_lighting.py  # With viser installed.
 
 **Source:** ``examples/01_scene/06_lighting.py``
 

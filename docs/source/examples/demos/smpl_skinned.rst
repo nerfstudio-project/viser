@@ -18,8 +18,10 @@ See here for download instructions:
 
     .. code-block:: bash
 
-        cd /path/to/viser/examples/assets
-        ./download_assets.sh
+        git clone https://github.com/nerfstudio-project/viser.git
+        cd viser/examples
+        ./assets/download_assets.sh
+        python 04_demos/04_smpl_skinned.py  # With viser installed.
 
 **Source:** ``examples/04_demos/04_smpl_skinned.py``
 

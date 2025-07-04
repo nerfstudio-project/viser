@@ -112,6 +112,9 @@ class _GuiHandleState(Generic[T]):
     removed: bool = False
 
 
+# Not exported for now because some GUI handles don't currently inhert from
+# `_GuiHandle`: notably `GuiModalHandle` and `GuiTabHandle`. These would fail
+# isinstance checks, which would be confusing!
 class _GuiHandle(Generic[T], AssignablePropsBase[_GuiHandleState]):
     def __init__(self, impl: _GuiHandleState[T]) -> None:
         super().__init__(impl=impl)
@@ -609,7 +612,7 @@ class GuiTabHandle:
         self._parent._impl.gui_api._container_handle_from_uuid.pop(self._id)
 
 
-class GuiFolderHandle(_GuiHandle, GuiFolderProps):
+class GuiFolderHandle(_GuiHandle[None], GuiFolderProps):
     """Use as a context to place GUI elements into a folder."""
 
     def __init__(self, _impl: _GuiHandleState[None]) -> None:

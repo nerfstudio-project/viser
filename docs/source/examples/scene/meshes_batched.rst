@@ -21,8 +21,14 @@ Batched meshes have some limitations: GLB animations are not supported, hierarch
 
     .. code-block:: bash
 
-        cd /path/to/viser/examples/assets
-        ./download_assets.sh
+        git clone https://github.com/nerfstudio-project/viser.git
+        cd viser/examples
+        ./assets/download_assets.sh
+        python 01_scene/05_meshes_batched.py  # With viser installed.
+
+.. note::
+    For loading GLB files directly, see :meth:`~viser.SceneApi.add_batched_glb`.
+    For working with trimesh objects, see :meth:`~viser.SceneApi.add_batched_meshes_trimesh`.
 
 **Source:** ``examples/01_scene/05_meshes_batched.py``
 
@@ -227,6 +233,7 @@ Code
    
        # Initialize transforms.
        positions, rotations, scales = create_grid_transforms(instance_count_slider.value)
+       positions_orig = positions.copy()
    
        # Create batched mesh visualization.
        axes_handle = server.scene.add_batched_axes(
@@ -264,6 +271,7 @@ Code
            # Recreate transforms if instance count changed.
            if positions.shape[0] != n:
                positions, rotations, scales = create_grid_transforms(n)
+               positions_orig = positions.copy()
                grid_size = int(np.ceil(np.sqrt(n)))
    
                with server.atomic():
@@ -277,6 +285,9 @@ Code
                    )
                    mesh_handle.batched_wxyzs = axes_handle.batched_wxyzs = rotations
                    mesh_handle.batched_scales = axes_handle.batched_scales = scales
+   
+                   # Colors will be overwritten below; we'll just put them in a valid state.
+                   mesh_handle.batched_colors = np.zeros(3, dtype=np.uint8)
    
            # Generate colors based on current mode.
            color_mode = color_mode_dropdown.value
@@ -311,11 +322,13 @@ Code
            # Animate if enabled.
            if animate_checkbox.value:
                # Animate positions.
-               positions[:, :2] += np.random.uniform(-0.01, 0.01, (n, 2))
+               t = time.perf_counter() * 2.0
+               positions[:] = positions_orig
+               positions[:, 0] += np.cos(t * 0.5)
+               positions[:, 1] += np.sin(t * 0.5)
    
                # Animate scales with wave effect.
                if per_axis_scale_checkbox.value:
-                   t = time.perf_counter() * 2.0
                    scales = np.linalg.norm(positions, axis=-1)
                    scales = np.stack(
                        [
@@ -327,7 +340,6 @@ Code
                    )
                    assert scales.shape == (n, 3)
                else:
-                   t = time.perf_counter() * 2.0
                    scales = np.linalg.norm(positions, axis=-1)
                    scales = np.sin(scales * 1.5 - t) * 0.5 + 1.0
                    assert scales.shape == (n,)
@@ -344,10 +356,11 @@ Code
                mesh_handle.batched_positions = positions
                mesh_handle.batched_scales = scales
                mesh_handle.batched_colors = colors
+   
                axes_handle.batched_positions = positions
                axes_handle.batched_scales = scales
    
-           time.sleep(1.0 / 30.0)
+           time.sleep(1.0 / 60.0)
    
    
    if __name__ == "__main__":
