@@ -320,7 +320,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/markdown/">Markdown support</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/modals/">Modal dialogs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/theming/">Theming</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/gui_in_scene/">3D GUI elements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/notifications/">Notifications</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/plotly_integration/">Plotly integration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/uplot/">uPlot integration</a></li>
@@ -333,6 +332,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/interaction/get_renders/">Get renders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/interaction/camera_poses/">Camera pose tracking</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/interaction/camera_commands/">Programmatic camera control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/interaction/gui_in_scene/">3D GUI elements</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples/demos/">Demos</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Demos</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -914,18 +914,24 @@
 
 
 
+<div class="viewcode-block" id="BoxHandle">
+<a class="viewcode-back" href="../../../api/handles/scene_handles/#viser.BoxHandle">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BoxHandle</span><span class="p">(</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">BoxProps</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for box objects.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for box objects.&quot;&quot;&quot;</span></div>
 
 
+
+<div class="viewcode-block" id="IcosphereHandle">
+<a class="viewcode-back" href="../../../api/handles/scene_handles/#viser.IcosphereHandle">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">IcosphereHandle</span><span class="p">(</span>
     <span class="n">_ClickableSceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">IcosphereProps</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for icosphere objects.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for icosphere objects.&quot;&quot;&quot;</span></div>
+
 
 
 <div class="viewcode-block" id="BatchedMeshHandle">
@@ -1050,11 +1056,14 @@
 
 
 
+<div class="viewcode-block" id="LineSegmentsHandle">
+<a class="viewcode-back" href="../../../api/handles/scene_handles/#viser.LineSegmentsHandle">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LineSegmentsHandle</span><span class="p">(</span>
     <span class="n">SceneNodeHandle</span><span class="p">,</span>
     <span class="n">_messages</span><span class="o">.</span><span class="n">LineSegmentsProps</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for line segments objects.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for line segments objects.&quot;&quot;&quot;</span></div>
+
 
 
 <div class="viewcode-block" id="SplineCatmullRomHandle">

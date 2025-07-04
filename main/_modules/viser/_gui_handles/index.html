@@ -320,7 +320,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/markdown/">Markdown support</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/modals/">Modal dialogs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/theming/">Theming</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/gui_in_scene/">3D GUI elements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/notifications/">Notifications</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/plotly_integration/">Plotly integration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/uplot/">uPlot integration</a></li>
@@ -333,6 +332,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/interaction/get_renders/">Get renders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/interaction/camera_poses/">Camera pose tracking</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/interaction/camera_commands/">Programmatic camera control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/interaction/gui_in_scene/">3D GUI elements</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples/demos/">Demos</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Demos</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -529,6 +529,9 @@
     <span class="n">removed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
 
+<span class="c1"># Not exported for now because some GUI handles don&#39;t currently inhert from</span>
+<span class="c1"># `_GuiHandle`: notably `GuiModalHandle` and `GuiTabHandle`. These would fail</span>
+<span class="c1"># isinstance checks, which would be confusing!</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">_GuiHandle</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">AssignablePropsBase</span><span class="p">[</span><span class="n">_GuiHandleState</span><span class="p">]):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">impl</span><span class="o">=</span><span class="n">impl</span><span class="p">)</span>
@@ -1106,7 +1109,7 @@
 
 <div class="viewcode-block" id="GuiFolderHandle">
 <a class="viewcode-back" href="../../../api/handles/gui_handles/#viser.GuiFolderHandle">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">GuiFolderHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">,</span> <span class="n">GuiFolderProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiFolderHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">GuiFolderProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context to place GUI elements into a folder.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1302,6 +1305,8 @@
 
 
 
+<div class="viewcode-block" id="GuiImageHandle">
+<a class="viewcode-back" href="../../../api/handles/gui_handles/#viser.GuiImageHandle">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GuiImageHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">GuiImageProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for updating and removing images.&quot;&quot;&quot;</span>
 
@@ -1328,7 +1333,8 @@
             <span class="n">image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">media_type</span><span class="p">,</span> <span class="n">jpeg_quality</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_jpeg_quality</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
-        <span class="k">del</span> <span class="n">media_type</span>
+        <span class="k">del</span> <span class="n">media_type</span></div>
+
 </pre></div>
         </article>
       </div>

@@ -12,7 +12,7 @@
         gtag('js', new Date());
         gtag('config', 'G-RRGY51J5ZH');
     </script>
-    <link rel="index" title="Index" href="../../../genindex/" /><link rel="search" title="Search" href="../../../search/" /><link rel="next" title="Plotly integration" href="../plotly_integration/" /><link rel="prev" title="3D GUI elements" href="../gui_in_scene/" />
+    <link rel="index" title="Index" href="../../../genindex/" /><link rel="search" title="Search" href="../../../search/" /><link rel="next" title="Plotly integration" href="../plotly_integration/" /><link rel="prev" title="Theming" href="../theming/" />
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Notifications - viser</title>
@@ -321,7 +321,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../markdown/">Markdown support</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modals/">Modal dialogs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theming/">Theming</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../gui_in_scene/">3D GUI elements</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Notifications</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../plotly_integration/">Plotly integration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../uplot/">uPlot integration</a></li>
@@ -334,6 +333,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../interaction/get_renders/">Get renders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../interaction/camera_poses/">Camera pose tracking</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../interaction/camera_commands/">Programmatic camera control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../interaction/gui_in_scene/">3D GUI elements</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../demos/">Demos</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Demos</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -432,9 +432,9 @@
 <li><p>Loading notifications with progress indication</p></li>
 <li><p>Per-client notification management</p></li>
 </ul>
-<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">examples/02_gui/07_notifications.py</span></code></p>
+<p><strong>Source:</strong> <code class="docutils literal notranslate"><span class="pre">examples/02_gui/06_notifications.py</span></code></p>
 <figure class="align-default">
-<a class="reference internal image-reference" href="../../../_images/02_gui_07_notifications.png"><img alt="Notifications" src="../../../_images/02_gui_07_notifications.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="../../../_images/02_gui_06_notifications.png"><img alt="Notifications" src="../../../_images/02_gui_06_notifications.png" style="width: 100%;" /></a>
 </figure>
 <section id="code">
 <h2>Code<a class="headerlink" href="#code" title="Link to this heading">¶</a></h2>
@@ -478,7 +478,7 @@
 <span class="linenos">38</span>            <span class="n">body</span><span class="o">=</span><span class="s2">&quot;This disappears automatically after 5 seconds!&quot;</span><span class="p">,</span>
 <span class="linenos">39</span>            <span class="n">loading</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="linenos">40</span>            <span class="n">with_close_button</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="linenos">41</span>            <span class="n">auto_close</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>
+<span class="linenos">41</span>            <span class="n">auto_close</span><span class="o">=</span><span class="mi">30_000</span><span class="p">,</span>
 <span class="linenos">42</span>        <span class="p">)</span>
 <span class="linenos">43</span>
 <span class="linenos">44</span>    <span class="nd">@controlled_notif_button</span><span class="o">.</span><span class="n">on_click</span>
@@ -523,7 +523,7 @@
 <span class="linenos">83</span>    <span class="nd">@server</span><span class="o">.</span><span class="n">on_client_connect</span>
 <span class="linenos">84</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">ClientHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">85</span>        <span class="n">client</span><span class="o">.</span><span class="n">add_notification</span><span class="p">(</span>
-<span class="linenos">86</span>            <span class="s2">&quot;Connected&quot;</span><span class="p">,</span> <span class="s2">&quot;You are now connected to the server!&quot;</span><span class="p">,</span> <span class="n">auto_close</span><span class="o">=</span><span class="mi">30_000</span>
+<span class="linenos">86</span>            <span class="s2">&quot;Connected&quot;</span><span class="p">,</span> <span class="s2">&quot;You are now connected to the server!&quot;</span><span class="p">,</span> <span class="n">auto_close</span><span class="o">=</span><span class="mi">5000</span>
 <span class="linenos">87</span>        <span class="p">)</span>
 <span class="linenos">88</span>
 <span class="linenos">89</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
@@ -551,14 +551,14 @@
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../gui_in_scene/">
+          <a class="prev-page" href="../theming/">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">3D GUI elements</div>
+                <div class="title">Theming</div>
                 
               </div>
             </a>

@@ -11,3 +11,4 @@ Examples showing user input and interaction handling.
    get_renders
    camera_poses
    camera_commands
+   gui_in_scene

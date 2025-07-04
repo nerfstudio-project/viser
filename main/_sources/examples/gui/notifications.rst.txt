@@ -11,9 +11,9 @@ Display different types of notifications to users including persistent, timed, a
 * Loading notifications with progress indication
 * Per-client notification management
 
-**Source:** ``examples/02_gui/07_notifications.py``
+**Source:** ``examples/02_gui/06_notifications.py``
 
-.. figure:: ../../_static/examples/02_gui_07_notifications.png
+.. figure:: ../../_static/examples/02_gui_06_notifications.png
    :width: 100%
    :alt: Notifications
 
@@ -63,7 +63,7 @@ Code
                body="This disappears automatically after 5 seconds!",
                loading=False,
                with_close_button=True,
-               auto_close=5000,
+               auto_close=30_000,
            )
    
        @controlled_notif_button.on_click
@@ -108,7 +108,7 @@ Code
        @server.on_client_connect
        def _(client: viser.ClientHandle) -> None:
            client.add_notification(
-               "Connected", "You are now connected to the server!", auto_close=30_000
+               "Connected", "You are now connected to the server!", auto_close=5000
            )
    
        while True:

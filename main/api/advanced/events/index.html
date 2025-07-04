@@ -321,7 +321,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/markdown/">Markdown support</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/modals/">Modal dialogs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/theming/">Theming</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/gui_in_scene/">3D GUI elements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/notifications/">Notifications</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/plotly_integration/">Plotly integration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/gui/uplot/">uPlot integration</a></li>
@@ -334,6 +333,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/interaction/get_renders/">Get renders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/interaction/camera_poses/">Camera pose tracking</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../examples/interaction/camera_commands/">Programmatic camera control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/interaction/gui_in_scene/">3D GUI elements</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples/demos/">Demos</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Demos</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -426,54 +426,26 @@
 <p>We define a small set of event types, which are passed to callback functions
 when events like clicks or GUI updates are triggered.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="viser.ScenePointerEvent">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ScenePointerEvent</span></span><a class="reference internal" href="../../../_modules/viser/_scene_handles/#ScenePointerEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ScenePointerEvent" title="Link to this definition">¶</a></dt>
-<dd><p>Event passed to pointer callbacks for the scene (currently only clicks).</p>
+<dt class="sig sig-object py" id="viser.GuiEvent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiEvent</span></span><a class="reference internal" href="../../../_modules/viser/_gui_handles/#GuiEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiEvent" title="Link to this definition">¶</a></dt>
+<dd><p>Information associated with a GUI event, such as an update or click.</p>
+<p>Passed as input to callback functions.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="viser.ScenePointerEvent.client">
-<span class="sig-name descname"><span class="pre">client</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../handles/client_handles/#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a></em><a class="headerlink" href="#viser.ScenePointerEvent.client" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="viser.GuiEvent.client">
+<span class="sig-name descname"><span class="pre">client</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../handles/client_handles/#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.GuiEvent.client" title="Link to this definition">¶</a></dt>
 <dd><p>Client that triggered this event.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="viser.ScenePointerEvent.client_id">
-<span class="sig-name descname"><span class="pre">client_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#viser.ScenePointerEvent.client_id" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="viser.GuiEvent.client_id">
+<span class="sig-name descname"><span class="pre">client_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.GuiEvent.client_id" title="Link to this definition">¶</a></dt>
 <dd><p>ID of client that triggered this event.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="viser.ScenePointerEvent.event_type">
-<span class="sig-name descname"><span class="pre">event_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_messages.ScenePointerEventType</span></em><a class="headerlink" href="#viser.ScenePointerEvent.event_type" title="Link to this definition">¶</a></dt>
-<dd><p>Type of event that was triggered. Currently we only support clicks and box selections.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.ScenePointerEvent.ray_origin">
-<span class="sig-name descname"><span class="pre">ray_origin</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.ScenePointerEvent.ray_origin" title="Link to this definition">¶</a></dt>
-<dd><p>Origin of 3D ray corresponding to this click, in world coordinates.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.ScenePointerEvent.ray_direction">
-<span class="sig-name descname"><span class="pre">ray_direction</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.ScenePointerEvent.ray_direction" title="Link to this definition">¶</a></dt>
-<dd><p>Direction of 3D ray corresponding to this click, in world coordinates.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.ScenePointerEvent.screen_pos">
-<span class="sig-name descname"><span class="pre">screen_pos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.ScenePointerEvent.screen_pos" title="Link to this definition">¶</a></dt>
-<dd><p>Screen position of the click on the screen (OpenCV image coordinates, 0 to 1).
-(0, 0) is the upper-left corner, (1, 1) is the bottom-right corner.
-For a box selection, this includes the min- and max- corners of the box.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="viser.ScenePointerEvent.event">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">event</span></span><a class="headerlink" href="#viser.ScenePointerEvent.event" title="Link to this definition">¶</a></dt>
-<dd><p>Deprecated. Use <cite>event_type</cite> instead.</p>
-<div class="deprecated">
-<p><span class="versionmodified deprecated">Deprecated since version The: </span><cite>event</cite> property is deprecated. Use <cite>event_type</cite> instead.</p>
-</div>
+<dt class="sig sig-object py" id="viser.GuiEvent.target">
+<span class="sig-name descname"><span class="pre">target</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">TGuiHandle</span></em><a class="headerlink" href="#viser.GuiEvent.target" title="Link to this definition">¶</a></dt>
+<dd><p>GUI element that was affected.</p>
 </dd></dl>
 
 </dd></dl>
@@ -534,26 +506,54 @@ For a box selection, this includes the min- and max- corners of the box.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="viser.GuiEvent">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiEvent</span></span><a class="reference internal" href="../../../_modules/viser/_gui_handles/#GuiEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiEvent" title="Link to this definition">¶</a></dt>
-<dd><p>Information associated with a GUI event, such as an update or click.</p>
-<p>Passed as input to callback functions.</p>
+<dt class="sig sig-object py" id="viser.ScenePointerEvent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ScenePointerEvent</span></span><a class="reference internal" href="../../../_modules/viser/_scene_handles/#ScenePointerEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ScenePointerEvent" title="Link to this definition">¶</a></dt>
+<dd><p>Event passed to pointer callbacks for the scene (currently only clicks).</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="viser.GuiEvent.client">
-<span class="sig-name descname"><span class="pre">client</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../handles/client_handles/#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.GuiEvent.client" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="viser.ScenePointerEvent.client">
+<span class="sig-name descname"><span class="pre">client</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../handles/client_handles/#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a></em><a class="headerlink" href="#viser.ScenePointerEvent.client" title="Link to this definition">¶</a></dt>
 <dd><p>Client that triggered this event.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="viser.GuiEvent.client_id">
-<span class="sig-name descname"><span class="pre">client_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.GuiEvent.client_id" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="viser.ScenePointerEvent.client_id">
+<span class="sig-name descname"><span class="pre">client_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#viser.ScenePointerEvent.client_id" title="Link to this definition">¶</a></dt>
 <dd><p>ID of client that triggered this event.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="viser.GuiEvent.target">
-<span class="sig-name descname"><span class="pre">target</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">TGuiHandle</span></em><a class="headerlink" href="#viser.GuiEvent.target" title="Link to this definition">¶</a></dt>
-<dd><p>GUI element that was affected.</p>
+<dt class="sig sig-object py" id="viser.ScenePointerEvent.event_type">
+<span class="sig-name descname"><span class="pre">event_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_messages.ScenePointerEventType</span></em><a class="headerlink" href="#viser.ScenePointerEvent.event_type" title="Link to this definition">¶</a></dt>
+<dd><p>Type of event that was triggered. Currently we only support clicks and box selections.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.ScenePointerEvent.ray_origin">
+<span class="sig-name descname"><span class="pre">ray_origin</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.ScenePointerEvent.ray_origin" title="Link to this definition">¶</a></dt>
+<dd><p>Origin of 3D ray corresponding to this click, in world coordinates.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.ScenePointerEvent.ray_direction">
+<span class="sig-name descname"><span class="pre">ray_direction</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.ScenePointerEvent.ray_direction" title="Link to this definition">¶</a></dt>
+<dd><p>Direction of 3D ray corresponding to this click, in world coordinates.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.ScenePointerEvent.screen_pos">
+<span class="sig-name descname"><span class="pre">screen_pos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.ScenePointerEvent.screen_pos" title="Link to this definition">¶</a></dt>
+<dd><p>Screen position of the click on the screen (OpenCV image coordinates, 0 to 1).
+(0, 0) is the upper-left corner, (1, 1) is the bottom-right corner.
+For a box selection, this includes the min- and max- corners of the box.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.ScenePointerEvent.event">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">event</span></span><a class="headerlink" href="#viser.ScenePointerEvent.event" title="Link to this definition">¶</a></dt>
+<dd><p>Deprecated. Use <cite>event_type</cite> instead.</p>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version The: </span><cite>event</cite> property is deprecated. Use <cite>event_type</cite> instead.</p>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -647,14 +647,10 @@ For a box selection, this includes the min- and max- corners of the box.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Events</a><ul>
-<li><a class="reference internal" href="#viser.ScenePointerEvent"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent</span></code></a><ul>
-<li><a class="reference internal" href="#viser.ScenePointerEvent.client"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.client</span></code></a></li>
-<li><a class="reference internal" href="#viser.ScenePointerEvent.client_id"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.client_id</span></code></a></li>
-<li><a class="reference internal" href="#viser.ScenePointerEvent.event_type"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.event_type</span></code></a></li>
-<li><a class="reference internal" href="#viser.ScenePointerEvent.ray_origin"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.ray_origin</span></code></a></li>
-<li><a class="reference internal" href="#viser.ScenePointerEvent.ray_direction"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.ray_direction</span></code></a></li>
-<li><a class="reference internal" href="#viser.ScenePointerEvent.screen_pos"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.screen_pos</span></code></a></li>
-<li><a class="reference internal" href="#viser.ScenePointerEvent.event"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.event</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiEvent"><code class="docutils literal notranslate"><span class="pre">GuiEvent</span></code></a><ul>
+<li><a class="reference internal" href="#viser.GuiEvent.client"><code class="docutils literal notranslate"><span class="pre">GuiEvent.client</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiEvent.client_id"><code class="docutils literal notranslate"><span class="pre">GuiEvent.client_id</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiEvent.target"><code class="docutils literal notranslate"><span class="pre">GuiEvent.target</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.SceneNodePointerEvent"><code class="docutils literal notranslate"><span class="pre">SceneNodePointerEvent</span></code></a><ul>
@@ -668,10 +664,14 @@ For a box selection, this includes the min- and max- corners of the box.</p>
 <li><a class="reference internal" href="#viser.SceneNodePointerEvent.instance_index"><code class="docutils literal notranslate"><span class="pre">SceneNodePointerEvent.instance_index</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#viser.GuiEvent"><code class="docutils literal notranslate"><span class="pre">GuiEvent</span></code></a><ul>
-<li><a class="reference internal" href="#viser.GuiEvent.client"><code class="docutils literal notranslate"><span class="pre">GuiEvent.client</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiEvent.client_id"><code class="docutils literal notranslate"><span class="pre">GuiEvent.client_id</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiEvent.target"><code class="docutils literal notranslate"><span class="pre">GuiEvent.target</span></code></a></li>
+<li><a class="reference internal" href="#viser.ScenePointerEvent"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent</span></code></a><ul>
+<li><a class="reference internal" href="#viser.ScenePointerEvent.client"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.client</span></code></a></li>
+<li><a class="reference internal" href="#viser.ScenePointerEvent.client_id"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.client_id</span></code></a></li>
+<li><a class="reference internal" href="#viser.ScenePointerEvent.event_type"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.event_type</span></code></a></li>
+<li><a class="reference internal" href="#viser.ScenePointerEvent.ray_origin"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.ray_origin</span></code></a></li>
+<li><a class="reference internal" href="#viser.ScenePointerEvent.ray_direction"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.ray_direction</span></code></a></li>
+<li><a class="reference internal" href="#viser.ScenePointerEvent.screen_pos"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.screen_pos</span></code></a></li>
+<li><a class="reference internal" href="#viser.ScenePointerEvent.event"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.event</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.TransformControlsEvent"><code class="docutils literal notranslate"><span class="pre">TransformControlsEvent</span></code></a><ul>

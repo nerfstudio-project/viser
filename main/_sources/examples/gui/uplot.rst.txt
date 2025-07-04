@@ -12,9 +12,9 @@ This example demonstrates real-time data visualization using :meth:`viser.GuiApi
 * Custom scales and styling options
 * Legend display with :class:`viser.uplot.Legend`
 
-**Source:** ``examples/02_gui/09_uplot.py``
+**Source:** ``examples/02_gui/08_uplot.py``
 
-.. figure:: ../../_static/examples/02_gui_09_uplot.png
+.. figure:: ../../_static/examples/02_gui_08_uplot.png
    :width: 100%
    :alt: uPlot integration
 

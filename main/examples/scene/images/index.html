@@ -321,7 +321,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../gui/markdown/">Markdown support</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../gui/modals/">Modal dialogs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../gui/theming/">Theming</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../gui/gui_in_scene/">3D GUI elements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../gui/notifications/">Notifications</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../gui/plotly_integration/">Plotly integration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../gui/uplot/">uPlot integration</a></li>
@@ -334,6 +333,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../interaction/get_renders/">Get renders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../interaction/camera_poses/">Camera pose tracking</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../interaction/camera_commands/">Programmatic camera control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../interaction/gui_in_scene/">3D GUI elements</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../demos/">Demos</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Demos</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -435,8 +435,10 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This example requires external assets. To download them, run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/path/to/viser/examples/assets
-./download_assets.sh
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>-b<span class="w"> </span>v0.2.23<span class="w"> </span>https://github.com/nerfstudio-project/viser.git
+<span class="nb">cd</span><span class="w"> </span>viser/examples
+./assets/download_assets.sh
+python<span class="w"> </span>01_scene/04_images.py<span class="w">  </span><span class="c1"># With viser installed.</span>
 </pre></div>
 </div>
 </div>
@@ -451,43 +453,44 @@
 <span class="linenos"> 3</span>
 <span class="linenos"> 4</span><span class="kn">import</span><span class="w"> </span><span class="nn">imageio.v3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">iio</span>
 <span class="linenos"> 5</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="linenos"> 6</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
-<span class="linenos"> 7</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
 <span class="linenos"> 8</span>
-<span class="linenos"> 9</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos">10</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
-<span class="linenos">11</span>
-<span class="linenos">12</span>    <span class="c1"># Add a background image.</span>
-<span class="linenos">13</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">set_background_image</span><span class="p">(</span>
-<span class="linenos">14</span>        <span class="n">iio</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;../assets/Cal_logo.png&quot;</span><span class="p">),</span>
-<span class="linenos">15</span>        <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;png&quot;</span><span class="p">,</span>
-<span class="linenos">16</span>    <span class="p">)</span>
-<span class="linenos">17</span>
-<span class="linenos">18</span>    <span class="c1"># Add main image.</span>
-<span class="linenos">19</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_image</span><span class="p">(</span>
-<span class="linenos">20</span>        <span class="s2">&quot;/img&quot;</span><span class="p">,</span>
-<span class="linenos">21</span>        <span class="n">iio</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;../assets/Cal_logo.png&quot;</span><span class="p">),</span>
-<span class="linenos">22</span>        <span class="mf">4.0</span><span class="p">,</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">11</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span>    <span class="c1"># Add a background image.</span>
+<span class="linenos">14</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">set_background_image</span><span class="p">(</span>
+<span class="linenos">15</span>        <span class="n">iio</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;../assets/Cal_logo.png&quot;</span><span class="p">),</span>
+<span class="linenos">16</span>        <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;png&quot;</span><span class="p">,</span>
+<span class="linenos">17</span>    <span class="p">)</span>
+<span class="linenos">18</span>
+<span class="linenos">19</span>    <span class="c1"># Add main image.</span>
+<span class="linenos">20</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_image</span><span class="p">(</span>
+<span class="linenos">21</span>        <span class="s2">&quot;/img&quot;</span><span class="p">,</span>
+<span class="linenos">22</span>        <span class="n">iio</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;../assets/Cal_logo.png&quot;</span><span class="p">),</span>
 <span class="linenos">23</span>        <span class="mf">4.0</span><span class="p">,</span>
-<span class="linenos">24</span>        <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;png&quot;</span><span class="p">,</span>
-<span class="linenos">25</span>        <span class="n">wxyz</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
-<span class="linenos">26</span>        <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
-<span class="linenos">27</span>    <span class="p">)</span>
-<span class="linenos">28</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos">29</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_image</span><span class="p">(</span>
-<span class="linenos">30</span>            <span class="s2">&quot;/noise&quot;</span><span class="p">,</span>
-<span class="linenos">31</span>            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span>
-<span class="linenos">32</span>            <span class="mf">4.0</span><span class="p">,</span>
+<span class="linenos">24</span>        <span class="mf">4.0</span><span class="p">,</span>
+<span class="linenos">25</span>        <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;png&quot;</span><span class="p">,</span>
+<span class="linenos">26</span>        <span class="n">wxyz</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+<span class="linenos">27</span>        <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+<span class="linenos">28</span>    <span class="p">)</span>
+<span class="linenos">29</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">30</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_image</span><span class="p">(</span>
+<span class="linenos">31</span>            <span class="s2">&quot;/noise&quot;</span><span class="p">,</span>
+<span class="linenos">32</span>            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span>
 <span class="linenos">33</span>            <span class="mf">4.0</span><span class="p">,</span>
-<span class="linenos">34</span>            <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;jpeg&quot;</span><span class="p">,</span>
-<span class="linenos">35</span>            <span class="n">wxyz</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
-<span class="linenos">36</span>            <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1e-2</span><span class="p">),</span>
-<span class="linenos">37</span>        <span class="p">)</span>
-<span class="linenos">38</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
-<span class="linenos">39</span>
+<span class="linenos">34</span>            <span class="mf">4.0</span><span class="p">,</span>
+<span class="linenos">35</span>            <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;jpeg&quot;</span><span class="p">,</span>
+<span class="linenos">36</span>            <span class="n">wxyz</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+<span class="linenos">37</span>            <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1e-2</span><span class="p">),</span>
+<span class="linenos">38</span>        <span class="p">)</span>
+<span class="linenos">39</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
 <span class="linenos">40</span>
-<span class="linenos">41</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-<span class="linenos">42</span>    <span class="n">main</span><span class="p">()</span>
+<span class="linenos">41</span>
+<span class="linenos">42</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">43</span>    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
