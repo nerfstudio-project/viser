@@ -31,7 +31,6 @@ from pathlib import Path
 
 import numpy as np
 import trimesh
-
 import viser
 
 
@@ -243,6 +242,7 @@ def main():
 
     # Initialize transforms.
     positions, rotations, scales = create_grid_transforms(instance_count_slider.value)
+    positions_orig = positions.copy()
 
     # Create batched mesh visualization.
     axes_handle = server.scene.add_batched_axes(
@@ -280,6 +280,7 @@ def main():
         # Recreate transforms if instance count changed.
         if positions.shape[0] != n:
             positions, rotations, scales = create_grid_transforms(n)
+            positions_orig = positions.copy()
             grid_size = int(np.ceil(np.sqrt(n)))
 
             with server.atomic():
@@ -293,6 +294,9 @@ def main():
                 )
                 mesh_handle.batched_wxyzs = axes_handle.batched_wxyzs = rotations
                 mesh_handle.batched_scales = axes_handle.batched_scales = scales
+
+                # Colors will be overwritten below; we'll just put them in a valid state.
+                mesh_handle.batched_colors = np.zeros(3, dtype=np.uint8)
 
         # Generate colors based on current mode.
         color_mode = color_mode_dropdown.value
@@ -325,16 +329,16 @@ def main():
             colors = generate_per_instance_colors(positions, color_mode="rainbow")
 
         # Animate if enabled.
-        positions_t = positions.copy()
         if animate_checkbox.value:
             # Animate positions.
             t = time.perf_counter() * 2.0
-            positions_t[:, 0] += np.cos(t * 0.5)
-            positions_t[:, 1] += np.sin(t * 0.5)
+            positions[:] = positions_orig
+            positions[:, 0] += np.cos(t * 0.5)
+            positions[:, 1] += np.sin(t * 0.5)
 
             # Animate scales with wave effect.
             if per_axis_scale_checkbox.value:
-                scales = np.linalg.norm(positions_t, axis=-1)
+                scales = np.linalg.norm(positions, axis=-1)
                 scales = np.stack(
                     [
                         np.sin(scales * 1.5 - t) * 0.5 + 1.0,
@@ -345,7 +349,7 @@ def main():
                 )
                 assert scales.shape == (n, 3)
             else:
-                scales = np.linalg.norm(positions_t, axis=-1)
+                scales = np.linalg.norm(positions, axis=-1)
                 scales = np.sin(scales * 1.5 - t) * 0.5 + 1.0
                 assert scales.shape == (n,)
 
@@ -353,16 +357,16 @@ def main():
             if color_mode == "Animated":
                 animation_style = animated_color_dropdown.value.lower()
                 colors = generate_animated_colors(
-                    positions_t, t, animation_mode=animation_style
+                    positions, t, animation_mode=animation_style
                 )
 
         # Update mesh properties.
         with server.atomic():
-            mesh_handle.batched_positions = positions_t
+            mesh_handle.batched_positions = positions
             mesh_handle.batched_scales = scales
             mesh_handle.batched_colors = colors
 
-            axes_handle.batched_positions = positions_t
+            axes_handle.batched_positions = positions
             axes_handle.batched_scales = scales
 
         time.sleep(1.0 / 60.0)
