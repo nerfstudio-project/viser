@@ -42,7 +42,7 @@ export default function BottomPanel({
           }}
           ref={panelWrapperRef}
         >
-          <ScrollArea.Autosize offsetScrollbars="present">
+          <ScrollArea.Autosize>
             <Box
               /* Prevent internals from getting too wide. Needs to match the
                * width of the wrapper element above. */
