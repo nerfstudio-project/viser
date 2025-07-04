@@ -19,6 +19,7 @@ export interface CameraFrustumMessage {
     _image_data: Uint8Array | null;
     cast_shadow: boolean;
     receive_shadow: boolean;
+    variant: "wireframe" | "filled";
   };
 }
 /** GlTF message.
@@ -308,7 +309,7 @@ export interface BatchedMeshesMessage {
     lod: "auto" | "off" | [number, number][];
     vertices: Uint8Array;
     faces: Uint8Array;
-    color: [number, number, number];
+    batched_colors: Uint8Array;
     wireframe: boolean;
     opacity: number | null;
     flat_shading: boolean;
@@ -331,7 +332,6 @@ export interface BatchedGlbMessage {
     batched_scales: Uint8Array | null;
     lod: "auto" | "off" | [number, number][];
     glb_data: Uint8Array;
-    scale: number;
     cast_shadow: boolean;
     receive_shadow: boolean;
   };

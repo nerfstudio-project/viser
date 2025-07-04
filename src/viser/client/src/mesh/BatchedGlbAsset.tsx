@@ -68,10 +68,10 @@ export const BatchedGlbAsset = React.forwardRef<
         batched_positions={message.props.batched_positions}
         batched_wxyzs={message.props.batched_wxyzs}
         batched_scales={message.props.batched_scales}
+        batched_colors={null}
         lod={message.props.lod}
         cast_shadow={message.props.cast_shadow}
         receive_shadow={message.props.receive_shadow}
-        scale={message.props.scale}
         clickable={clickable}
       />
       {children}

@@ -24,7 +24,6 @@ export const BatchedMesh = React.forwardRef<
     // Create the material with properties from the message.
     const mat = createStandardMaterial({
       material: message.props.material,
-      color: message.props.color,
       wireframe: message.props.wireframe,
       opacity: message.props.opacity,
       flat_shading: message.props.flat_shading,
@@ -39,7 +38,6 @@ export const BatchedMesh = React.forwardRef<
     return mat;
   }, [
     message.props.material,
-    message.props.color,
     message.props.wireframe,
     message.props.opacity,
     message.props.flat_shading,
@@ -86,6 +84,7 @@ export const BatchedMesh = React.forwardRef<
         batched_positions={message.props.batched_positions}
         batched_wxyzs={message.props.batched_wxyzs}
         batched_scales={message.props.batched_scales}
+        batched_colors={message.props.batched_colors}
         lod={message.props.lod}
         cast_shadow={message.props.cast_shadow}
         receive_shadow={message.props.receive_shadow}

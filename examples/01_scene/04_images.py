@@ -1,4 +1,4 @@
-"""Image overlays
+"""Images
 
 Display background images and 3D image textures in the scene.
 

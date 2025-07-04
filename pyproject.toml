@@ -34,21 +34,21 @@ classifiers = [
     "Operating System :: OS Independent"
 ]
 dependencies = [
-    "websockets>=13.1",
-    "numpy>=1.0.0",
-    "msgspec>=0.18.6",
-    "imageio>=2.0.0",
-    "opencv-python>=4.0.0.21",
-    "scikit-image>=0.18.0",
-    "scipy>=1.7.3",
-    "tqdm>=4.0.0",
-    "tyro>=0.2.0",
-    "rich>=13.3.3",
-    "trimesh>=3.21.7",
-    "nodeenv>=1.8.0",
-    "psutil>=5.9.5",
-    "yourdfpy>=0.0.53",
-    "plyfile>=1.0.2"
+    "requests>=2.0.0,<3.0.0",
+    "websockets>=13.1,<16.0.0",
+    "numpy>=1.0.0,<3.0.0",
+    "msgspec>=0.18.6,<1.0.0",
+    "imageio>=2.0.0,<3.0.0",
+    "opencv-python>=4.0.0.21,<5.0.0",
+    "scikit-image>=0.18.0,<1.0.0",
+    "scipy>=1.7.3,<2.0.0",
+    "tqdm>=4.0.0,<5.0.0",
+    "tyro>=0.2.0,<1.0.0",
+    "rich>=13.3.3,<15.0.0",
+    "trimesh>=3.21.7,<5.0.0",
+    "nodeenv>=1.8.0,<2.0.0",
+    "psutil>=5.9.5,<8.0.0",
+    "yourdfpy>=0.0.53,<1.0.0",
 ]
 
 [project.optional-dependencies]

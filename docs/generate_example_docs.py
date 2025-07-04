@@ -17,6 +17,8 @@ import sys
 from pathlib import Path
 from typing import List, Tuple
 
+import tyro
+
 try:
     from playwright.async_api import async_playwright
 
@@ -206,10 +208,12 @@ async def run_example_and_capture(
             return example_name, False
 
         # Capture screenshot
-        success = await capture_screenshot_playwright(
-            f"http://localhost:{port}/?dummyWindowDimensions=fill&hideViserLogo=&dummyWindowTitle=viser&initialCameraPosition=1.5,1.5,1.5&dummyWindowTitle=localhost:8080",
-            output_path,
-        )
+        url = f"http://localhost:{port}/?dummyWindowDimensions=fill&hideViserLogo=&dummyWindowTitle=localhost:8080"
+        if "04_demos" in safe_name:
+            # Move the camera closer for the demos, which are often smaller
+            # scenes.
+            url = url + "&initialCameraPosition=1.2,1.2,1.2"
+        success = await capture_screenshot_playwright(url, output_path)
 
         if success:
             print(f"  ✓ {example_name} completed")
@@ -246,15 +250,23 @@ async def process_batch(
     return await asyncio.gather(*tasks)
 
 
-async def capture_all_screenshots(batch_size: int = 8):
-    """Main function to capture screenshots for all examples."""
+async def capture_all_screenshots(name_filter: str, batch_size: int = 8):
+    """Main function to capture screenshots for filtered examples."""
     # Create output directory
     output_dir = Path(__file__).parent / "source" / "_static" / "examples"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Find all examples
-    examples = find_examples()
-    print(f"Found {len(examples)} examples to process")
+    all_examples = find_examples()
+
+    # Filter examples based on name_filter
+    if name_filter:
+        examples = [ex for ex in all_examples if name_filter.lower() in ex[0].lower()]
+    else:
+        examples = all_examples
+
+    print(f"Found {len(all_examples)} total examples")
+    print(f"Processing {len(examples)} examples matching '{name_filter}'")
     print(f"Processing in batches of {batch_size}")
 
     # Process examples in batches
@@ -289,12 +301,13 @@ async def capture_all_screenshots(batch_size: int = 8):
     if failed:
         print(f"  Failed examples: {', '.join(failed)}")
 
-    # Generate RST include file and organized files
-    generate_screenshot_includes(examples, output_dir)
+    # Generate RST include file and organized files for ALL examples
+    # (RST generation is cheap, so we always do it for all examples)
+    generate_screenshot_includes(all_examples, output_dir)
 
     # Generate organized RST files and update index
-    generate_organized_rst_files(examples)
-    update_index_rst(examples)
+    generate_organized_rst_files(all_examples)
+    update_index_rst(all_examples)
 
 
 def generate_screenshot_includes(
@@ -306,7 +319,7 @@ def generate_screenshot_includes(
     # Category metadata
     categories = {
         "00_getting_started": ("Getting Started", 0),
-        "01_scene": ("Scene Fundamentals", 1),
+        "01_scene": ("Scene Visualization", 1),
         "02_gui": ("GUI Controls", 2),
         "03_interaction": ("User Interaction", 3),
         "04_demos": ("Demos", 4),
@@ -686,33 +699,24 @@ def update_index_rst(examples: List[Tuple[str, Path, str, str, str]]):
     print("Index.rst structure verified")
 
 
-def generate_docs_only():
-    """Generate documentation without capturing screenshots."""
-    # Find all examples
-    examples = find_examples()
-    output_dir = Path(__file__).parent / "source" / "_static" / "examples"
+def main(
+    screenshot_if_name_contains: str,
+    batch_size: int = 8,
+) -> None:
+    """Generate example documentation and capture screenshots for filtered examples.
 
-    print(f"Found {len(examples)} examples")
-
-    # Generate RST include file and organized files
-    generate_screenshot_includes(examples, output_dir)
-
-    # Generate organized RST files and update index
-    generate_organized_rst_files(examples)
-    update_index_rst(examples)
+    Args:
+        screenshot_if_name_contains: Only capture screenshots for examples whose name contains this string (case-insensitive). Use empty string to match all examples.
+        batch_size: Number of examples to process in parallel batches.
+    """
+    # Run the main function with screenshot capture
+    asyncio.run(capture_all_screenshots(screenshot_if_name_contains, batch_size))
 
 
 if __name__ == "__main__":
-    import sys
-
     # Check Python version
     if sys.version_info < (3, 7):
         print("Error: This script requires Python 3.7 or later")
         sys.exit(1)
 
-    # Check if user wants to skip screenshots
-    if len(sys.argv) > 1 and sys.argv[1] == "--docs-only":
-        generate_docs_only()
-    else:
-        # Run the main function with screenshot capture
-        asyncio.run(capture_all_screenshots())
+    tyro.cli(main)

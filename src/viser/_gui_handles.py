@@ -115,8 +115,8 @@ class _GuiHandleState(Generic[T]):
 # Not exported to keep the public API clean, but GUI handles can be 
 # identified by checking cls.__module__ == 'viser._gui_handles'
 class _GuiHandle(Generic[T], AssignablePropsBase[_GuiHandleState]):
-    def __init__(self, _impl: _GuiHandleState[T]) -> None:
-        self._impl = _impl
+    def __init__(self, impl: _GuiHandleState[T]) -> None:
+        super().__init__(impl=impl)
         parent = self._impl.gui_api._container_handle_from_uuid[
             self._impl.parent_container_id
         ]
@@ -497,7 +497,7 @@ class GuiTabGroupHandle(_GuiHandle[None], GuiTabGroupProps):
     """Handle for a tab group. Call :meth:`add_tab()` to add a tab."""
 
     def __init__(self, _impl: _GuiHandleState[None]) -> None:
-        super().__init__(_impl=_impl)
+        super().__init__(impl=_impl)
         self._tab_handles: list[GuiTabHandle] = []
 
     def add_tab(self, label: str, icon: IconName | None = None) -> GuiTabHandle:
@@ -615,7 +615,7 @@ class GuiFolderHandle(_GuiHandle[None], GuiFolderProps):
     """Use as a context to place GUI elements into a folder."""
 
     def __init__(self, _impl: _GuiHandleState[None]) -> None:
-        super().__init__(_impl=_impl)
+        super().__init__(impl=_impl)
         self._impl.gui_api._container_handle_from_uuid[self._impl.uuid] = self
         self._children = {}
         parent = self._impl.gui_api._container_handle_from_uuid[
@@ -743,7 +743,7 @@ class GuiMarkdownHandle(_GuiHandle[None], GuiMarkdownProps):
     """Handling for updating and removing markdown elements."""
 
     def __init__(self, _impl: _GuiHandleState, _content: str, _image_root: Path | None):
-        super().__init__(_impl=_impl)
+        super().__init__(impl=_impl)
         self._content = _content
         self._image_root = _image_root
 
@@ -767,7 +767,7 @@ class GuiPlotlyHandle(_GuiHandle[None], GuiPlotlyProps):
     """Handle for updating and removing Plotly figures."""
 
     def __init__(self, _impl: _GuiHandleState, _figure: go.Figure):
-        super().__init__(_impl=_impl)
+        super().__init__(impl=_impl)
         self._figure = _figure
 
     @property
@@ -800,7 +800,7 @@ class GuiImageHandle(_GuiHandle[None], GuiImageProps):
         _image: np.ndarray,
         _jpeg_quality: int | None,
     ):
-        super().__init__(_impl=_impl)
+        super().__init__(impl=_impl)
         self._image = _image
         self._jpeg_quality = _jpeg_quality
 

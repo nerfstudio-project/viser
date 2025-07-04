@@ -1,7 +1,7 @@
 Hello world
 ===========
 
-The simplest possible viser program - creates a server and adds a red sphere.
+The simplest possible viser program: creates a server and adds a red sphere.
 
 This demonstrates the two essential steps to get started with viser:
 

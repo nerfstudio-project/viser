@@ -33,6 +33,17 @@ class AssignablePropsBase(Generic[TImpl]):
 
     _impl: TImpl
 
+    def __init__(self, impl: TImpl):
+        # Make sure arrays are copied to avoid shared references.
+        # This will also make sure that our `np.array_equal` checks below work
+        # correctly.
+        for k, v in vars(impl.props).items():
+            if isinstance(v, np.ndarray):
+                setattr(impl.props, k, v.copy())
+
+        # Store the implementation object.
+        self._impl = impl
+
     def _cast_value_recursive(self, hint: Any, value: Any, prop_name: str) -> Any:
         """Recursively cast values to match type hints, handling arrays and tuples."""
         # Handle numpy arrays
@@ -109,6 +120,8 @@ def props_setattr(self, name: str, value: Any) -> None:
                 # Ensure consistent dtype.
                 if value.dtype != current_value.dtype:
                     value = value.astype(current_value.dtype)
+                if np.array_equal(current_value, value):
+                    return
 
             # In-place update for same shape arrays.
             if hasattr(current_value, "shape") and value.shape == current_value.shape:
@@ -118,10 +131,10 @@ def props_setattr(self, name: str, value: Any) -> None:
         else:
             # Non-array properties
             setattr(self._impl.props, name, value)
-
-        self._queue_update(name, value)
     else:
         return object.__setattr__(self, name, value)
+
+    self._queue_update(name, value)
 
 
 def props_getattr(self, name: str) -> Any:

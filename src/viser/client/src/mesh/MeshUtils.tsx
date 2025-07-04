@@ -95,14 +95,14 @@ export function disposeMaterial(material: AllPossibleThreeJSMaterials) {
  */
 export function createStandardMaterial(props: {
   material: "standard" | "toon3" | "toon5";
-  color: [number, number, number];
+  color?: [number, number, number];
   wireframe: boolean;
   opacity: number | null;
   flat_shading: boolean;
   side: "front" | "back" | "double";
 }): THREE.Material {
   const standardArgs = {
-    color: rgbToInt(props.color),
+    color: props.color === undefined ? 0xffffff : rgbToInt(props.color),
     wireframe: props.wireframe,
     transparent: props.opacity !== null,
     opacity: props.opacity ?? 1.0,

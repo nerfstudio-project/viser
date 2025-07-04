@@ -104,14 +104,12 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
       }
     };
 
-    // Track ideal send time for message smoothing.
-    // State for tracking message timing and smoothing.
+    // State for tracking message timing.
     const state: {
       prevPythonTimestampMs?: number;
-      lastIdealSendTimeMs?: number;
-      firstPythonTimestampMs?: number;
-      firstJsTimeMs?: number;
-    } = {};
+      lastIdealJsMs?: number;
+      jsTimeMinusPythonTime: number;
+    } = { jsTimeMinusPythonTime: Infinity };
     type SerializedStruct = {
       messages: Message[];
       timestampSec: number;
@@ -125,18 +123,23 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
       });
 
       // Try our best to handle messages in order. If this takes more than 10 seconds, we give up. :)
+      const jsReceivedMs = performance.now();
       await orderLock.acquireAsync({ timeout: 10000 }).catch(() => {
         console.log("Order lock timed out.");
         orderLock.release();
       });
       const data = await dataPromise;
 
+      // Compute offset between JavaScript and Python time.
+      state.jsTimeMinusPythonTime = Math.min(
+        jsReceivedMs - data.timestampSec * 1000,
+        state.jsTimeMinusPythonTime,
+      );
+
       // Function to send the message and release the order lock.
       const messages = data.messages;
       const arrayBuffers = collectArrayBuffers(messages, new Set());
       const sendFn = () => {
-        // Update the state with the latest timestamps.
-        state.prevPythonTimestampMs = currentPythonTimestampMs;
         postOutgoing(
           { type: "message_batch", messages: messages },
           Array.from(arrayBuffers),
@@ -145,60 +148,41 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
       };
 
       // Calculate timing deltas between Python and JavaScript.
-      const jsReceiveTimeMs = performance.now();
+      const jsNowMs = performance.now();
       const currentPythonTimestampMs = data.timestampSec * 1000;
       const pythonTimeDeltaMs =
         currentPythonTimestampMs -
         (state.prevPythonTimestampMs ?? currentPythonTimestampMs);
-
-      // Establish reference point on first message.
-      if (state.firstPythonTimestampMs === undefined) {
-        state.firstPythonTimestampMs = currentPythonTimestampMs;
-        state.firstJsTimeMs = jsReceiveTimeMs;
-      }
-
-      // Calculate how far behind real-time we are.
-      const pythonElapsedMs =
-        currentPythonTimestampMs - state.firstPythonTimestampMs;
-      const jsElapsedMs = jsReceiveTimeMs - state.firstJsTimeMs!;
-      const accumulatedDelayMs = jsElapsedMs - pythonElapsedMs;
+      state.prevPythonTimestampMs = currentPythonTimestampMs;
 
       if (
         // Flush immediately for first message.
-        state.lastIdealSendTimeMs === undefined ||
-        state.prevPythonTimestampMs === undefined ||
+        state.lastIdealJsMs === undefined ||
         // Flush immediately if the Python delta is large, in this case we're
-        // rarely sensitive to exact timing.
-        currentPythonTimestampMs - state.prevPythonTimestampMs > 100 ||
-        // Flush if we're more than 200ms behind real-time.
-        accumulatedDelayMs > 200
+        // probably not sensitive to exact timing.
+        pythonTimeDeltaMs > 100 ||
+        // Flush if we're more than 100ms behind real-time.
+        jsNowMs - state.jsTimeMinusPythonTime - currentPythonTimestampMs > 100
       ) {
         // First message or no expected delta, send immediately.
         sendFn();
-        state.lastIdealSendTimeMs = jsReceiveTimeMs;
+        state.lastIdealJsMs = jsNowMs;
       } else {
         // For messages that are being sent frequently: smooth out the sending rate.
-        const idealNextSendTimeMs =
-          state.lastIdealSendTimeMs + pythonTimeDeltaMs;
-        const timeUntilExpectedMs = Math.min(
-          idealNextSendTimeMs - jsReceiveTimeMs,
-          100,
-        );
+        const idealNextSendTimeMs = state.lastIdealJsMs + pythonTimeDeltaMs;
+        const timeUntilIdealJsMs = idealNextSendTimeMs - jsNowMs;
 
-        const earlyThresholdMs = 5;
-        if (timeUntilExpectedMs > earlyThresholdMs) {
-          // We're early! This means the previous message arrived late...
-          // we can send this one later to make the client time delta
-          // more consistent with the Python time delta.
-          console.log(timeUntilExpectedMs);
-          setTimeout(sendFn, timeUntilExpectedMs - earlyThresholdMs);
-          state.lastIdealSendTimeMs =
-            jsReceiveTimeMs + timeUntilExpectedMs - earlyThresholdMs;
+        if (timeUntilIdealJsMs > 3) {
+          // We're early! This means the previous message was processed late...
+          // which is normal, because we also consider deserialization time.
+          const dampingFactor = 0.95;
+          setTimeout(sendFn, timeUntilIdealJsMs * dampingFactor);
+          state.lastIdealJsMs =
+            state.lastIdealJsMs + pythonTimeDeltaMs * dampingFactor;
         } else {
-          // Message is on time or late: send immediately.
+          // Message is late: send immediately.
           sendFn();
-          state.lastIdealSendTimeMs =
-            state.lastIdealSendTimeMs + pythonTimeDeltaMs;
+          state.lastIdealJsMs = jsNowMs;
         }
       }
     };
