@@ -112,8 +112,9 @@ class _GuiHandleState(Generic[T]):
     removed: bool = False
 
 
-# Not exported to keep the public API clean, but GUI handles can be 
-# identified by checking cls.__module__ == 'viser._gui_handles'
+# Not exported for now because some GUI handles don't currently inhert from
+# `_GuiHandle`: notably `GuiModalHandle` and `GuiTabHandle`. These would fail
+# isinstance checks, which would be confusing!
 class _GuiHandle(Generic[T], AssignablePropsBase[_GuiHandleState]):
     def __init__(self, impl: _GuiHandleState[T]) -> None:
         super().__init__(impl=impl)

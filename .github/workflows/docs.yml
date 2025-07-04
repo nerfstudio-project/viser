@@ -33,6 +33,7 @@ jobs:
       - name: Get version + subdirectory
         run: |
           VERSION=$(python -c "import viser; print(viser.__version__)")
+          echo "VISER_RELEASE_WORKFLOW_VERSION=$VERSION" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "DOCS_SUBDIR=versions/$VERSION" >> $GITHUB_ENV
 

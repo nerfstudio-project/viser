@@ -15,8 +15,10 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see `../assets
 
     .. code-block:: bash
 
-        cd /path/to/viser/examples/assets
-        ./download_assets.sh
+        git clone https://github.com/nerfstudio-project/viser.git
+        cd viser/examples
+        ./assets/download_assets.sh
+        python 04_demos/01_colmap_visualizer.py  # With viser installed.
 
 **Source:** ``examples/04_demos/01_colmap_visualizer.py``
 

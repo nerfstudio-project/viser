@@ -20,8 +20,10 @@ Batched meshes have some limitations: GLB animations are not supported, hierarch
 
     .. code-block:: bash
 
-        cd /path/to/viser/examples/assets
-        ./download_assets.sh
+        git clone https://github.com/nerfstudio-project/viser.git
+        cd viser/examples
+        ./assets/download_assets.sh
+        python 01_scene/05_meshes_batched.py  # With viser installed.
 
 .. note::
     For loading GLB files directly, see :meth:`~viser.SceneApi.add_batched_glb`.

@@ -7,6 +7,7 @@
 # http://www.sphinx-doc.org/en/stable/config
 
 import os
+from pathlib import Path
 from typing import Dict, List
 
 import viser
@@ -298,9 +299,50 @@ def skip_dict_methods(app, what, name, obj, skip, options):
     return skip
 
 
+def process_git_clone_commands():
+    """Replace git clone commands in RST files with version-aware ones when VISER_VERSION_STR_OVERRIDE is set."""
+    version_override = os.environ.get("VISER_RELEASE_WORKFLOW_VERSION", None)
+    if version_override is None:
+        return  # Only process when version override is set.
+
+    # Add 'v' prefix if not already present.
+    tag_version = (
+        version_override if version_override.startswith("v") else f"v{version_override}"
+    )
+    versioned_git_clone = (
+        f"git clone -b {tag_version} https://github.com/nerfstudio-project/viser.git"
+    )
+
+    # Find and replace in all RST files under examples.
+    docs_source = Path(__file__).parent
+    examples_dir = docs_source / "examples"
+
+    if examples_dir.exists():
+        for rst_file in examples_dir.rglob("*.rst"):
+            if not rst_file.is_file():
+                continue
+            try:
+                content = rst_file.read_text(encoding="utf-8")
+                if (
+                    "git clone https://github.com/nerfstudio-project/viser.git"
+                    in content
+                ):
+                    updated_content = content.replace(
+                        "git clone https://github.com/nerfstudio-project/viser.git",
+                        versioned_git_clone,
+                    )
+                    rst_file.write_text(updated_content, encoding="utf-8")
+                    print(f"Updated git clone command in {rst_file}")
+            except Exception as e:
+                print(f"Error processing {rst_file}: {e}")
+
+
 def setup(app):
     app.add_css_file("css/custom.css")
     app.connect("autodoc-skip-member", skip_dict_methods)
+
+    # Process git clone commands after the build starts.
+    process_git_clone_commands()
 
 
 # -- Napoleon settings -------------------------------------------------------
