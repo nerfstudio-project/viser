@@ -112,6 +112,8 @@ class _GuiHandleState(Generic[T]):
     removed: bool = False
 
 
+# Not exported to keep the public API clean, but GUI handles can be 
+# identified by checking cls.__module__ == 'viser._gui_handles'
 class _GuiHandle(Generic[T], AssignablePropsBase[_GuiHandleState]):
     def __init__(self, _impl: _GuiHandleState[T]) -> None:
         self._impl = _impl
@@ -609,7 +611,7 @@ class GuiTabHandle:
         self._parent._impl.gui_api._container_handle_from_uuid.pop(self._id)
 
 
-class GuiFolderHandle(_GuiHandle, GuiFolderProps):
+class GuiFolderHandle(_GuiHandle[None], GuiFolderProps):
     """Use as a context to place GUI elements into a folder."""
 
     def __init__(self, _impl: _GuiHandleState[None]) -> None:

@@ -1,3 +1,7 @@
+.. This file automatically includes all scene handles exported from viser.__init__.py
+.. Filtering is done by filter_handles_by_page() in conf.py which checks obj.__module__
+.. to include only handles from viser._scene_handles on this page
+
 Scene Handles
 =============
 
@@ -16,52 +20,7 @@ Many of these are lower-level than their equivalent arguments in factory
 methods like :func:`viser.ViserServer.add_frame()` or
 :func:`viser.ViserServer.add_image()`.
 
-.. autoclass:: viser.SceneNodeHandle
-
-.. autoclass:: viser.CameraFrustumHandle
-
-.. autoclass:: viser.FrameHandle
-
-.. autoclass:: viser.BatchedAxesHandle
-
-.. autoclass:: viser.GlbHandle
-
-.. autoclass:: viser.GridHandle
-
-.. autoclass:: viser.Gui3dContainerHandle
-
-.. autoclass:: viser.ImageHandle
-
-.. autoclass:: viser.LabelHandle
-
-.. autoclass:: viser.MeshHandle
-
-.. autoclass:: viser.BatchedMeshHandle
-
-.. autoclass:: viser.BatchedGlbHandle
-
-.. autoclass:: viser.MeshSkinnedHandle
-
-.. autoclass:: viser.MeshSkinnedBoneHandle
-
-.. autoclass:: viser.PointCloudHandle
-
-.. autoclass:: viser.SplineCatmullRomHandle
-
-.. autoclass:: viser.SplineCubicBezierHandle
-
-.. autoclass:: viser.TransformControlsHandle
-
-.. autoclass:: viser.GaussianSplatHandle
-
-.. autoclass:: viser.DirectionalLightHandle
-
-.. autoclass:: viser.AmbientLightHandle
-
-.. autoclass:: viser.HemisphereLightHandle
-
-.. autoclass:: viser.PointLightHandle
-
-.. autoclass:: viser.RectAreaLightHandle
-
-.. autoclass:: viser.SpotLightHandle
+.. automodule:: viser
+   :members:
+   :undoc-members:
+   :inherited-members:
