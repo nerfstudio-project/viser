@@ -101,7 +101,7 @@ def main() -> None:
     @server.on_client_connect
     def _(client: viser.ClientHandle) -> None:
         client.add_notification(
-            "Connected", "You are now connected to the server!", auto_close=5000
+            "Connected", "You are now connected to the server!", auto_close=30_000
         )
 
     while True:

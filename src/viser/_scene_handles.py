@@ -93,9 +93,6 @@ class _SceneNodeMessage(Protocol):
 class SceneNodeHandle(AssignablePropsBase[_SceneNodeHandleState]):
     """Handle base class for interacting with scene nodes."""
 
-    def __init__(self, impl: _SceneNodeHandleState) -> None:
-        self._impl = impl
-
     @override
     def _queue_update(self, name: str, value: Any) -> None:
         self._impl.api._websock_interface.queue_message(

@@ -1,13 +1,13 @@
 """Core concepts
 
-This example demonstrates the fundamental concepts of viser: creating a server, adding 3D objects to the scene, and building interactive GUI controls.
+Creating a server, adding 3D objects to the scene, and building interactive GUI controls.
 
-We start by creating a :class:`viser.ViserServer` instance, which automatically opens a web interface at http://localhost:8080. The server provides two main APIs:
+We start by creating a :class:`viser.ViserServer` instance, which automatically
+opens a web interface at http://localhost:8080. The server provides two main
+APIs:
 
-* **Scene API** (:attr:`viser.ViserServer.scene`): Add 3D objects like meshes, point clouds, and primitive shapes using methods like :meth:`viser.SceneApi.add_icosphere` and :meth:`viser.SceneApi.add_box`.
-* **GUI API** (:attr:`viser.ViserServer.gui`): Create interactive controls like sliders, buttons, and color pickers using methods like :meth:`viser.GuiApi.add_slider` and :meth:`viser.GuiApi.add_rgb`.
-
-GUI controls can be connected to scene objects using event handlers (:meth:`viser.GuiInputHandle.on_update`), enabling real-time interaction.
+- **Scene API** (:attr:`viser.ViserServer.scene`): Add 3D objects like meshes, point clouds, and primitive shapes using methods like :meth:`viser.SceneApi.add_icosphere` and :meth:`viser.SceneApi.add_box`.
+- **GUI API** (:attr:`viser.ViserServer.gui`): Create interactive controls like sliders, buttons, and color pickers using methods like :meth:`viser.GuiApi.add_slider` and :meth:`viser.GuiApi.add_rgb`.
 """
 
 import time

@@ -309,7 +309,7 @@ export interface BatchedMeshesMessage {
     lod: "auto" | "off" | [number, number][];
     vertices: Uint8Array;
     faces: Uint8Array;
-    color: [number, number, number];
+    batched_colors: Uint8Array;
     wireframe: boolean;
     opacity: number | null;
     flat_shading: boolean;

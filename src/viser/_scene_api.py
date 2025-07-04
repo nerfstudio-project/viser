@@ -1499,8 +1499,8 @@ class SceneApi:
         batched_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
         batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
         batched_scales: tuple[float, ...] | np.ndarray | None = None,
+        batched_colors: np.ndarray | RgbTupleOrArray = (90, 200, 255),
         lod: Literal["auto", "off"] | tuple[tuple[float, float], ...] = "auto",
-        color: RgbTupleOrArray = (90, 200, 255),
         wireframe: bool = False,
         opacity: float | None = None,
         material: Literal["standard", "toon3", "toon5"] = "standard",
@@ -1527,8 +1527,10 @@ class SceneApi:
             batched_wxyzs: Float array of shape (N, 4) for orientations.
             batched_positions: Float array of shape (N, 3) for positions.
             batched_scales: Float array of shape (N,) for uniform scales or (N,3) for per-axis (XYZ) scales. None means scale of 1.0.
+            batched_colors: Colors of the mesh instances. Can be a single color as an RGB tuple
+                to apply to all instances, or an np.ndarray of shape (N, 3) to specify colors
+                for each instance. Defaults to (90, 200, 255).
             lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
-            color: Color of the meshes as an RGB tuple.
             wireframe: Boolean indicating if the meshes should be rendered as wireframes.
             opacity: Opacity of the meshes. None means opaque.
             material: Material type of the meshes ('standard', 'toon3', 'toon5').
@@ -1567,6 +1569,11 @@ class SceneApi:
             batched_scales = np.asarray(batched_scales).astype(np.float32)
             assert batched_scales.shape in ((num_instances,), (num_instances, 3))
 
+        # Handle batched colors.
+        batched_colors_array = None
+        if batched_colors is not None:
+            batched_colors_array = colors_to_uint8(np.asarray(batched_colors))
+
         message = _messages.BatchedMeshesMessage(
             name=name,
             props=_messages.BatchedMeshesProps(
@@ -1575,7 +1582,7 @@ class SceneApi:
                 batched_wxyzs=batched_wxyzs.astype(np.float32),
                 batched_positions=batched_positions.astype(np.float32),
                 batched_scales=batched_scales,
-                color=_encode_rgb(color),
+                batched_colors=batched_colors_array,
                 wireframe=wireframe,
                 opacity=opacity,
                 flat_shading=flat_shading,

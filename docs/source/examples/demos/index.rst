@@ -1,7 +1,7 @@
 Demos
 =====
 
-Demo applications showcasing viser capabilities.
+More complete demo applications.
 
 .. toctree::
    :maxdepth: 1

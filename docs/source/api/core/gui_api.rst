@@ -5,10 +5,3 @@ GUI API
    :members:
    :undoc-members:
    :inherited-members:
-
-Theming
--------
-
-.. automodule:: viser.theme
-   :members:
-   :undoc-members:

@@ -16,7 +16,7 @@ Getting Started
                <img src="_static/examples/thumbs/00_getting_started_00_hello_world.png" alt="Hello world" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Hello world</h4>
-                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">The simplest possible viser program - creates a server and adds a red sphere.</p>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">The simplest possible viser program: creates a server and adds a red sphere.</p>
                </div>
            </a>
        </div>
@@ -25,7 +25,7 @@ Getting Started
                <img src="_static/examples/thumbs/00_getting_started_01_core_concepts.png" alt="Core concepts" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Core concepts</h4>
-                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">This example demonstrates the fundamental concepts of viser: creating a server, adding 3D objects to the scene, and building interactive GUI controls.</p>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Creating a server, adding 3D objects to the scene, and building interactive GUI controls.</p>
                </div>
            </a>
        </div>
@@ -78,9 +78,9 @@ Scene Visualization
        </div>
        <div class="example-card" style="border-radius: 3px; overflow: hidden; background: white; transition: transform 0.2s;">
            <a href="examples/scene/images/" style="text-decoration: none; color: inherit; display: block;">
-               <img src="_static/examples/thumbs/01_scene_04_images.png" alt="Image overlays" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
+               <img src="_static/examples/thumbs/01_scene_04_images.png" alt="Images" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
-                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Image overlays</h4>
+                   <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Images</h4>
                    <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Display background images and 3D image textures in the scene.</p>
                </div>
            </a>
@@ -90,7 +90,7 @@ Scene Visualization
                <img src="_static/examples/thumbs/01_scene_05_meshes_batched.png" alt="Batched mesh rendering" style="width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block;">
                <div style="padding: 15px;">
                    <h4 style="margin: 0; padding: 0; font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">Batched mesh rendering</h4>
-                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Efficiently render many instances of the same mesh with different transforms.</p>
+                   <p style="margin: 0; padding: 0; color: #666; font-size: 13px; line-height: 1.4;">Efficiently render many instances of the same mesh with different transforms and colors.</p>
                </div>
            </a>
        </div>
