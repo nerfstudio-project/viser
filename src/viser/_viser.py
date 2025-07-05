@@ -24,48 +24,13 @@ from typing_extensions import Literal, deprecated
 
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
+from ._backwards_compat_shims import DeprecatedAttributeShim
 from ._gui_api import GuiApi, LiteralColor, _make_uuid
 from ._notification_handle import NotificationHandle, _NotificationHandleState
 from ._scene_api import SceneApi, cast_vector
 from ._threadpool_exceptions import print_threadpool_errors
 from ._tunnel import ViserTunnel
 from .infra._infra import StateSerializer
-
-
-class _BackwardsCompatibilityShim:
-    """Shims for backward compatibility with viser API from version
-    `<=0.1.30`."""
-
-    def __getattr__(self, name: str) -> Any:
-        fixed_name = {
-            # Map from old method names (viser v0.1.*) to new methods names.
-            "reset_scene": "reset",
-            "set_global_scene_node_visibility": "set_global_visibility",
-            "on_scene_pointer": "on_pointer_event",
-            "on_scene_pointer_removed": "on_pointer_callback_removed",
-            "remove_scene_pointer_callback": "remove_pointer_callback",
-            "add_mesh": "add_mesh_simple",
-        }.get(name, name)
-        if hasattr(self.scene, fixed_name):
-            warnings.warn(
-                f"{type(self).__name__}.{name} has been deprecated, use {type(self).__name__}.scene.{fixed_name} instead. Alternatively, pin to `viser<0.2.0`.",
-                category=DeprecationWarning,
-                stacklevel=2,
-            )
-            return object.__getattribute__(self.scene, fixed_name)
-
-        fixed_name = name.replace("add_gui_", "add_").replace("set_gui_", "set_")
-        if hasattr(self.gui, fixed_name):
-            warnings.warn(
-                f"{type(self).__name__}.{name} has been deprecated, use {type(self).__name__}.gui.{fixed_name} instead. Alternatively, pin to `viser<0.2.0`.",
-                category=DeprecationWarning,
-                stacklevel=2,
-            )
-            return object.__getattribute__(self.gui, fixed_name)
-
-        raise AttributeError(
-            f"'{type(self).__name__}' object has no attribute '{name}'"
-        )
 
 
 @dataclasses.dataclass
@@ -344,10 +309,10 @@ class CameraHandle:
 NoneOrCoroutine = TypeVar("NoneOrCoroutine", None, Coroutine)
 
 
-# Don't inherit from _BackwardsCompatibilityShim during type checking, because
+# Don't inherit from RenamedAttributeCompatShim during type checking, because
 # this will unnecessarily suppress type errors. (from the overriding of
 # __getattr__).
-class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
+class ClientHandle(DeprecatedAttributeShim if not TYPE_CHECKING else object):
     """A handle is created for each client that connects to a server. Handles can be
     used to communicate with just one client, as well as for reading and writing of
     camera state.
@@ -622,7 +587,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         return out
 
 
-class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
+class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
     """:class:`ViserServer` is the main class for working with viser. On
     instantiation, it (a) launches a thread with a web server and (b) provides
     a high-level API for interactive 3D visualization.

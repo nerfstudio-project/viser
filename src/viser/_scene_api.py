@@ -21,6 +21,8 @@ import cv2
 import numpy as np
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never, deprecated
 
+from viser._backwards_compat_shims import deprecated_positional_shim
+
 from . import _messages
 from . import transforms as tf
 from ._assignable_props_api import colors_to_uint8
@@ -292,9 +294,11 @@ class SceneApi:
             _messages.SetSceneNodeVisibilityMessage("", visible)
         )
 
+    @deprecated_positional_shim
     def add_light_directional(
         self,
         name: str,
+        *,
         color: Tuple[int, int, int] = (255, 255, 255),
         intensity: float = 1.0,
         cast_shadow: bool = False,
@@ -326,9 +330,11 @@ class SceneApi:
             self, message, name, wxyz, position, visible
         )
 
+    @deprecated_positional_shim
     def add_light_ambient(
         self,
         name: str,
+        *,
         color: Tuple[int, int, int] = (255, 255, 255),
         intensity: float = 1.0,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
@@ -356,9 +362,11 @@ class SceneApi:
         )
         return AmbientLightHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
     def add_light_hemisphere(
         self,
         name: str,
+        *,
         sky_color: Tuple[int, int, int] = (255, 255, 255),
         ground_color: Tuple[int, int, int] = (255, 255, 255),
         intensity: float = 1.0,
@@ -388,9 +396,11 @@ class SceneApi:
         )
         return HemisphereLightHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
     def add_light_point(
         self,
         name: str,
+        *,
         color: Tuple[int, int, int] = (255, 255, 255),
         intensity: float = 1.0,
         distance: float = 0.0,
@@ -431,9 +441,11 @@ class SceneApi:
         )
         return PointLightHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
     def add_light_rectarea(
         self,
         name: str,
+        *,
         color: Tuple[int, int, int] = (255, 255, 255),
         intensity: float = 1.0,
         width: float = 10.0,
@@ -471,9 +483,11 @@ class SceneApi:
         )
         return RectAreaLightHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
     def add_light_spot(
         self,
         name: str,
+        *,
         color: Tuple[int, int, int] = (255, 255, 255),
         distance: float = 0.0,
         angle: float = np.pi / 3,
@@ -531,6 +545,7 @@ class SceneApi:
             "sunset",
             "warehouse",
         ] = "warehouse",
+        *,
         background: bool = False,
         background_blurriness: float = 0.0,
         background_intensity: float = 1.0,
@@ -605,10 +620,12 @@ class SceneApi:
             )
             return self.configure_environment_map(*args, **kwargs)
 
+    @deprecated_positional_shim
     def add_glb(
         self,
         name: str,
         glb_data: bytes,
+        *,
         scale: float = 1.0,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
@@ -643,11 +660,13 @@ class SceneApi:
         )
         return GlbHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
     def add_line_segments(
         self,
         name: str,
         points: np.ndarray,
         colors: np.ndarray | RgbTupleOrArray,
+        *,
         line_width: float = 1,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
@@ -697,6 +716,7 @@ class SceneApi:
         self,
         name: str,
         points: np.ndarray,
+        *,
         curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
         tension: float = 0.5,
         closed: bool = False,
@@ -714,6 +734,7 @@ class SceneApi:
         self,
         name: str,
         positions: tuple[tuple[float, float, float], ...],
+        *,
         curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
         tension: float = 0.5,
         closed: bool = False,
@@ -725,6 +746,7 @@ class SceneApi:
         visible: bool = True,
     ) -> SplineCatmullRomHandle: ...
 
+    @deprecated_positional_shim
     def add_spline_catmull_rom(  # pyright: ignore[reportInconsistentOverload]
         self,
         name: str,
@@ -820,6 +842,7 @@ class SceneApi:
         name: str,
         points: np.ndarray,
         control_points: np.ndarray,
+        *,
         line_width: float = 1.0,
         color: RgbTupleOrArray = (20, 20, 20),
         segments: int | None = None,
@@ -837,6 +860,7 @@ class SceneApi:
         name: str,
         positions: tuple[tuple[float, float, float], ...],
         control_points: tuple[tuple[float, float, float], ...],
+        *,
         line_width: float = 1.0,
         color: RgbTupleOrArray = (20, 20, 20),
         segments: int | None = None,
@@ -845,6 +869,7 @@ class SceneApi:
         visible: bool = True,
     ) -> SplineCubicBezierHandle: ...
 
+    @deprecated_positional_shim
     def add_spline_cubic_bezier(  # pyright: ignore[reportInconsistentOverload]
         self,
         name: str,
@@ -856,6 +881,7 @@ class SceneApi:
         control_points: tuple[tuple[float, float, float], ...]
         | np.ndarray
         | MISSING_SENTINEL_TYPE = MISSING_SENTINEL,
+        *,
         line_width: float = 1.0,
         color: RgbTupleOrArray = (20, 20, 20),
         segments: int | None = None,
@@ -932,11 +958,13 @@ class SceneApi:
             self, message, name, wxyz, position, visible
         )
 
+    @deprecated_positional_shim
     def add_camera_frustum(
         self,
         name: str,
         fov: float,
         aspect: float,
+        *,
         scale: float = 0.3,
         line_width: float = 2.0,
         color: RgbTupleOrArray = (20, 20, 20),
@@ -1008,10 +1036,12 @@ class SceneApi:
         handle._jpeg_quality = jpeg_quality
         return handle
 
+    @deprecated_positional_shim
     def add_frame(
         self,
         name: str,
         show_axes: bool = True,
+        *,
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
         origin_radius: float | None = None,
@@ -1059,12 +1089,14 @@ class SceneApi:
         )
         return FrameHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
     def add_batched_axes(
         self,
         name: str,
         batched_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
         batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
         batched_scales: tuple[float, ...] | np.ndarray | None = None,
+        *,
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
@@ -1124,11 +1156,13 @@ class SceneApi:
         )
         return BatchedAxesHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
     def add_grid(
         self,
         name: str,
         width: float = 10.0,
         height: float = 10.0,
+        *,
         width_segments: int = 10,
         height_segments: int = 10,
         plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"] = "xy",
@@ -1187,10 +1221,12 @@ class SceneApi:
         )
         return GridHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
     def add_label(
         self,
         name: str,
         text: str,
+        *,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1213,11 +1249,13 @@ class SceneApi:
         message = _messages.LabelMessage(name, _messages.LabelProps(text))
         return LabelHandle._make(self, message, name, wxyz, position, visible=visible)
 
+    @deprecated_positional_shim
     def add_point_cloud(
         self,
         name: str,
         points: np.ndarray,
         colors: np.ndarray | RgbTupleOrArray,
+        *,
         point_size: float = 0.1,
         point_shape: Literal[
             "square", "diamond", "circle", "rounded", "sparkle"
@@ -1271,11 +1309,13 @@ class SceneApi:
         )
         return PointCloudHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
     def add_mesh_skinned(
         self,
         name: str,
         vertices: np.ndarray,
         faces: np.ndarray,
+        *,
         bone_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
         bone_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
         skin_weights: np.ndarray,
@@ -1285,11 +1325,11 @@ class SceneApi:
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
         wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-        cast_shadow: bool = True,
-        receive_shadow: bool = True,
     ) -> MeshSkinnedHandle:
         """Add a skinned mesh to the scene, which we can deform using a set of
         bone transformations.
@@ -1313,11 +1353,11 @@ class SceneApi:
             flat_shading: Whether to do flat shading. This argument is ignored
                 when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
+            cast_shadow: Whether this skinned mesh should cast shadows.
+            receive_shadow: Whether this skinned mesh should receive shadows.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this mesh is initially visible.
-            cast_shadow: Whether this skinned mesh should cast shadows.
-            receive_shadow: Whether this skinned mesh should receive shadows.
 
         Returns:
             Handle for manipulating scene node.
@@ -1386,22 +1426,24 @@ class SceneApi:
             ),
         )
 
+    @deprecated_positional_shim
     def add_mesh_simple(
         self,
         name: str,
         vertices: np.ndarray,
         faces: np.ndarray,
+        *,
         color: RgbTupleOrArray = (90, 200, 255),
         wireframe: bool = False,
         opacity: float | None = None,
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-        cast_shadow: bool = True,
-        receive_shadow: bool = True,
     ) -> MeshHandle:
         """Add a mesh to the scene.
 
@@ -1419,11 +1461,11 @@ class SceneApi:
             flat_shading: Whether to do flat shading. This argument is ignored
                 when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
+            cast_shadow: Whether this mesh should cast shadows.
+            receive_shadow: Whether this mesh should receive shadows.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this mesh is initially visible.
-            cast_shadow: Whether this mesh should cast shadows.
-            receive_shadow: Whether this mesh should receive shadows.
 
         Returns:
             Handle for manipulating scene node.
@@ -1455,10 +1497,12 @@ class SceneApi:
         )
         return MeshHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
     def add_mesh_trimesh(
         self,
         name: str,
         mesh: trimesh.Trimesh,
+        *,
         scale: float = 1.0,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
@@ -1491,6 +1535,7 @@ class SceneApi:
                 visible=visible,
             )
 
+    @deprecated_positional_shim
     def add_batched_meshes_simple(
         self,
         name: str,
@@ -1498,6 +1543,7 @@ class SceneApi:
         faces: np.ndarray,
         batched_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
         batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        *,
         batched_scales: tuple[float, ...] | np.ndarray | None = None,
         batched_colors: np.ndarray | RgbTupleOrArray = (90, 200, 255),
         lod: Literal["auto", "off"] | tuple[tuple[float, float], ...] = "auto",
@@ -1506,11 +1552,11 @@ class SceneApi:
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-        cast_shadow: bool = True,
-        receive_shadow: bool = True,
     ) -> BatchedMeshHandle:
         """Add batched meshes to the scene.
 
@@ -1538,11 +1584,11 @@ class SceneApi:
             flat_shading: Whether to do flat shading. This argument is ignored
                 when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
+            cast_shadow: Whether these meshes should cast shadows.
+            receive_shadow: Whether these meshes should receive shadows.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not these meshes are initially visible.
-            cast_shadow: Whether these meshes should cast shadows.
-            receive_shadow: Whether these meshes should receive shadows.
 
         Returns:
             Handle for manipulating scene node.
@@ -1595,19 +1641,21 @@ class SceneApi:
         )
         return BatchedMeshHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
     def add_batched_meshes_trimesh(
         self,
         name: str,
         mesh: trimesh.Trimesh,
         batched_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
         batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        *,
         batched_scales: tuple[float, ...] | np.ndarray | None = None,
         lod: Literal["auto", "off"] | tuple[tuple[float, float], ...] = "auto",
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-        cast_shadow: bool = True,
-        receive_shadow: bool = True,
     ) -> BatchedGlbHandle:
         """Add batched trimesh meshes to the scene.
 
@@ -1626,11 +1674,11 @@ class SceneApi:
             batched_positions: Float array of shape (N, 3) for positions.
             batched_scales: Float array of shape (N,) for uniform scales or (N,3) for per-axis (XYZ) scales. None means scale of 1.0.
             lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
+            cast_shadow: Whether these meshes should cast shadows.
+            receive_shadow: Whether these meshes should receive shadows.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
-            cast_shadow: Whether these meshes should cast shadows.
-            receive_shadow: Whether these meshes should receive shadows.
 
         Returns:
             Handle for manipulating scene node.
@@ -1663,19 +1711,21 @@ class SceneApi:
             )
             return BatchedGlbHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
     def add_batched_glb(
         self,
         name: str,
         glb_data: bytes,
         batched_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
         batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        *,
         batched_scales: tuple[float, ...] | np.ndarray | None = None,
         lod: Literal["auto", "off"] | tuple[tuple[float, float], ...] = "auto",
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-        cast_shadow: bool = True,
-        receive_shadow: bool = True,
     ) -> BatchedGlbHandle:
         """Add batched GLB assets to the scene.
 
@@ -1694,11 +1744,11 @@ class SceneApi:
             batched_positions: Float array of shape (N, 3) for positions.
             batched_scales: Float array of shape (N,) for uniform scales or (N,3) for per-axis (XYZ) scales. None means scale of 1.0.
             lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
+            cast_shadow: Whether these GLB assets should cast shadows.
+            receive_shadow: Whether these GLB assets should receive shadows.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
-            cast_shadow: Whether these GLB assets should cast shadows.
-            receive_shadow: Whether these GLB assets should receive shadows.
 
         Returns:
             Handle for manipulating scene node.
@@ -1732,6 +1782,7 @@ class SceneApi:
         """Backwards compatibility shim. Use `add_gaussian_splats()` instead."""
         return self.add_gaussian_splats(*args, **kwargs)
 
+    @deprecated_positional_shim
     def add_gaussian_splats(
         self,
         name: str,
@@ -1739,6 +1790,7 @@ class SceneApi:
         covariances: np.ndarray,
         rgbs: np.ndarray,
         opacities: np.ndarray,
+        *,
         wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1798,14 +1850,13 @@ class SceneApi:
         )
         return node_handle
 
+    @deprecated_positional_shim
     def add_box(
         self,
         name: str,
         color: RgbTupleOrArray = (255, 0, 0),
         dimensions: tuple[float, float, float] | np.ndarray = (1.0, 1.0, 1.0),
-        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
-        visible: bool = True,
+        *,
         wireframe: bool = False,
         opacity: float | None = None,
         material: Literal["standard", "toon3", "toon5"] = "standard",
@@ -1813,6 +1864,9 @@ class SceneApi:
         side: Literal["front", "back", "double"] = "front",
         cast_shadow: bool = True,
         receive_shadow: bool = True,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
     ) -> BoxHandle:
         """Add a box to the scene.
 
@@ -1821,9 +1875,6 @@ class SceneApi:
                 define a kinematic tree.
             color: Color of the box as an RGB tuple.
             dimensions: Dimensions of the box (x, y, z).
-            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
-            position: Translation from parent frame to local frame (t_pl).
-            visible: Whether or not this box is initially visible.
             wireframe: Boolean indicating if the box should be rendered as a wireframe.
             opacity: Opacity of the box. None means opaque.
             material: Material type of the box ('standard', 'toon3', 'toon5').
@@ -1831,6 +1882,9 @@ class SceneApi:
             side: Side of the surface to render ('front', 'back', 'double').
             cast_shadow: Whether this box should cast shadows.
             receive_shadow: Whether this box should receive shadows.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation from parent frame to local frame (t_pl).
+            visible: Whether or not this box is initially visible.
 
         Returns:
             Handle for manipulating scene node.
@@ -1869,15 +1923,14 @@ class SceneApi:
         )
         return BoxHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
     def add_icosphere(
         self,
         name: str,
         radius: float = 1.0,
         color: RgbTupleOrArray = (255, 0, 0),
+        *,
         subdivisions: int = 3,
-        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
-        visible: bool = True,
         wireframe: bool = False,
         opacity: float | None = None,
         material: Literal["standard", "toon3", "toon5"] = "standard",
@@ -1885,6 +1938,9 @@ class SceneApi:
         side: Literal["front", "back", "double"] = "front",
         cast_shadow: bool = True,
         receive_shadow: bool = True,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
     ) -> IcosphereHandle:
         """Add an icosphere to the scene.
 
@@ -1894,9 +1950,6 @@ class SceneApi:
             radius: Radius of the icosphere.
             color: Color of the icosphere as an RGB tuple.
             subdivisions: Number of subdivisions to use when creating the icosphere.
-            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
-            position: Translation from parent frame to local frame (t_pl).
-            visible: Whether or not this icosphere is initially visible.
             wireframe: Boolean indicating if the icosphere should be rendered as a wireframe.
             opacity: Opacity of the icosphere. None means opaque.
             material: Material type of the icosphere ('standard', 'toon3', 'toon5').
@@ -1904,6 +1957,9 @@ class SceneApi:
             side: Side of the surface to render ('front', 'back', 'double').
             cast_shadow: Whether this icosphere should cast shadows.
             receive_shadow: Whether this icosphere should receive shadows.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation from parent frame to local frame (t_pl).
+            visible: Whether or not this icosphere is initially visible.
 
         Returns:
             Handle for manipulating scene node.
@@ -1929,6 +1985,7 @@ class SceneApi:
         self,
         image: np.ndarray | None,
         format: Literal["png", "jpeg"] = "jpeg",
+        *,
         jpeg_quality: int | None = None,
         depth: np.ndarray | None = None,
     ) -> None:
@@ -1980,19 +2037,21 @@ class SceneApi:
             )
         )
 
+    @deprecated_positional_shim
     def add_image(
         self,
         name: str,
         image: np.ndarray,
         render_width: float,
         render_height: float,
+        *,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: int | None = None,
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-        cast_shadow: bool = True,
-        receive_shadow: bool = True,
     ) -> ImageHandle:
         """Add a 2D image to the scene.
 
@@ -2004,11 +2063,11 @@ class SceneApi:
             render_height: Height at which the image should be rendered in the scene.
             format: Format to transport and display the image using ('png' or 'jpeg').
             jpeg_quality: Quality of the jpeg image (if jpeg format is used).
+            cast_shadow: Whether this image should cast shadows.
+            receive_shadow: Whether this image should receive shadows.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this image is initially visible.
-            cast_shadow: Whether this image should cast shadows.
-            receive_shadow: Whether this image should receive shadows.
 
         Returns:
             Handle for manipulating scene node.
@@ -2032,10 +2091,12 @@ class SceneApi:
         handle._jpeg_quality = jpeg_quality
         return handle
 
+    @deprecated_positional_shim
     def add_transform_controls(
         self,
         name: str,
         scale: float = 1.0,
+        *,
         line_width: float = 2.5,
         fixed: bool = False,
         active_axes: tuple[bool, bool, bool] = (True, True, True),
@@ -2381,9 +2442,11 @@ class SceneApi:
         self._scene_pointer_done_cb = lambda: None
         self._scene_pointer_event_type = None
 
+    @deprecated_positional_shim
     def add_3d_gui_container(
         self,
         name: str,
+        *,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
