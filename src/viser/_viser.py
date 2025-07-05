@@ -20,7 +20,7 @@ import rich
 from rich import box, style
 from rich.panel import Panel
 from rich.table import Table
-from typing_extensions import Literal
+from typing_extensions import Literal, deprecated
 
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
@@ -446,12 +446,43 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             )
             self.flush()
 
+    @overload
     def add_notification(
         self,
         title: str,
         body: str,
+        *,
         loading: bool = False,
         with_close_button: bool = True,
+        auto_close_seconds: float | None = None,
+        color: LiteralColor | tuple[int, int, int] | None = None,
+    ) -> NotificationHandle: ...
+
+    @overload
+    @deprecated(
+        "The `auto_close` argument has been deprecated. Use `auto_close_seconds` instead."
+    )
+    def add_notification(
+        self,
+        title: str,
+        body: str,
+        *,
+        loading: bool = False,
+        with_close_button: bool = True,
+        auto_close: int | Literal[False] = False,
+        color: LiteralColor | tuple[int, int, int] | None = None,
+    ) -> NotificationHandle: ...
+
+    def add_notification(
+        self,
+        title: str,
+        body: str,
+        *,
+        loading: bool = False,
+        with_close_button: bool = True,
+        # In seconds: current API.
+        auto_close_seconds: float | None = None,
+        # In milliseconds: deprecated.
         auto_close: int | Literal[False] = False,
         color: LiteralColor | tuple[int, int, int] | None = None,
     ) -> NotificationHandle:
@@ -461,17 +492,27 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         top left corner of the client's viewer. Notifications are useful for
         providing alerts or status updates to users.
 
+        .. deprecated::
+            The `auto_close` argument is deprecated. Use `auto_close_seconds` instead.
+
         Args:
             title: Title to display on the notification.
             body: Message to display on the notification body.
             loading: Whether the notification shows loading icon.
             with_close_button: Whether the notification can be manually closed.
-            auto_close: Time in ms before the notification automatically closes;
-                        otherwise False such that the notification never closes on its own.
+            auto_close_seconds: Time before the notification automatically
+                closes; None if the notification does not close on its own.
 
         Returns:
             A handle that can be used to interact with the GUI element.
         """
+        if auto_close is not False:
+            warnings.warn(
+                "The `auto_close` (milliseconds) argument has been deprecated. Use `auto_close_seconds` instead.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            auto_close_seconds = auto_close / 1000.0
         handle = NotificationHandle(
             _NotificationHandleState(
                 websock_interface=self._websock_connection,
@@ -481,7 +522,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
                     body=body,
                     loading=loading,
                     with_close_button=with_close_button,
-                    auto_close=auto_close,
+                    auto_close_seconds=auto_close_seconds,
                     color=color,
                 ),
             )

@@ -65,23 +65,24 @@ if __name__ == "__main__":
             print(f"Fetched {len(contributors_data)} contributors from GitHub")
     except Exception as e:
         print(f"Warning: Failed to fetch contributors from GitHub: {e}")
-        print("Using empty contributors list")
+        print("Skipping version and contributors info.")
 
-    # Generate combined version and contributors file
-    version_content = f"""// Automatically generated file - do not edit manually.
-// This is synchronized with the Python package version in viser/__init__.py.
-export const VISER_VERSION = "{viser.__version__}";
+    if len(contributors_data) > 0:
+        # Generate combined version and contributors file
+        version_content = f"""// Automatically generated file - do not edit manually.
+    // This is synchronized with the Python package version in viser/__init__.py.
+    export const VISER_VERSION = "{viser.__version__}";
 
-// GitHub contributors for the viser project.
-export interface Contributor {{
-  login: string;
-  html_url: string;
-}}
+    // GitHub contributors for the viser project.
+    export interface Contributor {{
+      login: string;
+      html_url: string;
+    }}
 
-export const GITHUB_CONTRIBUTORS: Contributor[] = {json.dumps(contributors_data, indent=2)};
-"""
-    version_path.write_text(version_content)
-    print(f"Version and contributors info generated: {version_path}")
+    export const GITHUB_CONTRIBUTORS: Contributor[] = {json.dumps(contributors_data, indent=2)};
+    """
+        version_path.write_text(version_content)
+        print(f"Version and contributors info generated: {version_path}")
 
     # Run prettier on all generated files if it's available
     try:

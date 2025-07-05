@@ -156,8 +156,8 @@ class NotificationProps:
     """Whether to show a loading indicator. Synchronized automatically when assigned."""
     with_close_button: bool
     """Whether to show a close button. Synchronized automatically when assigned."""
-    auto_close: Union[int, Literal[False]]
-    """Time in milliseconds after which the notification should auto-close, or False to disable auto-close. Synchronized automatically when assigned."""
+    auto_close_seconds: Union[float, None]
+    """Time in seconds after which the notification should auto-close, or False to disable auto-close. Synchronized automatically when assigned."""
     color: Union[LiteralColor, Tuple[int, int, int], None]
     """Color of the notification. Synchronized automatically when assigned."""
 

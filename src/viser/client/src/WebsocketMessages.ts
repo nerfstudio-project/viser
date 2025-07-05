@@ -1052,7 +1052,7 @@ export interface NotificationMessage {
     body: string;
     loading: boolean;
     with_close_button: boolean;
-    auto_close: number | false;
+    auto_close_seconds: number | null;
     color:
       | "dark"
       | "gray"

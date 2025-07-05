@@ -48,9 +48,7 @@ Code
            client.add_notification(
                title="Persistent notification",
                body="This can be closed manually and does not disappear on its own!",
-               loading=False,
                with_close_button=True,
-               auto_close=False,
            )
    
        @timed_notif_button.on_click
@@ -61,9 +59,7 @@ Code
            client.add_notification(
                title="Timed notification",
                body="This disappears automatically after 5 seconds!",
-               loading=False,
-               with_close_button=True,
-               auto_close=30_000,
+               auto_close_seconds=5.0,
            )
    
        @controlled_notif_button.on_click
@@ -74,9 +70,8 @@ Code
            controlled_notif = client.add_notification(
                title="Controlled notification",
                body="This cannot be closed by the user and is controlled in code only!",
-               loading=False,
                with_close_button=False,
-               auto_close=False,
+               auto_close_seconds=False,
            )
    
            @remove_controlled_notif.on_click
@@ -93,22 +88,22 @@ Code
                body="This indicates that some action is in progress! It will be updated in 3 seconds.",
                loading=True,
                with_close_button=False,
-               auto_close=False,
            )
-   
            time.sleep(3.0)
    
            loading_notif.title = "Updated notification"
            loading_notif.body = "This notification has been updated!"
            loading_notif.loading = False
            loading_notif.with_close_button = True
-           loading_notif.auto_close = 5000
+           loading_notif.auto_close_seconds = 5.0
            loading_notif.color = "green"
    
        @server.on_client_connect
        def _(client: viser.ClientHandle) -> None:
            client.add_notification(
-               "Connected", "You are now connected to the server!", auto_close=5000
+               "Connected",
+               "You are now connected to the server!",
+               auto_close_seconds=30.0,
            )
    
        while True:
