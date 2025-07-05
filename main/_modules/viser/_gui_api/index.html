@@ -448,6 +448,7 @@
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">theme</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">viser._backwards_compat_shims</span><span class="w"> </span><span class="kn">import</span> <span class="n">deprecated_positional_shim</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_messages</span><span class="p">,</span> <span class="n">uplot</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._gui_handles</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -908,9 +909,11 @@
 
 <div class="viewcode-block" id="GuiApi.add_folder">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_folder">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_folder</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">expand_by_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -955,9 +958,11 @@
 
 <div class="viewcode-block" id="GuiApi.add_modal">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_modal">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_modal</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiModalHandle</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Show a modal window, which can be useful for popups and messages, then return</span>
@@ -987,8 +992,10 @@
 
 <div class="viewcode-block" id="GuiApi.add_tab_group">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_tab_group">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_tab_group</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiTabGroupHandle</span><span class="p">:</span>
@@ -1029,9 +1036,11 @@
 
 <div class="viewcode-block" id="GuiApi.add_markdown">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_markdown">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_markdown</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">image_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -1078,9 +1087,11 @@
 
 <div class="viewcode-block" id="GuiApi.add_html">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_html">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_html</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiHtmlHandle</span><span class="p">:</span>
@@ -1119,9 +1130,11 @@
 
 <div class="viewcode-block" id="GuiApi.add_image">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_image">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_image</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="nb">format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span>
         <span class="n">jpeg_quality</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1158,9 +1171,11 @@
 
 <div class="viewcode-block" id="GuiApi.add_plotly">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_plotly">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_plotly</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">figure</span><span class="p">:</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">aspect</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -1243,6 +1258,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_uplot">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_uplot">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_uplot</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">data</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
@@ -1372,9 +1388,11 @@
 
 <div class="viewcode-block" id="GuiApi.add_button">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_button">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_button</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1425,9 +1443,11 @@
 
 <div class="viewcode-block" id="GuiApi.add_upload_button">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_upload_button">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_upload_button</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1480,12 +1500,14 @@
 
 <div class="viewcode-block" id="GuiApi.add_button_group">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_button_group">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_button_group</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">options</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-        <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiButtonGroupHandle</span><span class="p">:</span>
@@ -1494,8 +1516,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            label: Label to display on the button group.</span>
 <span class="sd">            options: Sequence of options to display as buttons.</span>
-<span class="sd">            visible: Whether the button group is visible.</span>
 <span class="sd">            disabled: Whether the button group is disabled.</span>
+<span class="sd">            visible: Whether the button group is visible.</span>
 <span class="sd">            hint: Optional hint to display on hover.</span>
 <span class="sd">            order: Optional ordering, smallest values will be displayed first.</span>
 
@@ -1528,10 +1550,12 @@
 
 <div class="viewcode-block" id="GuiApi.add_checkbox">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_checkbox">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_checkbox</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1575,10 +1599,12 @@
 
 <div class="viewcode-block" id="GuiApi.add_text">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_text">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_text</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">multiline</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -1626,10 +1652,12 @@
 
 <div class="viewcode-block" id="GuiApi.add_number">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_number">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_number</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="n">IntOrFloat</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="nb">min</span><span class="p">:</span> <span class="n">IntOrFloat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="nb">max</span><span class="p">:</span> <span class="n">IntOrFloat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">step</span><span class="p">:</span> <span class="n">IntOrFloat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1702,10 +1730,12 @@
 
 <div class="viewcode-block" id="GuiApi.add_vector2">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_vector2">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_vector2</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="nb">min</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="nb">max</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1771,10 +1801,12 @@
 
 <div class="viewcode-block" id="GuiApi.add_vector3">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_vector3">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_vector3</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="nb">min</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="nb">max</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1844,6 +1876,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">options</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">TLiteralString</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="n">TLiteralString</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -1856,6 +1889,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">options</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">TString</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="n">TString</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -1865,10 +1899,12 @@
 
 <div class="viewcode-block" id="GuiApi.add_dropdown">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_dropdown">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_dropdown</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">options</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">TLiteralString</span><span class="p">]</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">TString</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="n">TLiteralString</span> <span class="o">|</span> <span class="n">TString</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -1916,9 +1952,11 @@
 
 <div class="viewcode-block" id="GuiApi.add_progress_bar">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_progress_bar">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_progress_bar</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">animated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">color</span><span class="p">:</span> <span class="n">LiteralColor</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1963,6 +2001,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_slider">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_slider">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_slider</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1970,6 +2009,7 @@
         <span class="nb">max</span><span class="p">:</span> <span class="n">IntOrFloat</span><span class="p">,</span>
         <span class="n">step</span><span class="p">:</span> <span class="n">IntOrFloat</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="n">IntOrFloat</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">marks</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">IntOrFloat</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">IntOrFloat</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -2050,6 +2090,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_multi_slider">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_multi_slider">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_multi_slider</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2057,6 +2098,7 @@
         <span class="nb">max</span><span class="p">:</span> <span class="n">IntOrFloat</span><span class="p">,</span>
         <span class="n">step</span><span class="p">:</span> <span class="n">IntOrFloat</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">IntOrFloat</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">min_range</span><span class="p">:</span> <span class="n">IntOrFloat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">fixed_endpoints</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">marks</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">IntOrFloat</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">IntOrFloat</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2140,10 +2182,12 @@
 
 <div class="viewcode-block" id="GuiApi.add_rgb">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_rgb">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_rgb</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2187,10 +2231,12 @@
 
 <div class="viewcode-block" id="GuiApi.add_rgba">
 <a class="viewcode-back" href="../../../api/core/gui_api/#viser.GuiApi.add_rgba">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_rgba</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>

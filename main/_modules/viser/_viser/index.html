@@ -441,48 +441,13 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_client_autobuild</span><span class="p">,</span> <span class="n">_messages</span><span class="p">,</span> <span class="n">infra</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">transforms</span> <span class="k">as</span> <span class="n">tf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._backwards_compat_shims</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeprecatedAttributeShim</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._gui_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">GuiApi</span><span class="p">,</span> <span class="n">LiteralColor</span><span class="p">,</span> <span class="n">_make_uuid</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._notification_handle</span><span class="w"> </span><span class="kn">import</span> <span class="n">NotificationHandle</span><span class="p">,</span> <span class="n">_NotificationHandleState</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._scene_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">SceneApi</span><span class="p">,</span> <span class="n">cast_vector</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._threadpool_exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_threadpool_errors</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._tunnel</span><span class="w"> </span><span class="kn">import</span> <span class="n">ViserTunnel</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.infra._infra</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateSerializer</span>
-
-
-<span class="k">class</span><span class="w"> </span><span class="nc">_BackwardsCompatibilityShim</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shims for backward compatibility with viser API from version</span>
-<span class="sd">    `&lt;=0.1.30`.&quot;&quot;&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="n">fixed_name</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="c1"># Map from old method names (viser v0.1.*) to new methods names.</span>
-            <span class="s2">&quot;reset_scene&quot;</span><span class="p">:</span> <span class="s2">&quot;reset&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;set_global_scene_node_visibility&quot;</span><span class="p">:</span> <span class="s2">&quot;set_global_visibility&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;on_scene_pointer&quot;</span><span class="p">:</span> <span class="s2">&quot;on_pointer_event&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;on_scene_pointer_removed&quot;</span><span class="p">:</span> <span class="s2">&quot;on_pointer_callback_removed&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;remove_scene_pointer_callback&quot;</span><span class="p">:</span> <span class="s2">&quot;remove_pointer_callback&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;add_mesh&quot;</span><span class="p">:</span> <span class="s2">&quot;add_mesh_simple&quot;</span><span class="p">,</span>
-        <span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">fixed_name</span><span class="p">):</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> has been deprecated, use </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.scene.</span><span class="si">{</span><span class="n">fixed_name</span><span class="si">}</span><span class="s2"> instead. Alternatively, pin to `viser&lt;0.2.0`.&quot;</span><span class="p">,</span>
-                <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">,</span>
-                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">fixed_name</span><span class="p">)</span>
-
-        <span class="n">fixed_name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;add_gui_&quot;</span><span class="p">,</span> <span class="s2">&quot;add_&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;set_gui_&quot;</span><span class="p">,</span> <span class="s2">&quot;set_&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gui</span><span class="p">,</span> <span class="n">fixed_name</span><span class="p">):</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> has been deprecated, use </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.gui.</span><span class="si">{</span><span class="n">fixed_name</span><span class="si">}</span><span class="s2"> instead. Alternatively, pin to `viser&lt;0.2.0`.&quot;</span><span class="p">,</span>
-                <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">,</span>
-                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gui</span><span class="p">,</span> <span class="n">fixed_name</span><span class="p">)</span>
-
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; object has no attribute &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
-        <span class="p">)</span>
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -770,12 +735,12 @@
 <span class="n">NoneOrCoroutine</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;NoneOrCoroutine&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">)</span>
 
 
-<span class="c1"># Don&#39;t inherit from _BackwardsCompatibilityShim during type checking, because</span>
+<span class="c1"># Don&#39;t inherit from RenamedAttributeCompatShim during type checking, because</span>
 <span class="c1"># this will unnecessarily suppress type errors. (from the overriding of</span>
 <span class="c1"># __getattr__).</span>
 <div class="viewcode-block" id="ClientHandle">
 <a class="viewcode-back" href="../../../api/handles/client_handles/#viser.ClientHandle">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">ClientHandle</span><span class="p">(</span><span class="n">_BackwardsCompatibilityShim</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ClientHandle</span><span class="p">(</span><span class="n">DeprecatedAttributeShim</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A handle is created for each client that connects to a server. Handles can be</span>
 <span class="sd">    used to communicate with just one client, as well as for reading and writing of</span>
 <span class="sd">    camera state.</span>
@@ -1068,7 +1033,7 @@
 
 <div class="viewcode-block" id="ViserServer">
 <a class="viewcode-back" href="../../../api/core/server/#viser.ViserServer">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">ViserServer</span><span class="p">(</span><span class="n">_BackwardsCompatibilityShim</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ViserServer</span><span class="p">(</span><span class="n">DeprecatedAttributeShim</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`ViserServer` is the main class for working with viser. On</span>
 <span class="sd">    instantiation, it (a) launches a thread with a web server and (b) provides</span>
 <span class="sd">    a high-level API for interactive 3D visualization.</span>
