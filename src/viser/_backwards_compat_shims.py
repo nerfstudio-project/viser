@@ -72,7 +72,7 @@ def deprecated_positional_shim(func: TCallable) -> TCallable:
 
                     return func(*pos_args, **new_kwargs)
 
-            # Re-raise if it's not a positional argument error
+            # Re-raise if it's not a positional argument error.
             raise
 
     return inner  # type: ignore
