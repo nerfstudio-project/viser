@@ -31,6 +31,7 @@ from typing_extensions import (
 )
 
 from viser import theme
+from viser._backwards_compat_shims import deprecated_positional_shim
 
 from . import _messages, uplot
 from ._gui_handles import (
@@ -478,9 +479,11 @@ class GuiApi:
             ),
         )
 
+    @deprecated_positional_shim
     def add_folder(
         self,
         label: str,
+        *,
         order: float | None = None,
         expand_by_default: bool = True,
         visible: bool = True,
@@ -522,9 +525,11 @@ class GuiApi:
             )
         )
 
+    @deprecated_positional_shim
     def add_modal(
         self,
         title: str,
+        *,
         order: float | None = None,
     ) -> GuiModalHandle:
         """Show a modal window, which can be useful for popups and messages, then return
@@ -551,8 +556,10 @@ class GuiApi:
             _uuid=modal_container_id,
         )
 
+    @deprecated_positional_shim
     def add_tab_group(
         self,
+        *,
         order: float | None = None,
         visible: bool = True,
     ) -> GuiTabGroupHandle:
@@ -590,9 +597,11 @@ class GuiApi:
             )
         )
 
+    @deprecated_positional_shim
     def add_markdown(
         self,
         content: str,
+        *,
         image_root: Path | None = None,
         order: float | None = None,
         visible: bool = True,
@@ -636,9 +645,11 @@ class GuiApi:
         handle.content = content
         return handle
 
+    @deprecated_positional_shim
     def add_html(
         self,
         content: str,
+        *,
         order: float | None = None,
         visible: bool = True,
     ) -> GuiHtmlHandle:
@@ -674,9 +685,11 @@ class GuiApi:
         )
         return handle
 
+    @deprecated_positional_shim
     def add_image(
         self,
         image: np.ndarray,
+        *,
         label: str | None = None,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: int | None = None,
@@ -710,9 +723,11 @@ class GuiApi:
         handle.image = image
         return handle
 
+    @deprecated_positional_shim
     def add_plotly(
         self,
         figure: go.Figure,
+        *,
         aspect: float = 1.0,
         order: float | None = None,
         visible: bool = True,
@@ -792,6 +807,7 @@ class GuiApi:
         handle.aspect = aspect
         return handle
 
+    @deprecated_positional_shim
     def add_uplot(
         self,
         data: tuple[np.ndarray, ...],
@@ -918,9 +934,11 @@ class GuiApi:
             ),
         )
 
+    @deprecated_positional_shim
     def add_button(
         self,
         label: str,
+        *,
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
@@ -968,9 +986,11 @@ class GuiApi:
             )
         )
 
+    @deprecated_positional_shim
     def add_upload_button(
         self,
         label: str,
+        *,
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
@@ -1020,12 +1040,14 @@ class GuiApi:
             )
         )
 
+    @deprecated_positional_shim
     def add_button_group(
         self,
         label: str,
         options: Sequence[str],
-        visible: bool = True,
+        *,
         disabled: bool = False,
+        visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
     ) -> GuiButtonGroupHandle:
@@ -1034,8 +1056,8 @@ class GuiApi:
         Args:
             label: Label to display on the button group.
             options: Sequence of options to display as buttons.
-            visible: Whether the button group is visible.
             disabled: Whether the button group is disabled.
+            visible: Whether the button group is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
 
@@ -1065,10 +1087,12 @@ class GuiApi:
             ),
         )
 
+    @deprecated_positional_shim
     def add_checkbox(
         self,
         label: str,
         initial_value: bool,
+        *,
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
@@ -1109,10 +1133,12 @@ class GuiApi:
             )
         )
 
+    @deprecated_positional_shim
     def add_text(
         self,
         label: str,
         initial_value: str,
+        *,
         multiline: bool = False,
         disabled: bool = False,
         visible: bool = True,
@@ -1157,10 +1183,12 @@ class GuiApi:
             )
         )
 
+    @deprecated_positional_shim
     def add_number(
         self,
         label: str,
         initial_value: IntOrFloat,
+        *,
         min: IntOrFloat | None = None,
         max: IntOrFloat | None = None,
         step: IntOrFloat | None = None,
@@ -1230,10 +1258,12 @@ class GuiApi:
             )
         )
 
+    @deprecated_positional_shim
     def add_vector2(
         self,
         label: str,
         initial_value: tuple[float, float] | np.ndarray,
+        *,
         min: tuple[float, float] | np.ndarray | None = None,
         max: tuple[float, float] | np.ndarray | None = None,
         step: float | None = None,
@@ -1296,10 +1326,12 @@ class GuiApi:
             )
         )
 
+    @deprecated_positional_shim
     def add_vector3(
         self,
         label: str,
         initial_value: tuple[float, float, float] | np.ndarray,
+        *,
         min: tuple[float, float, float] | np.ndarray | None = None,
         max: tuple[float, float, float] | np.ndarray | None = None,
         step: float | None = None,
@@ -1368,6 +1400,7 @@ class GuiApi:
         self,
         label: str,
         options: Sequence[TLiteralString],
+        *,
         initial_value: TLiteralString | None = None,
         disabled: bool = False,
         visible: bool = True,
@@ -1380,6 +1413,7 @@ class GuiApi:
         self,
         label: str,
         options: Sequence[TString],
+        *,
         initial_value: TString | None = None,
         disabled: bool = False,
         visible: bool = True,
@@ -1387,10 +1421,12 @@ class GuiApi:
         order: float | None = None,
     ) -> GuiDropdownHandle[TString]: ...
 
+    @deprecated_positional_shim
     def add_dropdown(
         self,
         label: str,
         options: Sequence[TLiteralString] | Sequence[TString],
+        *,
         initial_value: TLiteralString | TString | None = None,
         disabled: bool = False,
         visible: bool = True,
@@ -1435,9 +1471,11 @@ class GuiApi:
             ),
         )
 
+    @deprecated_positional_shim
     def add_progress_bar(
         self,
         value: float,
+        *,
         visible: bool = True,
         animated: bool = False,
         color: LiteralColor | tuple[int, int, int] | None = None,
@@ -1479,6 +1517,7 @@ class GuiApi:
         )
         return handle
 
+    @deprecated_positional_shim
     def add_slider(
         self,
         label: str,
@@ -1486,6 +1525,7 @@ class GuiApi:
         max: IntOrFloat,
         step: IntOrFloat,
         initial_value: IntOrFloat,
+        *,
         marks: tuple[IntOrFloat | tuple[IntOrFloat, str], ...] | None = None,
         disabled: bool = False,
         visible: bool = True,
@@ -1563,6 +1603,7 @@ class GuiApi:
             )
         )
 
+    @deprecated_positional_shim
     def add_multi_slider(
         self,
         label: str,
@@ -1570,6 +1611,7 @@ class GuiApi:
         max: IntOrFloat,
         step: IntOrFloat,
         initial_value: tuple[IntOrFloat, ...],
+        *,
         min_range: IntOrFloat | None = None,
         fixed_endpoints: bool = False,
         marks: tuple[IntOrFloat | tuple[IntOrFloat, str], ...] | None = None,
@@ -1650,10 +1692,12 @@ class GuiApi:
             )
         )
 
+    @deprecated_positional_shim
     def add_rgb(
         self,
         label: str,
         initial_value: tuple[int, int, int],
+        *,
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
@@ -1694,10 +1738,12 @@ class GuiApi:
             )
         )
 
+    @deprecated_positional_shim
     def add_rgba(
         self,
         label: str,
         initial_value: tuple[int, int, int, int],
+        *,
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
