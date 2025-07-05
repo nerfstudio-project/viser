@@ -63,7 +63,7 @@ Code
                body="This disappears automatically after 5 seconds!",
                loading=False,
                with_close_button=True,
-               auto_close=30_000,
+               auto_close=5000,
            )
    
        @controlled_notif_button.on_click
@@ -108,7 +108,9 @@ Code
        @server.on_client_connect
        def _(client: viser.ClientHandle) -> None:
            client.add_notification(
-               "Connected", "You are now connected to the server!", auto_close=5000
+               "Connected",
+               "You are now connected to the server!",
+               auto_close=30_000,
            )
    
        while True:

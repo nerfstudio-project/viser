@@ -172,13 +172,17 @@ function useMessageHandler(): (message: Message) => void {
 
       // Add a notification.
       case "NotificationMessage": {
+        console.log(message.uuid, message.props.loading);
         (message.mode === "show" ? notifications.show : notifications.update)({
           id: message.uuid,
           title: message.props.title,
           message: message.props.body,
           withCloseButton: message.props.with_close_button,
           loading: message.props.loading,
-          autoClose: message.props.auto_close,
+          autoClose:
+            message.props.auto_close_seconds === null
+              ? false
+              : message.props.auto_close_seconds * 1000,
           color: toMantineColor(message.props.color),
         });
         return;
