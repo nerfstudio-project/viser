@@ -96,7 +96,7 @@ def main() -> None:
         client.add_notification(
             "Connected",
             "You are now connected to the server!",
-            auto_close_seconds=30_000,
+            auto_close_seconds=30.0,
         )
 
     while True:
