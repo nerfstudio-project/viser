@@ -492,6 +492,9 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         top left corner of the client's viewer. Notifications are useful for
         providing alerts or status updates to users.
 
+        .. deprecated::
+            The `auto_close` argument is deprecated. Use `auto_close_seconds` instead.
+
         Args:
             title: Title to display on the notification.
             body: Message to display on the notification body.
