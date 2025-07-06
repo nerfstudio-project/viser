@@ -1,7 +1,7 @@
 <h1 align="left">
-    <img alt="viser logo" src="https://viser.studio/main/_static/logo.svg" width="auto" height="30" />
+    <img alt="viser logo" src="https://viser.studio/main/_static/logo.svg" width="30" height="auto" />
     viser
-    <img alt="viser logo" src="https://viser.studio/main/_static/logo.svg" width="auto" height="30" />
+    <img alt="viser logo" src="https://viser.studio/main/_static/logo.svg" width="30" height="auto" />
 </h1>
 
 <p align="left">

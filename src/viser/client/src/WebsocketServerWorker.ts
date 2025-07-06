@@ -174,13 +174,12 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
 
         if (timeUntilIdealJsMs > 3) {
           // We're early! This means the previous message was processed late...
-          // which is normal, because we also consider deserialization time.
           const dampingFactor = 0.95;
           setTimeout(sendFn, timeUntilIdealJsMs * dampingFactor);
           state.lastIdealJsMs =
             state.lastIdealJsMs + pythonTimeDeltaMs * dampingFactor;
         } else {
-          // Message is late: send immediately.
+          // Message is on-time or late: send immediately.
           sendFn();
           state.lastIdealJsMs = jsNowMs;
         }
