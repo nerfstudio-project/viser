@@ -475,7 +475,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">event</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Deprecated. Use `event_type` instead.</span>
 
-<span class="sd">        .. deprecated::</span>
+<span class="sd">        .. deprecated:: 0.2.23</span>
 <span class="sd">            The `event` property is deprecated. Use `event_type` instead.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_type</span></div>
@@ -1079,7 +1079,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">positions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the spline positions. Deprecated: use &#39;points&#39; instead.</span>
 
-<span class="sd">        .. deprecated::</span>
+<span class="sd">        .. deprecated:: 1.0.0</span>
 <span class="sd">            &quot;The &#39;positions&#39; tuple property is deprecated. Use the &#39;points&#39; numpy array instead.&quot;,</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
@@ -1120,7 +1120,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">positions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the spline positions. Deprecated: use &#39;points&#39; instead.</span>
 
-<span class="sd">        .. deprecated::</span>
+<span class="sd">        .. deprecated:: 1.0.0</span>
 <span class="sd">            The &#39;positions&#39; tuple property is deprecated. Use the &#39;points&#39; numpy array instead.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>  <span class="c1"># type: ignore</span>
