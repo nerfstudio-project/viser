@@ -56,7 +56,7 @@ class ScenePointerEvent:
     def event(self):
         """Deprecated. Use `event_type` instead.
 
-        .. deprecated::
+        .. deprecated:: 0.2.23
             The `event` property is deprecated. Use `event_type` instead.
         """
         return self.event_type
@@ -582,7 +582,7 @@ class SplineCatmullRomHandle(
     def positions(self) -> tuple[tuple[float, float, float], ...]:
         """Get the spline positions. Deprecated: use 'points' instead.
 
-        .. deprecated::
+        .. deprecated:: 1.0.0
             "The 'positions' tuple property is deprecated. Use the 'points' numpy array instead.",
         """
         import warnings
@@ -620,7 +620,7 @@ class SplineCubicBezierHandle(
     def positions(self) -> tuple[tuple[float, float, float], ...]:
         """Get the spline positions. Deprecated: use 'points' instead.
 
-        .. deprecated::
+        .. deprecated:: 1.0.0
             The 'positions' tuple property is deprecated. Use the 'points' numpy array instead.
         """
         return tuple(tuple(p) for p in self.points.tolist())  # type: ignore
