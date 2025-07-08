@@ -321,15 +321,9 @@ class CameraFrustumHandle(
             self._image_data = None
             return
 
-        if self.image_media_type is None:
-            self.image_media_type = "image/png"
-
         self._image = image
-        media_type, data = _encode_image_binary(
-            image, self.image_media_type, jpeg_quality=self._jpeg_quality
-        )
+        data = _encode_image_binary(image, self.format, jpeg_quality=self._jpeg_quality)
         self._image_data = data
-        del media_type
 
     def compute_canonical_frustum_size(self) -> tuple[float, float, float]:
         """Compute the X, Y, and Z dimensions of the frustum if it had
@@ -667,11 +661,8 @@ class ImageHandle(
         from ._scene_api import _encode_image_binary
 
         self._image = image
-        media_type, data = _encode_image_binary(
-            image, self.media_type, jpeg_quality=self._jpeg_quality
-        )
+        data = _encode_image_binary(image, self.format, jpeg_quality=self._jpeg_quality)
         self._data = data
-        del media_type
 
 
 class LabelHandle(

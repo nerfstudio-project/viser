@@ -702,7 +702,7 @@ class GuiApi:
             props=_messages.GuiImageProps(
                 _data=None,  # Sent in prop update later.
                 label=label,
-                media_type="image/png" if format == "png" else "image/jpeg",
+                format=format,
                 order=_apply_default_order(order),
                 visible=visible,
             ),

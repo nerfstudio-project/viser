@@ -374,7 +374,7 @@ function useMessageHandler(): (message: Message) => void {
         if (message.rgb_data !== null) {
           const rgb_url = URL.createObjectURL(
             new Blob([message.rgb_data], {
-              type: message.media_type,
+              type: "image/" + message.format,
             }),
           );
           new TextureLoader().load(rgb_url, (texture) => {
@@ -405,7 +405,7 @@ function useMessageHandler(): (message: Message) => void {
           // If depth is available set the texture
           const depth_url = URL.createObjectURL(
             new Blob([message.depth_data], {
-              type: message.media_type,
+              type: "image/" + message.format,
             }),
           );
           new TextureLoader().load(depth_url, (texture) => {

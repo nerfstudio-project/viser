@@ -16,12 +16,11 @@ export const CameraFrustumComponent = React.forwardRef<
   const [imageTexture, setImageTexture] = React.useState<THREE.Texture>();
 
   React.useEffect(() => {
-    if (
-      message.props.image_media_type !== null &&
-      message.props._image_data !== null
-    ) {
+    if (message.props.format !== null && message.props._image_data !== null) {
       const image_url = URL.createObjectURL(
-        new Blob([message.props._image_data]),
+        new Blob([message.props._image_data], {
+          type: "image/" + message.props.format,
+        }),
       );
       new THREE.TextureLoader().load(image_url, (texture) => {
         setImageTexture(texture);
@@ -30,7 +29,7 @@ export const CameraFrustumComponent = React.forwardRef<
     } else {
       setImageTexture(undefined);
     }
-  }, [message.props.image_media_type, message.props._image_data]);
+  }, [message.props.format, message.props._image_data]);
 
   let y = Math.tan(message.props.fov / 2.0);
   let x = y * message.props.aspect;

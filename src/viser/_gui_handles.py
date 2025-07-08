@@ -714,9 +714,9 @@ def _get_data_url(url: str, image_root: Path | None) -> str:
         image_root = Path(__file__).parent
     try:
         image = iio.imread(image_root / url)
-        media_type, binary = _encode_image_binary(image, "png")
+        binary = _encode_image_binary(image, "png")
         url = base64.b64encode(binary).decode("utf-8")
-        return f"data:{media_type};base64,{url}"
+        return f"data:image/png;base64,{url}"
     except (IOError, FileNotFoundError):
         warnings.warn(
             f"Failed to read image {url}, with image_root set to {image_root}.",
@@ -814,8 +814,6 @@ class GuiImageHandle(_GuiHandle[None], GuiImageProps):
     @image.setter
     def image(self, image: np.ndarray) -> None:
         self._image = image
-        media_type, data = _encode_image_binary(
-            image, self.media_type, jpeg_quality=self._jpeg_quality
+        self._data = _encode_image_binary(
+            image, self.format, jpeg_quality=self._jpeg_quality
         )
-        self._data = data
-        del media_type
