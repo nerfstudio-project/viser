@@ -490,9 +490,11 @@ export const ViserImage = React.forwardRef<
 
   React.useEffect(() => {
     if (message.props.format !== null && message.props._data !== null) {
-      const image_url = URL.createObjectURL(new Blob([message.props._data]), {
-        type: "image/" + message.props.format,
-      });
+      const image_url = URL.createObjectURL(
+        new Blob([message.props._data], {
+          type: "image/" + message.props.format,
+        }),
+      );
       new THREE.TextureLoader().load(image_url, (texture) => {
         setImageTexture(texture);
         URL.revokeObjectURL(image_url);
