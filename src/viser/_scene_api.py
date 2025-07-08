@@ -96,17 +96,16 @@ def _encode_image_binary(
     image: np.ndarray,
     format: Literal["png", "jpeg", "image/png", "image/jpeg"],
     jpeg_quality: int | None = None,
-) -> tuple[Literal["image/png", "image/jpeg"], bytes]:
-    media_type: Literal["image/png", "image/jpeg"]
+) -> bytes:
     image = colors_to_uint8(image)
 
     # Convert RGB to BGR for OpenCV encoding.
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    image = cv2.cvtColor(
+        image, {3: cv2.COLOR_RGB2BGR, 4: cv2.COLOR_RGBA2BGRA}[image.shape[2]]
+    )
     if format in ("png", "image/png"):
-        media_type = "image/png"
         success, encoded = cv2.imencode(".png", image)
     elif format in ("jpeg", "image/jpeg"):
-        media_type = "image/jpeg"
         encode_param = [
             int(cv2.IMWRITE_JPEG_QUALITY),
             75 if jpeg_quality is None else jpeg_quality,
@@ -118,7 +117,7 @@ def _encode_image_binary(
     if not success:
         raise ValueError(f"Failed to encode image to {format}")
 
-    return media_type, encoded.tobytes()
+    return encoded.tobytes()
 
 
 TVector = TypeVar("TVector", bound=tuple)
@@ -1009,11 +1008,8 @@ class SceneApi:
             Handle for manipulating scene node.
         """
         if image is not None:
-            media_type, binary = _encode_image_binary(
-                image, format, jpeg_quality=jpeg_quality
-            )
+            binary = _encode_image_binary(image, format, jpeg_quality=jpeg_quality)
         else:
-            media_type = None
             binary = None
 
         message = _messages.CameraFrustumMessage(
@@ -1024,7 +1020,7 @@ class SceneApi:
                 scale=scale,
                 line_width=line_width,
                 color=_encode_rgb(color),
-                image_media_type=media_type,
+                format=format,
                 _image_data=binary,
                 cast_shadow=cast_shadow,
                 receive_shadow=receive_shadow,
@@ -1998,12 +1994,9 @@ class SceneApi:
             depth: Optional depth image to use to composite background with scene elements.
         """
         if image is None:
-            media_type = "image/png"
             rgb_bytes = None
         else:
-            media_type, rgb_bytes = _encode_image_binary(
-                image, format, jpeg_quality=jpeg_quality
-            )
+            rgb_bytes = _encode_image_binary(image, format, jpeg_quality=jpeg_quality)
 
         # Encode depth if provided. We use a 3-channel PNG to represent a fixed point
         # depth at each pixel.
@@ -2031,7 +2024,7 @@ class SceneApi:
 
         self._websock_interface.queue_message(
             _messages.BackgroundImageMessage(
-                media_type=media_type,
+                format=format,
                 rgb_data=rgb_bytes,
                 depth_data=depth_bytes,
             )
@@ -2072,13 +2065,11 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-        media_type, binary = _encode_image_binary(
-            image, format, jpeg_quality=jpeg_quality
-        )
+        binary = _encode_image_binary(image, format, jpeg_quality=jpeg_quality)
         message = _messages.ImageMessage(
             name=name,
             props=_messages.ImageProps(
-                media_type=media_type,
+                format=format,
                 _data=binary,
                 render_width=render_width,
                 render_height=render_height,
