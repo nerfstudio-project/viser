@@ -43,7 +43,6 @@ dependencies = [
     "scikit-image>=0.18.0,<1.0.0",
     "scipy>=1.7.3,<2.0.0",
     "tqdm>=4.0.0,<5.0.0",
-    "tyro>=0.2.0,<1.0.0",
     "rich>=13.3.3,<15.0.0",
     "trimesh>=3.21.7,<5.0.0",
     "nodeenv>=1.8.0,<2.0.0",
@@ -69,6 +68,7 @@ examples = [
     "opencv-python",
     "pyliblzfse>=0.4.1; platform_system!='Windows'",
     "pandas",  # https://github.com/nerfstudio-project/viser/issues/457
+    "tyro>=0.2.0,<1.0.0",
 ]
 
 [project.urls]
