@@ -661,8 +661,9 @@ class ImageHandle(
         from ._scene_api import _encode_image_binary
 
         self._image = image
-        data = _encode_image_binary(image, self.format, jpeg_quality=self._jpeg_quality)
-        self._data = data
+        self._data = _encode_image_binary(
+            image, self.format, jpeg_quality=self._jpeg_quality
+        )
 
 
 class LabelHandle(
