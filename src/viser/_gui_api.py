@@ -696,10 +696,11 @@ class GuiApi:
         order: float | None = None,
         visible: bool = True,
     ) -> GuiImageHandle:
-        # Resolve format if auto
-        resolved_format = format
+        # Resolve format if auto.
         if format == "auto":
             resolved_format = "png" if image.shape[2] == 4 else "jpeg"
+        else:
+            resolved_format = format
 
         message = _messages.GuiImageMessage(
             uuid=_make_uuid(),

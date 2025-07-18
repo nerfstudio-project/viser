@@ -830,9 +830,13 @@ class GuiImageHandle(_GuiHandle[None], GuiImageProps):
     def format(self, value: Literal["auto", "jpeg", "png"]) -> None:
         import warnings
 
+        # Skip if format isn't changing.
+        if self._user_format == value:
+            return
+
         self._user_format = value
 
-        # Re-encode image
+        # Re-encode image.
         if value == "jpeg" and self._image.shape[2] == 4:
             warnings.warn(
                 "Converting RGBA image to JPEG will discard the alpha channel."
