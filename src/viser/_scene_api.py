@@ -94,30 +94,37 @@ def _encode_rgb(rgb: RgbTupleOrArray) -> tuple[int, int, int]:
 
 def _encode_image_binary(
     image: np.ndarray,
-    format: Literal["png", "jpeg", "image/png", "image/jpeg"],
+    format: Literal["auto", "png", "jpeg"],
     jpeg_quality: int | None = None,
-) -> bytes:
+) -> tuple[Literal["jpeg", "png"], bytes]:
     image = colors_to_uint8(image)
+
+    # Resolve "auto" format
+    resolved_format: Literal["jpeg", "png"]
+    if format == "auto":
+        resolved_format = "png" if image.shape[2] == 4 else "jpeg"
+    else:
+        resolved_format = format
 
     # Convert RGB to BGR for OpenCV encoding.
     image = cv2.cvtColor(
         image, {3: cv2.COLOR_RGB2BGR, 4: cv2.COLOR_RGBA2BGRA}[image.shape[2]]
     )
-    if format in ("png", "image/png"):
+    if resolved_format == "png":
         success, encoded = cv2.imencode(".png", image)
-    elif format in ("jpeg", "image/jpeg"):
+    elif resolved_format == "jpeg":
         encode_param = [
             int(cv2.IMWRITE_JPEG_QUALITY),
             75 if jpeg_quality is None else jpeg_quality,
         ]
         success, encoded = cv2.imencode(".jpg", image[..., :3], encode_param)
     else:
-        assert_never(format)
+        assert_never(resolved_format)
 
     if not success:
         raise ValueError(f"Failed to encode image to {format}")
 
-    return encoded.tobytes()
+    return resolved_format, encoded.tobytes()
 
 
 TVector = TypeVar("TVector", bound=tuple)
@@ -968,7 +975,7 @@ class SceneApi:
         line_width: float = 2.0,
         color: RgbTupleOrArray = (20, 20, 20),
         image: np.ndarray | None = None,
-        format: Literal["png", "jpeg"] = "jpeg",
+        format: Literal["auto", "png", "jpeg"] = "auto",
         jpeg_quality: int | None = None,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
@@ -1008,8 +1015,11 @@ class SceneApi:
             Handle for manipulating scene node.
         """
         if image is not None:
-            binary = _encode_image_binary(image, format, jpeg_quality=jpeg_quality)
+            resolved_format, binary = _encode_image_binary(
+                image, format, jpeg_quality=jpeg_quality
+            )
         else:
+            resolved_format = "png" if format == "auto" else format
             binary = None
 
         message = _messages.CameraFrustumMessage(
@@ -1020,7 +1030,7 @@ class SceneApi:
                 scale=scale,
                 line_width=line_width,
                 color=_encode_rgb(color),
-                format=format,
+                _format=resolved_format,
                 _image_data=binary,
                 cast_shadow=cast_shadow,
                 receive_shadow=receive_shadow,
@@ -1030,6 +1040,7 @@ class SceneApi:
         handle = CameraFrustumHandle._make(self, message, name, wxyz, position, visible)
         handle._image = image
         handle._jpeg_quality = jpeg_quality
+        handle._user_format = format
         return handle
 
     @deprecated_positional_shim
@@ -1980,7 +1991,7 @@ class SceneApi:
     def set_background_image(
         self,
         image: np.ndarray | None,
-        format: Literal["png", "jpeg"] = "jpeg",
+        format: Literal["auto", "png", "jpeg"] = "auto",
         *,
         jpeg_quality: int | None = None,
         depth: np.ndarray | None = None,
@@ -1989,14 +2000,17 @@ class SceneApi:
 
         Args:
             image: The image to set as the background. Should have shape (H, W, 3).
-            format: Format to transport and display the image using ('png' or 'jpeg').
+            format: Format to transport and display the image using. 'auto' will use PNG for RGBA images and JPEG for RGB.
             jpeg_quality: Quality of the jpeg image (if jpeg format is used).
             depth: Optional depth image to use to composite background with scene elements.
         """
         if image is None:
+            resolved_format = "png" if format == "auto" else format
             rgb_bytes = None
         else:
-            rgb_bytes = _encode_image_binary(image, format, jpeg_quality=jpeg_quality)
+            resolved_format, rgb_bytes = _encode_image_binary(
+                image, format, jpeg_quality=jpeg_quality
+            )
 
         # Encode depth if provided. We use a 3-channel PNG to represent a fixed point
         # depth at each pixel.
@@ -2024,7 +2038,7 @@ class SceneApi:
 
         self._websock_interface.queue_message(
             _messages.BackgroundImageMessage(
-                format=format,
+                format=resolved_format,
                 rgb_data=rgb_bytes,
                 depth_data=depth_bytes,
             )
@@ -2038,7 +2052,7 @@ class SceneApi:
         render_width: float,
         render_height: float,
         *,
-        format: Literal["png", "jpeg"] = "jpeg",
+        format: Literal["auto", "png", "jpeg"] = "auto",
         jpeg_quality: int | None = None,
         cast_shadow: bool = True,
         receive_shadow: bool = True,
@@ -2054,7 +2068,7 @@ class SceneApi:
             image: A numpy array representing the image.
             render_width: Width at which the image should be rendered in the scene.
             render_height: Height at which the image should be rendered in the scene.
-            format: Format to transport and display the image using ('png' or 'jpeg').
+            format: Format to transport and display the image using. 'auto' will use PNG for RGBA images and JPEG for RGB.
             jpeg_quality: Quality of the jpeg image (if jpeg format is used).
             cast_shadow: Whether this image should cast shadows.
             receive_shadow: Whether this image should receive shadows.
@@ -2065,11 +2079,13 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-        binary = _encode_image_binary(image, format, jpeg_quality=jpeg_quality)
+        resolved_format, binary = _encode_image_binary(
+            image, format, jpeg_quality=jpeg_quality
+        )
         message = _messages.ImageMessage(
             name=name,
             props=_messages.ImageProps(
-                format=format,
+                _format=resolved_format,
                 _data=binary,
                 render_width=render_width,
                 render_height=render_height,
@@ -2080,6 +2096,7 @@ class SceneApi:
         handle = ImageHandle._make(self, message, name, wxyz, position, visible)
         handle._image = image
         handle._jpeg_quality = jpeg_quality
+        handle._user_format = format
         return handle
 
     @deprecated_positional_shim

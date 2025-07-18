@@ -238,7 +238,7 @@ class CameraFrustumProps:
     """Width of the frustum lines. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
     """Color of the frustum as RGB integers. Synchronized automatically when assigned."""
-    format: Literal["jpeg", "png"]
+    _format: Literal["jpeg", "png"]
     """Format of the provided image ('jpeg' or 'png'). Synchronized
     automatically when assigned."""
     _image_data: Optional[bytes]
@@ -966,7 +966,7 @@ class ImageMessage(_CreateSceneNodeMessage):
 
 @dataclasses.dataclass
 class ImageProps:
-    format: Literal["jpeg", "png"]
+    _format: Literal["jpeg", "png"]
     """Format of the provided image ('jpeg' or 'png'). Synchronized
     automatically when assigned."""
     _data: bytes
@@ -1173,7 +1173,7 @@ class GuiImageProps:
     """Label text for the image. Synchronized automatically when assigned."""
     _data: Optional[bytes]
     """Binary data of the image. Synchronized automatically when assigned."""
-    format: Literal["jpeg", "png"]
+    _format: Literal["jpeg", "png"]
     """Format of the provided image ('jpeg' or 'png'). Synchronized
     automatically when assigned."""
     visible: bool

@@ -691,18 +691,23 @@ class GuiApi:
         image: np.ndarray,
         *,
         label: str | None = None,
-        format: Literal["png", "jpeg"] = "jpeg",
+        format: Literal["auto", "png", "jpeg"] = "auto",
         jpeg_quality: int | None = None,
         order: float | None = None,
         visible: bool = True,
     ) -> GuiImageHandle:
+        # Resolve format if auto
+        resolved_format = format
+        if format == "auto":
+            resolved_format = "png" if image.shape[2] == 4 else "jpeg"
+
         message = _messages.GuiImageMessage(
             uuid=_make_uuid(),
             container_uuid=self._get_container_uuid(),
             props=_messages.GuiImageProps(
                 _data=None,  # Sent in prop update later.
                 label=label,
-                format=format,
+                _format=resolved_format,
                 order=_apply_default_order(order),
                 visible=visible,
             ),
@@ -720,6 +725,7 @@ class GuiApi:
             _image=image,
             _jpeg_quality=jpeg_quality,
         )
+        handle._user_format = format
         handle.image = image
         return handle
 
