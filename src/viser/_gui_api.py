@@ -696,6 +696,19 @@ class GuiApi:
         order: float | None = None,
         visible: bool = True,
     ) -> GuiImageHandle:
+        """Add an image element to the GUI.
+
+        Args:
+            image: A numpy array representing the image to display.
+            label: Label to display on the image element.
+            format: Format to transport and display the image using. 'auto' will use PNG for RGBA images and JPEG for RGB.
+            jpeg_quality: Quality of the jpeg image (if jpeg format is used).
+            order: Order of the element for sorting.
+            visible: Whether the image element is visible initially.
+
+        Returns:
+            Handle for manipulating the image element.
+        """
         # Resolve format if auto.
         if format == "auto":
             resolved_format = "png" if image.shape[2] == 4 else "jpeg"

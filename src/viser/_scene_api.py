@@ -1002,7 +1002,7 @@ class SceneApi:
             line_width: Width of the frustum lines, in screen space. Defaults to `2.0`.
             color: Color of the frustum as an RGB tuple.
             image: Optional image to be displayed on the frustum.
-            format: Format of the provided image ('png' or 'jpeg').
+            format: Format to transport and display the image using. 'auto' will use PNG for RGBA images and JPEG for RGB.
             jpeg_quality: Quality of the jpeg image (if jpeg format is used).
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
