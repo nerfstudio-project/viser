@@ -238,8 +238,9 @@ class CameraFrustumProps:
     """Width of the frustum lines. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
     """Color of the frustum as RGB integers. Synchronized automatically when assigned."""
-    image_media_type: Optional[Literal["image/jpeg", "image/png"]]
-    """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
+    _format: Literal["jpeg", "png"]
+    """Format of the provided image ('jpeg' or 'png'). Synchronized
+    automatically when assigned."""
     _image_data: Optional[bytes]
     """Optional image to be displayed on the frustum. Synchronized automatically when assigned."""
     cast_shadow: bool
@@ -951,7 +952,7 @@ class TransformControlsDragEndMessage(Message):
 class BackgroundImageMessage(Message):
     """Message for rendering a background image."""
 
-    media_type: Literal["image/jpeg", "image/png"]
+    format: Literal["jpeg", "png"]
     rgb_data: Optional[bytes]
     depth_data: Optional[bytes]
 
@@ -965,8 +966,9 @@ class ImageMessage(_CreateSceneNodeMessage):
 
 @dataclasses.dataclass
 class ImageProps:
-    media_type: Literal["image/jpeg", "image/png"]
-    """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
+    _format: Literal["jpeg", "png"]
+    """Format of the provided image ('jpeg' or 'png'). Synchronized
+    automatically when assigned."""
     _data: bytes
     """Binary data of the image. Synchronized automatically when assigned."""
     render_width: float
@@ -1171,8 +1173,9 @@ class GuiImageProps:
     """Label text for the image. Synchronized automatically when assigned."""
     _data: Optional[bytes]
     """Binary data of the image. Synchronized automatically when assigned."""
-    media_type: Literal["image/jpeg", "image/png"]
-    """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
+    _format: Literal["jpeg", "png"]
+    """Format of the provided image ('jpeg' or 'png'). Synchronized
+    automatically when assigned."""
     visible: bool
     """Visibility state of the image. Synchronized automatically when assigned."""
 

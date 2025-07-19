@@ -691,18 +691,37 @@ class GuiApi:
         image: np.ndarray,
         *,
         label: str | None = None,
-        format: Literal["png", "jpeg"] = "jpeg",
+        format: Literal["auto", "png", "jpeg"] = "auto",
         jpeg_quality: int | None = None,
         order: float | None = None,
         visible: bool = True,
     ) -> GuiImageHandle:
+        """Add an image element to the GUI.
+
+        Args:
+            image: A numpy array representing the image to display.
+            label: Label to display on the image element.
+            format: Format to transport and display the image using. 'auto' will use PNG for RGBA images and JPEG for RGB.
+            jpeg_quality: Quality of the jpeg image (if jpeg format is used).
+            order: Order of the element for sorting.
+            visible: Whether the image element is visible initially.
+
+        Returns:
+            Handle for manipulating the image element.
+        """
+        # Resolve format if auto.
+        if format == "auto":
+            resolved_format = "png" if image.shape[2] == 4 else "jpeg"
+        else:
+            resolved_format = format
+
         message = _messages.GuiImageMessage(
             uuid=_make_uuid(),
             container_uuid=self._get_container_uuid(),
             props=_messages.GuiImageProps(
                 _data=None,  # Sent in prop update later.
                 label=label,
-                media_type="image/png" if format == "png" else "image/jpeg",
+                _format=resolved_format,
                 order=_apply_default_order(order),
                 visible=visible,
             ),
@@ -720,6 +739,7 @@ class GuiApi:
             _image=image,
             _jpeg_quality=jpeg_quality,
         )
+        handle._user_format = format
         handle.image = image
         return handle
 

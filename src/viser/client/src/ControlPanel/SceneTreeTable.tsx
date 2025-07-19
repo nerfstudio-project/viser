@@ -163,6 +163,10 @@ function EditNodeProps({
             if (value instanceof Uint8Array) {
               return null;
             }
+            // Skip properties that start with "_".
+            if (key.startsWith("_")) {
+              return null;
+            }
 
             const isDirty = form.values[key] !== initialValues[key];
 
