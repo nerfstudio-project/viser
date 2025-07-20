@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import abc
 import asyncio
+import atexit
 import contextlib
 import dataclasses
 import gzip
@@ -253,6 +254,7 @@ class WebsockServer(WebsockMessageHandler):
         self._stop_event: asyncio.Event | None = None
 
         self._client_state_from_id: dict[int, _ClientHandleState] = {}
+        self._server_thread: threading.Thread | None = None
 
     def start(self) -> None:
         """Start the server."""
@@ -260,13 +262,20 @@ class WebsockServer(WebsockMessageHandler):
         # Start server thread.
         ready_sem = threading.Semaphore(value=1)
         ready_sem.acquire()
-        threading.Thread(
+        self._server_thread = threading.Thread(
             target=lambda: self._background_worker(ready_sem),
             daemon=True,
-        ).start()
+        )
+        self._server_thread.start()
 
         # Wait for ready signal from the background thread.
         ready_sem.acquire()
+
+        # Exit the server thread when the main process exits. This would happen
+        # automatically, but is nice to do explicitly to avoid some nanobind
+        # reference leak warnings:
+        # https://github.com/inducer/pyopencl/issues/758
+        atexit.register(self.stop)
 
         # Broadcast buffer should be populated by the background worker.
         assert isinstance(self._broadcast_buffer, AsyncMessageBuffer)
@@ -275,7 +284,19 @@ class WebsockServer(WebsockMessageHandler):
         """Stop the server."""
         assert self._background_event_loop is not None
         assert self._stop_event is not None
+        assert self._server_thread is not None
+
+        # Signal the background thread to stop.
         self._background_event_loop.call_soon_threadsafe(self._stop_event.set)
+
+        # Clean up the message buffers. This isn't really necessary, but helps
+        # avoid "task destroyed" errors.
+        self._broadcast_buffer.set_done()
+        for client in self._client_state_from_id.values():
+            client.message_buffer.set_done()
+
+        # Wait for the server thread to finish.
+        self._server_thread.join(timeout=0.1)
 
     def on_client_connect(
         self, cb: Callable[[WebsockClientConnection], None | Coroutine]
@@ -291,7 +312,7 @@ class WebsockServer(WebsockMessageHandler):
 
     @override
     def get_message_buffer(self) -> AsyncMessageBuffer:
-        """Pushes a message onto the broadcast queue. Message will be sent to all clients."""
+        """Get the broadcast queue. Message will be sent to all clients."""
         return self._broadcast_buffer
 
     def flush(self) -> None:
@@ -574,6 +595,10 @@ class WebsockServer(WebsockMessageHandler):
         event_loop.run_until_complete(start_server())
         rich.print("[bold](viser)[/bold] Server stopped")
 
+        # Clean up the event loop to prevent reference leaks
+        event_loop.stop()
+        event_loop.close()
+
 
 async def _message_producer(
     websocket: ServerConnection,
@@ -584,7 +609,11 @@ async def _message_producer(
     """Infinite loop to broadcast windows of messages from a buffer."""
     window_generator = buffer.window_generator(client_id)
     while not buffer.done:
-        outgoing = await window_generator.__anext__()
+        try:
+            outgoing = await window_generator.__anext__()
+        except StopAsyncIteration:
+            break
+
         if client_api_version == 1:
             serialized = msgspec.msgpack.encode(
                 {
