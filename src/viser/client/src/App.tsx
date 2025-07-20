@@ -379,6 +379,9 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const theme = useMantineTheme();
   const { ref: inViewRef, inView } = useInView();
 
+  const searchParams = new URLSearchParams(window.location.search);
+  const adaptiveDpr = searchParams.get("disableAdaptiveDpr") === null;
+
   // Memoize camera controls to prevent unnecessary re-creation.
   const memoizedCameraControls = useMemo(
     () => <SynchronizedCameraControls />,
@@ -493,7 +496,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           <SceneContextSetter />
           {memoizedCameraControls}
           <SplatRenderContext>
-            <AdaptiveDpr />
+            {adaptiveDpr && <AdaptiveDpr />}
             {children}
             <SceneNodeThreeObject name="" />
           </SplatRenderContext>
