@@ -419,6 +419,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">atexit</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
@@ -708,6 +709,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_state_from_id</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">_ClientHandleState</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server_thread</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="WebsockServer.start">
 <a class="viewcode-back" href="../../../../api/auxiliary/infrastructure/#viser.infra.WebsockServer.start">[docs]</a>
@@ -717,13 +719,20 @@
         <span class="c1"># Start server thread.</span>
         <span class="n">ready_sem</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">ready_sem</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
-        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
             <span class="n">target</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_worker</span><span class="p">(</span><span class="n">ready_sem</span><span class="p">),</span>
             <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
         <span class="c1"># Wait for ready signal from the background thread.</span>
         <span class="n">ready_sem</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+
+        <span class="c1"># Exit the server thread when the main process exits. This would happen</span>
+        <span class="c1"># automatically, but is nice to do explicitly to avoid some nanobind</span>
+        <span class="c1"># reference leak warnings:</span>
+        <span class="c1"># https://github.com/nerfstudio-project/viser/issues/518</span>
+        <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
 
         <span class="c1"># Broadcast buffer should be populated by the background worker.</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="p">,</span> <span class="n">AsyncMessageBuffer</span><span class="p">)</span></div>
@@ -735,7 +744,19 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the server.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_event_loop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_background_event_loop</span><span class="o">.</span><span class="n">call_soon_threadsafe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span><span class="o">.</span><span class="n">set</span><span class="p">)</span></div>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server_thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="c1"># Signal the background thread to stop.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_background_event_loop</span><span class="o">.</span><span class="n">call_soon_threadsafe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span><span class="o">.</span><span class="n">set</span><span class="p">)</span>
+
+        <span class="c1"># Clean up the message buffers. This isn&#39;t really necessary, but helps</span>
+        <span class="c1"># avoid &quot;task destroyed&quot; errors.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="o">.</span><span class="n">set_done</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_state_from_id</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">message_buffer</span><span class="o">.</span><span class="n">set_done</span><span class="p">()</span>
+
+        <span class="c1"># Wait for the server thread to finish.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server_thread</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="WebsockServer.on_client_connect">
@@ -760,7 +781,7 @@
 <a class="viewcode-back" href="../../../../api/auxiliary/infrastructure/#viser.infra.WebsockServer.get_message_buffer">[docs]</a>
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_message_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncMessageBuffer</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pushes a message onto the broadcast queue. Message will be sent to all clients.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the broadcast queue. Message will be sent to all clients.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span></div>
 
 
@@ -1048,7 +1069,11 @@
                     <span class="k">continue</span>
 
         <span class="n">event_loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">start_server</span><span class="p">())</span>
-        <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[bold](viser)[/bold] Server stopped&quot;</span><span class="p">)</span></div>
+        <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[bold](viser)[/bold] Server stopped&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Clean up the event loop to prevent reference leaks</span>
+        <span class="n">event_loop</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="n">event_loop</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
 
@@ -1061,7 +1086,11 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Infinite loop to broadcast windows of messages from a buffer.&quot;&quot;&quot;</span>
     <span class="n">window_generator</span> <span class="o">=</span> <span class="n">buffer</span><span class="o">.</span><span class="n">window_generator</span><span class="p">(</span><span class="n">client_id</span><span class="p">)</span>
     <span class="k">while</span> <span class="ow">not</span> <span class="n">buffer</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
-        <span class="n">outgoing</span> <span class="o">=</span> <span class="k">await</span> <span class="n">window_generator</span><span class="o">.</span><span class="fm">__anext__</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">outgoing</span> <span class="o">=</span> <span class="k">await</span> <span class="n">window_generator</span><span class="o">.</span><span class="fm">__anext__</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">StopAsyncIteration</span><span class="p">:</span>
+            <span class="k">break</span>
+
         <span class="k">if</span> <span class="n">client_api_version</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">serialized</span> <span class="o">=</span> <span class="n">msgspec</span><span class="o">.</span><span class="n">msgpack</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
                 <span class="p">{</span>
