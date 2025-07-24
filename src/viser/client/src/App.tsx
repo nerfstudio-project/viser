@@ -380,7 +380,11 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const { ref: inViewRef, inView } = useInView();
 
   const searchParams = new URLSearchParams(window.location.search);
-  const adaptiveDpr = searchParams.get("disableAdaptiveDpr") === null;
+  // Allow setting a fixed DPR value via URL parameter (e.g., ?fixedDpr=1 or ?fixedDpr=2)
+  // If not set, adaptive DPR will be enabled for performance optimization
+  const fixedDprParam = searchParams.get("fixedDpr");
+  const fixedDpr = fixedDprParam ? parseFloat(fixedDprParam) : null;
+  const adaptiveDpr = fixedDpr === null;
 
   // Memoize camera controls to prevent unnecessary re-creation.
   const memoizedCameraControls = useMemo(
@@ -489,6 +493,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         shadows
+        dpr={fixedDpr ?? undefined}
       >
         <Bvh firstHitOnly>
           {!inView && <DisableRender />}
