@@ -307,6 +307,7 @@ class CameraFrustumHandle(
 
     _image: np.ndarray | None
     _jpeg_quality: int | None
+    _user_format: Literal["auto", "jpeg", "png"]
 
     @property
     def image(self) -> np.ndarray | None:
@@ -321,15 +322,41 @@ class CameraFrustumHandle(
             self._image_data = None
             return
 
-        if self.image_media_type is None:
-            self.image_media_type = "image/png"
-
         self._image = image
-        media_type, data = _encode_image_binary(
-            image, self.image_media_type, jpeg_quality=self._jpeg_quality
+        resolved_format, data = _encode_image_binary(
+            image, self._user_format, jpeg_quality=self._jpeg_quality
         )
+        self._format = resolved_format
         self._image_data = data
-        del media_type
+
+    @property
+    def format(self) -> Literal["auto", "jpeg", "png"]:
+        """Image format. 'auto' will use PNG for RGBA images and JPEG for RGB."""
+        return self._user_format
+
+    @format.setter
+    def format(self, value: Literal["auto", "jpeg", "png"]) -> None:
+        import warnings
+
+        from ._scene_api import _encode_image_binary
+
+        # Skip if format isn't changing.
+        if self._user_format == value:
+            return
+
+        self._user_format = value
+
+        # Re-encode image. if we have one.
+        if self._image is not None:
+            if value == "jpeg" and self._image.shape[2] == 4:
+                warnings.warn(
+                    "Converting RGBA image to JPEG will discard the alpha channel."
+                )
+            resolved_format, data = _encode_image_binary(
+                self._image, value, jpeg_quality=self._jpeg_quality
+            )
+            self._format = resolved_format
+            self._image_data = data
 
     def compute_canonical_frustum_size(self) -> tuple[float, float, float]:
         """Compute the X, Y, and Z dimensions of the frustum if it had
@@ -655,6 +682,7 @@ class ImageHandle(
 
     _image: np.ndarray
     _jpeg_quality: int | None
+    _user_format: Literal["auto", "jpeg", "png"]
 
     @property
     def image(self) -> np.ndarray:
@@ -667,11 +695,39 @@ class ImageHandle(
         from ._scene_api import _encode_image_binary
 
         self._image = image
-        media_type, data = _encode_image_binary(
-            image, self.media_type, jpeg_quality=self._jpeg_quality
+        resolved_format, data = _encode_image_binary(
+            image, self._user_format, jpeg_quality=self._jpeg_quality
         )
+        self._format = resolved_format
         self._data = data
-        del media_type
+
+    @property
+    def format(self) -> Literal["auto", "jpeg", "png"]:
+        """Image format. 'auto' will use PNG for RGBA images and JPEG for RGB."""
+        return self._user_format
+
+    @format.setter
+    def format(self, value: Literal["auto", "jpeg", "png"]) -> None:
+        import warnings
+
+        from ._scene_api import _encode_image_binary
+
+        # Skip if format isn't changing.
+        if self._user_format == value:
+            return
+
+        self._user_format = value
+
+        # Re-encode image.
+        if value == "jpeg" and self._image.shape[2] == 4:
+            warnings.warn(
+                "Converting RGBA image to JPEG will discard the alpha channel."
+            )
+        resolved_format, data = _encode_image_binary(
+            self._image, value, jpeg_quality=self._jpeg_quality
+        )
+        self._format = resolved_format
+        self._data = data
 
 
 class LabelHandle(

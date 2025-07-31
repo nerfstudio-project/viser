@@ -714,9 +714,9 @@ def _get_data_url(url: str, image_root: Path | None) -> str:
         image_root = Path(__file__).parent
     try:
         image = iio.imread(image_root / url)
-        media_type, binary = _encode_image_binary(image, "png")
+        _, binary = _encode_image_binary(image, "png")
         url = base64.b64encode(binary).decode("utf-8")
-        return f"data:{media_type};base64,{url}"
+        return f"data:image/png;base64,{url}"
     except (IOError, FileNotFoundError):
         warnings.warn(
             f"Failed to read image {url}, with image_root set to {image_root}.",
@@ -804,6 +804,7 @@ class GuiImageHandle(_GuiHandle[None], GuiImageProps):
         super().__init__(impl=_impl)
         self._image = _image
         self._jpeg_quality = _jpeg_quality
+        self._user_format: Literal["auto", "jpeg", "png"] = "auto"  # Default if not set
 
     @property
     def image(self) -> np.ndarray:
@@ -814,8 +815,34 @@ class GuiImageHandle(_GuiHandle[None], GuiImageProps):
     @image.setter
     def image(self, image: np.ndarray) -> None:
         self._image = image
-        media_type, data = _encode_image_binary(
-            image, self.media_type, jpeg_quality=self._jpeg_quality
+        resolved_format, data = _encode_image_binary(
+            image, self._user_format, jpeg_quality=self._jpeg_quality
         )
+        self._format = resolved_format
         self._data = data
-        del media_type
+
+    @property
+    def format(self) -> Literal["auto", "jpeg", "png"]:
+        """Image format. 'auto' will use PNG for RGBA images and JPEG for RGB."""
+        return self._user_format
+
+    @format.setter
+    def format(self, value: Literal["auto", "jpeg", "png"]) -> None:
+        import warnings
+
+        # Skip if format isn't changing.
+        if self._user_format == value:
+            return
+
+        self._user_format = value
+
+        # Re-encode image.
+        if value == "jpeg" and self._image.shape[2] == 4:
+            warnings.warn(
+                "Converting RGBA image to JPEG will discard the alpha channel."
+            )
+        resolved_format, data = _encode_image_binary(
+            self._image, value, jpeg_quality=self._jpeg_quality
+        )
+        self._format = resolved_format
+        self._data = data
