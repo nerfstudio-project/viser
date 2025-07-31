@@ -379,6 +379,13 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const theme = useMantineTheme();
   const { ref: inViewRef, inView } = useInView();
 
+  const searchParams = new URLSearchParams(window.location.search);
+  // Allow setting a fixed DPR value via URL parameter (e.g., ?fixedDpr=1 or ?fixedDpr=2)
+  // If not set, adaptive DPR will be enabled for performance optimization
+  const fixedDprParam = searchParams.get("fixedDpr");
+  const fixedDpr = fixedDprParam ? parseFloat(fixedDprParam) : null;
+  const adaptiveDpr = fixedDpr === null;
+
   // Memoize camera controls to prevent unnecessary re-creation.
   const memoizedCameraControls = useMemo(
     () => <SynchronizedCameraControls />,
@@ -486,6 +493,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         shadows
+        dpr={fixedDpr ?? undefined}
       >
         <Bvh firstHitOnly>
           {!inView && <DisableRender />}
@@ -493,7 +501,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           <SceneContextSetter />
           {memoizedCameraControls}
           <SplatRenderContext>
-            <AdaptiveDpr />
+            {adaptiveDpr && <AdaptiveDpr />}
             {children}
             <SceneNodeThreeObject name="" />
           </SplatRenderContext>

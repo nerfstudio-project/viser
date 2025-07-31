@@ -21,8 +21,8 @@ import viser
 
 # -- Project information -----------------------------------------------------
 
-project = "viser"
-copyright = "2024"
+project = "Viser"
+copyright = "2025"
 author = "brentyi"
 
 version: str = os.environ.get("VISER_VERSION_STR_OVERRIDE", viser.__version__)
