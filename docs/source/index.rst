@@ -13,7 +13,9 @@ Features include:
 - Programmatic camera control and rendering
 - An entirely web-based client, for easy use over SSH!
 
-The goal is to provide primitives that are (1) easy for simple visualization tasks, but (2) can be composed into more elaborate interfaces. Here are some examples of what you visualize with Viser:
+The goal is to provide primitives that are (1) easy for simple visualization tasks, but (2) can be composed into more elaborate interfaces. For more about design goals, see the `technical report <https://arxiv.org/abs/2507.22885>`_.
+
+Here are some examples of what you visualize with Viser:
 
 
 .. raw:: html
@@ -63,6 +65,7 @@ Install with: ``pip install viser[examples]``
    ./conventions.rst
    ./development.rst
    ./embedded_visualizations.rst
+   ./citation.rst
 
 .. |pyright| image:: https://github.com/nerfstudio-project/viser/actions/workflows/pyright.yml/badge.svg
    :alt: Pyright status icon

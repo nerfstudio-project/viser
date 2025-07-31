@@ -22,7 +22,7 @@ Features include:
 - Programmatic camera control and rendering.
 - An entirely web-based client, for easy use over SSH!
 
-The goal is to provide primitives that are (1) easy for simple visualization tasks, but (2) can be composed into more elaborate interfaces.
+The goal is to provide primitives that are (1) easy for simple visualization tasks, but (2) can be composed into more elaborate interfaces. For more about design goals, see the [technical report](https://arxiv.org/abs/2507.22885).
 
 Examples and documentation: https://viser.studio
 
@@ -70,4 +70,4 @@ The web client is implemented using [React](https://react.dev/), with:
 - [zustand](https://github.com/pmndrs/zustand) for state management
 - [vanilla-extract](https://vanilla-extract.style/) for stylesheets
 
-Thanks to the authors of these projects for all of their work!
+Thanks to the authors of these projects for open-sourcing their work!
