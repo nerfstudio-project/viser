@@ -1,9 +1,9 @@
-viser
+Viser
 =====
 
 |pyright| |nbsp| |typescript| |nbsp| |versions|
 
-**viser** is a library for interactive 3D visualization in Python.
+Viser is a 3D visualization library for computer vision and robotics in Python.
 
 Features include:
 
@@ -12,6 +12,13 @@ Features include:
 - Scene interaction tools (clicks, selection, transform gizmos)
 - Programmatic camera control and rendering
 - An entirely web-based client, for easy use over SSH!
+
+The goal is to provide primitives that are (1) easy for simple visualization tasks, but (2) can be composed into more elaborate interfaces. Here are some examples of what you visualize with Viser:
+
+
+.. raw:: html
+
+   <video src="https://brentyi.github.io/viser-example-assets/viser_demos.mp4" controls playsinline width="100%"></video><section id="examples">
 
 
 
