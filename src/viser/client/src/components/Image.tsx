@@ -12,14 +12,14 @@ function ImageComponent({ props }: GuiImageMessage) {
       setImageUrl(null);
     } else {
       const image_url = URL.createObjectURL(
-        new Blob([props._data], { type: "image/" + props.format }),
+        new Blob([props._data], { type: "image/" + props._format }),
       );
       setImageUrl(image_url);
       return () => {
         URL.revokeObjectURL(image_url);
       };
     }
-  }, [props._data, props.format]);
+  }, [props._data, props._format]);
 
   return imageUrl === null ? null : (
     <Box px="xs">

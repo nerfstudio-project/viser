@@ -1,3 +1,4 @@
+import argparse
 import os
 import shutil
 import subprocess
@@ -5,7 +6,6 @@ import sys
 from pathlib import Path
 
 import rich
-import tyro
 
 client_dir = Path(__file__).absolute().parent / "client"
 build_dir = client_dir / "build"
@@ -116,7 +116,18 @@ def _build_viser_client(out_dir: Path, cached: bool = True) -> None:
     )
 
 
-build_client_entrypoint = lambda: tyro.cli(_build_viser_client)
+def build_client_entrypoint() -> None:
+    """Build the Viser client entrypoint, which is used to launch the viewer."""
+    parser = argparse.ArgumentParser(description="Build the Viser client.")
+    parser.add_argument("--out-dir", required=True)
+    parser.add_argument(
+        "--no-cached",
+        action="store_false",
+        help="If set, skip the build if the client is already built.",
+    )
+    args = parser.parse_args()
+    out_dir = Path(args.out_dir) if args.out_dir else build_dir
+    _build_viser_client(out_dir=out_dir, cached=args.cached)
 
 
 def _install_sandboxed_node() -> Path:

@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install uv
-          uv pip install --system -e ".[dev,examples]"
+          uv pip install --system -e ".[dev]"
       - name: Test with pytest
         run: |
           pytest
