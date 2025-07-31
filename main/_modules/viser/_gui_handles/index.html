@@ -1216,9 +1216,9 @@
         <span class="n">image_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">image</span> <span class="o">=</span> <span class="n">iio</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">image_root</span> <span class="o">/</span> <span class="n">url</span><span class="p">)</span>
-        <span class="n">media_type</span><span class="p">,</span> <span class="n">binary</span> <span class="o">=</span> <span class="n">_encode_image_binary</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s2">&quot;png&quot;</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">binary</span> <span class="o">=</span> <span class="n">_encode_image_binary</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s2">&quot;png&quot;</span><span class="p">)</span>
         <span class="n">url</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">binary</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;data:</span><span class="si">{</span><span class="n">media_type</span><span class="si">}</span><span class="s2">;base64,</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;data:image/png;base64,</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">):</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Failed to read image </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">, with image_root set to </span><span class="si">{</span><span class="n">image_root</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
@@ -1320,6 +1320,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">impl</span><span class="o">=</span><span class="n">_impl</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_image</span> <span class="o">=</span> <span class="n">_image</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_jpeg_quality</span> <span class="o">=</span> <span class="n">_jpeg_quality</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;png&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span>  <span class="c1"># Default if not set</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">image</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -1330,11 +1331,37 @@
     <span class="nd">@image</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_image</span> <span class="o">=</span> <span class="n">image</span>
-        <span class="n">media_type</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">_encode_image_binary</span><span class="p">(</span>
-            <span class="n">image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">media_type</span><span class="p">,</span> <span class="n">jpeg_quality</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_jpeg_quality</span>
+        <span class="n">resolved_format</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">_encode_image_binary</span><span class="p">(</span>
+            <span class="n">image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_format</span><span class="p">,</span> <span class="n">jpeg_quality</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_jpeg_quality</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_format</span> <span class="o">=</span> <span class="n">resolved_format</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
-        <span class="k">del</span> <span class="n">media_type</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;png&quot;</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Image format. &#39;auto&#39; will use PNG for RGBA images and JPEG for RGB.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_format</span>
+
+    <span class="nd">@format</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;png&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+        <span class="c1"># Skip if format isn&#39;t changing.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_format</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_format</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="c1"># Re-encode image.</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;jpeg&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;Converting RGBA image to JPEG will discard the alpha channel.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">resolved_format</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">_encode_image_binary</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_image</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">jpeg_quality</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_jpeg_quality</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_format</span> <span class="o">=</span> <span class="n">resolved_format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span></div>
 
 </pre></div>
         </article>

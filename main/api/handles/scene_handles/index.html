@@ -1023,6 +1023,12 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dd><p>Current content of the image. Synchronized automatically when assigned.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.CameraFrustumHandle.format">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.13)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'auto'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'jpeg'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'png'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.CameraFrustumHandle.format" title="Link to this definition">¶</a></dt>
+<dd><p>Image format. ‘auto’ will use PNG for RGBA images and JPEG for RGB.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.compute_canonical_frustum_size">
 <span class="sig-name descname"><span class="pre">compute_canonical_frustum_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/viser/_scene_handles/#CameraFrustumHandle.compute_canonical_frustum_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraFrustumHandle.compute_canonical_frustum_size" title="Link to this definition">¶</a></dt>
@@ -1151,12 +1157,6 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.color">
 <span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.CameraFrustumHandle.color" title="Link to this definition">¶</a></dt>
 <dd><p>Color of the frustum as RGB integers. Synchronized automatically when assigned.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.CameraFrustumHandle.image_media_type">
-<span class="sig-name descname"><span class="pre">image_media_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'image/jpeg'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'image/png'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.CameraFrustumHandle.image_media_type" title="Link to this definition">¶</a></dt>
-<dd><p>Format of the provided image (‘image/jpeg’ or ‘image/png’). Synchronized automatically when assigned.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1990,12 +1990,6 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="viser.ImageHandle.media_type">
-<span class="sig-name descname"><span class="pre">media_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'image/jpeg'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'image/png'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.ImageHandle.media_type" title="Link to this definition">¶</a></dt>
-<dd><p>Format of the provided image (‘image/jpeg’ or ‘image/png’). Synchronized automatically when assigned.</p>
-</dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ImageHandle.render_width">
 <span class="sig-name descname"><span class="pre">render_width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.ImageHandle.render_width" title="Link to this definition">¶</a></dt>
 <dd><p>Width at which the image should be rendered in the scene. Synchronized automatically when assigned.</p>
@@ -2017,6 +2011,12 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dt class="sig sig-object py" id="viser.ImageHandle.receive_shadow">
 <span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.ImageHandle.receive_shadow" title="Link to this definition">¶</a></dt>
 <dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.ImageHandle.format">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.13)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'auto'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'jpeg'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'png'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.ImageHandle.format" title="Link to this definition">¶</a></dt>
+<dd><p>Image format. ‘auto’ will use PNG for RGBA images and JPEG for RGB.</p>
 </dd></dl>
 
 </dd></dl>
@@ -3354,6 +3354,7 @@ other objects. Synchronized automatically when assigned.</p>
 </li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle</span></code></a><ul>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.image"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.image</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraFrustumHandle.format"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.format</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.compute_canonical_frustum_size"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.compute_canonical_frustum_size()</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.name"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.name</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.on_click"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.on_click()</span></code></a></li>
@@ -3368,7 +3369,6 @@ other objects. Synchronized automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.scale"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.scale</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.line_width"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.line_width</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.color"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.color</span></code></a></li>
-<li><a class="reference internal" href="#viser.CameraFrustumHandle.image_media_type"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.image_media_type</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.cast_shadow</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.receive_shadow</span></code></a></li>
 </ul>
@@ -3494,11 +3494,11 @@ other objects. Synchronized automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.ImageHandle.remove_click_callback"><code class="docutils literal notranslate"><span class="pre">ImageHandle.remove_click_callback()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.visible"><code class="docutils literal notranslate"><span class="pre">ImageHandle.visible</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">ImageHandle.wxyz</span></code></a></li>
-<li><a class="reference internal" href="#viser.ImageHandle.media_type"><code class="docutils literal notranslate"><span class="pre">ImageHandle.media_type</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.render_width"><code class="docutils literal notranslate"><span class="pre">ImageHandle.render_width</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.render_height"><code class="docutils literal notranslate"><span class="pre">ImageHandle.render_height</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">ImageHandle.cast_shadow</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">ImageHandle.receive_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.ImageHandle.format"><code class="docutils literal notranslate"><span class="pre">ImageHandle.format</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.LabelHandle"><code class="docutils literal notranslate"><span class="pre">LabelHandle</span></code></a><ul>
