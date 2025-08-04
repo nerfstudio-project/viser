@@ -127,7 +127,7 @@ def build_client_entrypoint() -> None:
     )
     args = parser.parse_args()
     out_dir = Path(args.out_dir) if args.out_dir else build_dir
-    _build_viser_client(out_dir=out_dir, cached=args.cached)
+    _build_viser_client(out_dir=out_dir, cached=args.no_cached)
 
 
 def _install_sandboxed_node() -> Path:
