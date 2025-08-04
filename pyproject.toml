@@ -49,6 +49,7 @@ dependencies = [
     "nodeenv>=1.8.0,<2.0.0",
     "psutil>=5.9.5,<8.0.0",
     "yourdfpy>=0.0.53,<1.0.0",
+    "typing_extensions>=4.0.0",
 ]
 
 [project.optional-dependencies]
