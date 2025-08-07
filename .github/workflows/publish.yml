@@ -24,6 +24,9 @@ jobs:
           uv pip install --system build twine
           # Build client files.
           python -c "import viser; viser.ViserServer()"
+      - name: Make sure tests pass
+        run: |
+          pytest
       - name: Strip unsupported tags in README
         run: |
           sed -i '/<!-- pypi-strip -->/,/<!-- \/pypi-strip -->/d' README.md

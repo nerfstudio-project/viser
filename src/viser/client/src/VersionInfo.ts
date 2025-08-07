@@ -1,6 +1,6 @@
 // Automatically generated file - do not edit manually.
 // This is synchronized with the Python package version in viser/__init__.py.
-export const VISER_VERSION = "1.0.3";
+export const VISER_VERSION = "1.0.4";
 
 // GitHub contributors for the viser project.
 export interface Contributor {
@@ -50,28 +50,28 @@ export const GITHUB_CONTRIBUTORS: Contributor[] = [
     html_url: "https://github.com/sea-bass",
   },
   {
-    login: "jkulhanek",
-    html_url: "https://github.com/jkulhanek",
-  },
-  {
     login: "ethanweber",
     html_url: "https://github.com/ethanweber",
   },
   {
-    login: "zerolover",
-    html_url: "https://github.com/zerolover",
+    login: "jkulhanek",
+    html_url: "https://github.com/jkulhanek",
   },
   {
-    login: "beckyfeng08",
-    html_url: "https://github.com/beckyfeng08",
+    login: "AdamRashid96",
+    html_url: "https://github.com/AdamRashid96",
   },
   {
     login: "vye16",
     html_url: "https://github.com/vye16",
   },
   {
-    login: "AdamRashid96",
-    html_url: "https://github.com/AdamRashid96",
+    login: "beckyfeng08",
+    html_url: "https://github.com/beckyfeng08",
+  },
+  {
+    login: "zerolover",
+    html_url: "https://github.com/zerolover",
   },
   {
     login: "slecleach",
@@ -92,6 +92,10 @@ export const GITHUB_CONTRIBUTORS: Contributor[] = [
   {
     login: "simonbethke",
     html_url: "https://github.com/simonbethke",
+  },
+  {
+    login: "MosesEbere",
+    html_url: "https://github.com/MosesEbere",
   },
   {
     login: "nlml",
@@ -128,5 +132,9 @@ export const GITHUB_CONTRIBUTORS: Contributor[] = [
   {
     login: "alberthli",
     html_url: "https://github.com/alberthli",
+  },
+  {
+    login: "atonderski",
+    html_url: "https://github.com/atonderski",
   },
 ];
