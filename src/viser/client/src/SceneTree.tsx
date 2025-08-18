@@ -757,12 +757,16 @@ export function SceneNodeThreeObject(props: { name: string }) {
   function isDisplayed(): boolean {
     // We avoid checking objRef.current.visible because obj may be unmounted when
     // unmountWhenInvisible=true.
+    //
+    // If no visibility is found: we assume it's invisible. This can produce
+    // small performance benefits for scene nodes that are added with
+    // visible=False.
     const attrs =
       viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
     const visibility =
       (attrs?.overrideVisibility === undefined
         ? attrs?.visibility
-        : attrs.overrideVisibility) ?? true;
+        : attrs.overrideVisibility) ?? false;
     if (visibility === false) return false;
 
     // Check visibility of parents + ancestors by traversing the THREE.js hierarchy.
