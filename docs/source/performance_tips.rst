@@ -124,11 +124,17 @@ Smaller property updates are generally fine. A non-exhaustive list:
 
   * Assigning :attr:`viser.MeshSkinnedHandle.bone_wxyzs` and :attr:`viser.MeshSkinnedHandle.bone_positions`
 
-
 For animating heavier assets like point clouds, one workaround for transport
 limitations is buffering: sending all point cloud data at the start and then
-only toggling visibilities in the update loop. For an example of this pattern,
-see the :doc:`Record3D visualizer <examples/demos/record3d_visualizer>`.
+only toggling visibilities in the update loop.
+
+.. note::
+
+   Setting the visibility of a parent scene node to ``False`` will also hide
+   all of its children. For time-series data, you can create a parent node for
+   each timestep and toggle visibility of the parent to show/hide all children
+   without looping through them individually. For an example of this pattern,
+   see the :doc:`Record3D visualizer <examples/demos/record3d_visualizer>`.
 
 
 Image Encoding Overhead
