@@ -815,10 +815,19 @@ export function SceneNodeThreeObject(props: { name: string }) {
       if (objRef.current === null) return;
       if (node === undefined) return;
 
+      // If no visibility is found: we assume it's invisible. This will hide
+      // scene nodes until we receive a visibility update, which always happens
+      // after creation.
       const visibility =
+<<<<<<< HEAD
         (node?.overrideVisibility === undefined
           ? node?.visibility
           : node.overrideVisibility) ?? false;
+=======
+        (attrs?.overrideVisibility === undefined
+          ? attrs?.visibility
+          : attrs.overrideVisibility) ?? false;
+>>>>>>> 0ab4001b4e1e22edbff9d874e6c5cf00c27339d3
       objRef.current.visible = visibility;
 
       if (node.poseUpdateState == "needsUpdate") {

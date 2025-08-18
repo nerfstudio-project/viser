@@ -17,15 +17,15 @@ from typing import (
     overload,
 )
 
-import cv2
 import numpy as np
-from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never, deprecated
+from typing_extensions import Literal, ParamSpec, TypeAlias, deprecated
 
 from viser._backwards_compat_shims import deprecated_positional_shim
 
 from . import _messages
 from . import transforms as tf
 from ._assignable_props_api import colors_to_uint8
+from ._image_encoding import cv2_imencode_with_fallback
 from ._scene_handles import (
     AmbientLightHandle,
     BatchedAxesHandle,
@@ -107,24 +107,10 @@ def _encode_image_binary(
         resolved_format = format
 
     # Convert RGB to BGR for OpenCV encoding.
-    image = cv2.cvtColor(
-        image, {3: cv2.COLOR_RGB2BGR, 4: cv2.COLOR_RGBA2BGRA}[image.shape[2]]
+    encoded = cv2_imencode_with_fallback(
+        resolved_format, image, jpeg_quality, channel_ordering="rgb"
     )
-    if resolved_format == "png":
-        success, encoded = cv2.imencode(".png", image)
-    elif resolved_format == "jpeg":
-        encode_param = [
-            int(cv2.IMWRITE_JPEG_QUALITY),
-            75 if jpeg_quality is None else jpeg_quality,
-        ]
-        success, encoded = cv2.imencode(".jpg", image[..., :3], encode_param)
-    else:
-        assert_never(resolved_format)
-
-    if not success:
-        raise ValueError(f"Failed to encode image to {format}")
-
-    return resolved_format, encoded.tobytes()
+    return resolved_format, encoded
 
 
 TVector = TypeVar("TVector", bound=tuple)
@@ -2028,13 +2014,13 @@ class SceneApi:
             intdepth: np.ndarray = depth.reshape((*depth.shape[:2], 1)).view(np.uint8)
             assert intdepth.shape == (*depth.shape[:2], 4)
 
-            # Important: cv2 expects BGR format, so we'll need to re-order on
-            # the client side.
+            # cv2 expects BGR format, so we'll need to re-order on the client
+            # side. This will compromise performance slightly if OpenCV is not
+            # installed.
             depth_bgr = intdepth
-            success, encoded = cv2.imencode(".png", depth_bgr)
-            if not success:
-                raise ValueError("Failed to encode depth image to PNG")
-            depth_bytes = encoded.tobytes()
+            depth_bytes = cv2_imencode_with_fallback(
+                "png", depth_bgr, jpeg_quality=None, channel_ordering="bgr"
+            )
 
         self._websock_interface.queue_message(
             _messages.BackgroundImageMessage(

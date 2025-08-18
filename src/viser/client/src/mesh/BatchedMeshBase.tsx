@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 import { MeshoptSimplifier } from "meshoptimizer";
 import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
+import { useThree } from "@react-three/fiber";
 
 // Define the types of LOD settings.
 // - "off": No LOD.
@@ -139,12 +140,16 @@ export const BatchedMeshBase = React.forwardRef<
   const tempPosition = useMemo(() => new THREE.Vector3(), []);
   const tempQuaternion = useMemo(() => new THREE.Quaternion(), []);
   const tempScale = useMemo(() => new THREE.Vector3(1, 1, 1), []);
+  const gl = useThree((state) => state.gl);
 
   // Create and manage InstancedMesh2 manually.
   useEffect(() => {
     // Create new InstancedMesh2.
-    const newMesh = new InstancedMesh2(props.geometry, props.material, {
-      capacity: 1,
+    const instanceCount =
+      props.batched_positions.byteLength / (3 * Float32Array.BYTES_PER_ELEMENT);
+    const newMesh = new InstancedMesh2(props.geometry.clone(), props.material, {
+      capacity: instanceCount,
+      renderer: gl,
     });
 
     // Create LODs if needed.

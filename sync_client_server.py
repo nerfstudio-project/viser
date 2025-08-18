@@ -19,26 +19,25 @@ from viser._messages import Message
 
 
 def main(sync_messages: bool = True, sync_version: bool = True) -> None:
+    messages_path = pathlib.Path(__file__).parent / pathlib.Path(
+        "src/viser/client/src/WebsocketMessages.ts"
+    )
+    version_path = pathlib.Path(__file__).parent / pathlib.Path(
+        "src/viser/client/src/VersionInfo.ts"
+    )
+
     if sync_messages:
         # Generate TypeScript message interfaces
         defs = viser.infra.generate_typescript_interfaces(Message)
 
-        # Write message interfaces to file
-        target_path = pathlib.Path(__file__).parent / pathlib.Path(
-            "src/viser/client/src/WebsocketMessages.ts"
-        )
         # Create directory if it doesn't exist
-        target_path.parent.mkdir(parents=True, exist_ok=True)
+        messages_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Write to file even if it doesn't exist yet
-        target_path.write_text(defs)
-        print(f"{target_path} updated")
+        messages_path.write_text(defs)
+        print(f"{messages_path} updated")
 
     if sync_version:
-        # Generate version and contributors information file
-        version_path = pathlib.Path(__file__).parent / pathlib.Path(
-            "src/viser/client/src/VersionInfo.ts"
-        )
         # Create directory if it doesn't exist
         version_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -92,14 +91,14 @@ def main(sync_messages: bool = True, sync_version: bool = True) -> None:
             version_path.write_text(version_content)
             print(f"Version and contributors info generated: {version_path}")
 
-        # Run prettier on all generated files if it's available
-        try:
-            subprocess.run(
-                args=["npx", "prettier", "-w", str(target_path), str(version_path)],
-                check=False,
-            )
-        except FileNotFoundError:
-            print("Warning: npx/prettier not found, skipping formatting")
+    # Run prettier on all generated files if it's available
+    try:
+        subprocess.run(
+            args=["npx", "prettier", "-w", str(messages_path), str(version_path)],
+            check=False,
+        )
+    except FileNotFoundError:
+        print("Warning: npx/prettier not found, skipping formatting")
 
     print("Synchronization complete")
 
