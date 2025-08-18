@@ -1,5 +1,5 @@
 import React from "react";
-import { create, StoreApi, UseBoundStore } from "zustand";
+import { create } from "zustand";
 import { EnvironmentMapMessage } from "./WebsocketMessages";
 
 type EnvironmentState = {
