@@ -62,6 +62,7 @@ Install with: ``pip install viser[examples]``
    :titlesonly:
 
    ./conventions.rst
+   ./performance_tips.rst
    ./development.rst
    ./embedded_visualizations.rst
    ./citation.rst
