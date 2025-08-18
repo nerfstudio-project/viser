@@ -15,7 +15,7 @@ import {
   isSceneNodeMessage,
 } from "./WebsocketMessages";
 import { isTexture } from "./WebsocketUtils";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Button, Progress } from "@mantine/core";
 import { IconCheck, IconDownload } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
@@ -606,6 +606,7 @@ export function FrameSynchronizedMessageHandler() {
   const viewerMutable = viewer.mutable.current;
   const messageQueue = viewerMutable.messageQueue;
   const splatContext = React.useContext(GaussianSplatsContext)!;
+  const gl = useThree((state) => state.gl);
 
   useFrame(
     () => {
@@ -667,21 +668,35 @@ export function FrameSynchronizedMessageHandler() {
             true,
           );
 
-        // Note: We don't need to add the camera to the scene for rendering
-        // The renderer.render() function uses the camera directly
-        // Create a new renderer
-        const renderer = new THREE.WebGLRenderer({
-          antialias: true,
-          alpha: true,
-        });
-        renderer.setSize(targetWidth, targetHeight);
-        renderer.setClearColor(
-          0xffffff,
+        // Save current renderer state.
+        const originalSize = gl.getSize(new THREE.Vector2());
+        const originalClearColor = gl.getClearColor(new THREE.Color());
+        const originalClearAlpha = gl.getClearAlpha();
+
+        // Configure for capture.
+        gl.setSize(targetWidth, targetHeight);
+        gl.setClearColor(0xffffff);
+        gl.setClearAlpha(
           viewerMutable.getRenderRequest!.format == "image/png" ? 0.0 : 1.0,
-        ); // Set clear color to transparent
+        );
 
         // Render the scene.
-        renderer.render(viewerMutable.scene!, camera);
+        gl.render(viewerMutable.scene!, camera);
+
+        // Temporary canvas for saving the rendered image. This is needed to
+        // prevent flickers: we need context from the original canvas for
+        // rendering, but we want to revert the renderer state immediately.
+        const canvas = gl.domElement;
+        const bufferCanvas = document.createElement("canvas");
+        bufferCanvas.width = targetWidth;
+        bufferCanvas.height = targetHeight;
+        const ctx = bufferCanvas.getContext("2d")!;
+        ctx.drawImage(canvas, 0, 0, targetWidth, targetHeight);
+
+        // Restore the original renderer state.
+        gl.setSize(originalSize.x, originalSize.y);
+        gl.setClearColor(originalClearColor);
+        gl.setClearAlpha(originalClearAlpha);
 
         // Restore splatting indices.
         if (sortedIndicesOrig !== null && splatMeshProps !== null) {
@@ -689,12 +704,9 @@ export function FrameSynchronizedMessageHandler() {
           splatMeshProps.sortedIndexAttribute.needsUpdate = true;
         }
 
-        // Get the rendered image.
+        // Get the rendered image from our temp canvas.
         viewerMutable.getRenderRequestState = "in_progress";
-        renderer.domElement.toBlob(async (blob) => {
-          renderer.dispose();
-          renderer.forceContextLoss();
-
+        bufferCanvas.toBlob(async (blob) => {
           viewerMutable.sendMessage({
             type: "GetRenderResponseMessage",
             payload: new Uint8Array(await blob!.arrayBuffer()),

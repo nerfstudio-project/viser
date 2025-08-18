@@ -100,6 +100,7 @@ export function useSceneTreeState(nodeRefFromName: {
           "": {
             // Default quaternion: 90° around X, 180° around Y, -90° around Z.
             // This matches the coordinate system transformation.
+            visibility: true,
             wxyz: (() => {
               const quat = new THREE.Quaternion().setFromEuler(
                 new THREE.Euler(Math.PI / 2, Math.PI, -Math.PI / 2),

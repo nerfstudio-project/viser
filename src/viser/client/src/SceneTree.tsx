@@ -762,7 +762,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
     const visibility =
       (attrs?.overrideVisibility === undefined
         ? attrs?.visibility
-        : attrs.overrideVisibility) ?? true;
+        : attrs.overrideVisibility) ?? false;
     if (visibility === false) return false;
 
     // Check visibility of parents + ancestors by traversing the THREE.js hierarchy.
@@ -824,10 +824,13 @@ export function SceneNodeThreeObject(props: { name: string }) {
       if (objRef.current === null) return;
       if (attrs === undefined) return;
 
+      // If no visibility is found: we assume it's invisible. This will hide
+      // scene nodes until we receive a visibility update, which always happens
+      // after creation.
       const visibility =
         (attrs?.overrideVisibility === undefined
           ? attrs?.visibility
-          : attrs.overrideVisibility) ?? true;
+          : attrs.overrideVisibility) ?? false;
       objRef.current.visible = visibility;
 
       if (attrs.poseUpdateState == "needsUpdate") {

@@ -512,7 +512,11 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
                     theme.colors[theme.primaryColor][
                       colorScheme === "dark" ? 4 : 6
                     ],
-                  filter: `drop-shadow(0 0 2px ${theme.colors[theme.primaryColor][colorScheme === "dark" ? 4 : 6]}30)`,
+                  filter: `drop-shadow(0 0 2px ${
+                    theme.colors[theme.primaryColor][
+                      colorScheme === "dark" ? 4 : 6
+                    ]
+                  }30)`,
                 }),
               }}
               onMouseDown={handleVisibilityMouseDown}
@@ -547,7 +551,11 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
                     theme.colors[theme.primaryColor][
                       colorScheme === "dark" ? 4 : 6
                     ],
-                  filter: `drop-shadow(0 0 2px ${theme.colors[theme.primaryColor][colorScheme === "dark" ? 4 : 6]}30)`,
+                  filter: `drop-shadow(0 0 2px ${
+                    theme.colors[theme.primaryColor][
+                      colorScheme === "dark" ? 4 : 6
+                    ]
+                  }30)`,
                 }}
                 onClick={(evt) => {
                   evt.stopPropagation();
