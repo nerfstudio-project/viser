@@ -88,10 +88,10 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
   // This will prevent unnecessary remounting when messages are looped.
   function resetScene() {
     const sceneTreeState = viewer.useSceneTree.getState();
-    const attrs = sceneTreeState.nodeAttributesFromName;
-    Object.keys(attrs).forEach((key) => {
+    Object.keys(sceneTreeState).forEach((key) => {
       if (key === "") return;
-      const nodeMessage = sceneTreeState.nodeFromName[key]?.message;
+      const node = sceneTreeState[key];
+      const nodeMessage = node?.message;
       if (
         nodeMessage !== undefined &&
         (nodeMessage.type !== "FrameMessage" || nodeMessage.props.show_axes)
@@ -99,14 +99,14 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
         // ^ We don't hide intermediate frames. These can be created
         // automatically by addSceneNodeMakerParents(), in which case there
         // will be no message to un-hide them.
-        sceneTreeState.updateNodeAttributes(key, {
+        viewer.sceneTreeActions.updateNodeAttributes(key, {
           visibility: false,
           wxyz: [1, 0, 0, 0],
           position: [0, 0, 0],
         });
-      } else {
+      } else if (node !== undefined) {
         // Still reset poses for frames.
-        sceneTreeState.updateNodeAttributes(key, {
+        viewer.sceneTreeActions.updateNodeAttributes(key, {
           wxyz: [1, 0, 0, 0],
           position: [0, 0, 0],
         });

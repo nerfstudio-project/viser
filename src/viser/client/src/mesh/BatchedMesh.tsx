@@ -15,9 +15,7 @@ export const BatchedMesh = React.forwardRef<
 >(function BatchedMesh({ children, ...message }, ref) {
   const viewer = React.useContext(ViewerContext)!;
   const clickable =
-    viewer.useSceneTree(
-      (state) => state.nodeFromName[message.name]?.clickable,
-    ) ?? false;
+    viewer.useSceneTree((state) => state[message.name]?.clickable) ?? false;
 
   // Create a material based on the message props.
   const material = useMemo(() => {

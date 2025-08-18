@@ -4,15 +4,17 @@ import { createStandardMaterial } from "./MeshUtils";
 import { BoxMessage } from "../WebsocketMessages";
 import { OutlinesIfHovered } from "../OutlinesIfHovered";
 
+let boxGeometry: THREE.BoxGeometry | null = null;
+
 /**
  * Component for rendering box meshes
  */
 export const BoxMesh = React.forwardRef<
-  THREE.Mesh,
+  THREE.Group,
   BoxMessage & { children?: React.ReactNode }
 >(function BoxMesh(
   { children, ...message },
-  ref: React.ForwardedRef<THREE.Mesh>,
+  ref: React.ForwardedRef<THREE.Group>,
 ) {
   // Create material based on props.
   const material = React.useMemo(() => {
@@ -26,18 +28,10 @@ export const BoxMesh = React.forwardRef<
     message.props.side,
   ]);
 
-  // Setup geometry using memoization.
-  const geometry = React.useMemo(() => {
-    const [width, height, depth] = message.props.dimensions;
-    return new THREE.BoxGeometry(width, height, depth);
-  }, [message.props.dimensions]);
-
-  // Clean up geometry when it changes.
-  React.useEffect(() => {
-    return () => {
-      if (geometry) geometry.dispose();
-    };
-  }, [geometry]);
+  // Create box geometry only once.
+  if (boxGeometry === null) {
+    boxGeometry = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+  }
 
   // Clean up material when it changes.
   React.useEffect(() => {
@@ -47,15 +41,17 @@ export const BoxMesh = React.forwardRef<
   }, [material]);
 
   return (
-    <mesh
-      ref={ref}
-      geometry={geometry}
-      material={material}
-      castShadow={message.props.cast_shadow}
-      receiveShadow={message.props.receive_shadow}
-    >
-      <OutlinesIfHovered alwaysMounted />
+    <group ref={ref}>
+      <mesh
+        geometry={boxGeometry}
+        scale={message.props.dimensions}
+        material={material}
+        castShadow={message.props.cast_shadow}
+        receiveShadow={message.props.receive_shadow}
+      >
+        <OutlinesIfHovered alwaysMounted />
+      </mesh>
       {children}
-    </mesh>
+    </group>
   );
 });

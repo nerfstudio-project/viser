@@ -36,6 +36,7 @@ import { WebsocketMessageProducer } from "./WebsocketInterface";
 import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
+import { useEnvironmentState } from "./EnvironmentState";
 import { useThrottledMessageSender } from "./WebsocketUtils";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { theme } from "./AppTheme";
@@ -216,10 +217,18 @@ function ViewerRoot() {
     hoveredElementsCount: 0,
   });
 
+  // Create the scene tree state and extract store and actions.
+  const sceneTreeState = useSceneTreeState(mutable.current.nodeRefFromName);
+
+  // Create the environment state and extract store and actions.
+  const environmentState = useEnvironmentState();
+
   // Create the context value with hooks and single ref.
   const viewer: ViewerContextContents = {
     messageSource,
-    useSceneTree: useSceneTreeState(mutable.current.nodeRefFromName),
+    useSceneTree: sceneTreeState.store,
+    sceneTreeActions: sceneTreeState.actions,
+    useEnvironment: environmentState,
     useGui: useGuiState(initialServer),
     mutable,
   };
@@ -572,17 +581,17 @@ function sendRectSelectMessage(
  */
 function DefaultLights() {
   const viewer = React.useContext(ViewerContext)!;
-  const enableDefaultLights = viewer.useSceneTree(
+  const enableDefaultLights = viewer.useEnvironment(
     (state) => state.enableDefaultLights,
   );
-  const enableDefaultLightsShadows = viewer.useSceneTree(
+  const enableDefaultLightsShadows = viewer.useEnvironment(
     (state) => state.enableDefaultLightsShadows,
   );
-  const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
+  const environmentMap = viewer.useEnvironment((state) => state.environmentMap);
 
   // Get world rotation directly from scene tree state.
   const worldRotation = viewer.useSceneTree(
-    (state) => state.nodeAttributesFromName[""]?.wxyz ?? [1, 0, 0, 0],
+    (state) => state[""]?.wxyz ?? [1, 0, 0, 0],
   );
 
   // Calculate environment map.

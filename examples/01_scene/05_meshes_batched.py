@@ -145,13 +145,11 @@ def generate_animated_colors(
     if animation_mode == "wave":
         # Wave pattern based on distance from center.
         distances = np.linalg.norm(positions[:, :2], axis=1)
-        wave = np.sin(distances * 2 - t * 3) * 0.5 + 0.5
+        wave = np.sin(distances * 2) * 0.5 + 0.5
         colors = np.zeros((n, 3))
         colors[:, 0] = wave  # Red channel.
-        colors[:, 1] = np.sin(distances * 2 - t * 3 + np.pi / 3) * 0.5 + 0.5  # Green.
-        colors[:, 2] = (
-            np.sin(distances * 2 - t * 3 + 2 * np.pi / 3) * 0.5 + 0.5
-        )  # Blue.
+        colors[:, 1] = np.sin(distances * 2 + np.pi / 3) * 0.5 + 0.5  # Green.
+        colors[:, 2] = np.sin(distances * 2 + 2 * np.pi / 3) * 0.5 + 0.5  # Blue.
         return (colors * 255).astype(np.uint8)
 
     elif animation_mode == "pulse":
@@ -338,7 +336,7 @@ def main():
         # Animate if enabled.
         if animate_checkbox.value:
             # Animate positions.
-            t = time.perf_counter() * 2.0
+            t = time.time() * 2.0
             positions[:] = positions_orig
             positions[:, 0] += np.cos(t * 0.5)
             positions[:, 1] += np.sin(t * 0.5)
@@ -348,9 +346,9 @@ def main():
                 scales = np.linalg.norm(positions, axis=-1)
                 scales = np.stack(
                     [
-                        np.sin(scales * 1.5 - t) * 0.5 + 1.0,
-                        np.sin(scales * 1.5 - t + np.pi / 2.0) * 0.5 + 1.0,
-                        np.sin(scales * 1.5 - t + np.pi) * 0.5 + 1.0,
+                        np.sin(scales * 1.5) * 0.5 + 1.0,
+                        np.sin(scales * 1.5 + np.pi / 2.0) * 0.5 + 1.0,
+                        np.sin(scales * 1.5 + np.pi) * 0.5 + 1.0,
                     ],
                     axis=-1,
                 )

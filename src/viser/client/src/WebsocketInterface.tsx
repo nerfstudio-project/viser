@@ -12,7 +12,7 @@ export function WebsocketMessageProducer() {
   const viewerMutable = viewer.mutable.current;
   const server = viewer.useGui((state) => state.server);
   const resetGui = viewer.useGui((state) => state.resetGui);
-  const resetScene = viewer.useSceneTree((state) => state.resetScene);
+  const resetScene = viewer.sceneTreeActions.resetScene;
 
   syncSearchParamServer(server);
 
