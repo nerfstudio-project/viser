@@ -13,7 +13,7 @@ Scenes in Viser can contain hundreds of objects without problems. When we start
 visualizing thousands, however, the viewer can start to choke.
 
 This is true even for simple geometries. For example, a scene with 5000 boxes
-can feel slow on some machines:
+will start to sputter on most machines:
 
 .. code-block:: python
 
@@ -31,9 +31,8 @@ can feel slow on some machines:
     server.sleep_forever()
 
 
-Problems of this kind can typically be solved by batching objects. This can
-reduce redundant setup overhead and WebGL draw calls. Viser provides several
-methods for batching, including:
+Batching objects can help by reducing CPU overhead and WebGL draw calls. Viser
+provides several methods for batching, including:
 
 - :meth:`viser.SceneApi.add_batched_axes`
 - :meth:`viser.SceneApi.add_batched_meshes_simple`
@@ -43,7 +42,7 @@ methods for batching, including:
 In the case of splines and line segments, multiple lines can also be combined
 into single :meth:`~viser.SceneApi.add_line_segments` calls.
 
-With batching, even tens of thousands of boxes can feel snappy:
+With batching, even tens of thousands of boxes should feel snappy:
 
 .. code-block:: python
 
@@ -67,10 +66,10 @@ With batching, even tens of thousands of boxes can feel snappy:
     server.sleep_forever()
 
 
-Transport Overhead
+Time-series Data
 =================================
 
-The typical format for animations in Viser is to (1) set up the scene and (2)
+The typical pattern for animations in Viser is to (1) set up the scene and (2)
 update it in a loop:
 
 .. code-block:: python
@@ -86,20 +85,18 @@ update it in a loop:
         # Update the scene.
         pass
 
-        # Sleep based on framerate.
-        time.sleep(1.0 / 60.0)
+        # Sleep based on update rate.
+        time.sleep(1.0 / 30.0)
 
 
-Compared to native viewers, one limitation of Viser is transport overhead: 3D
+Compared to native viewers, one limitation of Viser is transport overhead. 3D
 data is serialized in Python, passed through a websocket connection,
 deserialized in your web browser, and then rendered using WebGL. These steps
-can happen in milliseconds and are usually fine for static visualizations or
-the "setup" stage in the example above. When combined with larger assets in the
-"update" stage, however, they can become a bottleneck.
+are not typically an issue for static visualizations or the "setup" stage in
+the example above. When combined with larger assets in the "update" stage and
+faster update rates, however, they can become a bottleneck.
 
-An easy fix is to decrease update rates.
-
-For scene updates that support faster framerates, however, it's best to avoid:
+For smoother animations, we recommend avoiding heavier operations in loops:
 
 * ❌ Sending large meshes or point clouds.
 * ❌ Sending large images.
@@ -117,21 +114,19 @@ Smaller property updates are generally fine. A non-exhaustive list:
 
 * ✅ Setting orientations and positions of batched meshes.
 
-  * Assigning :attr:`viser.SceneNodeHandle.batched_wxyzs`, :attr:`viser.SceneNodeHandle.batched_positions`
+  * Assigning :attr:`viser.BatchedMeshHandle.batched_wxyzs`, :attr:`viser.BatchedMeshHandle.batched_positions`
+
+* ✅ Setting scales of batched meshes.
+
+  * Assigning :attr:`viser.BatchedMeshHandle.batched_scales`
 
 * ✅ Updating orientations and positions of bones in skinned meshes.
 
   * Assigning :attr:`viser.MeshSkinnedHandle.bone_wxyzs` and :attr:`viser.MeshSkinnedHandle.bone_positions`
 
-* ✅ Setting scales of batched meshes.
-
-  * Assigning :attr:`viser.SceneNodeHandle.batched_scales`
-
-* ✅ Downsizing images before sending them.
-
 
 For animating heavier assets like point clouds, one workaround for transport
-limitations is buffering: sending all point cloud data at the start, and then
+limitations is buffering: sending all point cloud data at the start and then
 only toggling visibilities in the update loop. For an example of this pattern,
 see the :doc:`Record3D visualizer <examples/demos/record3d_visualizer>`.
 

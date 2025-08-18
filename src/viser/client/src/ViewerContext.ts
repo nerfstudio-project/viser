@@ -63,8 +63,12 @@ export type ViewerContextContents = {
   // Non-mutable state.
   messageSource: "websocket" | "file_playback";
 
-  // Zustand state hooks.
-  useSceneTree: UseSceneTree;
+  // Zustand state hooks and actions.
+  useSceneTree: UseSceneTree["store"];
+  sceneTreeActions: UseSceneTree["actions"];
+  useEnvironment: ReturnType<
+    typeof import("./EnvironmentState").useEnvironmentState
+  >;
   useGui: UseGui;
 
   // Single reference to all mutable state.

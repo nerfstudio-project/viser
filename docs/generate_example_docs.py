@@ -19,19 +19,18 @@ from typing import List, Tuple
 
 import tyro
 
-try:
-    from playwright.async_api import async_playwright
-
-except ImportError:
-    raise SystemExit(
-        "Warning: playwright not installed. Install with: pip install playwright && playwright install chromium"
-    )
-
 
 async def capture_screenshot_playwright(
     url: str, output_path: Path, wait_time: float = 10.0
 ) -> bool:
     """Capture screenshot using Playwright. Generates both full-size and thumbnail versions."""
+    try:
+        from playwright.async_api import async_playwright
+
+    except ImportError:
+        raise SystemExit(
+            "Warning: playwright not installed. Install with: pip install playwright && playwright install chromium"
+        )
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         # Set viewport to 16:9 aspect ratio with higher resolution for better quality
@@ -267,7 +266,7 @@ async def capture_all_screenshots(name_filter: str | None, batch_size: int = 8):
             if name_filter is not None and name_filter.lower() in ex[0].lower()
         ]
     else:
-        examples = all_examples
+        examples = []
 
     print(f"Found {len(all_examples)} total examples")
     print(f"Processing {len(examples)} examples matching '{name_filter}'")

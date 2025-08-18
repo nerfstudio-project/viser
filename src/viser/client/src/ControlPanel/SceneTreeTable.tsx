@@ -39,10 +39,10 @@ function EditNodeProps({
   closePopoverFn: () => void;
 }) {
   const viewer = React.useContext(ViewerContext)!;
-  const node = viewer.useSceneTree((state) => state.nodeFromName[nodeName]);
-  const updateSceneNode = viewer.useSceneTree((state) => state.updateSceneNode);
+  const nodeMessage = viewer.useSceneTree((state) => state[nodeName]?.message);
+  const updateSceneNode = viewer.sceneTreeActions.updateSceneNodeProps;
 
-  if (node === undefined) {
+  if (nodeMessage === undefined) {
     return null;
   }
 
@@ -63,7 +63,7 @@ function EditNodeProps({
     }
   }
 
-  const props = node.message.props;
+  const props = nodeMessage.props;
   const initialValues = Object.fromEntries(
     Object.entries(props)
       .filter(([, value]) => !(value instanceof Uint8Array))
@@ -121,7 +121,7 @@ function EditNodeProps({
           }}
         >
           <Box style={{ fontWeight: "500", flexGrow: "1" }} fz="sm">
-            {node.message.type
+            {nodeMessage.type
               .replace("Message", "")
               // First, handle patterns like "Gui3D" -> "Gui 3D" (lowercase + digit + uppercase)
               .replace(/([a-z])(\d[A-Z])/g, "$1 $2")
@@ -293,9 +293,7 @@ function EditNodeProps({
 /* Table for seeing an overview of the scene tree, toggling visibility, etc. * */
 export default function SceneTreeTable() {
   const viewer = React.useContext(ViewerContext)!;
-  const childrenName = viewer.useSceneTree(
-    (state) => state.nodeFromName[""]!.children,
-  );
+  const childrenName = viewer.useSceneTree((state) => state[""]!.children);
   return (
     <ScrollArea className={tableWrapper}>
       <PropsPopoverProvider>
@@ -398,7 +396,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
     startPainting(newValue);
 
     // Update visibility using scene tree state.
-    viewer.useSceneTree.getState().updateNodeAttributes(props.nodeName, {
+    viewer.sceneTreeActions.updateNodeAttributes(props.nodeName, {
       overrideVisibility: newValue,
     });
   };
@@ -407,29 +405,29 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
     if (!paintingRef.current) return;
 
     // Update visibility to match paint value using scene tree state.
-    viewer.useSceneTree.getState().updateNodeAttributes(props.nodeName, {
+    viewer.sceneTreeActions.updateNodeAttributes(props.nodeName, {
       overrideVisibility: paintValueRef.current,
     });
   };
 
   const childrenName = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.nodeName]!.children,
+    (state) => state[props.nodeName]?.children,
   );
-  const expandable = childrenName.length > 0;
-
+  const expandable = (childrenName?.length ?? 0) > 0;
   const [expanded, { toggle: toggleExpanded }] = useDisclosure(false);
 
-  const setLabelVisibility = viewer.useSceneTree(
-    (state) => state.setLabelVisibility,
-  );
+  // Label visibility is managed in the scene node itself
+  const setLabelVisibility = (visible: boolean) => {
+    viewer.sceneTreeActions.updateNodeAttributes(props.nodeName, {
+      labelVisible: visible,
+    });
+  };
 
   // Get server visibility and override visibility separately
   const serverVisibility =
-    viewer.useSceneTree(
-      (state) => state.nodeAttributesFromName[props.nodeName]?.visibility,
-    ) ?? true;
+    viewer.useSceneTree((state) => state[props.nodeName]?.visibility) ?? true;
   const overrideVisibility = viewer.useSceneTree(
-    (state) => state.nodeAttributesFromName[props.nodeName]?.overrideVisibility,
+    (state) => state[props.nodeName]?.overrideVisibility,
   );
 
   // Compute final visibility: override takes precedence, fallback to server
@@ -439,9 +437,9 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   // Ensure label visibility is cleaned up when component unmounts
   React.useEffect(() => {
     return () => {
-      setLabelVisibility(props.nodeName, false);
+      setLabelVisibility(false);
     };
-  });
+  }, []);
 
   const isVisibleEffective = isVisible && props.isParentVisible;
   const VisibleIcon = isVisible ? IconEye : IconEyeOff;
@@ -468,8 +466,8 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
           cursor: expandable ? "pointer" : undefined,
         }}
         onClick={expandable ? toggleExpanded : undefined}
-        onMouseEnter={() => setLabelVisibility(props.nodeName, true)}
-        onMouseLeave={() => setLabelVisibility(props.nodeName, false)}
+        onMouseEnter={() => setLabelVisibility(true)}
+        onMouseLeave={() => setLabelVisibility(false)}
       >
         {new Array(props.indentCount).fill(null).map((_, i) => (
           <Box className={tableHierarchyLine} key={i} />
@@ -512,7 +510,11 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
                     theme.colors[theme.primaryColor][
                       colorScheme === "dark" ? 4 : 6
                     ],
-                  filter: `drop-shadow(0 0 2px ${theme.colors[theme.primaryColor][colorScheme === "dark" ? 4 : 6]}30)`,
+                  filter: `drop-shadow(0 0 2px ${
+                    theme.colors[theme.primaryColor][
+                      colorScheme === "dark" ? 4 : 6
+                    ]
+                  }30)`,
                 }),
               }}
               onMouseDown={handleVisibilityMouseDown}
@@ -547,15 +549,17 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
                     theme.colors[theme.primaryColor][
                       colorScheme === "dark" ? 4 : 6
                     ],
-                  filter: `drop-shadow(0 0 2px ${theme.colors[theme.primaryColor][colorScheme === "dark" ? 4 : 6]}30)`,
+                  filter: `drop-shadow(0 0 2px ${
+                    theme.colors[theme.primaryColor][
+                      colorScheme === "dark" ? 4 : 6
+                    ]
+                  }30)`,
                 }}
                 onClick={(evt) => {
                   evt.stopPropagation();
-                  viewer.useSceneTree
-                    .getState()
-                    .updateNodeAttributes(props.nodeName, {
-                      overrideVisibility: undefined,
-                    });
+                  viewer.sceneTreeActions.updateNodeAttributes(props.nodeName, {
+                    overrideVisibility: undefined,
+                  });
                 }}
               />
             </Tooltip>
@@ -612,7 +616,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
         </Popover>
       </Box>
       {expanded
-        ? childrenName.map((name) => (
+        ? childrenName?.map((name) => (
             <SceneTreeTableRow
               nodeName={name}
               isParentVisible={isVisibleEffective}

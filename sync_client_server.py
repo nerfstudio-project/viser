@@ -46,9 +46,7 @@ def main(sync_messages: bool = True, sync_version: bool = True) -> None:
         contributors_data = []
         try:
             # GitHub API endpoint for contributors
-            api_url = (
-                "https://api.github.com/repos/nerfstudio-project/viser/contributors?per_page=500"
-            )
+            api_url = "https://api.github.com/repos/nerfstudio-project/viser/contributors?per_page=500"
             req = urllib.request.Request(
                 api_url,
                 headers={

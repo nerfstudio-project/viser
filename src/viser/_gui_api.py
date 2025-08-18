@@ -434,9 +434,9 @@ class GuiApi:
         if brand_color is not None:
             assert len(brand_color) in (3, 10)
             if len(brand_color) == 3:
-                assert all(map(lambda val: isinstance(val, int), brand_color)), (
-                    "All channels should be integers."
-                )
+                assert all(
+                    map(lambda val: isinstance(val, int), brand_color)
+                ), "All channels should be integers."
 
                 # RGB => HLS.
                 h, l, s = colorsys.rgb_to_hls(
@@ -784,9 +784,9 @@ class GuiApi:
             plotly_path = (
                 Path(plotly.__file__).parent / "package_data" / "plotly.min.js"
             )
-            assert plotly_path.exists(), (
-                f"Could not find plotly.min.js at {plotly_path}."
-            )
+            assert (
+                plotly_path.exists()
+            ), f"Could not find plotly.min.js at {plotly_path}."
 
             # Send it over!
             plotly_js = plotly_path.read_text(encoding="utf-8")
@@ -894,12 +894,12 @@ class GuiApi:
         """
 
         # Validate data structure
-        assert len(data) >= 2, (
-            "data must have at least 2 arrays (x-data + at least one y-data series)"
-        )
-        assert all(isinstance(arr, np.ndarray) for arr in data), (
-            "all data elements must be numpy arrays"
-        )
+        assert (
+            len(data) >= 2
+        ), "data must have at least 2 arrays (x-data + at least one y-data series)"
+        assert all(
+            isinstance(arr, np.ndarray) for arr in data
+        ), "all data elements must be numpy arrays"
 
         # Validate data dimensions and shapes
         for i, arr in enumerate(data):

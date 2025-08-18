@@ -66,9 +66,7 @@ export const SingleGlbAsset = React.forwardRef<
     outlineRef.current.visible = hoveredRef.current.isHovered;
   });
   const clickable =
-    viewer.useSceneTree(
-      (state) => state.nodeFromName[message.name]?.clickable,
-    ) ?? false;
+    viewer.useSceneTree((state) => state[message.name]?.clickable) ?? false;
 
   if (!gltf) return null;
 

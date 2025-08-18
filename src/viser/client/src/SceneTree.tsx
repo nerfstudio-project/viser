@@ -66,7 +66,7 @@ export type UseSceneTree = ReturnType<typeof useSceneTreeState>;
 function SceneNodeLabel(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const labelVisible = viewer.useSceneTree(
-    (state) => state.labelVisibleFromName[props.name],
+    (state) => state[props.name]?.labelVisible,
   );
   return labelVisible ? (
     <Html>
@@ -356,12 +356,10 @@ function createObjectFactory(
                   number,
                   number,
                 ];
-                viewer.useSceneTree
-                  .getState()
-                  .updateNodeAttributes(message.name, {
-                    wxyz: wxyzArray,
-                    position: positionArray,
-                  });
+                viewer.sceneTreeActions.updateNodeAttributes(message.name, {
+                  wxyz: wxyzArray,
+                  position: positionArray,
+                });
                 sendDragMessage({
                   type: "TransformControlsUpdateMessage",
                   name: message.name,
@@ -704,13 +702,9 @@ function createObjectFactory(
 
 export function SceneNodeThreeObject(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
-  const message = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.message,
-  );
+  const message = viewer.useSceneTree((state) => state[props.name]?.message);
   const ContextBridge = useContextBridge();
-  const updateNodeAttributes = viewer.useSceneTree(
-    (state) => state.updateNodeAttributes,
-  );
+  const updateNodeAttributes = viewer.sceneTreeActions.updateNodeAttributes;
 
   const {
     makeObject,
@@ -723,8 +717,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
 
   const [unmount, setUnmount] = React.useState(false);
   const clickable =
-    viewer.useSceneTree((state) => state.nodeFromName[props.name]?.clickable) ??
-    false;
+    viewer.useSceneTree((state) => state[props.name]?.clickable) ?? false;
   const objRef = React.useRef<THREE.Object3D | null>(null);
   const groupRef = React.useRef<THREE.Group>();
 
@@ -757,12 +750,11 @@ export function SceneNodeThreeObject(props: { name: string }) {
   function isDisplayed(): boolean {
     // We avoid checking objRef.current.visible because obj may be unmounted when
     // unmountWhenInvisible=true.
-    const attrs =
-      viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
+    const node = viewer.useSceneTree.getState()[props.name];
     const visibility =
-      (attrs?.overrideVisibility === undefined
-        ? attrs?.visibility
-        : attrs.overrideVisibility) ?? true;
+      (node?.overrideVisibility === undefined
+        ? node?.visibility
+        : node.overrideVisibility) ?? true;
     if (visibility === false) return false;
 
     // Check visibility of parents + ancestors by traversing the THREE.js hierarchy.
@@ -796,8 +788,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
   useFrame(
     () => {
       // Use getState() for performance in render loops (no re-renders).
-      const attrs =
-        viewer.useSceneTree.getState().nodeAttributesFromName[props.name];
+      const node = viewer.useSceneTree.getState()[props.name];
 
       // Unmount when invisible.
       // Examples: <Html /> components, PivotControls.
@@ -822,23 +813,23 @@ export function SceneNodeThreeObject(props: { name: string }) {
       }
 
       if (objRef.current === null) return;
-      if (attrs === undefined) return;
+      if (node === undefined) return;
 
       const visibility =
-        (attrs?.overrideVisibility === undefined
-          ? attrs?.visibility
-          : attrs.overrideVisibility) ?? true;
+        (node?.overrideVisibility === undefined
+          ? node?.visibility
+          : node.overrideVisibility) ?? true;
       objRef.current.visible = visibility;
 
-      if (attrs.poseUpdateState == "needsUpdate") {
+      if (node.poseUpdateState == "needsUpdate") {
         // Update pose state through zustand action.
         updateNodeAttributes(props.name, {
           poseUpdateState: "updated",
         });
 
-        const wxyz = attrs.wxyz ?? [1, 0, 0, 0];
+        const wxyz = node.wxyz ?? [1, 0, 0, 0];
         objRef.current.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
-        const position = attrs.position ?? [0, 0, 0];
+        const position = node.position ?? [0, 0, 0];
         objRef.current.position.set(position[0], position[1], position[2]);
 
         // Update matrices if necessary. This is necessary for PivotControls.
@@ -1014,7 +1005,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
 function SceneNodeChildren(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const childrenNames = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.children,
+    (state) => state[props.name]?.children,
   );
   return (
     <>

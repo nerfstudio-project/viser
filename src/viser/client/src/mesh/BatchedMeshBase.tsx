@@ -290,7 +290,9 @@ export const BatchedMeshBase = React.forwardRef<
         );
       } else {
         console.error(
-          `Invalid batched_colors length: ${props.batched_colors.byteLength}, expected 3 or ${mesh.instancesCount * 3}`,
+          `Invalid batched_colors length: ${
+            props.batched_colors.byteLength
+          }, expected 3 or ${mesh.instancesCount * 3}`,
         );
         color = new THREE.Color(1, 1, 1); // Default to white.
       }
