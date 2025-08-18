@@ -35,6 +35,7 @@ export const rootNodeTemplate: SceneNode = {
   },
   children: ["/WorldAxes"],
   clickable: false,
+  visibility: true,
   // Default quaternion: 90° around X, 180° around Y, -90° around Z.
   // This matches the coordinate system transformation.
   wxyz: (() => {
@@ -58,6 +59,7 @@ const worldAxesNodeTemplate: SceneNode = {
   },
   children: [],
   clickable: false,
+  visibility: true,
 };
 
 /** Helper functions that operate on the scene tree store */

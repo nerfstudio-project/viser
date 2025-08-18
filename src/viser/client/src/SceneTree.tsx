@@ -754,7 +754,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
     const visibility =
       (node?.overrideVisibility === undefined
         ? node?.visibility
-        : node.overrideVisibility) ?? true;
+        : node.overrideVisibility) ?? false;
     if (visibility === false) return false;
 
     // Check visibility of parents + ancestors by traversing the THREE.js hierarchy.
@@ -818,7 +818,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
       const visibility =
         (node?.overrideVisibility === undefined
           ? node?.visibility
-          : node.overrideVisibility) ?? true;
+          : node.overrideVisibility) ?? false;
       objRef.current.visible = visibility;
 
       if (node.poseUpdateState == "needsUpdate") {

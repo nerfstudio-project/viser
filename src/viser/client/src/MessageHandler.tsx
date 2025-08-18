@@ -55,6 +55,9 @@ function useMessageHandler() {
         ...rootNodeTemplate.message,
         name: parentName,
       });
+      viewer.sceneTreeActions.updateNodeAttributes(parentName, {
+        visibility: true,
+      });
     }
     addSceneNode(message);
 
