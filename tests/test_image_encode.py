@@ -15,9 +15,9 @@ def test_image_encode_png(monkeypatch) -> None:
     bytes_no_cv2 = cv2_imencode_with_fallback(
         "png", image, jpeg_quality=None, channel_ordering="rgb"
     )
-    assert (
-        bytes_cv2 != bytes_no_cv2
-    ), "Expected different byte outputs for PNG encoding with and without cv2."
+    assert bytes_cv2 != bytes_no_cv2, (
+        "Expected different byte outputs for PNG encoding with and without cv2."
+    )
     np.testing.assert_array_equal(
         iio.imread(bytes_cv2, extension=".png"),
         iio.imread(bytes_no_cv2, extension=".png"),
