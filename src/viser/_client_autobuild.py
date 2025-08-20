@@ -103,7 +103,6 @@ def _build_viser_client(out_dir: Path, cached: bool = True) -> None:
         + (";" if sys.platform == "win32" else ":")
         + subprocess_env["PATH"]
     )
-    # Use npm instead of yarn
     npm_path = node_bin_dir / "npm"
     subprocess.run(
         args=[str(npm_path), "install"],
