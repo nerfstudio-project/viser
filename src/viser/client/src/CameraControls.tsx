@@ -34,7 +34,7 @@ function CrosshairVisual({
   return (
     <group ref={groupRef} visible={visible}>
       <Instances limit={6}>
-        <boxGeometry args={[0.5, 0.02, 0.02]} />
+        <boxGeometry args={[0.4, 0.02, 0.02]} />
         <meshBasicMaterial color="#ff0000" opacity={0.3} transparent />
         {/* Horizontal line segments */}
         <Instance position={[0.5, 0.0, 0.0]} />
