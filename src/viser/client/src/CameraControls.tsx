@@ -120,7 +120,7 @@ function OrbitOriginTool({
       />
       {/* Crosshair visualization at look-at point */}
       <CrosshairVisual
-        visible={enableOrbitCrosshair && showOrbitOriginCrosshair}
+        visible={enableOrbitCrosshair && showOrbitOriginCrosshair > 0}
       />
     </PivotControls>
   );
@@ -142,16 +142,23 @@ export function SynchronizedCameraControls() {
 
   const viewerMutable = viewer.mutable.current;
 
-  // Functions to handle crosshair visibility
+  // Functions to handle crosshair visibility counter
   const showCrosshair = React.useCallback(() => {
-    viewer.useGui.setState({ showOrbitOriginCrosshair: true });
+    viewer.useGui.setState((state) => ({
+      showOrbitOriginCrosshair: state.showOrbitOriginCrosshair + 1,
+    }));
   }, [viewer]);
 
   const hideCrosshair = React.useCallback(() => {
-    viewer.useGui.setState({ showOrbitOriginCrosshair: false });
+    viewer.useGui.setState((state) => ({
+      showOrbitOriginCrosshair: Math.max(0, state.showOrbitOriginCrosshair - 1),
+    }));
   }, [viewer]);
 
-  hideCrosshair();
+  // Initialize to 0 on mount
+  React.useEffect(() => {
+    viewer.useGui.setState({ showOrbitOriginCrosshair: 0 });
+  }, []);
 
   // Animation state interface.
   interface CameraAnimation {

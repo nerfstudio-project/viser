@@ -1,14 +1,5 @@
 import React from "react";
-import {
-  Switch,
-  Select,
-  Text,
-  Stack,
-  Box,
-  Paper,
-  Divider,
-  Tooltip,
-} from "@mantine/core";
+import { Switch, Select, Stack, Paper, Tooltip } from "@mantine/core";
 import { ViewerContext } from "./ViewerContext";
 
 interface DevSettingsPanelProps {

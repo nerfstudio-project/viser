@@ -527,7 +527,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
             flexGrow: "1",
             userSelect: "none",
             whiteSpace: "nowrap",
-              overflow: "hidden",
+            overflow: "hidden",
             textOverflow: "ellipsis",
           }}
         >
