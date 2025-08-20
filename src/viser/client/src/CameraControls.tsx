@@ -10,29 +10,6 @@ import { computeT_threeworld_world } from "./WorldTransformUtils";
 import { useThrottledMessageSender } from "./WebsocketUtils";
 import { Grid, PivotControls } from "@react-three/drei";
 
-import { shaderMaterial } from "@react-three/drei";
-const FixedSizeSphereMaterial = /* @__PURE__ */ shaderMaterial(
-  {
-    color: new THREE.Color("#ff33ff"),
-    size: 200.0,
-  },
-  `
-// Custom shader for defining sphere size in screen space.
-uniform float size;
-void main() {
-vec4 clipPos = projectionMatrix * modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
-vec4 clipPosOffset = projectionMatrix * modelViewMatrix * vec4(position * size / 1000.0, 1.0);
-gl_Position = clipPos + (clipPosOffset - clipPos) * clipPos.w;
-}
-`,
-  `
-uniform vec3 color;
-void main() {
-gl_FragColor = vec4(color, 0.8);
-}
-`,
-);
-
 function CrosshairVisual({
   visible,
   children,
@@ -54,12 +31,6 @@ function CrosshairVisual({
     }
   });
 
-  const sphereMaterial = React.useMemo(() => {
-    const sphereMaterial = new FixedSizeSphereMaterial();
-    sphereMaterial.uniforms.color.value.set("#cc0000");
-    sphereMaterial.uniforms.size.value = 3.0;
-    return sphereMaterial;
-  }, []);
   return (
     <group ref={groupRef} visible={visible}>
       <Instances limit={6}>
@@ -88,8 +59,9 @@ function CrosshairVisual({
           color="#ff7700"
         />
       </Instances>
-      <mesh material={sphereMaterial}>
-        <sphereGeometry args={[1.0, 4, 4]} />
+      <mesh>
+        <sphereGeometry args={[0.03, 8, 8]} />
+        <meshBasicMaterial color="#ff0000" opacity={0.3} transparent />
       </mesh>
       {children}
     </group>
