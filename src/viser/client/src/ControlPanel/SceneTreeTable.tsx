@@ -283,7 +283,7 @@ function EditNodeProps({
           })}
         </Box>
       </ScrollArea.Autosize>
-      <Box style={{ opacity: "0.4", marginTop: "0.5rem" }} fz="xs">
+      <Box style={{ opacity: "0.4", marginTop: "0.25rem" }} fz="xs">
         Updates from the server will overwrite local changes.
       </Box>
     </Box>
@@ -522,7 +522,15 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
             />
           </Tooltip>
         </Box>
-        <Box style={{ flexGrow: "1", userSelect: "none" }}>
+        <Box
+          style={{
+            flexGrow: "1",
+            userSelect: "none",
+            whiteSpace: "nowrap",
+              overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
           <span style={{ opacity: "0.3" }}>/</span>
           {props.nodeName.split("/").at(-1)}
         </Box>
