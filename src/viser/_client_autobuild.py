@@ -11,18 +11,28 @@ client_dir = Path(__file__).absolute().parent / "client"
 build_dir = client_dir / "build"
 
 
-def _check_viser_yarn_running() -> bool:
-    """Returns True if the viewer client has been launched via `yarn start`."""
+def _check_viser_dev_running() -> bool:
+    """Returns True if the viewer client has been launched via `npm run dev`."""
     import psutil
 
     for process in psutil.process_iter():
         try:
-            if Path(process.cwd()).as_posix().endswith("viser/client") and any(
-                [part.endswith("yarn") for part in process.cmdline()]
-                + [part.endswith("yarn.js") for part in process.cmdline()]
-            ):
-                return True
-        except (psutil.AccessDenied, psutil.ZombieProcess):
+            # Check if the process is running from the correct viser client directory
+            # and is actually a vite dev server (not just any vite command)
+            cwd = Path(process.cwd()).resolve()
+            expected_cwd = client_dir.resolve()
+
+            if cwd == expected_cwd:
+                cmdline = process.cmdline()
+                # Check for vite with --host flag (which is our dev command)
+                # Make sure it's not a build command
+                has_vite = any("vite" in part for part in cmdline)
+                has_host = any("--host" in part for part in cmdline)
+                not_build = not any("build" in part for part in cmdline)
+
+                if has_vite and has_host and not_build:
+                    return True
+        except (psutil.AccessDenied, psutil.ZombieProcess, psutil.NoSuchProcess):
             pass
     return False
 
@@ -40,11 +50,11 @@ def ensure_client_is_built() -> None:
 
     # Do we need to re-trigger a build?
     build = False
-    if _check_viser_yarn_running():
-        # Don't run `yarn build` if `yarn start` is already running.
+    if _check_viser_dev_running():
+        # Don't run build if dev server is already running.
         rich.print(
             "[bold](viser)[/bold] The Viser viewer looks like it has been launched via"
-            " `yarn start`. Skipping build check..."
+            " `npm run dev`. Skipping build check..."
         )
         build = False
     elif not (build_dir / "index.html").exists():
@@ -93,8 +103,10 @@ def _build_viser_client(out_dir: Path, cached: bool = True) -> None:
         + (";" if sys.platform == "win32" else ":")
         + subprocess_env["PATH"]
     )
+    # Use npm instead of yarn
+    npm_path = node_bin_dir / "npm"
     subprocess.run(
-        args=[str(npx_path), "--yes", "yarn", "install"],
+        args=[str(npm_path), "install"],
         env=subprocess_env,
         cwd=client_dir,
         check=False,
