@@ -120,13 +120,12 @@ steps.
 **Installing dependencies.**
 
 1. `Install nodejs. <https://nodejs.dev/en/download/package-manager>`_
-2. `Install yarn. <https://yarnpkg.com/getting-started/install>`_
-3. Install dependencies.
+2. Install dependencies.
 
    .. code-block:: bash
 
       cd ~/viser/src/viser/client
-      yarn install
+      npm install
 
 **Launching client.**
 
@@ -135,7 +134,7 @@ To launch the client, we can run:
 .. code-block:: bash
 
    cd ~/viser/src/viser/client
-   yarn start
+   npm run dev
 
 from the ``viser/src/viser/client`` directory. After opening the client in a web
 browser, the websocket server address typically needs to be updated in the
