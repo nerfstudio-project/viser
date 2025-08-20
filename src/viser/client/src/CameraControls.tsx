@@ -83,6 +83,9 @@ function OrbitOriginTool({
   const showOrbitOriginTool = viewer.useGui(
     (state) => state.showOrbitOriginTool,
   );
+  const enableOrbitCrosshair = viewer.useDevSettings(
+    (state) => state.enableOrbitCrosshair,
+  );
   const showOrbitOriginCrosshair = viewer.useGui(
     (state) => state.showOrbitOriginCrosshair,
   );
@@ -116,7 +119,9 @@ function OrbitOriginTool({
         visible={show}
       />
       {/* Crosshair visualization at look-at point */}
-      <CrosshairVisual visible={showOrbitOriginCrosshair} />
+      <CrosshairVisual
+        visible={enableOrbitCrosshair && showOrbitOriginCrosshair}
+      />
     </PivotControls>
   );
 }
@@ -145,6 +150,8 @@ export function SynchronizedCameraControls() {
   const hideCrosshair = React.useCallback(() => {
     viewer.useGui.setState({ showOrbitOriginCrosshair: false });
   }, [viewer]);
+
+  hideCrosshair();
 
   // Animation state interface.
   interface CameraAnimation {
@@ -373,7 +380,7 @@ export function SynchronizedCameraControls() {
     });
 
     // Log camera.
-    if (logCamera != undefined) {
+    if (logCamera) {
       console.log(
         `&initialCameraPosition=${t_world_camera.x.toFixed(
           3,
@@ -395,7 +402,8 @@ export function SynchronizedCameraControls() {
   const initialCameraPosString = searchParams.get("initialCameraPosition");
   const initialCameraLookAtString = searchParams.get("initialCameraLookAt");
   const initialCameraUpString = searchParams.get("initialCameraUp");
-  const logCamera = searchParams.get("logCamera");
+  const forceOrbitOriginTool = searchParams.get("forceOrbitOriginTool") === "1";
+  const logCamera = viewer.useDevSettings((state) => state.logCamera);
 
   // Send camera for new connections.
   // We add a small delay to give the server time to add a callback.
@@ -568,7 +576,7 @@ export function SynchronizedCameraControls() {
         makeDefault
       />
       <OrbitOriginTool
-        forceShow={logCamera !== null /* Always show if logging camera */}
+        forceShow={forceOrbitOriginTool}
         pivotRef={pivotRef}
         onPivotChange={(matrix) => {
           updateCameraLookAtAndUpFromPivotControl(matrix);

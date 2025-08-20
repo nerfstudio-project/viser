@@ -70,6 +70,9 @@ export type ViewerContextContents = {
     typeof import("./EnvironmentState").useEnvironmentState
   >;
   useGui: UseGui;
+  useDevSettings: ReturnType<
+    typeof import("./DevSettingsStore").useDevSettingsStore
+  >;
 
   // Single reference to all mutable state.
   mutable: React.MutableRefObject<ViewerMutable>;
