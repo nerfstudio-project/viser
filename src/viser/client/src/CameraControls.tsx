@@ -35,33 +35,35 @@ function CrosshairVisual({
     <group ref={groupRef} visible={visible}>
       <Instances limit={6}>
         <boxGeometry args={[0.4, 0.02, 0.02]} />
-        <meshBasicMaterial color="#ff0000" opacity={0.3} transparent />
+        <meshBasicMaterial opacity={0.625} transparent />
         {/* Horizontal line segments */}
-        <Instance position={[0.5, 0.0, 0.0]} />
-        <Instance position={[-0.5, 0.0, 0.0]} />
+        <Instance position={[0.5, 0.0, 0.0]} color="#777777" />
+        <Instance position={[-0.5, 0.0, 0.0]} color="#777777" />
         <Instance
           position={[0.0, 0.0, 0.5]}
           rotation={new THREE.Euler(0.0, Math.PI / 2.0, 0.0)}
+          color="#777777"
         />
         <Instance
           position={[0.0, 0.0, -0.5]}
           rotation={new THREE.Euler(0.0, Math.PI / 2.0, 0.0)}
+          color="#777777"
         />
         {/* Vertical line segments */}
         <Instance
           position={[0.0, 0.5, 0.0]}
           rotation={new THREE.Euler(0.0, 0.0, Math.PI / 2.0)}
-          color="#ff7700"
+          color="#999999"
         />
         <Instance
           position={[0.0, -0.5, 0.0]}
           rotation={new THREE.Euler(0.0, 0.0, Math.PI / 2.0)}
-          color="#ff7700"
+          color="#999999"
         />
       </Instances>
       <mesh>
-        <sphereGeometry args={[0.03, 8, 8]} />
-        <meshBasicMaterial color="#ff0000" opacity={0.3} transparent />
+        <sphereGeometry args={[0.04, 8, 8]} />
+        <meshBasicMaterial color="#999999" opacity={0.625} transparent />
       </mesh>
       {children}
     </group>
