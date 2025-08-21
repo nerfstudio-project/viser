@@ -17,6 +17,7 @@ interface GuiState {
   websocketConnected: boolean;
   backgroundAvailable: boolean;
   showOrbitOriginTool: boolean;
+  showOrbitOriginCrosshair: number; // Counter for number of active keys
   guiUuidSetFromContainerUuid: {
     [containerUuid: string]: { [uuid: string]: true } | undefined;
   };
@@ -67,6 +68,7 @@ const cleanGuiState: GuiState = {
   websocketConnected: false,
   backgroundAvailable: false,
   showOrbitOriginTool: false,
+  showOrbitOriginCrosshair: 0,
   guiUuidSetFromContainerUuid: {},
   modals: [],
   guiOrderFromUuid: {},

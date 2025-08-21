@@ -1,5 +1,5 @@
 import { ViewerContext } from "./ViewerContext";
-import { CameraControls } from "@react-three/drei";
+import { CameraControls, Instance, Instances } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import * as holdEvent from "hold-event";
 import React, { useContext, useRef, useState } from "react";
@@ -9,6 +9,66 @@ import * as THREE from "three";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
 import { useThrottledMessageSender } from "./WebsocketUtils";
 import { Grid, PivotControls } from "@react-three/drei";
+
+function CrosshairVisual({
+  visible,
+  children,
+}: {
+  visible: boolean;
+  children?: React.ReactNode;
+}) {
+  const { camera } = useThree();
+  const groupRef = useRef<THREE.Group>(null);
+
+  const worldPos = new THREE.Vector3();
+  useFrame(() => {
+    if (groupRef.current && visible) {
+      // Get world position of the crosshair.
+      groupRef.current.getWorldPosition(worldPos);
+      groupRef.current.scale.setScalar(
+        camera.position.distanceTo(worldPos) / 20,
+      );
+    }
+  });
+
+  return (
+    <group ref={groupRef} visible={visible}>
+      <Instances limit={6}>
+        <boxGeometry args={[0.4, 0.02, 0.02]} />
+        <meshBasicMaterial opacity={0.625} transparent />
+        {/* Horizontal line segments */}
+        <Instance position={[0.5, 0.0, 0.0]} color="#777777" />
+        <Instance position={[-0.5, 0.0, 0.0]} color="#777777" />
+        <Instance
+          position={[0.0, 0.0, 0.5]}
+          rotation={new THREE.Euler(0.0, Math.PI / 2.0, 0.0)}
+          color="#777777"
+        />
+        <Instance
+          position={[0.0, 0.0, -0.5]}
+          rotation={new THREE.Euler(0.0, Math.PI / 2.0, 0.0)}
+          color="#777777"
+        />
+        {/* Vertical line segments */}
+        <Instance
+          position={[0.0, 0.5, 0.0]}
+          rotation={new THREE.Euler(0.0, 0.0, Math.PI / 2.0)}
+          color="#999999"
+        />
+        <Instance
+          position={[0.0, -0.5, 0.0]}
+          rotation={new THREE.Euler(0.0, 0.0, Math.PI / 2.0)}
+          color="#999999"
+        />
+      </Instances>
+      <mesh>
+        <sphereGeometry args={[0.04, 8, 8]} />
+        <meshBasicMaterial color="#999999" opacity={0.625} transparent />
+      </mesh>
+      {children}
+    </group>
+  );
+}
 
 function OrbitOriginTool({
   forceShow,
@@ -22,50 +82,33 @@ function OrbitOriginTool({
   update: () => void;
 }) {
   const viewer = useContext(ViewerContext)!;
-  const showCameraControls = viewer.useGui(
+  const showOrbitOriginTool = viewer.useGui(
     (state) => state.showOrbitOriginTool,
   );
-  React.useEffect(update, [showCameraControls]);
+  const enableOrbitCrosshair = viewer.useDevSettings(
+    (state) => state.enableOrbitCrosshair,
+  );
+  const showOrbitOriginCrosshair = viewer.useGui(
+    (state) => state.showOrbitOriginCrosshair,
+  );
+  React.useEffect(update, [showOrbitOriginTool]);
 
-  if (!showCameraControls && !forceShow) return null;
-
+  const show = showOrbitOriginTool || forceShow;
   return (
     <PivotControls
       ref={pivotRef}
       scale={200}
-      lineWidth={4}
+      lineWidth={3}
       fixed={true}
       axisColors={["#ffaaff", "#ff33ff", "#ffaaff"]}
       disableScaling={true}
+      disableAxes={!show}
+      disableRotations={!show}
+      disableSliders={!show}
       onDragEnd={() => {
         onPivotChange(pivotRef.current!.matrix);
       }}
     >
-      <mesh>
-        <sphereGeometry args={[0.1, 32, 32]} />
-        <shaderMaterial
-          transparent
-          uniforms={{
-            color: { value: new THREE.Color("#ff33ff") },
-            size: { value: 200.0 },
-          }}
-          vertexShader={`
-            // Custom shader for defining sphere size in screen space.
-            uniform float size;
-            void main() {
-              vec4 clipPos = projectionMatrix * modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
-              vec4 clipPosOffset = projectionMatrix * modelViewMatrix * vec4(position * size / 1000.0, 1.0);
-              gl_Position = clipPos + (clipPosOffset - clipPos) * clipPos.w;
-            }
-          `}
-          fragmentShader={`
-            uniform vec3 color;
-            void main() {
-              gl_FragColor = vec4(color, 0.8);
-            }
-          `}
-        />
-      </mesh>
       <Grid
         args={[10, 10, 10, 10]}
         infiniteGrid
@@ -75,6 +118,11 @@ function OrbitOriginTool({
         sectionColor={"#ffaaff"}
         cellColor={"#ffccff"}
         side={THREE.DoubleSide}
+        visible={show}
+      />
+      {/* Crosshair visualization at look-at point */}
+      <CrosshairVisual
+        visible={enableOrbitCrosshair && showOrbitOriginCrosshair > 0}
       />
     </PivotControls>
   );
@@ -95,6 +143,24 @@ export function SynchronizedCameraControls() {
   const pivotRef = useRef<THREE.Group>(null);
 
   const viewerMutable = viewer.mutable.current;
+
+  // Functions to handle crosshair visibility counter
+  const showCrosshair = React.useCallback(() => {
+    viewer.useGui.setState((state) => ({
+      showOrbitOriginCrosshair: state.showOrbitOriginCrosshair + 1,
+    }));
+  }, [viewer]);
+
+  const hideCrosshair = React.useCallback(() => {
+    viewer.useGui.setState((state) => ({
+      showOrbitOriginCrosshair: Math.max(0, state.showOrbitOriginCrosshair - 1),
+    }));
+  }, [viewer]);
+
+  // Initialize to 0 on mount
+  React.useEffect(() => {
+    viewer.useGui.setState({ showOrbitOriginCrosshair: 0 });
+  }, []);
 
   // Animation state interface.
   interface CameraAnimation {
@@ -323,7 +389,7 @@ export function SynchronizedCameraControls() {
     });
 
     // Log camera.
-    if (logCamera != undefined) {
+    if (logCamera) {
       console.log(
         `&initialCameraPosition=${t_world_camera.x.toFixed(
           3,
@@ -345,7 +411,8 @@ export function SynchronizedCameraControls() {
   const initialCameraPosString = searchParams.get("initialCameraPosition");
   const initialCameraLookAtString = searchParams.get("initialCameraLookAt");
   const initialCameraUpString = searchParams.get("initialCameraUp");
-  const logCamera = searchParams.get("logCamera");
+  const forceOrbitOriginTool = searchParams.get("forceOrbitOriginTool") === "1";
+  const logCamera = viewer.useDevSettings((state) => state.logCamera);
 
   // Send camera for new connections.
   // We add a small delay to give the server time to add a callback.
@@ -422,66 +489,75 @@ export function SynchronizedCameraControls() {
   React.useEffect(() => {
     const cameraControls = viewerMutable.cameraControl!;
 
-    const wKey = new holdEvent.KeyboardKeyHold("KeyW", 20);
-    const aKey = new holdEvent.KeyboardKeyHold("KeyA", 20);
-    const sKey = new holdEvent.KeyboardKeyHold("KeyS", 20);
-    const dKey = new holdEvent.KeyboardKeyHold("KeyD", 20);
-    const qKey = new holdEvent.KeyboardKeyHold("KeyQ", 20);
-    const eKey = new holdEvent.KeyboardKeyHold("KeyE", 20);
+    const keys = {
+      w: new holdEvent.KeyboardKeyHold("KeyW", 1000 / 60),
+      a: new holdEvent.KeyboardKeyHold("KeyA", 1000 / 60),
+      s: new holdEvent.KeyboardKeyHold("KeyS", 1000 / 60),
+      d: new holdEvent.KeyboardKeyHold("KeyD", 1000 / 60),
+      q: new holdEvent.KeyboardKeyHold("KeyQ", 1000 / 60),
+      e: new holdEvent.KeyboardKeyHold("KeyE", 1000 / 60),
+      up: new holdEvent.KeyboardKeyHold("ArrowUp", 1000 / 60),
+      down: new holdEvent.KeyboardKeyHold("ArrowDown", 1000 / 60),
+      left: new holdEvent.KeyboardKeyHold("ArrowLeft", 1000 / 60),
+      right: new holdEvent.KeyboardKeyHold("ArrowRight", 1000 / 60),
+    };
 
     // TODO: these event listeners are currently never removed, even if this
     // component gets unmounted.
-    aKey.addEventListener("holding", (event) => {
-      cameraControls.truck(-0.002 * event?.deltaTime, 0, true);
+    keys.a.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLDING, (event) => {
+      cameraControls.truck(-0.002 * event?.deltaTime, 0, false);
     });
-    dKey.addEventListener("holding", (event) => {
-      cameraControls.truck(0.002 * event?.deltaTime, 0, true);
+    keys.d.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLDING, (event) => {
+      cameraControls.truck(0.002 * event?.deltaTime, 0, false);
     });
-    wKey.addEventListener("holding", (event) => {
-      cameraControls.forward(0.002 * event?.deltaTime, true);
+    keys.w.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLDING, (event) => {
+      cameraControls.forward(0.002 * event?.deltaTime, false);
     });
-    sKey.addEventListener("holding", (event) => {
-      cameraControls.forward(-0.002 * event?.deltaTime, true);
+    keys.s.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLDING, (event) => {
+      cameraControls.forward(-0.002 * event?.deltaTime, false);
     });
-    qKey.addEventListener("holding", (event) => {
-      cameraControls.elevate(-0.002 * event?.deltaTime, true);
+    keys.q.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLDING, (event) => {
+      cameraControls.elevate(-0.002 * event?.deltaTime, false);
     });
-    eKey.addEventListener("holding", (event) => {
-      cameraControls.elevate(0.002 * event?.deltaTime, true);
+    keys.e.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLDING, (event) => {
+      cameraControls.elevate(0.002 * event?.deltaTime, false);
     });
-
-    const leftKey = new holdEvent.KeyboardKeyHold("ArrowLeft", 20);
-    const rightKey = new holdEvent.KeyboardKeyHold("ArrowRight", 20);
-    const upKey = new holdEvent.KeyboardKeyHold("ArrowUp", 20);
-    const downKey = new holdEvent.KeyboardKeyHold("ArrowDown", 20);
-    leftKey.addEventListener("holding", (event) => {
+    keys.left.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLDING, (event) => {
       cameraControls.rotate(
         -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
         true,
       );
     });
-    rightKey.addEventListener("holding", (event) => {
+    keys.right.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLDING, (event) => {
       cameraControls.rotate(
         0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
         true,
       );
     });
-    upKey.addEventListener("holding", (event) => {
+    keys.up.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLDING, (event) => {
       cameraControls.rotate(
         0,
         -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         true,
       );
     });
-    downKey.addEventListener("holding", (event) => {
+    keys.down.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLDING, (event) => {
       cameraControls.rotate(
         0,
         0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         true,
       );
     });
+    for (const key of Object.values(keys)) {
+      key.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLD_START, () => {
+        showCrosshair();
+      });
+      key.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLD_END, () => {
+        hideCrosshair();
+      });
+    }
 
     // TODO: we currently don't remove any event listeners. This is a bit messy
     // because KeyboardKeyHold attaches listeners directly to the
@@ -489,7 +565,7 @@ export function SynchronizedCameraControls() {
     return () => {
       return;
     };
-  }, [CameraControls]);
+  }, [CameraControls, showCrosshair, hideCrosshair]);
 
   return (
     <>
@@ -500,10 +576,16 @@ export function SynchronizedCameraControls() {
         smoothTime={0.05}
         draggingSmoothTime={0.0}
         onChange={sendCamera}
+        onStart={() => {
+          showCrosshair();
+        }}
+        onEnd={() => {
+          hideCrosshair();
+        }}
         makeDefault
       />
       <OrbitOriginTool
-        forceShow={logCamera !== null /* Always show if logging camera */}
+        forceShow={forceOrbitOriginTool}
         pivotRef={pivotRef}
         onPivotChange={(matrix) => {
           updateCameraLookAtAndUpFromPivotControl(matrix);

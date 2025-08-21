@@ -37,6 +37,7 @@ import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
 import { useEnvironmentState } from "./EnvironmentState";
+import { useDevSettingsStore } from "./DevSettingsStore";
 import { useThrottledMessageSender } from "./WebsocketUtils";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { theme } from "./AppTheme";
@@ -166,8 +167,6 @@ function ViewerRoot() {
   const searchParams = new URLSearchParams(window.location.search);
   const playbackPath = searchParams.get("playbackPath");
   const darkMode = searchParams.get("darkMode") !== null;
-  const showStats = searchParams.get("showStats") !== null;
-  const hideViserLogo = searchParams.get("hideViserLogo") !== null;
 
   // Create a message source string.
   const messageSource = playbackPath === null ? "websocket" : "file_playback";
@@ -223,6 +222,9 @@ function ViewerRoot() {
   // Create the environment state and extract store and actions.
   const environmentState = useEnvironmentState();
 
+  // Create the dev settings store.
+  const devSettingsStore = useDevSettingsStore();
+
   // Create the context value with hooks and single ref.
   const viewer: ViewerContextContents = {
     messageSource,
@@ -230,6 +232,7 @@ function ViewerRoot() {
     sceneTreeActions: sceneTreeState.actions,
     useEnvironment: environmentState,
     useGui: useGuiState(initialServer),
+    useDevSettings: devSettingsStore,
     mutable,
   };
 
@@ -238,12 +241,11 @@ function ViewerRoot() {
 
   return (
     <ViewerContext.Provider value={viewer}>
-      <ViewerContents hideViserLogo={hideViserLogo}>
+      <ViewerContents>
         {messageSource === "websocket" && <WebsocketMessageProducer />}
         {messageSource === "file_playback" && (
           <PlaybackFromFile fileUrl={playbackPath!} />
         )}
-        {showStats && <Stats className="stats-panel" />}
       </ViewerContents>
     </ViewerContext.Provider>
   );
@@ -252,18 +254,14 @@ function ViewerRoot() {
 /**
  * Main content wrapper with theme and layout.
  */
-function ViewerContents({
-  children,
-  hideViserLogo,
-}: {
-  children: React.ReactNode;
-  hideViserLogo: boolean;
-}) {
+function ViewerContents({ children }: { children: React.ReactNode }) {
   const viewer = React.useContext(ViewerContext)!;
   const darkMode = viewer.useGui((state) => state.theme.dark_mode);
   const colors = viewer.useGui((state) => state.theme.colors);
   const controlLayout = viewer.useGui((state) => state.theme.control_layout);
   const showLogo = viewer.useGui((state) => state.theme.show_logo);
+  const hideViserLogo = viewer.useDevSettings((state) => state.hideViserLogo);
+  const showStats = viewer.useDevSettings((state) => state.showStats);
   const { messageSource } = viewer;
 
   // Create Mantine theme with custom colors if provided.
@@ -339,6 +337,7 @@ function ViewerContents({
             )}
           </Box>
         </Box>
+        {showStats && <Stats className="stats-panel" />}
       </MantineProvider>
     </>
   );
@@ -388,11 +387,8 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const theme = useMantineTheme();
   const { ref: inViewRef, inView } = useInView();
 
-  const searchParams = new URLSearchParams(window.location.search);
-  // Allow setting a fixed DPR value via URL parameter (e.g., ?fixedDpr=1 or ?fixedDpr=2)
-  // If not set, adaptive DPR will be enabled for performance optimization
-  const fixedDprParam = searchParams.get("fixedDpr");
-  const fixedDpr = fixedDprParam ? parseFloat(fixedDprParam) : null;
+  // Get fixed DPR from dev settings store
+  const fixedDpr = viewer.useDevSettings((state) => state.fixedDpr);
   const adaptiveDpr = fixedDpr === null;
 
   // Memoize camera controls to prevent unnecessary re-creation.

@@ -10,23 +10,23 @@ import {
   Text,
   TextInput,
   Tooltip,
+  Collapse,
 } from "@mantine/core";
 import { IconHomeMove, IconPhoto } from "@tabler/icons-react";
-import { Stats } from "@react-three/drei";
 import React from "react";
 import SceneTreeTable from "./SceneTreeTable";
+import { DevSettingsPanel } from "../DevSettingsPanel";
 
 const MemoizedTable = React.memo(SceneTreeTable);
 
 export default function ServerControls() {
   const viewer = React.useContext(ViewerContext)!;
   const viewerMutable = viewer.mutable.current; // Get mutable once
-  const [showStats, setShowStats] = React.useState(false);
   const controlWidth = viewer.useGui((state) => state.theme.control_width);
+  const [showDevSettings, setShowDevSettings] = React.useState(false);
 
   return (
     <>
-      {showStats ? <Stats className="stats-panel" /> : null}
       <Stack gap="xs" mt="0.3em">
         <Tooltip label="Server URL" position="top-start">
           <TextInput
@@ -165,26 +165,27 @@ export default function ServerControls() {
               size="sm"
             />
           </Tooltip>
-          <Tooltip
-            label={"Show WebGL statistics."}
-            refProp="rootRef"
-            position="top-start"
-          >
-            <Checkbox
-              radius="xs"
-              label="WebGL Stats"
-              onChange={(event) => {
-                setShowStats(event.currentTarget.checked);
-              }}
-              styles={{
-                label: { paddingLeft: "8px", letterSpacing: "-0.3px" },
-                root: { flex: 1 },
-              }}
-              size="sm"
-            />
-          </Tooltip>
+          <Checkbox
+            radius="xs"
+            label="Dev Settings"
+            onChange={(event) => {
+              setShowDevSettings(event.currentTarget.checked);
+            }}
+            styles={{
+              label: { paddingLeft: "8px", letterSpacing: "-0.3px" },
+              root: { flex: 1 },
+            }}
+            size="sm"
+          />
         </Group>
-        <Divider mt="xs" />
+        <Box mt="-0.4em">
+          <Collapse in={showDevSettings}>
+            <Box mt="0.4em">
+              <DevSettingsPanel devSettingsStore={viewer.useDevSettings} />
+            </Box>
+          </Collapse>
+        </Box>
+        <Divider />
         <Box>
           <Tooltip
             label={
