@@ -178,9 +178,13 @@ export default function ServerControls() {
             size="sm"
           />
         </Group>
-        <Collapse in={showDevSettings} mt={showDevSettings ? 0 : "-0.4em"}>
-          <DevSettingsPanel devSettingsStore={viewer.useDevSettings} />
-        </Collapse>
+        <Box mt="-0.4em">
+          <Collapse in={showDevSettings}>
+            <Box mt="0.4em">
+              <DevSettingsPanel devSettingsStore={viewer.useDevSettings} />
+            </Box>
+          </Collapse>
+        </Box>
         <Divider />
         <Box>
           <Tooltip
