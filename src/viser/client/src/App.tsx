@@ -484,6 +484,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     pointerInfo.isDragging = false;
   };
 
+  const rootNode = React.useMemo(() => <SceneNodeThreeObject name="" />, []);
   return (
     <div
       ref={inViewRef}
@@ -508,7 +509,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           <SplatRenderContext>
             {adaptiveDpr && <AdaptiveDpr />}
             {children}
-            <SceneNodeThreeObject name="" />
+            {rootNode}
           </SplatRenderContext>
           <DefaultLights />
         </Bvh>
