@@ -78,7 +78,7 @@ class ViserUrdf:
     def __init__(
         self,
         target: viser.ViserServer | viser.ClientHandle,
-        urdf_or_path: yourdfpy.URDF | Path,
+        urdf_or_path: yourdfpy.URDF | Path | str,
         scale: float = 1.0,
         root_node_name: str = "/",
         mesh_color_override: tuple[float, float, float]
@@ -93,16 +93,18 @@ class ViserUrdf:
         assert root_node_name.startswith("/")
         assert len(root_node_name) == 1 or not root_node_name.endswith("/")
 
-        if isinstance(urdf_or_path, Path):
+        if isinstance(urdf_or_path, (Path, str)):
+            # Convert string path to Path object for consistent handling
+            path_obj = Path(urdf_or_path) if isinstance(urdf_or_path, str) else urdf_or_path
             urdf = yourdfpy.URDF.load(
-                urdf_or_path,
+                path_obj,
                 build_scene_graph=load_meshes,
                 build_collision_scene_graph=load_collision_meshes,
                 load_meshes=load_meshes,
                 load_collision_meshes=load_collision_meshes,
                 filename_handler=partial(
                     yourdfpy.filename_handler_magic,
-                    dir=urdf_or_path.parent,
+                    dir=path_obj.parent,
                 ),
             )
         else:
