@@ -16,7 +16,7 @@ export interface CameraFrustumMessage {
     line_width: number;
     color: [number, number, number];
     _format: "jpeg" | "png";
-    _image_data: Uint8Array | null;
+    _image_data: Uint8Array<ArrayBuffer> | null;
     cast_shadow: boolean;
     receive_shadow: boolean;
     variant: "wireframe" | "filled";
@@ -30,7 +30,7 @@ export interface GlbMessage {
   type: "GlbMessage";
   name: string;
   props: {
-    glb_data: Uint8Array;
+    glb_data: Uint8Array<ArrayBuffer>;
     scale: number;
     cast_shadow: boolean;
     receive_shadow: boolean;
@@ -62,9 +62,9 @@ export interface BatchedAxesMessage {
   type: "BatchedAxesMessage";
   name: string;
   props: {
-    batched_wxyzs: Uint8Array;
-    batched_positions: Uint8Array;
-    batched_scales: Uint8Array | null;
+    batched_wxyzs: Uint8Array<ArrayBuffer>;
+    batched_positions: Uint8Array<ArrayBuffer>;
+    batched_scales: Uint8Array<ArrayBuffer> | null;
     axes_length: number;
     axes_radius: number;
   };
@@ -122,8 +122,8 @@ export interface PointCloudMessage {
   type: "PointCloudMessage";
   name: string;
   props: {
-    points: Uint8Array;
-    colors: Uint8Array;
+    points: Uint8Array<ArrayBuffer>;
+    colors: Uint8Array<ArrayBuffer>;
     point_size: number;
     point_shape: "square" | "diamond" | "circle" | "rounded" | "sparkle";
     precision: "float16" | "float32";
@@ -220,8 +220,8 @@ export interface MeshMessage {
   type: "MeshMessage";
   name: string;
   props: {
-    vertices: Uint8Array;
-    faces: Uint8Array;
+    vertices: Uint8Array<ArrayBuffer>;
+    faces: Uint8Array<ArrayBuffer>;
     color: [number, number, number];
     wireframe: boolean;
     opacity: number | null;
@@ -279,8 +279,8 @@ export interface SkinnedMeshMessage {
   type: "SkinnedMeshMessage";
   name: string;
   props: {
-    vertices: Uint8Array;
-    faces: Uint8Array;
+    vertices: Uint8Array<ArrayBuffer>;
+    faces: Uint8Array<ArrayBuffer>;
     color: [number, number, number];
     wireframe: boolean;
     opacity: number | null;
@@ -289,10 +289,10 @@ export interface SkinnedMeshMessage {
     material: "standard" | "toon3" | "toon5";
     cast_shadow: boolean;
     receive_shadow: boolean;
-    bone_wxyzs: Uint8Array;
-    bone_positions: Uint8Array;
-    skin_indices: Uint8Array;
-    skin_weights: Uint8Array;
+    bone_wxyzs: Uint8Array<ArrayBuffer>;
+    bone_positions: Uint8Array<ArrayBuffer>;
+    skin_indices: Uint8Array<ArrayBuffer>;
+    skin_weights: Uint8Array<ArrayBuffer>;
   };
 }
 /** Message from server->client carrying batched meshes information.
@@ -303,13 +303,13 @@ export interface BatchedMeshesMessage {
   type: "BatchedMeshesMessage";
   name: string;
   props: {
-    batched_wxyzs: Uint8Array;
-    batched_positions: Uint8Array;
-    batched_scales: Uint8Array | null;
+    batched_wxyzs: Uint8Array<ArrayBuffer>;
+    batched_positions: Uint8Array<ArrayBuffer>;
+    batched_scales: Uint8Array<ArrayBuffer> | null;
     lod: "auto" | "off" | [number, number][];
-    vertices: Uint8Array;
-    faces: Uint8Array;
-    batched_colors: Uint8Array;
+    vertices: Uint8Array<ArrayBuffer>;
+    faces: Uint8Array<ArrayBuffer>;
+    batched_colors: Uint8Array<ArrayBuffer>;
     wireframe: boolean;
     opacity: number | null;
     flat_shading: boolean;
@@ -327,11 +327,11 @@ export interface BatchedGlbMessage {
   type: "BatchedGlbMessage";
   name: string;
   props: {
-    batched_wxyzs: Uint8Array;
-    batched_positions: Uint8Array;
-    batched_scales: Uint8Array | null;
+    batched_wxyzs: Uint8Array<ArrayBuffer>;
+    batched_positions: Uint8Array<ArrayBuffer>;
+    batched_scales: Uint8Array<ArrayBuffer> | null;
     lod: "auto" | "off" | [number, number][];
-    glb_data: Uint8Array;
+    glb_data: Uint8Array<ArrayBuffer>;
     cast_shadow: boolean;
     receive_shadow: boolean;
   };
@@ -366,7 +366,7 @@ export interface ImageMessage {
   name: string;
   props: {
     _format: "jpeg" | "png";
-    _data: Uint8Array;
+    _data: Uint8Array<ArrayBuffer>;
     render_width: number;
     render_height: number;
     cast_shadow: boolean;
@@ -380,7 +380,11 @@ export interface ImageMessage {
 export interface LineSegmentsMessage {
   type: "LineSegmentsMessage";
   name: string;
-  props: { points: Uint8Array; line_width: number; colors: Uint8Array };
+  props: {
+    points: Uint8Array<ArrayBuffer>;
+    line_width: number;
+    colors: Uint8Array<ArrayBuffer>;
+  };
 }
 /** Message from server->client carrying Catmull-Rom spline information.
  *
@@ -390,7 +394,7 @@ export interface CatmullRomSplineMessage {
   type: "CatmullRomSplineMessage";
   name: string;
   props: {
-    points: Uint8Array;
+    points: Uint8Array<ArrayBuffer>;
     curve_type: "centripetal" | "chordal" | "catmullrom";
     tension: number;
     closed: boolean;
@@ -407,8 +411,8 @@ export interface CubicBezierSplineMessage {
   type: "CubicBezierSplineMessage";
   name: string;
   props: {
-    points: Uint8Array;
-    control_points: Uint8Array;
+    points: Uint8Array<ArrayBuffer>;
+    control_points: Uint8Array<ArrayBuffer>;
     line_width: number;
     color: [number, number, number];
     segments: number | null;
@@ -421,7 +425,7 @@ export interface CubicBezierSplineMessage {
 export interface GaussianSplatsMessage {
   type: "GaussianSplatsMessage";
   name: string;
-  props: { buffer: Uint8Array };
+  props: { buffer: Uint8Array<ArrayBuffer> };
 }
 /** Remove a particular node from the scene.
  *
@@ -523,7 +527,7 @@ export interface GuiUplotMessage {
   container_uuid: string;
   props: {
     order: number;
-    data: Uint8Array[];
+    data: Uint8Array<ArrayBuffer>[];
     mode: 1 | 2 | null;
     title: string | null;
     series: {
@@ -716,7 +720,7 @@ export interface GuiImageMessage {
   props: {
     order: number;
     label: string | null;
-    _data: Uint8Array | null;
+    _data: Uint8Array<ArrayBuffer> | null;
     _format: "jpeg" | "png";
     visible: boolean;
   };
@@ -1283,8 +1287,8 @@ export interface TransformControlsDragEndMessage {
 export interface BackgroundImageMessage {
   type: "BackgroundImageMessage";
   format: "jpeg" | "png";
-  rgb_data: Uint8Array | null;
-  depth_data: Uint8Array | null;
+  rgb_data: Uint8Array<ArrayBuffer> | null;
+  depth_data: Uint8Array<ArrayBuffer> | null;
 }
 /** Set the visibility of a particular node in the scene.
  *
@@ -1421,7 +1425,7 @@ export interface GetRenderRequestMessage {
  */
 export interface GetRenderResponseMessage {
   type: "GetRenderResponseMessage";
-  payload: Uint8Array;
+  payload: Uint8Array<ArrayBuffer>;
 }
 /** Signal that a file is about to be sent.
  *
@@ -1464,7 +1468,7 @@ export interface FileTransferPart {
   source_component_uuid: string | null;
   transfer_uuid: string;
   part_index: number;
-  content: Uint8Array;
+  content: Uint8Array<ArrayBuffer>;
 }
 /** Send a file for clients to download or upload files from client.
  *
