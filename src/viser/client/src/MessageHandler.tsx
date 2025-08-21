@@ -50,7 +50,7 @@ function useMessageHandler() {
     // Make sure parents exists.
     const sceneState = viewer.useSceneTree.getState();
     const parentName = message.name.split("/").slice(0, -1).join("/");
-    if (!(parentName in sceneState)) {
+    if (sceneState[parentName]?.message === undefined) {
       addSceneNodeMakeParents({
         ...rootNodeTemplate.message,
         name: parentName,
@@ -733,6 +733,10 @@ export function FrameSynchronizedMessageHandler() {
         // Apply accumulated prop updates to the zustand state.
         const currentState = viewer.useSceneTree.getState();
         for (const [k, v] of Object.entries(updates)) {
+          if (!(k in currentState)) {
+            console.log(`(OK) Tried to update non-existent scene node ${k}`);
+            continue;
+          }
           updates[k] = { ...currentState[k], ...v };
         }
         viewer.useSceneTree.setState(updates);

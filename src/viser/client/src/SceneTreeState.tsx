@@ -84,11 +84,7 @@ function createSceneTreeActions(
       };
 
       // Add to parent's children if this is a new node.
-      if (
-        !existingNode &&
-        parentNode &&
-        !parentNode.children.includes(message.name)
-      ) {
+      if (parentNode && !parentNode.children.includes(message.name)) {
         partial[parentName] = {
           ...parentNode,
           children: [...parentNode.children, message.name],
