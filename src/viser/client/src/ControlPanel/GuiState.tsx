@@ -51,6 +51,8 @@ interface GuiActions {
   ) => void;
 }
 
+const searchParams = new URLSearchParams(window.location.search);
+const hideViserLogo = searchParams.get("hideViserLogo") !== null;
 const cleanGuiState: GuiState = {
   theme: {
     type: "ThemeConfigurationMessage",
@@ -58,7 +60,7 @@ const cleanGuiState: GuiState = {
     control_layout: "floating",
     control_width: "medium",
     dark_mode: false,
-    show_logo: true,
+    show_logo: !hideViserLogo,
     show_share_button: true,
     colors: null,
   },
