@@ -260,7 +260,6 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
   const colors = viewer.useGui((state) => state.theme.colors);
   const controlLayout = viewer.useGui((state) => state.theme.control_layout);
   const showLogo = viewer.useGui((state) => state.theme.show_logo);
-  const hideViserLogo = viewer.useDevSettings((state) => state.hideViserLogo);
   const showStats = viewer.useDevSettings((state) => state.showStats);
   const { messageSource } = viewer;
 
@@ -275,7 +274,17 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
       }),
     [colors],
   );
-
+  const canvases = useMemo(
+    () => (
+      <>
+        <Viewer2DCanvas />
+        <ViewerCanvas>
+          <FrameSynchronizedMessageHandler />
+        </ViewerCanvas>
+      </>
+    ),
+    [],
+  );
   return (
     <>
       <MantineProvider
@@ -324,13 +333,8 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
                 height: "100%",
               })}
             >
-              <Viewer2DCanvas />
-              <ViewerCanvas>
-                <FrameSynchronizedMessageHandler />
-              </ViewerCanvas>
-              {showLogo && !hideViserLogo && messageSource === "websocket" && (
-                <ViserLogo />
-              )}
+              {canvases}
+              {showLogo && messageSource === "websocket" && <ViserLogo />}
             </Box>
             {messageSource === "websocket" && (
               <ControlPanel control_layout={controlLayout} />
@@ -386,10 +390,6 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const sendClickThrottled = useThrottledMessageSender(20).send;
   const theme = useMantineTheme();
   const { ref: inViewRef, inView } = useInView();
-
-  // Get fixed DPR from dev settings store
-  const fixedDpr = viewer.useDevSettings((state) => state.fixedDpr);
-  const adaptiveDpr = fixedDpr === null;
 
   // Memoize camera controls to prevent unnecessary re-creation.
   const memoizedCameraControls = useMemo(
@@ -484,7 +484,23 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     pointerInfo.isDragging = false;
   };
 
-  const rootNode = React.useMemo(() => <SceneNodeThreeObject name="" />, []);
+  const fixedDpr = viewer.useDevSettings((state) => state.fixedDpr);
+  const sceneContents = React.useMemo(
+    () => (
+      <Bvh firstHitOnly>
+        <BackgroundImage />
+        <SceneContextSetter />
+        {memoizedCameraControls}
+        <SplatRenderContext>
+          <AdaptiveDpr />
+          {children}
+          <SceneNodeThreeObject name="" />
+        </SplatRenderContext>
+        <DefaultLights />
+      </Bvh>
+    ),
+    [children, memoizedCameraControls],
+  );
   return (
     <div
       ref={inViewRef}
@@ -501,18 +517,8 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         shadows
         dpr={fixedDpr ?? undefined}
       >
-        <Bvh firstHitOnly>
-          {!inView && <DisableRender />}
-          <BackgroundImage />
-          <SceneContextSetter />
-          {memoizedCameraControls}
-          <SplatRenderContext>
-            {adaptiveDpr && <AdaptiveDpr />}
-            {children}
-            {rootNode}
-          </SplatRenderContext>
-          <DefaultLights />
-        </Bvh>
+        {!inView && <DisableRender />}
+        {sceneContents}
       </Canvas>
     </div>
   );
@@ -687,9 +693,11 @@ function DefaultLights() {
  * Adaptive DPR component for performance optimization.
  */
 function AdaptiveDpr() {
+  const viewer = React.useContext(ViewerContext)!;
   const setDpr = useThree((state) => state.setDpr);
+  const fixedDpr = viewer.useDevSettings((state) => state.fixedDpr);
 
-  return (
+  return fixedDpr !== null ? null : (
     <PerformanceMonitor
       factor={1.0}
       step={0.2}

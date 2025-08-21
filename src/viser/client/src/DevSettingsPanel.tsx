@@ -12,7 +12,7 @@ export function DevSettingsPanel({ devSettingsStore }: DevSettingsPanelProps) {
   const viewer = React.useContext(ViewerContext)!;
 
   const showStats = devSettingsStore((state) => state.showStats);
-  const hideViserLogo = devSettingsStore((state) => state.hideViserLogo);
+  const showLogo = viewer.useGui((state) => state.theme.show_logo);
   const fixedDpr = devSettingsStore((state) => state.fixedDpr);
   const logCamera = devSettingsStore((state) => state.logCamera);
   const enableOrbitCrosshair = devSettingsStore(
@@ -23,6 +23,11 @@ export function DevSettingsPanel({ devSettingsStore }: DevSettingsPanelProps) {
   const setDarkMode = (dark: boolean) => {
     viewer.useGui.setState({
       theme: { ...viewer.useGui.getState().theme, dark_mode: dark },
+    });
+  };
+  const setShowLogo = (showLogo: boolean) => {
+    viewer.useGui.setState({
+      theme: { ...viewer.useGui.getState().theme, show_logo: showLogo },
     });
   };
 
@@ -51,13 +56,9 @@ export function DevSettingsPanel({ devSettingsStore }: DevSettingsPanelProps) {
 
         <Switch
           radius="xs"
-          label="Hide Logo"
-          checked={hideViserLogo}
-          onChange={(event) =>
-            devSettingsStore.setState({
-              hideViserLogo: event.currentTarget.checked,
-            })
-          }
+          label="Show Viser Logo"
+          checked={showLogo}
+          onChange={(event) => setShowLogo(event.currentTarget.checked)}
           size="xs"
         />
 
