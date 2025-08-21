@@ -32,7 +32,7 @@ def cv2_imencode_with_fallback(
         import imageio.v3 as iio
 
         if channel_ordering == "bgr":
-            image = image[:, :, ::-1]  # Convert to BGR if needed.
+            image[:, :, :3] = image[:, :, :3][:, :, ::-1]  # Convert to BGR if needed.
         return (
             iio.imwrite("<bytes>", image, extension=".jpeg", quality=jpeg_quality)
             if format == "jpeg"
@@ -41,7 +41,7 @@ def cv2_imencode_with_fallback(
 
     # OpenCV is available!
     if channel_ordering == "rgb":
-        image = image[:, :, ::-1]  # Convert from BGR to RGB.
+        image[:, :, :3] = image[:, :, :3][:, :, ::-1]  # Convert to BGR if needed.
     if format == "png":
         success, encoded_image = cv2.imencode(".png", image)
     elif format == "jpeg":
