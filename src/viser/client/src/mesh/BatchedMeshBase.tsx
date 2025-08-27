@@ -194,7 +194,6 @@ export const BatchedMeshBase = React.forwardRef<
       }
       mesh.clearInstances();
       mesh.addInstances(instanceCount, () => {});
-      mesh.computeBVH();
     }
 
     // Create views to efficiently read float values.
@@ -276,6 +275,29 @@ export const BatchedMeshBase = React.forwardRef<
     props.batched_scales,
     mesh,
   ]);
+
+  // Compute BVH for raycasting for clickable meshes.
+  //
+  // We could also do this always. This would speed up frustum culling, but
+  // would add overhead to every position/quaternion/scale update. Since we
+  // don't know in advance if the mesh will be static or dynamic, it seems
+  // conservative to avoid computing a BVH for now.
+  //
+  // In the future, we could consider computing the BVH only if we detect that
+  // the mesh is static (no changes for N frames). There are a lot of possible
+  // heuristics that can be written here.
+  React.useEffect(() => {
+    if (mesh === null) return;
+    if (props.clickable || mesh.instancesCount > 50000) {
+      // We'll add a small margin to reduce the effort of updating the BVH if
+      // instances need to move. This adds a small overhead to
+      // raycasting/frustum culling, but should still be dramatically faster
+      // than no BVH at all.
+      mesh.computeBVH({ margin: mesh.geometry.boundingSphere!.radius * 0.2 });
+    } else {
+      mesh.disposeBVH();
+    }
+  }, [props.clickable, mesh]);
 
   // Update instances when colors change.
   React.useEffect(() => {
