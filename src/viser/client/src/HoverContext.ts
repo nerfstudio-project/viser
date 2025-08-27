@@ -4,7 +4,6 @@ import React from "react";
 export interface HoverState {
   isHovered: boolean;
   instanceId: number | null;
-  clickable: boolean;
 }
 
 export const HoverableContext =

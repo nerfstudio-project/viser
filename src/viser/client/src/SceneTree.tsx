@@ -6,7 +6,7 @@ import {
 } from "@react-three/drei";
 import { ContextBridge, useContextBridge } from "its-fine";
 import { useFrame } from "@react-three/fiber";
-import React from "react";
+import React, { useEffect } from "react";
 import * as THREE from "three";
 
 import { ViewerContext, ViewerContextContents } from "./ViewerContext";
@@ -857,9 +857,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
   const hoveredRef = React.useRef<HoverState>({
     isHovered: false,
     instanceId: null,
-    clickable: false,
   });
-  hoveredRef.current.clickable = clickable;
 
   // Handle case where clickable is toggled to false while still hovered.
   if (!clickable && hoveredRef.current.isHovered) {
@@ -869,6 +867,18 @@ export function SceneNodeThreeObject(props: { name: string }) {
       document.body.style.cursor = "auto";
     }
   }
+
+  // Reset hover state on unmount.
+  useEffect(() => {
+    return () => {
+      if (hoveredRef.current.isHovered) {
+        viewerMutable.hoveredElementsCount--;
+        if (viewerMutable.hoveredElementsCount === 0) {
+          document.body.style.cursor = "auto";
+        }
+      }
+    };
+  });
 
   const dragInfo = React.useRef({
     dragging: false,
