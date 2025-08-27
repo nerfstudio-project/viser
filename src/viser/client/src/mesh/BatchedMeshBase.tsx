@@ -28,27 +28,28 @@ function createLODs(
   // Calculate LOD settings.
   let ratios: number[] = [];
   let distances: number[] = [];
+  geometry.computeBoundingSphere();
 
   if (lod === "auto") {
     // Automatic LOD settings based on geometry complexity.
-    geometry.computeBoundingSphere();
     const boundingRadius = geometry.boundingSphere!.radius;
     const vertexCount = geometry.attributes.position.count;
 
     // 1. Compute LOD ratios based on vertex count.
-    if (vertexCount > 10_000) {
-      ratios = [0.2, 0.05, 0.01]; // Very complex
-    } else if (vertexCount > 2_000) {
-      ratios = [0.4, 0.1, 0.03]; // Medium complex
-    } else if (vertexCount > 500) {
-      ratios = [0.6, 0.2, 0.05]; // Light
+    if (vertexCount < 50) {
+      // Very simple meshes: skip LOD.
+      return { geometries: [], materials: [] };
+    } else if (vertexCount < 500) {
+      ratios = [0.6, 0.2];
+    } else if (vertexCount < 2000) {
+      ratios = [0.4, 0.1, 0.03];
     } else {
-      ratios = [0.85, 0.4, 0.1]; // Already simple
+      ratios = [0.2, 0.05, 0.01];
     }
 
     // 2. Compute LOD distances based on bounding radius.
     const sizeFactor = Math.sqrt(boundingRadius + 1e-5);
-    const baseMultipliers = [1, 2, 3]; // Distance "steps" for LOD switching.
+    const baseMultipliers = [1, 2, 3].slice(0, ratios.length); // Distance "steps" for LOD switching.
     distances = baseMultipliers.map((m) => m * sizeFactor);
   } else {
     // Use provided custom LOD settings.
@@ -72,7 +73,7 @@ function createLODs(
       new Float32Array(lodGeometry.attributes.position.array),
       3,
       targetCount,
-      0.01, // Error tolerance.
+      0.02, // Error tolerance.
       ["LockBorder"], // Prevents triangle flipping artifacts.
     )[0];
 
@@ -193,7 +194,6 @@ export const BatchedMeshBase = React.forwardRef<
       }
       mesh.clearInstances();
       mesh.addInstances(instanceCount, () => {});
-      mesh.computeBVH();
     }
 
     // Create views to efficiently read float values.
@@ -275,6 +275,29 @@ export const BatchedMeshBase = React.forwardRef<
     props.batched_scales,
     mesh,
   ]);
+
+  // Compute BVH for raycasting for clickable meshes.
+  //
+  // We could also do this always. This would speed up frustum culling, but
+  // would add overhead to every position/quaternion/scale update. Since we
+  // don't know in advance if the mesh will be static or dynamic, it seems
+  // conservative to avoid computing a BVH for now.
+  //
+  // In the future, we could consider computing the BVH only if we detect that
+  // the mesh is static (no changes for N frames). There are a lot of possible
+  // heuristics that can be written here.
+  React.useEffect(() => {
+    if (mesh === null) return;
+    if (props.clickable || mesh.instancesCount > 50000) {
+      // We'll add a small margin to reduce the effort of updating the BVH if
+      // instances need to move. This adds a small overhead to
+      // raycasting/frustum culling, but should still be dramatically faster
+      // than no BVH at all.
+      mesh.computeBVH({ margin: mesh.geometry.boundingSphere!.radius * 0.2 });
+    } else {
+      mesh.disposeBVH();
+    }
+  }, [props.clickable, mesh]);
 
   // Update instances when colors change.
   React.useEffect(() => {
