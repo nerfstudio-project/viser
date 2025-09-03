@@ -13,7 +13,8 @@ export default function RgbaComponent({
 }: GuiRgbaMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
 
-  // Local state for the input value.
+  // Local state for the input value. `localValue` will be a string; `value`
+  // will be an RGBA array with all values in range [0, 255].
   const [localValue, setLocalValue] = React.useState(rgbaToString(value));
 
   // Update local value when prop value changes.
