@@ -57,7 +57,8 @@ export const BatchedMeshHoverOutlines: React.FC<
   const outlineRef = React.useRef<THREE.Mesh>(null);
 
   // Get rendering context for screen size.
-  const gl = useThree((state) => state.gl); const contextSize = React.useMemo(
+  const gl = useThree((state) => state.gl);
+  const contextSize = React.useMemo(
     () => gl.getDrawingBufferSize(new THREE.Vector2()),
     [gl],
   );
