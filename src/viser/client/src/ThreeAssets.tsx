@@ -205,7 +205,7 @@ export const CoordinateFrame = React.forwardRef<
             <meshBasicMaterial color={originColor} />
             <OutlinesIfHovered />
           </mesh>
-          <Instances limit={3}>
+          <Instances limit={6}>
             <meshBasicMaterial />
             <cylinderGeometry args={[axesRadius, axesRadius, axesLength, 16]} />
             <Instance
@@ -213,17 +213,18 @@ export const CoordinateFrame = React.forwardRef<
               position={[0.5 * axesLength, 0.0, 0.0]}
               color={0xcc0000}
             >
-              <OutlinesIfHovered />
+              {/* unmountOnHide is needed to use OutlineIfHovered within <Instances />. */}
+              <OutlinesIfHovered unmountOnHide enableCreaseAngle />
             </Instance>
             <Instance position={[0.0, 0.5 * axesLength, 0.0]} color={0x00cc00}>
-              <OutlinesIfHovered />
+              <OutlinesIfHovered unmountOnHide enableCreaseAngle />
             </Instance>
             <Instance
               rotation={new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)}
               position={[0.0, 0.0, 0.5 * axesLength]}
               color={0x0000cc}
             >
-              <OutlinesIfHovered />
+              <OutlinesIfHovered unmountOnHide enableCreaseAngle />
             </Instance>
           </Instances>
         </>

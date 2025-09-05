@@ -5,7 +5,6 @@ import { useGlbLoader } from "./GlbLoaderUtils";
 import { useFrame, useThree } from "@react-three/fiber";
 import { HoverableContext } from "../HoverContext";
 import { OutlinesMaterial } from "../Outlines";
-import { ViewerContext } from "../ViewerContext";
 
 /**
  * Component for rendering a single GLB model
@@ -59,14 +58,12 @@ export const SingleGlbAsset = React.forwardRef<
     return material;
   }, [contextSize]);
   const outlineRef = React.useRef<THREE.Group>(null);
-  const hoveredRef = React.useContext(HoverableContext)!;
-  const viewer = React.useContext(ViewerContext)!;
+  const hoverContext = React.useContext(HoverableContext)!;
   useFrame(() => {
     if (outlineRef.current === null) return;
-    outlineRef.current.visible = hoveredRef.current.isHovered;
+    outlineRef.current.visible = hoverContext.state.current.isHovered;
   });
-  const clickable =
-    viewer.useSceneTree((state) => state[message.name]?.clickable) ?? false;
+  const clickable = hoverContext.clickable;
 
   if (!gltf) return null;
 

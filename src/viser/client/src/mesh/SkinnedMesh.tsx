@@ -206,7 +206,9 @@ export const SkinnedMesh = React.forwardRef<
       receiveShadow={message.props.receive_shadow}
       frustumCulled={false}
     >
-      <OutlinesIfHovered alwaysMounted />
+      <OutlinesIfHovered
+        enableCreaseAngle={geometry.attributes.position.count < 1024}
+      />
       {children}
     </skinnedMesh>
   );
