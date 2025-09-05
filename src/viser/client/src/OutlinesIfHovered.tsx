@@ -11,10 +11,7 @@ export function OutlinesIfHovered(
     unmountOnHide?: boolean;
     enableCreaseAngle?: boolean;
   } = {
-    // Can be set to true for objects like meshes which may be slow to mount.
-    // It seems better to set to False for instanced meshes, there may be some
-    // drei or fiber-related race conditions...
-    unmountOnHide: false,
+    unmountOnHide: false, // Useful when outlines are combined with <Instances />.
     enableCreaseAngle: false,
   },
 ) {
