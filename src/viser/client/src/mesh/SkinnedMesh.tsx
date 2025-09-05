@@ -152,8 +152,8 @@ export const SkinnedMesh = React.forwardRef<
     message.props.bone_positions.buffer,
   ]);
 
-  // Handle initialization and cleanup
-  // Get mutable once
+  // Handle initialization and cleanup.
+  // Get mutable once.
   const viewerMutable = viewer.mutable.current;
 
   // Clean up geometry and skeleton when they change (they're created together).
@@ -173,26 +173,30 @@ export const SkinnedMesh = React.forwardRef<
     };
   }, [material]);
 
-  // Update bone transforms for animation
+  // Update bone transforms for animation.
   useFrame(() => {
-    const parentNode = viewerMutable.nodeRefFromName[message.name];
-    if (parentNode === undefined) return;
-
     const state = viewerMutable.skinnedMeshState[message.name];
     const bones = bonesRef.current;
     if (skeleton !== undefined && bones !== undefined) {
       if (!state.initialized) {
+        const parentNode = viewerMutable.nodeRefFromName[message.name];
+        if (parentNode === undefined) return;
         bones.forEach((bone) => {
           parentNode.add(bone);
         });
         state.initialized = true;
       }
-      bones.forEach((bone, i) => {
-        const wxyz = state.poses[i].wxyz;
-        const position = state.poses[i].position;
-        bone.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
-        bone.position.set(position[0], position[1], position[2]);
-      });
+
+      // Only update bones if dirty flag is set.
+      if (state.dirty) {
+        bones.forEach((bone, i) => {
+          const wxyz = state.poses[i].wxyz;
+          const position = state.poses[i].position;
+          bone.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+          bone.position.set(position[0], position[1], position[2]);
+        });
+        state.dirty = false; // Reset dirty flag after update.
+      }
     }
   });
 

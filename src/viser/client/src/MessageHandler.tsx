@@ -86,6 +86,7 @@ function useMessageHandler() {
       if (message.type === "SkinnedMeshMessage") {
         viewerMutable.skinnedMeshState[message.name] = {
           initialized: false,
+          dirty: false,
           poses: [],
         };
 
@@ -226,12 +227,14 @@ function useMessageHandler() {
       case "SetBoneOrientationMessage": {
         const state = viewerMutable.skinnedMeshState;
         state[message.name].poses[message.bone_index].wxyz = message.wxyz;
+        state[message.name].dirty = true;
         break;
       }
       case "SetBonePositionMessage": {
         const state = viewerMutable.skinnedMeshState;
         state[message.name].poses[message.bone_index].position =
           message.position;
+        state[message.name].dirty = true;
         break;
       }
       case "SetCameraLookAtMessage": {
