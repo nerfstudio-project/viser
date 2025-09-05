@@ -59,6 +59,7 @@ def main(num_plots: int = 5, num_timesteps: int = 100, num_lines: int = 3) -> No
                         for i in range(num_lines)
                     ],
                 ),
+                title="Real-time Sine Waves",
                 scales={
                     "x": viser.uplot.Scale(
                         time=False,
@@ -67,7 +68,7 @@ def main(num_plots: int = 5, num_timesteps: int = 100, num_lines: int = 3) -> No
                     "y": viser.uplot.Scale(range=(-1.5, 2.5)),
                 },
                 legend=viser.uplot.Legend(show=True),
-                aspect=1.0,
+                aspect=2.0,
             )
         )
 
