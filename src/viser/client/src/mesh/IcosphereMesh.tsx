@@ -66,7 +66,7 @@ export const IcosphereMesh = React.forwardRef<
         castShadow={message.props.cast_shadow}
         receiveShadow={message.props.receive_shadow}
       >
-        <OutlinesIfHovered alwaysMounted />
+        <OutlinesIfHovered />
       </mesh>
       {children}
     </group>

@@ -6,7 +6,7 @@ import "./index.css";
 
 import { useInView } from "react-intersection-observer";
 import { Notifications } from "@mantine/notifications";
-import { Environment, PerformanceMonitor, Stats, Bvh } from "@react-three/drei";
+import { Environment, PerformanceMonitor, Stats } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import React, { useEffect, useMemo } from "react";
@@ -487,7 +487,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const fixedDpr = viewer.useDevSettings((state) => state.fixedDpr);
   const sceneContents = React.useMemo(
     () => (
-      <Bvh firstHitOnly>
+      <>
         <BackgroundImage />
         <SceneContextSetter />
         {memoizedCameraControls}
@@ -497,7 +497,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           <SceneNodeThreeObject name="" />
         </SplatRenderContext>
         <DefaultLights />
-      </Bvh>
+      </>
     ),
     [children, memoizedCameraControls],
   );

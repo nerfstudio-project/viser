@@ -51,14 +51,13 @@ export const BatchedMeshHoverOutlines: React.FC<
   computeBatchIndexFromInstanceIndex,
 }) => {
   // Get hover state from context.
-  const hoveredRef = React.useContext(HoverableContext)!;
+  const hoverContext = React.useContext(HoverableContext)!;
 
   // Create outline mesh reference.
   const outlineRef = React.useRef<THREE.Mesh>(null);
 
   // Get rendering context for screen size.
-  const gl = useThree((state) => state.gl);
-  const contextSize = React.useMemo(
+  const gl = useThree((state) => state.gl); const contextSize = React.useMemo(
     () => gl.getDrawingBufferSize(new THREE.Vector2()),
     [gl],
   );
@@ -109,18 +108,18 @@ export const BatchedMeshHoverOutlines: React.FC<
 
   // Update outline position based on hover state.
   useFrame(() => {
-    if (!outlineRef.current || !outlineGeometry || !hoveredRef) return;
+    if (!outlineRef.current || !outlineGeometry || !hoverContext) return;
 
     // Hide by default.
     outlineRef.current.visible = false;
 
     // Check if we're hovering and have a valid instanceId.
     if (
-      hoveredRef.current.isHovered &&
-      hoveredRef.current.instanceId !== null
+      hoverContext.state.current.isHovered &&
+      hoverContext.state.current.instanceId !== null
     ) {
       // Get the instance ID from the hover state.
-      const hoveredInstanceId = hoveredRef.current.instanceId;
+      const hoveredInstanceId = hoverContext.state.current.instanceId;
 
       // Calculate the actual batch index using the mapping function if provided.
       const batchIndex = computeBatchIndexFromInstanceIndex
@@ -235,7 +234,7 @@ export const BatchedMeshHoverOutlines: React.FC<
 
   // This is now handled by the earlier cleanup effect.
 
-  if (!hoveredRef || !outlineGeometry) {
+  if (!hoverContext || !hoverContext.clickable || !outlineGeometry) {
     return null;
   }
 

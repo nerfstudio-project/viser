@@ -6,5 +6,7 @@ export interface HoverState {
   instanceId: number | null;
 }
 
-export const HoverableContext =
-  React.createContext<React.MutableRefObject<HoverState> | null>(null);
+export const HoverableContext = React.createContext<{
+  state: React.MutableRefObject<HoverState>;
+  clickable: boolean;
+} | null>(null);

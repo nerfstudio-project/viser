@@ -80,7 +80,9 @@ export const BasicMesh = React.forwardRef<
       castShadow={message.props.cast_shadow}
       receiveShadow={message.props.receive_shadow}
     >
-      <OutlinesIfHovered alwaysMounted />
+      <OutlinesIfHovered
+        enableCreaseAngle={geometry.attributes.position.count < 1024}
+      />
       {children}
     </mesh>
   );

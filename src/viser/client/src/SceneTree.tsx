@@ -1006,7 +1006,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
                 }
           }
         >
-          <HoverableContext.Provider value={hoveredRef}>
+          <HoverableContext.Provider value={{ state: hoveredRef, clickable }}>
             {objNode}
           </HoverableContext.Provider>
         </group>
