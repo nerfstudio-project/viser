@@ -26,7 +26,7 @@ function _OutlinesIfHovered(props: {
 }) {
   const groupRef = React.useRef<THREE.Group>(null);
   const hoverContext = React.useContext(HoverableContext);
-  const [mounted, setMounted] = React.useState(false);
+  const [mounted, setMounted] = React.useState(true);
 
   const creaseAngle = props.enableCreaseAngle ? Math.PI : 0.0;
 
