@@ -26,17 +26,18 @@ function _OutlinesIfHovered(props: {
 }) {
   const groupRef = React.useRef<THREE.Group>(null);
   const hoverContext = React.useContext(HoverableContext);
-  const [mounted, setMounted] = React.useState(true);
+  const [mounted, setMounted] = React.useState(false);
 
   const creaseAngle = props.enableCreaseAngle ? Math.PI : 0.0;
 
   useFrame(() => {
     if (hoverContext === null || !hoverContext.clickable) return;
-    if (!props.unmountOnHide) {
+    if (props.unmountOnHide) {
+      if (mounted !== hoverContext.state.current.isHovered)
+        setMounted(hoverContext.state.current.isHovered);
+    } else if (hoverContext.state.current.isHovered != mounted) {
       if (groupRef.current === null) return;
       groupRef.current.visible = hoverContext.state.current.isHovered;
-    } else if (hoverContext.state.current.isHovered != mounted) {
-      setMounted(hoverContext.state.current.isHovered);
     }
   });
 
