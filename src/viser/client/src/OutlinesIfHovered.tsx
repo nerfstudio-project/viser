@@ -35,10 +35,10 @@ function _OutlinesIfHovered(props: {
     if (props.unmountOnHide) {
       if (mounted !== hoverContext.state.current.isHovered)
         setMounted(hoverContext.state.current.isHovered);
-    } else if (hoverContext.state.current.isHovered != mounted) {
-      if (groupRef.current === null) return;
-      groupRef.current.visible = hoverContext.state.current.isHovered;
+      return;
     }
+    if (groupRef.current !== null)
+      groupRef.current.visible = hoverContext.state.current.isHovered;
   });
 
   return !mounted ? null : (
