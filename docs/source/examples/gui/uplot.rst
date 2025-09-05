@@ -30,6 +30,7 @@ Code
    
    import numpy as np
    import tyro
+   
    import viser
    import viser.uplot
    
