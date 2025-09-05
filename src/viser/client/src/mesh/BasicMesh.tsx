@@ -81,7 +81,10 @@ export const BasicMesh = React.forwardRef<
       receiveShadow={message.props.receive_shadow}
     >
       <OutlinesIfHovered
-        enableCreaseAngle={geometry.attributes.position.count < 1024}
+        enableCreaseAngle={
+          geometry.attributes.position.count < 1024 &&
+          geometry.boundingSphere!.radius > 0.1
+        }
       />
       {children}
     </mesh>
