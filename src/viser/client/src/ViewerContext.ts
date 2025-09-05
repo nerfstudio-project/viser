@@ -48,6 +48,7 @@ export type ViewerMutable = {
   skinnedMeshState: {
     [name: string]: {
       initialized: boolean;
+      dirty: boolean; // Flag to track if bones need updating.
       poses: {
         wxyz: [number, number, number, number];
         position: [number, number, number];
