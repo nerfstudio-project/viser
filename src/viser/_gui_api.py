@@ -1723,7 +1723,7 @@ class GuiApi:
         hint: str | None = None,
         order: float | None = None,
     ) -> GuiRgbHandle:
-        """Add an RGB picker to the GUI.
+        """Add an RGB picker to the GUI. All values should be in [0, 255].
 
         Args:
             label: Label to display on the RGB picker.
@@ -1769,7 +1769,7 @@ class GuiApi:
         hint: str | None = None,
         order: float | None = None,
     ) -> GuiRgbaHandle:
-        """Add an RGBA picker to the GUI.
+        """Add an RGBA picker to the GUI. All values should be in [0, 255].
 
         Args:
             label: Label to display on the RGBA picker.
