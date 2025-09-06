@@ -1003,7 +1003,8 @@ class GuiApi:
                     ),
                 ),
                 is_button=True,
-            )
+            ),
+            _icon=icon,
         )
 
     @deprecated_positional_shim
@@ -1057,7 +1058,8 @@ class GuiApi:
                     ),
                 ),
                 is_button=True,
-            )
+            ),
+            _icon=icon,
         )
 
     @deprecated_positional_shim
