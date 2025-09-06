@@ -467,6 +467,7 @@
     <span class="n">GuiTabGroupProps</span><span class="p">,</span>
     <span class="n">GuiTextProps</span><span class="p">,</span>
     <span class="n">GuiUpdateMessage</span><span class="p">,</span>
+    <span class="n">GuiUploadButtonProps</span><span class="p">,</span>
     <span class="n">GuiUplotProps</span><span class="p">,</span>
     <span class="n">GuiVector2Props</span><span class="p">,</span>
     <span class="n">GuiVector3Props</span><span class="p">,</span>
@@ -830,6 +831,20 @@
 <span class="sd">       Value of the button. Set to `True` when the button is pressed. Can be manually set back to `False`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">_icon</span><span class="p">:</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">impl</span><span class="o">=</span><span class="n">_impl</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_icon</span> <span class="o">=</span> <span class="n">_icon</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">icon</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Icon to display on the button. When set to None, no icon is displayed.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_icon</span>
+
+    <span class="nd">@icon</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">icon</span><span class="p">:</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_icon</span> <span class="o">=</span> <span class="n">icon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_icon_html</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">icon</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">svg_from_icon</span><span class="p">(</span><span class="n">icon</span><span class="p">)</span>
+
 <div class="viewcode-block" id="GuiButtonHandle.on_click">
 <a class="viewcode-back" href="../../../api/handles/gui_handles/#viser.GuiButtonHandle.on_click">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">on_click</span><span class="p">(</span>
@@ -864,7 +879,7 @@
 
 <div class="viewcode-block" id="GuiUploadButtonHandle">
 <a class="viewcode-back" href="../../../api/handles/gui_handles/#viser.GuiUploadButtonHandle">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">GuiUploadButtonHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="n">UploadedFile</span><span class="p">]):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiUploadButtonHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="n">UploadedFile</span><span class="p">],</span> <span class="n">GuiUploadButtonProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for an upload file button in our visualizer.</span>
 
 <span class="sd">    The `.value` attribute will be updated with the contents of uploaded files.</span>
@@ -874,6 +889,20 @@
 
 <span class="sd">       Value of the input. Contains information about the uploaded file.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">[</span><span class="n">UploadedFile</span><span class="p">],</span> <span class="n">_icon</span><span class="p">:</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">impl</span><span class="o">=</span><span class="n">_impl</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_icon</span> <span class="o">=</span> <span class="n">_icon</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">icon</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Icon to display on the upload button. When set to None, no icon is displayed.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_icon</span>
+
+    <span class="nd">@icon</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">icon</span><span class="p">:</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_icon</span> <span class="o">=</span> <span class="n">icon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_icon_html</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">icon</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">svg_from_icon</span><span class="p">(</span><span class="n">icon</span><span class="p">)</span>
 
 <div class="viewcode-block" id="GuiUploadButtonHandle.on_upload">
 <a class="viewcode-back" href="../../../api/handles/gui_handles/#viser.GuiUploadButtonHandle.on_upload">[docs]</a>
@@ -993,7 +1022,7 @@
         <span class="n">uuid</span> <span class="o">=</span> <span class="n">_make_uuid</span><span class="p">()</span>
 
         <span class="c1"># We may want to make this thread-safe in the future.</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">GuiTabHandle</span><span class="p">(</span><span class="n">_parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">_id</span><span class="o">=</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">GuiTabHandle</span><span class="p">(</span><span class="n">_parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">_id</span><span class="o">=</span><span class="n">uuid</span><span class="p">,</span> <span class="n">_label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">_icon</span><span class="o">=</span><span class="n">icon</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_tab_handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tab_labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tab_labels</span> <span class="o">+</span> <span class="p">(</span><span class="n">label</span><span class="p">,)</span>
@@ -1047,11 +1076,28 @@
 
     <span class="n">_parent</span><span class="p">:</span> <span class="n">GuiTabGroupHandle</span>
     <span class="n">_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Used as container ID of children.</span>
+    <span class="n">_label</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">_icon</span><span class="p">:</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">_container_id_restore</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">_children</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SupportsRemoveProtocol</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span>
     <span class="p">)</span>
     <span class="n">_removed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">icon</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Icon to display on the tab. When set to None, no icon is displayed.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_icon</span>
+
+    <span class="nd">@icon</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">icon</span><span class="p">:</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_icon</span> <span class="o">=</span> <span class="n">icon</span>
+        <span class="c1"># Find the index of this tab in the parent&#39;s tab list.</span>
+        <span class="n">tab_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_tab_handles</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c1"># Update the icon HTML in the parent&#39;s tuple.</span>
+        <span class="n">icons_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_tab_icons_html</span><span class="p">)</span>
+        <span class="n">icons_list</span><span class="p">[</span><span class="n">tab_index</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">icon</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">svg_from_icon</span><span class="p">(</span><span class="n">icon</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_tab_icons_html</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">icons_list</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiTabHandle</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_get_container_uuid</span><span class="p">()</span>

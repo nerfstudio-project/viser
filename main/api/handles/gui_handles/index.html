@@ -521,6 +521,12 @@
 <dd><p>Value of the button. Set to <cite>True</cite> when the button is pressed. Can be manually set back to <cite>False</cite>.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GuiButtonHandle.icon">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">icon</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">IconName</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.GuiButtonHandle.icon" title="Link to this definition">¶</a></dt>
+<dd><p>Icon to display on the button. When set to None, no icon is displayed.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.GuiButtonHandle.on_click">
 <span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../advanced/events/#viser.GuiEvent" title="viser._gui_handles.GuiEvent"><span class="pre">GuiEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../advanced/events/#viser.GuiEvent" title="viser._gui_handles.GuiEvent"><span class="pre">GuiEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/viser/_gui_handles/#GuiButtonHandle.on_click"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiButtonHandle.on_click" title="Link to this definition">¶</a></dt>
@@ -1015,12 +1021,6 @@ synchronized between all connected clients. When a GUI element is added via
 <dt class="sig sig-object py" id="viser.GuiMarkdownHandle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiMarkdownHandle</span></span><a class="reference internal" href="../../../_modules/viser/_gui_handles/#GuiMarkdownHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiMarkdownHandle" title="Link to this definition">¶</a></dt>
 <dd><p>Handling for updating and removing markdown elements.</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="viser.GuiMarkdownHandle.content">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">content</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#viser.GuiMarkdownHandle.content" title="Link to this definition">¶</a></dt>
-<dd><p>Current content of this markdown element. Synchronized automatically when assigned.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.GuiMarkdownHandle.remove">
 <span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#viser.GuiMarkdownHandle.remove" title="Link to this definition">¶</a></dt>
@@ -1042,6 +1042,12 @@ synchronized between all connected clients. When a GUI element is added via
 <dt class="sig sig-object py" id="viser.GuiMarkdownHandle.visible">
 <span class="sig-name descname"><span class="pre">visible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.GuiMarkdownHandle.visible" title="Link to this definition">¶</a></dt>
 <dd><p>Visibility state of the markdown element. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GuiMarkdownHandle.content">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">content</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#viser.GuiMarkdownHandle.content" title="Link to this definition">¶</a></dt>
+<dd><p>Current content of this markdown element. Synchronized automatically when assigned.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1691,6 +1697,12 @@ synchronized between all connected clients. When a GUI element is added via
 <dt class="sig sig-object py" id="viser.GuiTabHandle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiTabHandle</span></span><a class="reference internal" href="../../../_modules/viser/_gui_handles/#GuiTabHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiTabHandle" title="Link to this definition">¶</a></dt>
 <dd><p>Use as a context to place GUI elements into a tab.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GuiTabHandle.icon">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">icon</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">IconName</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.GuiTabHandle.icon" title="Link to this definition">¶</a></dt>
+<dd><p>Icon to display on the tab. When set to None, no icon is displayed.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.GuiTabHandle.remove">
 <span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/viser/_gui_handles/#GuiTabHandle.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiTabHandle.remove" title="Link to this definition">¶</a></dt>
@@ -1815,6 +1827,12 @@ visualizer.</p>
 <dd><p>Value of the input. Contains information about the uploaded file.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GuiUploadButtonHandle.icon">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">icon</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">IconName</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.GuiUploadButtonHandle.icon" title="Link to this definition">¶</a></dt>
+<dd><p>Icon to display on the upload button. When set to None, no icon is displayed.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.GuiUploadButtonHandle.on_upload">
 <span class="sig-name descname"><span class="pre">on_upload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../advanced/events/#viser.GuiEvent" title="viser._gui_handles.GuiEvent"><span class="pre">GuiEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../advanced/events/#viser.GuiEvent" title="viser._gui_handles.GuiEvent"><span class="pre">GuiEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/viser/_gui_handles/#GuiUploadButtonHandle.on_upload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiUploadButtonHandle.on_upload" title="Link to this definition">¶</a></dt>
@@ -1851,6 +1869,18 @@ visualizer.</p>
 <dt class="sig sig-object py" id="viser.GuiUploadButtonHandle.update_timestamp">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.GuiUploadButtonHandle.update_timestamp" title="Link to this definition">¶</a></dt>
 <dd><p>Read-only timestamp when this input was last updated.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.GuiUploadButtonHandle.color">
+<span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">LiteralColor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.GuiUploadButtonHandle.color" title="Link to this definition">¶</a></dt>
+<dd><p>Color of the upload button. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.GuiUploadButtonHandle.mime_type">
+<span class="sig-name descname"><span class="pre">mime_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#viser.GuiUploadButtonHandle.mime_type" title="Link to this definition">¶</a></dt>
+<dd><p>MIME type of the files that can be uploaded. Synchronized automatically when assigned.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2331,6 +2361,7 @@ Synchronized automatically when assigned.</p>
 </li>
 <li><a class="reference internal" href="#viser.GuiButtonHandle"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle</span></code></a><ul>
 <li><a class="reference internal" href="#viser.GuiButtonHandle.value"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.value</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiButtonHandle.icon"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.icon</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiButtonHandle.on_click"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.on_click()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiButtonHandle.remove"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.remove()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiButtonHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.update_timestamp</span></code></a></li>
@@ -2406,10 +2437,10 @@ Synchronized automatically when assigned.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GuiMarkdownHandle"><code class="docutils literal notranslate"><span class="pre">GuiMarkdownHandle</span></code></a><ul>
-<li><a class="reference internal" href="#viser.GuiMarkdownHandle.content"><code class="docutils literal notranslate"><span class="pre">GuiMarkdownHandle.content</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiMarkdownHandle.remove"><code class="docutils literal notranslate"><span class="pre">GuiMarkdownHandle.remove()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiMarkdownHandle.order"><code class="docutils literal notranslate"><span class="pre">GuiMarkdownHandle.order</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiMarkdownHandle.visible"><code class="docutils literal notranslate"><span class="pre">GuiMarkdownHandle.visible</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiMarkdownHandle.content"><code class="docutils literal notranslate"><span class="pre">GuiMarkdownHandle.content</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GuiMultiSliderHandle"><code class="docutils literal notranslate"><span class="pre">GuiMultiSliderHandle</span></code></a><ul>
@@ -2507,6 +2538,7 @@ Synchronized automatically when assigned.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GuiTabHandle"><code class="docutils literal notranslate"><span class="pre">GuiTabHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.GuiTabHandle.icon"><code class="docutils literal notranslate"><span class="pre">GuiTabHandle.icon</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiTabHandle.remove"><code class="docutils literal notranslate"><span class="pre">GuiTabHandle.remove()</span></code></a></li>
 </ul>
 </li>
@@ -2526,9 +2558,12 @@ Synchronized automatically when assigned.</p>
 </li>
 <li><a class="reference internal" href="#viser.GuiUploadButtonHandle"><code class="docutils literal notranslate"><span class="pre">GuiUploadButtonHandle</span></code></a><ul>
 <li><a class="reference internal" href="#viser.GuiUploadButtonHandle.value"><code class="docutils literal notranslate"><span class="pre">GuiUploadButtonHandle.value</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiUploadButtonHandle.icon"><code class="docutils literal notranslate"><span class="pre">GuiUploadButtonHandle.icon</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiUploadButtonHandle.on_upload"><code class="docutils literal notranslate"><span class="pre">GuiUploadButtonHandle.on_upload()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiUploadButtonHandle.remove"><code class="docutils literal notranslate"><span class="pre">GuiUploadButtonHandle.remove()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiUploadButtonHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">GuiUploadButtonHandle.update_timestamp</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiUploadButtonHandle.color"><code class="docutils literal notranslate"><span class="pre">GuiUploadButtonHandle.color</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiUploadButtonHandle.mime_type"><code class="docutils literal notranslate"><span class="pre">GuiUploadButtonHandle.mime_type</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiUploadButtonHandle.order"><code class="docutils literal notranslate"><span class="pre">GuiUploadButtonHandle.order</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiUploadButtonHandle.label"><code class="docutils literal notranslate"><span class="pre">GuiUploadButtonHandle.label</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiUploadButtonHandle.hint"><code class="docutils literal notranslate"><span class="pre">GuiUploadButtonHandle.hint</span></code></a></li>
