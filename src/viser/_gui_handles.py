@@ -379,7 +379,7 @@ class GuiButtonHandle(_GuiInputHandle[bool], GuiButtonProps):
     def icon(self) -> IconName | None:
         """Icon to display on the button. When set to None, no icon is displayed."""
         return self._icon
-    
+
     @icon.setter
     def icon(self, icon: IconName | None) -> None:
         self._icon = icon
@@ -429,7 +429,7 @@ class GuiUploadButtonHandle(_GuiInputHandle[UploadedFile], GuiUploadButtonProps)
     def icon(self) -> IconName | None:
         """Icon to display on the upload button. When set to None, no icon is displayed."""
         return self._icon
-    
+
     @icon.setter
     def icon(self, icon: IconName | None) -> None:
         self._icon = icon
@@ -595,7 +595,7 @@ class GuiTabHandle:
     def icon(self) -> IconName | None:
         """Icon to display on the tab. When set to None, no icon is displayed."""
         return self._icon
-    
+
     @icon.setter
     def icon(self, icon: IconName | None) -> None:
         self._icon = icon
