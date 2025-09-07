@@ -755,15 +755,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
 
         # Form status print.
         port = server._port  # Port may have changed.
-        if host == "0.0.0.0":
-            # 0.0.0.0 is not a real IP and people are often confused by it;
-            # we'll just print localhost. This is questionable from a security
-            # perspective, but probably fine for our use cases.
-            http_url = f"http://localhost:{port}"
-            ws_url = f"ws://localhost:{port}"
-        else:
-            http_url = f"http://{host}:{port}"
-            ws_url = f"ws://{host}:{port}"
+        http_url = f"http://{host}:{port}"
+        ws_url = f"ws://{host}:{port}"
         table = Table(
             title=None,
             show_header=False,
