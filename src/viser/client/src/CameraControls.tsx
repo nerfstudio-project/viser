@@ -25,8 +25,11 @@ function CrosshairVisual({
     if (groupRef.current && visible) {
       // Get world position of the crosshair.
       groupRef.current.getWorldPosition(worldPos);
+      // Scale based on distance and FOV to maintain consistent visual size.
+      const distance = camera.position.distanceTo(worldPos);
+      const fovScale = Math.tan(((camera as THREE.PerspectiveCamera).fov * Math.PI) / 360);
       groupRef.current.scale.setScalar(
-        camera.position.distanceTo(worldPos) / 20,
+        (distance / 20) * fovScale,
       );
     }
   });
