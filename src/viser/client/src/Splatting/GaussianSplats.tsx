@@ -182,6 +182,13 @@ function SplatRendererImpl() {
     .fill(0);
   const prevVisibles: boolean[] = [];
 
+  // Store the projection matrix from the previous frame to sync with texture updates
+  // Initialize with a reasonable default projection
+  const prevProjectionMatrix = React.useRef(
+    new THREE.Matrix4().makePerspective(-1, 1, 1, -1, 0.1, 1000),
+  );
+  const currentProjectionMatrix = React.useRef(new THREE.Matrix4());
+
   // Make local sorter. This will be used for blocking sorts, eg for rendering
   // from virtual cameras.
   const SorterRef = React.useRef<any>(null);
@@ -201,24 +208,22 @@ function SplatRendererImpl() {
       height: number,
       blockingSort: boolean,
     ) {
+      // Force immediate camera matrix updates to avoid lag
+      camera.updateMatrixWorld(true);
+      camera.updateProjectionMatrix();
+
       // Update camera parameter uniforms.
       const fovY = ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 180.0;
-
       const aspect = width / height;
-      const fovX = 2 * Math.atan(Math.tan(fovY / 2) * aspect);
-      const fy = height / (2 * Math.tan(fovY / 2));
-      const fx = width / (2 * Math.tan(fovX / 2));
 
       if (meshProps.material === undefined) return;
 
       const uniforms = meshProps.material.uniforms;
-      uniforms.focal.value = [fx, fy];
       uniforms.near.value = camera.near;
       uniforms.far.value = camera.far;
       uniforms.viewport.value = [width, height];
 
       // Update group transforms.
-      camera.updateMatrixWorld();
       const T_camera_world = camera.matrixWorldInverse;
       const groupVisibles: boolean[] = [];
       let visibilitiesChanged = false;
@@ -294,6 +299,32 @@ function SplatRendererImpl() {
         prevRowMajorT_camera_groups.set(meshProps.rowMajorT_camera_groups);
         meshProps.textureT_camera_groups.needsUpdate = true;
       }
+
+      // Calculate the new projection matrix for this frame
+      const near = camera.near;
+      const far = camera.far;
+      const top = near * Math.tan(fovY / 2);
+      const bottom = -top;
+      const right = top * aspect;
+      const left = -right;
+
+      currentProjectionMatrix.current.makePerspective(
+        left,
+        right,
+        top,
+        bottom,
+        near,
+        far,
+      );
+
+      // Use the PREVIOUS frame's projection matrix to sync with texture update timing
+      // This creates a 1-frame delay that matches the texture upload latency
+      meshProps.material.uniforms.projectionMatrixCustom.value.copy(
+        prevProjectionMatrix.current,
+      );
+
+      // Store current matrix for next frame
+      prevProjectionMatrix.current.copy(currentProjectionMatrix.current);
     },
     [meshProps],
   );
