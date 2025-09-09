@@ -182,6 +182,20 @@ function SplatRendererImpl() {
     .fill(0);
   const prevVisibles: boolean[] = [];
 
+  // Track previous camera parameters to avoid redundant updates.
+  const prevCameraParams = React.useRef({
+    fovY: 0,
+    aspect: 0,
+    near: 0,
+    far: 0,
+  });
+
+  // Store projection matrix for 1-frame delay to match texture upload timing.
+  // Initialize with a reasonable default.
+  const pendingProjectionMatrix = React.useRef(
+    new THREE.Matrix4().makePerspective(-1, 1, 1, -1, 0.1, 1000),
+  );
+
   // Make local sorter. This will be used for blocking sorts, eg for rendering
   // from virtual cameras.
   const SorterRef = React.useRef<any>(null);
@@ -201,24 +215,22 @@ function SplatRendererImpl() {
       height: number,
       blockingSort: boolean,
     ) {
+      // Force immediate camera matrix updates to avoid lag
+      camera.updateMatrixWorld(true);
+      camera.updateProjectionMatrix();
+
       // Update camera parameter uniforms.
       const fovY = ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 180.0;
-
       const aspect = width / height;
-      const fovX = 2 * Math.atan(Math.tan(fovY / 2) * aspect);
-      const fy = height / (2 * Math.tan(fovY / 2));
-      const fx = width / (2 * Math.tan(fovX / 2));
 
       if (meshProps.material === undefined) return;
 
       const uniforms = meshProps.material.uniforms;
-      uniforms.focal.value = [fx, fy];
       uniforms.near.value = camera.near;
       uniforms.far.value = camera.far;
       uniforms.viewport.value = [width, height];
 
       // Update group transforms.
-      camera.updateMatrixWorld();
       const T_camera_world = camera.matrixWorldInverse;
       const groupVisibles: boolean[] = [];
       let visibilitiesChanged = false;
@@ -293,6 +305,46 @@ function SplatRendererImpl() {
         }
         prevRowMajorT_camera_groups.set(meshProps.rowMajorT_camera_groups);
         meshProps.textureT_camera_groups.needsUpdate = true;
+      }
+
+      // Apply the previous frame's projection matrix (1-frame delay for sync with texture).
+      meshProps.material.uniforms.projectionMatrixCustom.value.copy(
+        pendingProjectionMatrix.current,
+      );
+
+      // Calculate projection matrix for next frame (only if parameters changed).
+      const near = camera.near;
+      const far = camera.far;
+      const params = prevCameraParams.current;
+
+      if (
+        fovY !== params.fovY ||
+        aspect !== params.aspect ||
+        near !== params.near ||
+        far !== params.far
+      ) {
+        // Cache the expensive trig calculation.
+        const tanHalfFovY = Math.tan(fovY / 2);
+        const top = near * tanHalfFovY;
+        const bottom = -top;
+        const right = top * aspect;
+        const left = -right;
+
+        // Store for next frame (1-frame delay to match texture upload timing).
+        pendingProjectionMatrix.current.makePerspective(
+          left,
+          right,
+          top,
+          bottom,
+          near,
+          far,
+        );
+
+        // Store current parameters.
+        params.fovY = fovY;
+        params.aspect = aspect;
+        params.near = near;
+        params.far = far;
       }
     },
     [meshProps],
