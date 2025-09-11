@@ -547,8 +547,9 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Corresponds to the t in `P_world = [R | t] p_camera`. Synchronized</span>
 <span class="sd">        automatically when assigned.</span>
 
-<span class="sd">        The `look_at` point and `up_direction` vectors are maintained when updating</span>
-<span class="sd">        `position`, which means that updates to `position` will often also affect `wxyz`.</span>
+<span class="sd">        To preserve the camera orientation, position updates translate both the camera</span>
+<span class="sd">        and its `look_at` point together. To change position while looking at a fixed</span>
+<span class="sd">        point, set `look_at` after updating `position`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">position</span>
