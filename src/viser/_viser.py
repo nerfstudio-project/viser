@@ -759,8 +759,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
             # 0.0.0.0 is not a real IP and people are often confused by it;
             # we'll just print localhost. This is questionable from a security
             # perspective, but probably fine for our use cases.
-            http_url = f"http://localhost:{port}"
-            ws_url = f"ws://localhost:{port}"
+            http_url = f"http://localhost:{port} (http://0.0.0.0:{port})"
+            ws_url = f"ws://localhost:{port} (ws://0.0.0.0:{port})"
         else:
             http_url = f"http://{host}:{port}"
             ws_url = f"ws://{host}:{port}"
