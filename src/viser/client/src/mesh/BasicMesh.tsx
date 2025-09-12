@@ -72,13 +72,28 @@ export const BasicMesh = React.forwardRef<
     };
   }, [material]);
 
+  // Check if we should render a shadow mesh.
+  const shadowOpacity = typeof message.props.receive_shadow === 'number' 
+    ? message.props.receive_shadow 
+    : 0.0;
+
+  // Create shadow material for shadow mesh.
+  const shadowMaterial = React.useMemo(() => {
+    if (shadowOpacity === 0.0) return null;
+    return new THREE.ShadowMaterial({
+      opacity: shadowOpacity,
+      color: 0x000000,
+      depthWrite: false,
+    });
+  }, [shadowOpacity]);
+
   return (
     <mesh
       ref={ref}
       geometry={geometry}
       material={material}
       castShadow={message.props.cast_shadow}
-      receiveShadow={message.props.receive_shadow}
+      receiveShadow={message.props.receive_shadow === true}
     >
       <OutlinesIfHovered
         enableCreaseAngle={
@@ -86,6 +101,13 @@ export const BasicMesh = React.forwardRef<
           geometry.boundingSphere!.radius > 0.1
         }
       />
+      {shadowMaterial && shadowOpacity > 0 ? (
+        <mesh
+          geometry={geometry}
+          material={shadowMaterial}
+          receiveShadow
+        />
+      ) : null}
       {children}
     </mesh>
   );

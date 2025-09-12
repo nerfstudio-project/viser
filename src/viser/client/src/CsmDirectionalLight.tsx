@@ -84,13 +84,13 @@ function updateMaterialsInScene(scene: Object3D): void {
 
 // Modified approach that uses conditional rendering with proper mount/unmount.
 export function CsmDirectionalLight({
-  maxFar = 30,
+  maxFar = 20,
   shadowMapSize = 1024,
   lightIntensity = 0.25,
   cascades = 3,
   fade = true,
   position = [0, 0, 0],
-  shadowBias = -0.00001,
+  shadowBias = -0.0001,
   lightFar = 2000,
   lightMargin = 200,
   lightNear = 0.0001,

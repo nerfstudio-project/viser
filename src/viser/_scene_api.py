@@ -623,7 +623,7 @@ class SceneApi:
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
     ) -> GlbHandle:
         """Add a general 3D asset via binary glTF (GLB).
 
@@ -642,7 +642,10 @@ class SceneApi:
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
             cast_shadow: Whether this node should cast shadows.
-            receive_shadow: Whether this node should receive shadows.
+            receive_shadow: Whether this node should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
 
         Returns:
             Handle for manipulating scene node.
@@ -967,7 +970,7 @@ class SceneApi:
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
         variant: Literal["wireframe", "filled"] = "wireframe",
     ) -> CameraFrustumHandle:
         """Add a camera frustum to the scene for visualization.
@@ -994,7 +997,10 @@ class SceneApi:
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
             cast_shadow: Whether this frustum should cast shadows.
-            receive_shadow: Whether this frustum should receive shadows.
+            receive_shadow: Whether this frustum should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
             variant: Variant of the frustum visualization. 'wireframe' shows lines only, 'filled' adds semi-transparent faces.
 
         Returns:
@@ -1319,7 +1325,7 @@ class SceneApi:
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
         wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1347,7 +1353,10 @@ class SceneApi:
                 when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
             cast_shadow: Whether this skinned mesh should cast shadows.
-            receive_shadow: Whether this skinned mesh should receive shadows.
+            receive_shadow: Whether this skinned mesh should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this mesh is initially visible.
@@ -1433,7 +1442,7 @@ class SceneApi:
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1455,7 +1464,10 @@ class SceneApi:
                 when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
             cast_shadow: Whether this mesh should cast shadows.
-            receive_shadow: Whether this mesh should receive shadows.
+            receive_shadow: Whether this mesh should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this mesh is initially visible.
@@ -1500,6 +1512,8 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        cast_shadow: bool = True,
+        receive_shadow: bool | float = True,
     ) -> GlbHandle:
         """Add a trimesh mesh to the scene. Internally calls `self.add_glb()`.
 
@@ -1511,6 +1525,11 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
+            cast_shadow: Whether this mesh should cast shadows.
+            receive_shadow: Whether this mesh should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
 
         Returns:
             Handle for manipulating scene node.
@@ -1526,6 +1545,8 @@ class SceneApi:
                 wxyz=wxyz,
                 position=position,
                 visible=visible,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
             )
 
     @deprecated_positional_shim
@@ -1856,7 +1877,7 @@ class SceneApi:
         flat_shading: bool = True,
         side: Literal["front", "back", "double"] = "front",
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1874,7 +1895,10 @@ class SceneApi:
             flat_shading: Whether to do flat shading.
             side: Side of the surface to render ('front', 'back', 'double').
             cast_shadow: Whether this box should cast shadows.
-            receive_shadow: Whether this box should receive shadows.
+            receive_shadow: Whether this box should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this box is initially visible.
@@ -1930,7 +1954,7 @@ class SceneApi:
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1949,7 +1973,10 @@ class SceneApi:
             flat_shading: Whether to do flat shading.
             side: Side of the surface to render ('front', 'back', 'double').
             cast_shadow: Whether this icosphere should cast shadows.
-            receive_shadow: Whether this icosphere should receive shadows.
+            receive_shadow: Whether this icosphere should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this icosphere is initially visible.
@@ -2041,7 +2068,7 @@ class SceneApi:
         format: Literal["auto", "png", "jpeg"] = "auto",
         jpeg_quality: int | None = None,
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -2057,7 +2084,10 @@ class SceneApi:
             format: Format to transport and display the image using. 'auto' will use PNG for RGBA images and JPEG for RGB.
             jpeg_quality: Quality of the jpeg image (if jpeg format is used).
             cast_shadow: Whether this image should cast shadows.
-            receive_shadow: Whether this image should receive shadows.
+            receive_shadow: Whether this image should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this image is initially visible.
