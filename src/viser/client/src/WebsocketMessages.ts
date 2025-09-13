@@ -18,7 +18,7 @@ export interface CameraFrustumMessage {
     _format: "jpeg" | "png";
     _image_data: Uint8Array<ArrayBuffer> | null;
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
     variant: "wireframe" | "filled";
   };
 }
@@ -33,7 +33,7 @@ export interface GlbMessage {
     glb_data: Uint8Array<ArrayBuffer>;
     scale: number;
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
   };
 }
 /** Coordinate frame message.
@@ -229,7 +229,7 @@ export interface MeshMessage {
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
   };
 }
 /** Box message.
@@ -248,7 +248,7 @@ export interface BoxMessage {
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
   };
 }
 /** Icosphere message.
@@ -268,7 +268,7 @@ export interface IcosphereMessage {
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
   };
 }
 /** Skinned mesh message.
@@ -288,7 +288,7 @@ export interface SkinnedMeshMessage {
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
     bone_wxyzs: Uint8Array<ArrayBuffer>;
     bone_positions: Uint8Array<ArrayBuffer>;
     skin_indices: Uint8Array<ArrayBuffer>;
@@ -370,7 +370,7 @@ export interface ImageMessage {
     render_width: number;
     render_height: number;
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
   };
 }
 /** Message from server->client carrying line segments information.

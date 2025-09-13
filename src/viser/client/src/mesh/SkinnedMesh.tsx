@@ -173,6 +173,21 @@ export const SkinnedMesh = React.forwardRef<
     };
   }, [material]);
 
+  // Check if we should render a shadow mesh.
+  const shadowOpacity = typeof message.props.receive_shadow === 'number' 
+    ? message.props.receive_shadow 
+    : 0.0;
+
+  // Create shadow material for shadow mesh.
+  const shadowMaterial = React.useMemo(() => {
+    if (shadowOpacity === 0.0) return null;
+    return new THREE.ShadowMaterial({
+      opacity: shadowOpacity,
+      color: 0x000000,
+      depthWrite: false,
+    });
+  }, [shadowOpacity]);
+
   // Update bone transforms for animation.
   useFrame(() => {
     const state = viewerMutable.skinnedMeshState[message.name];
@@ -207,12 +222,21 @@ export const SkinnedMesh = React.forwardRef<
       material={material}
       skeleton={skeleton}
       castShadow={message.props.cast_shadow}
-      receiveShadow={message.props.receive_shadow}
+      receiveShadow={message.props.receive_shadow === true}
       frustumCulled={false}
     >
       <OutlinesIfHovered
         enableCreaseAngle={geometry.attributes.position.count < 1024}
       />
+      {shadowMaterial && shadowOpacity > 0 ? (
+        <skinnedMesh
+          geometry={geometry}
+          material={shadowMaterial}
+          skeleton={skeleton}
+          receiveShadow
+          frustumCulled={false}
+        />
+      ) : null}
       {children}
     </skinnedMesh>
   );

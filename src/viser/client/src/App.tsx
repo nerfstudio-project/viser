@@ -668,18 +668,12 @@ function DefaultLights() {
   return (
     <>
       <CsmDirectionalLight
-        fade={true}
         lightIntensity={3.0}
         position={[-0.2, 1.0, -0.2]}
         cascades={3}
-        color={0xffffff}
-        maxFar={20}
-        mode="practical"
-        shadowBias={-0.0001}
         castShadow={enableDefaultLightsShadows}
       />
       <CsmDirectionalLight
-        color={0xffffff}
         lightIntensity={0.4}
         position={[0, -1, 0]}
         castShadow={false}

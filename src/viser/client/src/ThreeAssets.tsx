@@ -507,7 +507,7 @@ export const ViserImage = React.forwardRef<
       <mesh
         rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
         castShadow={message.props.cast_shadow}
-        receiveShadow={message.props.receive_shadow}
+        receiveShadow={message.props.receive_shadow === true}
       >
         <OutlinesIfHovered />
         <planeGeometry
