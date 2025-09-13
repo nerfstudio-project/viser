@@ -481,13 +481,13 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.AmbientLightHandle.color">
 <span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.AmbientLightHandle.color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the ambient light. Synchronized automatically when assigned.</p>
+<dd><p>Color of the ambient light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.AmbientLightHandle.intensity">
 <span class="sig-name descname"><span class="pre">intensity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.AmbientLightHandle.intensity" title="Link to this definition">¶</a></dt>
-<dd><p>Intensity of the ambient light. Synchronized automatically when assigned.</p>
+<dd><p>Intensity of the ambient light.</p>
 </dd></dl>
 
 </dd></dl>
@@ -571,31 +571,32 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedAxesHandle.batched_wxyzs">
 <span class="sig-name descname"><span class="pre">batched_wxyzs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedAxesHandle.batched_wxyzs" title="Link to this definition">¶</a></dt>
-<dd><p>Float array of shape (N,4) representing quaternion rotations. Synchronized automatically when assigned.</p>
+<dd><p>Float array of shape (N,4) representing quaternion rotations.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedAxesHandle.batched_positions">
 <span class="sig-name descname"><span class="pre">batched_positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedAxesHandle.batched_positions" title="Link to this definition">¶</a></dt>
-<dd><p>Float array of shape (N,3) representing positions. Synchronized automatically when assigned.</p>
+<dd><p>Float array of shape (N,3) representing positions. Synchronized</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedAxesHandle.batched_scales">
 <span class="sig-name descname"><span class="pre">batched_scales</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.BatchedAxesHandle.batched_scales" title="Link to this definition">¶</a></dt>
-<dd><p>Float array of shape (N,) or (N,3) representing uniform or per-axis (XYZ) scales. Synchronized automatically when assigned.</p>
+<dd><p>Float array of shape (N,) or (N,3) representing uniform or per-axis
+(XYZ) scales.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedAxesHandle.axes_length">
 <span class="sig-name descname"><span class="pre">axes_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.BatchedAxesHandle.axes_length" title="Link to this definition">¶</a></dt>
-<dd><p>Length of each axis. Synchronized automatically when assigned.</p>
+<dd><p>Length of each axis.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedAxesHandle.axes_radius">
 <span class="sig-name descname"><span class="pre">axes_radius</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.BatchedAxesHandle.axes_radius" title="Link to this definition">¶</a></dt>
-<dd><p>Radius of each axis. Synchronized automatically when assigned.</p>
+<dd><p>Radius of each axis.</p>
 </dd></dl>
 
 </dd></dl>
@@ -679,43 +680,44 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedGlbHandle.glb_data">
 <span class="sig-name descname"><span class="pre">glb_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></em><a class="headerlink" href="#viser.BatchedGlbHandle.glb_data" title="Link to this definition">¶</a></dt>
-<dd><p>A binary payload containing the GLB data. Synchronized automatically when assigned.</p>
+<dd><p>A binary payload containing the GLB data.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedGlbHandle.cast_shadow">
 <span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.BatchedGlbHandle.cast_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+<dd><p>Whether or not to cast shadows.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedGlbHandle.receive_shadow">
 <span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.BatchedGlbHandle.receive_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+<dd><p>Whether or not to receive shadows.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedGlbHandle.batched_wxyzs">
 <span class="sig-name descname"><span class="pre">batched_wxyzs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedGlbHandle.batched_wxyzs" title="Link to this definition">¶</a></dt>
-<dd><p>Float array of shape (N, 4) representing quaternion rotations. Synchronized automatically when assigned.</p>
+<dd><p>Float array of shape (N, 4) representing quaternion rotations.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedGlbHandle.batched_positions">
 <span class="sig-name descname"><span class="pre">batched_positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedGlbHandle.batched_positions" title="Link to this definition">¶</a></dt>
-<dd><p>Float array of shape (N, 3) representing positions. Synchronized automatically when assigned.</p>
+<dd><p>Float array of shape (N, 3) representing positions.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedGlbHandle.batched_scales">
 <span class="sig-name descname"><span class="pre">batched_scales</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.BatchedGlbHandle.batched_scales" title="Link to this definition">¶</a></dt>
-<dd><p>Float array of shape (N,) or (N,3) representing uniform or per-axis (XYZ) scales. Synchronized automatically when assigned.</p>
+<dd><p>Float array of shape (N,) or (N,3) representing uniform or per-axis
+(XYZ) scales.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedGlbHandle.lod">
 <span class="sig-name descname"><span class="pre">lod</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'auto'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'off'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedGlbHandle.lod" title="Link to this definition">¶</a></dt>
-<dd><p>LOD settings. Either “auto”, “off”, or a tuple of (distance, ratio) pairs. Synchronized automatically when assigned.</p>
+<dd><p>LOD settings. Either “auto”, “off”, or a tuple of (distance, ratio) pairs.</p>
 </dd></dl>
 
 </dd></dl>
@@ -799,85 +801,86 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.vertices">
 <span class="sig-name descname"><span class="pre">vertices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.vertices" title="Link to this definition">¶</a></dt>
-<dd><p>A numpy array of vertex positions. Should have shape (V, 3). Synchronized automatically when assigned.</p>
+<dd><p>A numpy array of vertex positions. Should have shape (V, 3).</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.faces">
 <span class="sig-name descname"><span class="pre">faces</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.uint32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.faces" title="Link to this definition">¶</a></dt>
-<dd><p>A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). Synchronized automatically when assigned.</p>
+<dd><p>A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3).</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.batched_colors">
 <span class="sig-name descname"><span class="pre">batched_colors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.uint8</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.batched_colors" title="Link to this definition">¶</a></dt>
-<dd><p>A numpy array of colors, where each color is represented by RGB integers. Should have shape (N, 3) or (3,). Synchronized automatically when assigned.</p>
+<dd><p>A numpy array of colors, where each color is represented by RGB integers. Should have shape (N, 3) or (3,).</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.wireframe">
 <span class="sig-name descname"><span class="pre">wireframe</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.BatchedMeshHandle.wireframe" title="Link to this definition">¶</a></dt>
-<dd><p>Boolean indicating if the mesh should be rendered as a wireframe. Synchronized automatically when assigned.</p>
+<dd><p>Boolean indicating if the mesh should be rendered as a wireframe.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.opacity">
 <span class="sig-name descname"><span class="pre">opacity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.BatchedMeshHandle.opacity" title="Link to this definition">¶</a></dt>
-<dd><p>Opacity of the mesh. None means opaque. Synchronized automatically when assigned.</p>
+<dd><p>Opacity of the mesh. None means opaque.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.flat_shading">
 <span class="sig-name descname"><span class="pre">flat_shading</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.BatchedMeshHandle.flat_shading" title="Link to this definition">¶</a></dt>
-<dd><p>Whether to do flat shading. Synchronized automatically when assigned.</p>
+<dd><p>Whether to do flat shading.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.side">
 <span class="sig-name descname"><span class="pre">side</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'front'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'back'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'double'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.side" title="Link to this definition">¶</a></dt>
-<dd><p>Side of the surface to render. Synchronized automatically when assigned.</p>
+<dd><p>Side of the surface to render.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.material">
 <span class="sig-name descname"><span class="pre">material</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'standard'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon3'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon5'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.material" title="Link to this definition">¶</a></dt>
-<dd><p>Material type of the mesh. Synchronized automatically when assigned.</p>
+<dd><p>Material type of the mesh.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.cast_shadow">
 <span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.BatchedMeshHandle.cast_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+<dd><p>Whether or not to cast shadows.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.receive_shadow">
 <span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.BatchedMeshHandle.receive_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+<dd><p>Whether or not to receive shadows.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.batched_wxyzs">
 <span class="sig-name descname"><span class="pre">batched_wxyzs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.batched_wxyzs" title="Link to this definition">¶</a></dt>
-<dd><p>Float array of shape (N, 4) representing quaternion rotations. Synchronized automatically when assigned.</p>
+<dd><p>Float array of shape (N, 4) representing quaternion rotations.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.batched_positions">
 <span class="sig-name descname"><span class="pre">batched_positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.batched_positions" title="Link to this definition">¶</a></dt>
-<dd><p>Float array of shape (N, 3) representing positions. Synchronized automatically when assigned.</p>
+<dd><p>Float array of shape (N, 3) representing positions.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.batched_scales">
 <span class="sig-name descname"><span class="pre">batched_scales</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.BatchedMeshHandle.batched_scales" title="Link to this definition">¶</a></dt>
-<dd><p>Float array of shape (N,) or (N,3) representing uniform or per-axis (XYZ) scales. Synchronized automatically when assigned.</p>
+<dd><p>Float array of shape (N,) or (N,3) representing uniform or per-axis
+(XYZ) scales.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle.lod">
 <span class="sig-name descname"><span class="pre">lod</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'auto'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'off'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedMeshHandle.lod" title="Link to this definition">¶</a></dt>
-<dd><p>LOD settings. Either “auto”, “off”, or a tuple of (distance, ratio) pairs. Synchronized automatically when assigned.</p>
+<dd><p>LOD settings. Either “auto”, “off”, or a tuple of (distance, ratio) pairs.</p>
 </dd></dl>
 
 </dd></dl>
@@ -961,55 +964,57 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BoxHandle.dimensions">
 <span class="sig-name descname"><span class="pre">dimensions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BoxHandle.dimensions" title="Link to this definition">¶</a></dt>
-<dd><p>Dimensions of the box (x, y, z). Synchronized automatically when assigned.</p>
+<dd><p>Dimensions of the box (x, y, z).</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BoxHandle.color">
 <span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BoxHandle.color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the box as RGB integers. Synchronized automatically when assigned.</p>
+<dd><p>Color of the box as RGB integers.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BoxHandle.wireframe">
 <span class="sig-name descname"><span class="pre">wireframe</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.BoxHandle.wireframe" title="Link to this definition">¶</a></dt>
-<dd><p>Boolean indicating if the box should be rendered as a wireframe. Synchronized automatically when assigned.</p>
+<dd><p>Boolean indicating if the box should be rendered as a wireframe.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BoxHandle.opacity">
 <span class="sig-name descname"><span class="pre">opacity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.BoxHandle.opacity" title="Link to this definition">¶</a></dt>
-<dd><p>Opacity of the box. None means opaque. Synchronized automatically when assigned.</p>
+<dd><p>Opacity of the box. None means opaque.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BoxHandle.flat_shading">
 <span class="sig-name descname"><span class="pre">flat_shading</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.BoxHandle.flat_shading" title="Link to this definition">¶</a></dt>
-<dd><p>Whether to do flat shading. Synchronized automatically when assigned.</p>
+<dd><p>Whether to do flat shading.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BoxHandle.side">
 <span class="sig-name descname"><span class="pre">side</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'front'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'back'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'double'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BoxHandle.side" title="Link to this definition">¶</a></dt>
-<dd><p>Side of the surface to render. Synchronized automatically when assigned.</p>
+<dd><p>Side of the surface to render.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BoxHandle.material">
 <span class="sig-name descname"><span class="pre">material</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'standard'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon3'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon5'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BoxHandle.material" title="Link to this definition">¶</a></dt>
-<dd><p>Material type of the box. Synchronized automatically when assigned.</p>
+<dd><p>Material type of the box.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BoxHandle.cast_shadow">
 <span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.BoxHandle.cast_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+<dd><p>Whether or not to cast shadows.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.BoxHandle.receive_shadow">
-<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.BoxHandle.receive_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.BoxHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether to receive shadows. If True, receives shadows normally. If
+False, no shadows. If a float (0-1), shadows are rendered with a fixed
+opacity regardless of lighting conditions.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1114,7 +1119,8 @@ control of the frustum’s dimensions.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.variant">
 <span class="sig-name descname"><span class="pre">variant</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'wireframe'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'filled'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'wireframe'</span></em><a class="headerlink" href="#viser.CameraFrustumHandle.variant" title="Link to this definition">¶</a></dt>
-<dd><p>Variant of the frustum visualization. ‘wireframe’ shows lines only, ‘filled’ adds semi-transparent faces. Synchronized automatically when assigned.</p>
+<dd><p>Variant of the frustum visualization. ‘wireframe’ shows lines only,
+‘filled’ adds semi-transparent faces.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1133,43 +1139,45 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.fov">
 <span class="sig-name descname"><span class="pre">fov</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.CameraFrustumHandle.fov" title="Link to this definition">¶</a></dt>
-<dd><p>Field of view of the camera (in radians). Synchronized automatically when assigned.</p>
+<dd><p>Field of view of the camera (in radians).</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.aspect">
 <span class="sig-name descname"><span class="pre">aspect</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.CameraFrustumHandle.aspect" title="Link to this definition">¶</a></dt>
-<dd><p>Aspect ratio of the camera (width over height). Synchronized automatically when assigned.</p>
+<dd><p>Aspect ratio of the camera (width over height). Synchronized</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.scale">
 <span class="sig-name descname"><span class="pre">scale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.CameraFrustumHandle.scale" title="Link to this definition">¶</a></dt>
-<dd><p>Scale factor for the size of the frustum. Synchronized automatically when assigned.</p>
+<dd><p>Scale factor for the size of the frustum.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.line_width">
 <span class="sig-name descname"><span class="pre">line_width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.CameraFrustumHandle.line_width" title="Link to this definition">¶</a></dt>
-<dd><p>Width of the frustum lines. Synchronized automatically when assigned.</p>
+<dd><p>Width of the frustum lines.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.color">
 <span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.CameraFrustumHandle.color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the frustum as RGB integers. Synchronized automatically when assigned.</p>
+<dd><p>Color of the frustum as RGB integers.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.cast_shadow">
 <span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.CameraFrustumHandle.cast_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+<dd><p>Whether or not to cast shadows.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.receive_shadow">
-<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.CameraFrustumHandle.receive_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.CameraFrustumHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether to receive shadows. If True, receives shadows normally. If
+False, no shadows. If a float (0-1), shadows are rendered with a fixed
+opacity regardless of lighting conditions.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1218,19 +1226,19 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.DirectionalLightHandle.color">
 <span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.DirectionalLightHandle.color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the directional light. Synchronized automatically when assigned.</p>
+<dd><p>Color of the directional light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.DirectionalLightHandle.intensity">
 <span class="sig-name descname"><span class="pre">intensity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.DirectionalLightHandle.intensity" title="Link to this definition">¶</a></dt>
-<dd><p>Intensity of the directional light. Synchronized automatically when assigned.</p>
+<dd><p>Intensity of the directional light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.DirectionalLightHandle.cast_shadow">
 <span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.DirectionalLightHandle.cast_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>If set to true mesh will cast a shadow. Synchronized automatically when assigned.</p>
+<dd><p>If set to true mesh will cast a shadow.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1314,31 +1322,32 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.FrameHandle.show_axes">
 <span class="sig-name descname"><span class="pre">show_axes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.FrameHandle.show_axes" title="Link to this definition">¶</a></dt>
-<dd><p>Boolean to indicate whether to show the frame as a set of axes + origin sphere. Synchronized automatically when assigned.</p>
+<dd><p>Boolean to indicate whether to show the frame as a set of axes +
+origin sphere.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.FrameHandle.axes_length">
 <span class="sig-name descname"><span class="pre">axes_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.FrameHandle.axes_length" title="Link to this definition">¶</a></dt>
-<dd><p>Length of each axis. Synchronized automatically when assigned.</p>
+<dd><p>Length of each axis.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.FrameHandle.axes_radius">
 <span class="sig-name descname"><span class="pre">axes_radius</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.FrameHandle.axes_radius" title="Link to this definition">¶</a></dt>
-<dd><p>Radius of each axis. Synchronized automatically when assigned.</p>
+<dd><p>Radius of each axis.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.FrameHandle.origin_radius">
 <span class="sig-name descname"><span class="pre">origin_radius</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.FrameHandle.origin_radius" title="Link to this definition">¶</a></dt>
-<dd><p>Radius of the origin sphere. Synchronized automatically when assigned.</p>
+<dd><p>Radius of the origin sphere.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.FrameHandle.origin_color">
 <span class="sig-name descname"><span class="pre">origin_color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.FrameHandle.origin_color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the origin sphere as RGB integers. Synchronized automatically when assigned.</p>
+<dd><p>Color of the origin sphere as RGB integers.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1516,25 +1525,27 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GlbHandle.glb_data">
 <span class="sig-name descname"><span class="pre">glb_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></em><a class="headerlink" href="#viser.GlbHandle.glb_data" title="Link to this definition">¶</a></dt>
-<dd><p>A binary payload containing the GLB data. Synchronized automatically when assigned.</p>
+<dd><p>A binary payload containing the GLB data.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GlbHandle.scale">
 <span class="sig-name descname"><span class="pre">scale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.GlbHandle.scale" title="Link to this definition">¶</a></dt>
-<dd><p>A scale for resizing the GLB asset. Synchronized automatically when assigned.</p>
+<dd><p>A scale for resizing the GLB asset.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GlbHandle.cast_shadow">
 <span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.GlbHandle.cast_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+<dd><p>Whether or not to cast shadows.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GlbHandle.receive_shadow">
-<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.GlbHandle.receive_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.GlbHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether to receive shadows. If True, receives shadows normally. If
+False, no shadows. If a float (0-1), shadows are rendered with a fixed
+opacity regardless of lighting conditions.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1583,73 +1594,73 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GridHandle.width">
 <span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.GridHandle.width" title="Link to this definition">¶</a></dt>
-<dd><p>Width of the grid. Synchronized automatically when assigned.</p>
+<dd><p>Width of the grid.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GridHandle.height">
 <span class="sig-name descname"><span class="pre">height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.GridHandle.height" title="Link to this definition">¶</a></dt>
-<dd><p>Height of the grid. Synchronized automatically when assigned.</p>
+<dd><p>Height of the grid.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GridHandle.width_segments">
 <span class="sig-name descname"><span class="pre">width_segments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#viser.GridHandle.width_segments" title="Link to this definition">¶</a></dt>
-<dd><p>Number of segments along the width. Synchronized automatically when assigned.</p>
+<dd><p>Number of segments along the width.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GridHandle.height_segments">
 <span class="sig-name descname"><span class="pre">height_segments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#viser.GridHandle.height_segments" title="Link to this definition">¶</a></dt>
-<dd><p>Number of segments along the height. Synchronized automatically when assigned.</p>
+<dd><p>Number of segments along the height.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GridHandle.plane">
 <span class="sig-name descname"><span class="pre">plane</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'xz'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'xy'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'yx'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'yz'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'zx'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'zy'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.GridHandle.plane" title="Link to this definition">¶</a></dt>
-<dd><p>The plane in which the grid is oriented. Synchronized automatically when assigned.</p>
+<dd><p>The plane in which the grid is oriented.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GridHandle.cell_color">
 <span class="sig-name descname"><span class="pre">cell_color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.GridHandle.cell_color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the grid cells as RGB integers. Synchronized automatically when assigned.</p>
+<dd><p>Color of the grid cells as RGB integers.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GridHandle.cell_thickness">
 <span class="sig-name descname"><span class="pre">cell_thickness</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.GridHandle.cell_thickness" title="Link to this definition">¶</a></dt>
-<dd><p>Thickness of the grid lines. Synchronized automatically when assigned.</p>
+<dd><p>Thickness of the grid lines.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GridHandle.cell_size">
 <span class="sig-name descname"><span class="pre">cell_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.GridHandle.cell_size" title="Link to this definition">¶</a></dt>
-<dd><p>Size of each cell in the grid. Synchronized automatically when assigned.</p>
+<dd><p>Size of each cell in the grid.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GridHandle.section_color">
 <span class="sig-name descname"><span class="pre">section_color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.GridHandle.section_color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the grid sections as RGB integers. Synchronized automatically when assigned.</p>
+<dd><p>Color of the grid sections as RGB integers.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GridHandle.section_thickness">
 <span class="sig-name descname"><span class="pre">section_thickness</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.GridHandle.section_thickness" title="Link to this definition">¶</a></dt>
-<dd><p>Thickness of the section lines. Synchronized automatically when assigned.</p>
+<dd><p>Thickness of the section lines.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GridHandle.section_size">
 <span class="sig-name descname"><span class="pre">section_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.GridHandle.section_size" title="Link to this definition">¶</a></dt>
-<dd><p>Size of each section in the grid. Synchronized automatically when assigned.</p>
+<dd><p>Size of each section in the grid.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GridHandle.shadow_opacity">
 <span class="sig-name descname"><span class="pre">shadow_opacity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.GridHandle.shadow_opacity" title="Link to this definition">¶</a></dt>
-<dd><p>If true, shadows are casted onto the grid plane. Synchronized automatically when assigned.</p>
+<dd><p>If true, shadows are casted onto the grid plane. Synchronized</p>
 </dd></dl>
 
 </dd></dl>
@@ -1687,13 +1698,13 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.Gui3dContainerHandle.order">
 <span class="sig-name descname"><span class="pre">order</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.Gui3dContainerHandle.order" title="Link to this definition">¶</a></dt>
-<dd><p>Order value for arranging GUI elements. Synchronized automatically when assigned.</p>
+<dd><p>Order value for arranging GUI elements.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.Gui3dContainerHandle.container_uuid">
 <span class="sig-name descname"><span class="pre">container_uuid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#viser.Gui3dContainerHandle.container_uuid" title="Link to this definition">¶</a></dt>
-<dd><p>Identifier for the container. Synchronized automatically when assigned.</p>
+<dd><p>Identifier for the container.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1753,19 +1764,19 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.HemisphereLightHandle.sky_color">
 <span class="sig-name descname"><span class="pre">sky_color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.HemisphereLightHandle.sky_color" title="Link to this definition">¶</a></dt>
-<dd><p>Sky color of the hemisphere light. Synchronized automatically when assigned.</p>
+<dd><p>Sky color of the hemisphere light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.HemisphereLightHandle.ground_color">
 <span class="sig-name descname"><span class="pre">ground_color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.HemisphereLightHandle.ground_color" title="Link to this definition">¶</a></dt>
-<dd><p>Ground color of the hemisphere light. Synchronized automatically when assigned.</p>
+<dd><p>Ground color of the hemisphere light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.HemisphereLightHandle.intensity">
 <span class="sig-name descname"><span class="pre">intensity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.HemisphereLightHandle.intensity" title="Link to this definition">¶</a></dt>
-<dd><p>Intensity of the hemisphere light. Synchronized automatically when assigned.</p>
+<dd><p>Intensity of the hemisphere light.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1849,61 +1860,63 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.IcosphereHandle.radius">
 <span class="sig-name descname"><span class="pre">radius</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.IcosphereHandle.radius" title="Link to this definition">¶</a></dt>
-<dd><p>Radius of the icosphere. Synchronized automatically when assigned.</p>
+<dd><p>Radius of the icosphere.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.IcosphereHandle.subdivisions">
 <span class="sig-name descname"><span class="pre">subdivisions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#viser.IcosphereHandle.subdivisions" title="Link to this definition">¶</a></dt>
-<dd><p>Number of subdivisions to use when creating the icosphere. Synchronized automatically when assigned.</p>
+<dd><p>Number of subdivisions to use when creating the icosphere. Synchronized</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.IcosphereHandle.color">
 <span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.IcosphereHandle.color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the icosphere as RGB integers. Synchronized automatically when assigned.</p>
+<dd><p>Color of the icosphere as RGB integers.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.IcosphereHandle.wireframe">
 <span class="sig-name descname"><span class="pre">wireframe</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.IcosphereHandle.wireframe" title="Link to this definition">¶</a></dt>
-<dd><p>Boolean indicating if the icosphere should be rendered as a wireframe. Synchronized automatically when assigned.</p>
+<dd><p>Boolean indicating if the icosphere should be rendered as a wireframe.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.IcosphereHandle.opacity">
 <span class="sig-name descname"><span class="pre">opacity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.IcosphereHandle.opacity" title="Link to this definition">¶</a></dt>
-<dd><p>Opacity of the icosphere. None means opaque. Synchronized automatically when assigned.</p>
+<dd><p>Opacity of the icosphere. None means opaque.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.IcosphereHandle.flat_shading">
 <span class="sig-name descname"><span class="pre">flat_shading</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.IcosphereHandle.flat_shading" title="Link to this definition">¶</a></dt>
-<dd><p>Whether to do flat shading. Synchronized automatically when assigned.</p>
+<dd><p>Whether to do flat shading.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.IcosphereHandle.side">
 <span class="sig-name descname"><span class="pre">side</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'front'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'back'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'double'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.IcosphereHandle.side" title="Link to this definition">¶</a></dt>
-<dd><p>Side of the surface to render. Synchronized automatically when assigned.</p>
+<dd><p>Side of the surface to render.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.IcosphereHandle.material">
 <span class="sig-name descname"><span class="pre">material</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'standard'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon3'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon5'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.IcosphereHandle.material" title="Link to this definition">¶</a></dt>
-<dd><p>Material type of the icosphere. Synchronized automatically when assigned.</p>
+<dd><p>Material type of the icosphere.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.IcosphereHandle.cast_shadow">
 <span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.IcosphereHandle.cast_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+<dd><p>Whether or not to cast shadows.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.IcosphereHandle.receive_shadow">
-<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.IcosphereHandle.receive_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.IcosphereHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether to receive shadows. If True, receives shadows normally. If
+False, no shadows. If a float (0-1), shadows are rendered with a fixed
+opacity regardless of lighting conditions.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1993,25 +2006,27 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ImageHandle.render_width">
 <span class="sig-name descname"><span class="pre">render_width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.ImageHandle.render_width" title="Link to this definition">¶</a></dt>
-<dd><p>Width at which the image should be rendered in the scene. Synchronized automatically when assigned.</p>
+<dd><p>Width at which the image should be rendered in the scene.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ImageHandle.render_height">
 <span class="sig-name descname"><span class="pre">render_height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.ImageHandle.render_height" title="Link to this definition">¶</a></dt>
-<dd><p>Height at which the image should be rendered in the scene. Synchronized automatically when assigned.</p>
+<dd><p>Height at which the image should be rendered in the scene.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ImageHandle.cast_shadow">
 <span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.ImageHandle.cast_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+<dd><p>Whether or not to cast shadows.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ImageHandle.receive_shadow">
-<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.ImageHandle.receive_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.ImageHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether to receive shadows. If True, receives shadows normally. If
+False, no shadows. If a float (0-1), shadows are rendered with a fixed
+opacity regardless of lighting conditions.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -2066,7 +2081,7 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.LabelHandle.text">
 <span class="sig-name descname"><span class="pre">text</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#viser.LabelHandle.text" title="Link to this definition">¶</a></dt>
-<dd><p>Text content of the label. Synchronized automatically when assigned.</p>
+<dd><p>Text content of the label.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2116,20 +2131,19 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dt class="sig sig-object py" id="viser.LineSegmentsHandle.points">
 <span class="sig-name descname"><span class="pre">points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.LineSegmentsHandle.points" title="Link to this definition">¶</a></dt>
 <dd><p>A numpy array of shape (N, 2, 3) containing a batched set of line
-segments. Synchronized automatically when assigned.</p>
+segments.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.LineSegmentsHandle.line_width">
 <span class="sig-name descname"><span class="pre">line_width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.LineSegmentsHandle.line_width" title="Link to this definition">¶</a></dt>
-<dd><p>Width of the lines. Synchronized automatically when assigned.</p>
+<dd><p>Width of the lines.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.LineSegmentsHandle.colors">
 <span class="sig-name descname"><span class="pre">colors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.uint8</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.LineSegmentsHandle.colors" title="Link to this definition">¶</a></dt>
-<dd><p>Numpy array of shape (N, 2, 3) containing a color for each point.
-Synchronized automatically when assigned.</p>
+<dd><p>Numpy array of shape (N, 2, 3) containing a color for each point.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2213,61 +2227,64 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshHandle.vertices">
 <span class="sig-name descname"><span class="pre">vertices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshHandle.vertices" title="Link to this definition">¶</a></dt>
-<dd><p>A numpy array of vertex positions. Should have shape (V, 3). Synchronized automatically when assigned.</p>
+<dd><p>A numpy array of vertex positions. Should have shape (V, 3).</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshHandle.faces">
 <span class="sig-name descname"><span class="pre">faces</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.uint32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshHandle.faces" title="Link to this definition">¶</a></dt>
-<dd><p>A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). Synchronized automatically when assigned.</p>
+<dd><p>A numpy array of faces, where each face is represented by indices of
+vertices. Should have shape (F, 3).</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshHandle.color">
 <span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshHandle.color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the mesh as RGB integers. Synchronized automatically when assigned.</p>
+<dd><p>Color of the mesh as RGB integers.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshHandle.wireframe">
 <span class="sig-name descname"><span class="pre">wireframe</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.MeshHandle.wireframe" title="Link to this definition">¶</a></dt>
-<dd><p>Boolean indicating if the mesh should be rendered as a wireframe. Synchronized automatically when assigned.</p>
+<dd><p>Boolean indicating if the mesh should be rendered as a wireframe.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshHandle.opacity">
 <span class="sig-name descname"><span class="pre">opacity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.MeshHandle.opacity" title="Link to this definition">¶</a></dt>
-<dd><p>Opacity of the mesh. None means opaque. Synchronized automatically when assigned.</p>
+<dd><p>Opacity of the mesh. None means opaque.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshHandle.flat_shading">
 <span class="sig-name descname"><span class="pre">flat_shading</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.MeshHandle.flat_shading" title="Link to this definition">¶</a></dt>
-<dd><p>Whether to do flat shading. Synchronized automatically when assigned.</p>
+<dd><p>Whether to do flat shading.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshHandle.side">
 <span class="sig-name descname"><span class="pre">side</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'front'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'back'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'double'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshHandle.side" title="Link to this definition">¶</a></dt>
-<dd><p>Side of the surface to render. Synchronized automatically when assigned.</p>
+<dd><p>Side of the surface to render.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshHandle.material">
 <span class="sig-name descname"><span class="pre">material</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'standard'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon3'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon5'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshHandle.material" title="Link to this definition">¶</a></dt>
-<dd><p>Material type of the mesh. Synchronized automatically when assigned.</p>
+<dd><p>Material type of the mesh.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshHandle.cast_shadow">
 <span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.MeshHandle.cast_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+<dd><p>Whether or not to cast shadows.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshHandle.receive_shadow">
-<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.MeshHandle.receive_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.MeshHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether to receive shadows. If True, receives shadows normally. If
+False, no shadows. If a float (0-1), shadows are rendered with a fixed
+opacity regardless of lighting conditions.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2371,85 +2388,88 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.bone_wxyzs">
 <span class="sig-name descname"><span class="pre">bone_wxyzs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.bone_wxyzs" title="Link to this definition">¶</a></dt>
-<dd><p>Array of quaternions representing bone orientations (B, 4). Synchronized automatically when assigned.</p>
+<dd><p>Array of quaternions representing bone orientations (B, 4). Synchronized</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.bone_positions">
 <span class="sig-name descname"><span class="pre">bone_positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.bone_positions" title="Link to this definition">¶</a></dt>
-<dd><p>Array of positions representing bone positions (B, 3). Synchronized automatically when assigned.</p>
+<dd><p>Array of positions representing bone positions (B, 3). Synchronized</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.skin_indices">
 <span class="sig-name descname"><span class="pre">skin_indices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.uint16</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.skin_indices" title="Link to this definition">¶</a></dt>
-<dd><p>Array of skin indices. Should have shape (V, 4). Synchronized automatically when assigned.</p>
+<dd><p>Array of skin indices. Should have shape (V, 4). Synchronized</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.skin_weights">
 <span class="sig-name descname"><span class="pre">skin_weights</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.skin_weights" title="Link to this definition">¶</a></dt>
-<dd><p>Array of skin weights. Should have shape (V, 4). Synchronized automatically when assigned.</p>
+<dd><p>Array of skin weights. Should have shape (V, 4). Synchronized</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.cast_shadow">
 <span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.MeshSkinnedHandle.cast_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to cast shadows. Synchronized automatically when assigned.</p>
+<dd><p>Whether or not to cast shadows.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.receive_shadow">
-<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.MeshSkinnedHandle.receive_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>Whether or not to receive shadows. Synchronized automatically when assigned.</p>
+<span class="sig-name descname"><span class="pre">receive_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.MeshSkinnedHandle.receive_shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Whether to receive shadows. If True, receives shadows normally. If
+False, no shadows. If a float (0-1), shadows are rendered with a fixed
+opacity regardless of lighting conditions.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.vertices">
 <span class="sig-name descname"><span class="pre">vertices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.vertices" title="Link to this definition">¶</a></dt>
-<dd><p>A numpy array of vertex positions. Should have shape (V, 3). Synchronized automatically when assigned.</p>
+<dd><p>A numpy array of vertex positions. Should have shape (V, 3).</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.faces">
 <span class="sig-name descname"><span class="pre">faces</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.uint32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.faces" title="Link to this definition">¶</a></dt>
-<dd><p>A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). Synchronized automatically when assigned.</p>
+<dd><p>A numpy array of faces, where each face is represented by indices of
+vertices. Should have shape (F, 3).</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.color">
 <span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the mesh as RGB integers. Synchronized automatically when assigned.</p>
+<dd><p>Color of the mesh as RGB integers.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.wireframe">
 <span class="sig-name descname"><span class="pre">wireframe</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.MeshSkinnedHandle.wireframe" title="Link to this definition">¶</a></dt>
-<dd><p>Boolean indicating if the mesh should be rendered as a wireframe. Synchronized automatically when assigned.</p>
+<dd><p>Boolean indicating if the mesh should be rendered as a wireframe.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.opacity">
 <span class="sig-name descname"><span class="pre">opacity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.MeshSkinnedHandle.opacity" title="Link to this definition">¶</a></dt>
-<dd><p>Opacity of the mesh. None means opaque. Synchronized automatically when assigned.</p>
+<dd><p>Opacity of the mesh. None means opaque.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.flat_shading">
 <span class="sig-name descname"><span class="pre">flat_shading</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.MeshSkinnedHandle.flat_shading" title="Link to this definition">¶</a></dt>
-<dd><p>Whether to do flat shading. Synchronized automatically when assigned.</p>
+<dd><p>Whether to do flat shading.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.side">
 <span class="sig-name descname"><span class="pre">side</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'front'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'back'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'double'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.side" title="Link to this definition">¶</a></dt>
-<dd><p>Side of the surface to render. Synchronized automatically when assigned.</p>
+<dd><p>Side of the surface to render.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.material">
 <span class="sig-name descname"><span class="pre">material</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'standard'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon3'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon5'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.material" title="Link to this definition">¶</a></dt>
-<dd><p>Material type of the mesh. Synchronized automatically when assigned.</p>
+<dd><p>Material type of the mesh.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2498,25 +2518,25 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.PointCloudHandle.points">
 <span class="sig-name descname"><span class="pre">points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float16</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.PointCloudHandle.points" title="Link to this definition">¶</a></dt>
-<dd><p>Location of points. Should have shape (N, 3). Synchronized automatically when assigned.</p>
+<dd><p>Location of points. Should have shape (N, 3). Synchronized</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.PointCloudHandle.colors">
 <span class="sig-name descname"><span class="pre">colors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.uint8</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.PointCloudHandle.colors" title="Link to this definition">¶</a></dt>
-<dd><p>Colors of points. Should have shape (N, 3) or (3,). Synchronized automatically when assigned.</p>
+<dd><p>Colors of points. Should have shape (N, 3) or (3,). Synchronized</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.PointCloudHandle.point_size">
 <span class="sig-name descname"><span class="pre">point_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.PointCloudHandle.point_size" title="Link to this definition">¶</a></dt>
-<dd><p>Size of each point. Synchronized automatically when assigned.</p>
+<dd><p>Size of each point.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.PointCloudHandle.point_shape">
 <span class="sig-name descname"><span class="pre">point_shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'square'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'diamond'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'circle'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'rounded'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'sparkle'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.PointCloudHandle.point_shape" title="Link to this definition">¶</a></dt>
-<dd><p>Shape to draw each point. Synchronized automatically when assigned.</p>
+<dd><p>Shape to draw each point.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2524,7 +2544,7 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <span class="sig-name descname"><span class="pre">precision</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'float16'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'float32'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.PointCloudHandle.precision" title="Link to this definition">¶</a></dt>
 <dd><p>Precision of the point cloud. Assignments to <cite>points</cite> are automatically casted
 based on the current precision value. Updates to <cite>points</cite> should therefore happen
-<em>after</em> updates to <cite>precision</cite>. Synchronized automatically when assigned.</p>
+<em>after</em> updates to <cite>precision</cite>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2573,31 +2593,31 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.PointLightHandle.color">
 <span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.PointLightHandle.color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the point light. Synchronized automatically when assigned.</p>
+<dd><p>Color of the point light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.PointLightHandle.intensity">
 <span class="sig-name descname"><span class="pre">intensity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.PointLightHandle.intensity" title="Link to this definition">¶</a></dt>
-<dd><p>Intensity of the point light. Synchronized automatically when assigned.</p>
+<dd><p>Intensity of the point light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.PointLightHandle.distance">
 <span class="sig-name descname"><span class="pre">distance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.PointLightHandle.distance" title="Link to this definition">¶</a></dt>
-<dd><p>Distance of the point light. Synchronized automatically when assigned.</p>
+<dd><p>Distance of the point light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.PointLightHandle.decay">
 <span class="sig-name descname"><span class="pre">decay</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.PointLightHandle.decay" title="Link to this definition">¶</a></dt>
-<dd><p>Decay of the point light. Synchronized automatically when assigned.</p>
+<dd><p>Decay of the point light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.PointLightHandle.cast_shadow">
 <span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.PointLightHandle.cast_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>If set to true mesh will cast a shadow. Synchronized automatically when assigned.</p>
+<dd><p>If set to true mesh will cast a shadow.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2646,25 +2666,25 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.RectAreaLightHandle.color">
 <span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.RectAreaLightHandle.color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the rectangular area light. Synchronized automatically when assigned.</p>
+<dd><p>Color of the rectangular area light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.RectAreaLightHandle.intensity">
 <span class="sig-name descname"><span class="pre">intensity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.RectAreaLightHandle.intensity" title="Link to this definition">¶</a></dt>
-<dd><p>Intensity of the rectangular area light. Synchronized automatically when assigned.</p>
+<dd><p>Intensity of the rectangular area light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.RectAreaLightHandle.width">
 <span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.RectAreaLightHandle.width" title="Link to this definition">¶</a></dt>
-<dd><p>Width of the rectangular area light. Synchronized automatically when assigned.</p>
+<dd><p>Width of the rectangular area light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.RectAreaLightHandle.height">
 <span class="sig-name descname"><span class="pre">height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.RectAreaLightHandle.height" title="Link to this definition">¶</a></dt>
-<dd><p>Height of the rectangular area light. Synchronized automatically when assigned.</p>
+<dd><p>Height of the rectangular area light.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2770,44 +2790,43 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SplineCatmullRomHandle.points">
 <span class="sig-name descname"><span class="pre">points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCatmullRomHandle.points" title="Link to this definition">¶</a></dt>
-<dd><p>Array with shape (N, 3) defining the spline’s path. Synchronized
-automatically when assigned.</p>
+<dd><p>Array with shape (N, 3) defining the spline’s path. Synchronized</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SplineCatmullRomHandle.curve_type">
 <span class="sig-name descname"><span class="pre">curve_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'centripetal'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'chordal'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'catmullrom'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCatmullRomHandle.curve_type" title="Link to this definition">¶</a></dt>
-<dd><p>Type of the curve (‘centripetal’, ‘chordal’, ‘catmullrom’). Synchronized automatically when assigned.</p>
+<dd><p>Type of the curve (‘centripetal’, ‘chordal’, ‘catmullrom’).</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SplineCatmullRomHandle.tension">
 <span class="sig-name descname"><span class="pre">tension</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.SplineCatmullRomHandle.tension" title="Link to this definition">¶</a></dt>
-<dd><p>Tension of the curve. Affects the tightness of the curve. Synchronized automatically when assigned.</p>
+<dd><p>Tension of the curve. Affects the tightness of the curve.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SplineCatmullRomHandle.closed">
 <span class="sig-name descname"><span class="pre">closed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.SplineCatmullRomHandle.closed" title="Link to this definition">¶</a></dt>
-<dd><p>Boolean indicating if the spline is closed (forms a loop). Synchronized automatically when assigned.</p>
+<dd><p>Boolean indicating if the spline is closed (forms a loop).</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SplineCatmullRomHandle.line_width">
 <span class="sig-name descname"><span class="pre">line_width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.SplineCatmullRomHandle.line_width" title="Link to this definition">¶</a></dt>
-<dd><p>Width of the spline line. Synchronized automatically when assigned.</p>
+<dd><p>Width of the spline line.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SplineCatmullRomHandle.color">
 <span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCatmullRomHandle.color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the spline as RGB integers. Synchronized automatically when assigned.</p>
+<dd><p>Color of the spline as RGB integers.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SplineCatmullRomHandle.segments">
 <span class="sig-name descname"><span class="pre">segments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.SplineCatmullRomHandle.segments" title="Link to this definition">¶</a></dt>
-<dd><p>Number of segments to divide the spline into. Synchronized automatically when assigned.</p>
+<dd><p>Number of segments to divide the spline into.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2870,32 +2889,31 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SplineCubicBezierHandle.points">
 <span class="sig-name descname"><span class="pre">points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCubicBezierHandle.points" title="Link to this definition">¶</a></dt>
-<dd><p>Array of shape (N, 3) defining the spline’s key points. Synchronized
-automatically when assigned.</p>
+<dd><p>Array of shape (N, 3) defining the spline’s key points. Synchronized</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SplineCubicBezierHandle.control_points">
 <span class="sig-name descname"><span class="pre">control_points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCubicBezierHandle.control_points" title="Link to this definition">¶</a></dt>
-<dd><p>Array of shape (2*N-2, 3) defining control points for Bezier curve shaping. Synchronized automatically when assigned.</p>
+<dd><p>Array of shape (2*N-2, 3) defining control points for Bezier curve shaping.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SplineCubicBezierHandle.line_width">
 <span class="sig-name descname"><span class="pre">line_width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.SplineCubicBezierHandle.line_width" title="Link to this definition">¶</a></dt>
-<dd><p>Width of the spline line. Synchronized automatically when assigned.</p>
+<dd><p>Width of the spline line.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SplineCubicBezierHandle.color">
 <span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SplineCubicBezierHandle.color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the spline as RGB integers. Synchronized automatically when assigned.</p>
+<dd><p>Color of the spline as RGB integers.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SplineCubicBezierHandle.segments">
 <span class="sig-name descname"><span class="pre">segments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.SplineCubicBezierHandle.segments" title="Link to this definition">¶</a></dt>
-<dd><p>Number of segments to divide the spline into. Synchronized automatically when assigned.</p>
+<dd><p>Number of segments to divide the spline into.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2944,43 +2962,43 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SpotLightHandle.color">
 <span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SpotLightHandle.color" title="Link to this definition">¶</a></dt>
-<dd><p>Color of the spot light. Synchronized automatically when assigned.</p>
+<dd><p>Color of the spot light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SpotLightHandle.intensity">
 <span class="sig-name descname"><span class="pre">intensity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.SpotLightHandle.intensity" title="Link to this definition">¶</a></dt>
-<dd><p>Intensity of the spot light. Synchronized automatically when assigned.</p>
+<dd><p>Intensity of the spot light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SpotLightHandle.distance">
 <span class="sig-name descname"><span class="pre">distance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.SpotLightHandle.distance" title="Link to this definition">¶</a></dt>
-<dd><p>Distance of the spot light. Synchronized automatically when assigned.</p>
+<dd><p>Distance of the spot light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SpotLightHandle.angle">
 <span class="sig-name descname"><span class="pre">angle</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.SpotLightHandle.angle" title="Link to this definition">¶</a></dt>
-<dd><p>Angle of the spot light. Synchronized automatically when assigned.</p>
+<dd><p>Angle of the spot light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SpotLightHandle.penumbra">
 <span class="sig-name descname"><span class="pre">penumbra</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.SpotLightHandle.penumbra" title="Link to this definition">¶</a></dt>
-<dd><p>Penumbra of the spot light. Synchronized automatically when assigned.</p>
+<dd><p>Penumbra of the spot light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SpotLightHandle.decay">
 <span class="sig-name descname"><span class="pre">decay</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.SpotLightHandle.decay" title="Link to this definition">¶</a></dt>
-<dd><p>Decay of the spot light. Synchronized automatically when assigned.</p>
+<dd><p>Decay of the spot light.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SpotLightHandle.cast_shadow">
 <span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.SpotLightHandle.cast_shadow" title="Link to this definition">¶</a></dt>
-<dd><p>If set to true mesh will cast a shadow. Synchronized automatically when assigned.</p>
+<dd><p>If set to true mesh will cast a shadow.</p>
 </dd></dl>
 
 </dd></dl>
@@ -3018,61 +3036,58 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.scale">
 <span class="sig-name descname"><span class="pre">scale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.TransformControlsHandle.scale" title="Link to this definition">¶</a></dt>
-<dd><p>Scale of the transform controls. Synchronized automatically when assigned.</p>
+<dd><p>Scale of the transform controls.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.line_width">
 <span class="sig-name descname"><span class="pre">line_width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.TransformControlsHandle.line_width" title="Link to this definition">¶</a></dt>
-<dd><p>Width of the lines used in the gizmo. Synchronized automatically when assigned.</p>
+<dd><p>Width of the lines used in the gizmo.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.fixed">
 <span class="sig-name descname"><span class="pre">fixed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.TransformControlsHandle.fixed" title="Link to this definition">¶</a></dt>
-<dd><p>Boolean indicating if the gizmo should be fixed in position. Synchronized automatically when assigned.</p>
+<dd><p>Boolean indicating if the gizmo should be fixed in position.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.active_axes">
 <span class="sig-name descname"><span class="pre">active_axes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.TransformControlsHandle.active_axes" title="Link to this definition">¶</a></dt>
-<dd><p>Tuple of booleans indicating active axes. Synchronized automatically when assigned.</p>
+<dd><p>Tuple of booleans indicating active axes.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.disable_axes">
 <span class="sig-name descname"><span class="pre">disable_axes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.TransformControlsHandle.disable_axes" title="Link to this definition">¶</a></dt>
 <dd><p>Tuple of booleans indicating if axes are disabled. These are used for
-translation in the X, Y, or Z directions. Synchronized automatically when
-assigned.</p>
+translation in the X, Y, or Z directions.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.disable_sliders">
 <span class="sig-name descname"><span class="pre">disable_sliders</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.TransformControlsHandle.disable_sliders" title="Link to this definition">¶</a></dt>
 <dd><p>Tuple of booleans indicating if sliders are disabled. These are used for
-translation on the XY, YZ, or XZ planes. Synchronized automatically when
-assigned.</p>
+translation on the XY, YZ, or XZ planes.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.disable_rotations">
 <span class="sig-name descname"><span class="pre">disable_rotations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.TransformControlsHandle.disable_rotations" title="Link to this definition">¶</a></dt>
 <dd><p>Tuple of booleans indicating if rotations are disabled. These are used
-for rotation around the X, Y, or Z axes. Synchronized automatically when
-assigned.</p>
+for rotation around the X, Y, or Z axes.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.translation_limits">
 <span class="sig-name descname"><span class="pre">translation_limits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.TransformControlsHandle.translation_limits" title="Link to this definition">¶</a></dt>
-<dd><p>Limits for translation. Synchronized automatically when assigned.</p>
+<dd><p>Limits for translation.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.rotation_limits">
 <span class="sig-name descname"><span class="pre">rotation_limits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.TransformControlsHandle.rotation_limits" title="Link to this definition">¶</a></dt>
-<dd><p>Limits for rotation. Synchronized automatically when assigned.</p>
+<dd><p>Limits for rotation.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3080,13 +3095,13 @@ assigned.</p>
 <span class="sig-name descname"><span class="pre">depth_test</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.TransformControlsHandle.depth_test" title="Link to this definition">¶</a></dt>
 <dd><p>Boolean indicating if depth testing should be used when rendering.
 Setting to False can be used to render the gizmo even when occluded by
-other objects. Synchronized automatically when assigned.</p>
+other objects.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.opacity">
 <span class="sig-name descname"><span class="pre">opacity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.TransformControlsHandle.opacity" title="Link to this definition">¶</a></dt>
-<dd><p>Opacity of the gizmo. Synchronized automatically when assigned.</p>
+<dd><p>Opacity of the gizmo.</p>
 </dd></dl>
 
 <dl class="py property">
