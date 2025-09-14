@@ -213,12 +213,7 @@ function createObjectFactory(
         makeObject: (ref, children) => (
           <group ref={ref}>
             <Grid
-              args={[
-                message.props.width,
-                message.props.height,
-                message.props.width_segments,
-                message.props.height_segments,
-              ]}
+              args={[message.props.width, message.props.height]}
               side={THREE.DoubleSide}
               cellColor={rgbToInt(message.props.cell_color)}
               cellThickness={message.props.cell_thickness}
@@ -226,6 +221,10 @@ function createObjectFactory(
               sectionColor={rgbToInt(message.props.section_color)}
               sectionThickness={message.props.section_thickness}
               sectionSize={message.props.section_size}
+              infiniteGrid={message.props.infinite_grid}
+              fadeDistance={message.props.fade_distance}
+              fadeStrength={message.props.fade_strength}
+              fadeFrom={message.props.fade_from === "camera" ? 1 : 0}
               quaternion={gridQuaternion}
             />
             {shadowPlane}

@@ -1155,7 +1155,34 @@ class SceneApi:
         )
         return BatchedAxesHandle._make(self, message, name, wxyz, position, visible)
 
-    @deprecated_positional_shim
+    @overload
+    def add_grid(
+        self,
+        name: str,
+        width: float = 10.0,
+        height: float = 10.0,
+        *,
+        plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"] = "xy",
+        cell_color: RgbTupleOrArray = (200, 200, 200),
+        cell_thickness: float = 1.0,
+        cell_size: float = 0.5,
+        section_color: RgbTupleOrArray = (140, 140, 140),
+        section_thickness: float = 1.0,
+        section_size: float = 1.0,
+        infinite_grid: bool = False,
+        fade_distance: float = 100.0,
+        fade_strength: float = 1.0,
+        fade_from: Literal["camera", "origin"] = "camera",
+        shadow_opacity: float = 0.125,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ): ...
+
+    @overload
+    @deprecated(
+        "The `width_segments` and `height_segments` parameters are deprecated and ignored."
+    )
     def add_grid(
         self,
         name: str,
@@ -1175,6 +1202,30 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+    ): ...
+
+    @deprecated_positional_shim
+    def add_grid(
+        self,
+        name: str,
+        width: float = 10.0,
+        height: float = 10.0,
+        *,
+        plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"] = "xy",
+        cell_color: RgbTupleOrArray = (200, 200, 200),
+        cell_thickness: float = 1.0,
+        cell_size: float = 0.5,
+        section_color: RgbTupleOrArray = (140, 140, 140),
+        section_thickness: float = 1.0,
+        section_size: float = 1.0,
+        infinite_grid: bool = False,
+        fade_distance: float = 100.0,
+        fade_strength: float = 1.0,
+        fade_from: Literal["camera", "origin"] = "camera",
+        shadow_opacity: float = 0.125,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
     ) -> GridHandle:
         """Add a 2D grid to the scene.
 
@@ -1184,8 +1235,6 @@ class SceneApi:
             name: Name of the grid.
             width: Width of the grid.
             height: Height of the grid.
-            width_segments: Number of segments along the width.
-            height_segments: Number of segments along the height.
             plane: The plane in which the grid is oriented (e.g., 'xy', 'yz').
             cell_color: Color of the grid cells as an RGB tuple.
             cell_thickness: Thickness of the grid lines.
@@ -1194,6 +1243,10 @@ class SceneApi:
             section_thickness: Thickness of the section lines.
             section_size: Size of each section in the grid.
             shadow_opacity: Opacity of shadows casted onto grid plane, 0: no shadows, 1: black shadows
+            infinite_grid: Whether the grid should appear infinite. If `True`, the width and height are ignored.
+            fade_distance: Distance at which the grid fades out.
+            fade_strength: Strength of the fade effect.
+            fade_from: Whether the grid should fade based on distance from the camera or the origin.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -1206,8 +1259,6 @@ class SceneApi:
             props=_messages.GridProps(
                 width=width,
                 height=height,
-                width_segments=width_segments,
-                height_segments=height_segments,
                 plane=plane,
                 cell_color=_encode_rgb(cell_color),
                 cell_thickness=cell_thickness,
@@ -1215,6 +1266,10 @@ class SceneApi:
                 section_color=_encode_rgb(section_color),
                 section_thickness=section_thickness,
                 section_size=section_size,
+                infinite_grid=infinite_grid,
+                fade_distance=fade_distance,
+                fade_strength=fade_strength,
+                fade_from=fade_from,
                 shadow_opacity=shadow_opacity,
             ),
         )

@@ -79,8 +79,6 @@ export interface GridMessage {
   props: {
     width: number;
     height: number;
-    width_segments: number;
-    height_segments: number;
     plane: "xz" | "xy" | "yx" | "yz" | "zx" | "zy";
     cell_color: [number, number, number];
     cell_thickness: number;
@@ -88,6 +86,10 @@ export interface GridMessage {
     section_color: [number, number, number];
     section_thickness: number;
     section_size: number;
+    infinite_grid: boolean;
+    fade_distance: number;
+    fade_strength: number;
+    fade_from: "camera" | "origin";
     shadow_opacity: number;
   };
 }
@@ -1103,7 +1105,8 @@ export interface ViewerCameraMessage {
 }
 /** Message for a raycast-like pointer in the scene.
  * origin is the viewing camera position, in world coordinates.
- * direction is the vector if a ray is projected from the camera through the clicked pixel,
+ * direction is the vector if a ray is projected from the camera through the
+ * clicked pixel,
  *
  *
  * (automatically generated)

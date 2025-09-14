@@ -79,7 +79,7 @@ use the ``sync_client_server.py`` script:
 .. code-block:: bash
 
    cd ~/viser
-   python sync_client_server.py
+   python sync_client_server.py --sync-messages --sync-version
 
 This script:
 
