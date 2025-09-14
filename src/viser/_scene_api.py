@@ -1181,7 +1181,7 @@ class SceneApi:
 
     @overload
     @deprecated(
-        "The `width_segments` and `height_segments` parameters are deprecated and ignored."
+        "The `width_segments` and `height_segments` parameters are deprecated and will be removed."
     )
     def add_grid(
         self,
@@ -1211,6 +1211,8 @@ class SceneApi:
         width: float = 10.0,
         height: float = 10.0,
         *,
+        width_segments: int | None = None,
+        height_segments: int | None = None,
         plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"] = "xy",
         cell_color: RgbTupleOrArray = (200, 200, 200),
         cell_thickness: float = 1.0,
@@ -1254,6 +1256,12 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
+        if width_segments is not None or height_segments is not None:
+            warnings.warn(
+                "The 'width_segments' and 'height_segments' parameters are deprecated and will be removed.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         message = _messages.GridMessage(
             name=name,
             props=_messages.GridProps(
