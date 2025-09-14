@@ -185,13 +185,7 @@ Code
    
        server = viser.ViserServer()
        server.scene.configure_default_lights()
-       grid_handle = server.scene.add_grid(
-           name="grid",
-           width=12,
-           height=12,
-           width_segments=12,
-           height_segments=12,
-       )
+       grid_handle = server.scene.add_grid(name="grid", width=12, height=12)
    
        # Add GUI controls.
        instance_count_slider = server.gui.add_slider(
@@ -275,7 +269,6 @@ Code
                with server.atomic():
                    # Update grid size.
                    grid_handle.width = grid_handle.height = grid_size + 2
-                   grid_handle.width_segments = grid_handle.height_segments = grid_size + 2
    
                    # Update all transforms.
                    mesh_handle.batched_positions = axes_handle.batched_positions = (
