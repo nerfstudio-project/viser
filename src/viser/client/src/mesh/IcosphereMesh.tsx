@@ -57,9 +57,10 @@ export const IcosphereMesh = React.forwardRef<
   }, [material]);
 
   // Check if we should render a shadow mesh.
-  const shadowOpacity = typeof message.props.receive_shadow === 'number' 
-    ? message.props.receive_shadow 
-    : 0.0;
+  const shadowOpacity =
+    typeof message.props.receive_shadow === "number"
+      ? message.props.receive_shadow
+      : 0.0;
 
   // Create shadow material for shadow mesh.
   const shadowMaterial = React.useMemo(() => {
@@ -83,11 +84,7 @@ export const IcosphereMesh = React.forwardRef<
       >
         <OutlinesIfHovered />
         {shadowMaterial && shadowOpacity > 0 ? (
-          <mesh
-            geometry={geometry}
-            material={shadowMaterial}
-            receiveShadow
-          />
+          <mesh geometry={geometry} material={shadowMaterial} receiveShadow />
         ) : null}
       </mesh>
       {children}

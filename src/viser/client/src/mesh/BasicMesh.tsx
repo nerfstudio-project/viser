@@ -73,9 +73,10 @@ export const BasicMesh = React.forwardRef<
   }, [material]);
 
   // Check if we should render a shadow mesh.
-  const shadowOpacity = typeof message.props.receive_shadow === 'number' 
-    ? message.props.receive_shadow 
-    : 0.0;
+  const shadowOpacity =
+    typeof message.props.receive_shadow === "number"
+      ? message.props.receive_shadow
+      : 0.0;
 
   // Create shadow material for shadow mesh.
   const shadowMaterial = React.useMemo(() => {
@@ -102,11 +103,7 @@ export const BasicMesh = React.forwardRef<
         }
       />
       {shadowMaterial && shadowOpacity > 0 ? (
-        <mesh
-          geometry={geometry}
-          material={shadowMaterial}
-          receiveShadow
-        />
+        <mesh geometry={geometry} material={shadowMaterial} receiveShadow />
       ) : null}
       {children}
     </mesh>

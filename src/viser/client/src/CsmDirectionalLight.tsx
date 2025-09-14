@@ -292,7 +292,7 @@ function ShadowCsmLight({
           if ((child as THREE.Mesh).material) {
             const material = (child as THREE.Mesh).material;
             if (Array.isArray(material)) {
-              material.forEach(m => m.dispose());
+              material.forEach((m) => m.dispose());
             } else {
               material.dispose();
             }

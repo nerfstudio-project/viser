@@ -341,10 +341,6 @@ class GridProps:
     """Width of the grid."""
     height: float
     """Height of the grid."""
-    width_segments: int
-    """Number of segments along the width."""
-    height_segments: int
-    """Number of segments along the height."""
     plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"]
     """The plane in which the grid is oriented. """
     cell_color: Tuple[int, int, int]
@@ -359,6 +355,16 @@ class GridProps:
     """Thickness of the section lines."""
     section_size: float
     """Size of each section in the grid."""
+
+    infinite_grid: bool
+    """Whether the grid should be infinite. If `True`, the width and height are ignored."""
+    fade_distance: float
+    """Distance at which the grid fades out."""
+    fade_strength: float
+    """Strength of the fade effect."""
+    fade_from: Literal["camera", "origin"]
+    """Whether the grid should fade based on distance from the camera or the origin."""
+
     shadow_opacity: float
     """If true, shadows are casted onto the grid plane. Synchronized
     """

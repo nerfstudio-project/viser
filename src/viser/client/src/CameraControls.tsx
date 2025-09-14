@@ -27,10 +27,10 @@ function CrosshairVisual({
       groupRef.current.getWorldPosition(worldPos);
       // Scale based on distance and FOV to maintain consistent visual size.
       const distance = camera.position.distanceTo(worldPos);
-      const fovScale = Math.tan(((camera as THREE.PerspectiveCamera).fov * Math.PI) / 360);
-      groupRef.current.scale.setScalar(
-        (distance / 20) * fovScale,
+      const fovScale = Math.tan(
+        ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 360,
       );
+      groupRef.current.scale.setScalar((distance / 20) * fovScale);
     }
   });
 
