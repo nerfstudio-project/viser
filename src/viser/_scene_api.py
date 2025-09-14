@@ -6,6 +6,7 @@ import time
 import warnings
 from collections.abc import Coroutine
 from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -1155,33 +1156,9 @@ class SceneApi:
         )
         return BatchedAxesHandle._make(self, message, name, wxyz, position, visible)
 
-    @overload
-    def add_grid(
-        self,
-        name: str,
-        width: float = 10.0,
-        height: float = 10.0,
-        *,
-        plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"] = "xy",
-        cell_color: RgbTupleOrArray = (200, 200, 200),
-        cell_thickness: float = 1.0,
-        cell_size: float = 0.5,
-        section_color: RgbTupleOrArray = (140, 140, 140),
-        section_thickness: float = 1.0,
-        section_size: float = 1.0,
-        infinite_grid: bool = False,
-        fade_distance: float = 100.0,
-        fade_strength: float = 1.0,
-        fade_from: Literal["camera", "origin"] = "camera",
-        shadow_opacity: float = 0.125,
-        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
-        visible: bool = True,
-    ): ...
-
-    @overload
-    @deprecated(
-        "The `width_segments` and `height_segments` parameters are deprecated and will be removed."
+    @partial(
+        deprecated_positional_shim,
+        deprecated_kwargs=("width_segments", "height_segments"),
     )
     def add_grid(
         self,
@@ -1189,30 +1166,6 @@ class SceneApi:
         width: float = 10.0,
         height: float = 10.0,
         *,
-        width_segments: int = 10,
-        height_segments: int = 10,
-        plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"] = "xy",
-        cell_color: RgbTupleOrArray = (200, 200, 200),
-        cell_thickness: float = 1.0,
-        cell_size: float = 0.5,
-        section_color: RgbTupleOrArray = (140, 140, 140),
-        section_thickness: float = 1.0,
-        section_size: float = 1.0,
-        shadow_opacity: float = 0.125,
-        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
-        visible: bool = True,
-    ): ...
-
-    @deprecated_positional_shim
-    def add_grid(
-        self,
-        name: str,
-        width: float = 10.0,
-        height: float = 10.0,
-        *,
-        width_segments: int | None = None,
-        height_segments: int | None = None,
         plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"] = "xy",
         cell_color: RgbTupleOrArray = (200, 200, 200),
         cell_thickness: float = 1.0,
@@ -1256,12 +1209,6 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-        if width_segments is not None or height_segments is not None:
-            warnings.warn(
-                "The 'width_segments' and 'height_segments' parameters are deprecated and will be removed.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
         message = _messages.GridMessage(
             name=name,
             props=_messages.GridProps(
