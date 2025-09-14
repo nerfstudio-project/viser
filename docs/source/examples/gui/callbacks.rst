@@ -50,14 +50,7 @@ Code
        )
    
        def update_plane() -> None:
-           server.scene.add_grid(
-               "/grid",
-               width=10.0,
-               height=20.0,
-               width_segments=10,
-               height_segments=20,
-               plane=gui_plane.value,
-           )
+           server.scene.add_grid("/grid", width=10.0, height=20.0, plane=gui_plane.value)
    
        gui_plane.on_update(lambda _: update_plane())
    
