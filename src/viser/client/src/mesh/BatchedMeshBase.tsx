@@ -1,9 +1,8 @@
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect, useRef } from "react";
 import * as THREE from "three";
-import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 import { MeshoptSimplifier } from "meshoptimizer";
 import { BatchedMeshHoverOutlines } from "./BatchedMeshHoverOutlines";
-import { useThree } from "@react-three/fiber";
+import { useThree, useFrame } from "@react-three/fiber";
 
 // Define the types of LOD settings.
 // - "off": No LOD.
@@ -14,32 +13,37 @@ import { useThree } from "@react-three/fiber";
 //   is the fraction of triangles to keep (0.0 to 1.0).
 type LodSetting = "off" | "auto" | [number, number][];
 
-// Helper function to create LODs for the mesh.
-function createLODs(
-  mesh: InstancedMesh2,
+// LOD level info
+interface LODLevel {
+  mesh: THREE.InstancedMesh;
+  geometry: THREE.BufferGeometry;
+  material: THREE.Material | THREE.Material[];
+  distance: number;
+  ratio: number;
+}
+
+// Helper to compute LOD settings
+function computeLODSettings(
   geometry: THREE.BufferGeometry,
-  material: THREE.Material | THREE.Material[],
   lod: LodSetting,
-): { geometries: THREE.BufferGeometry[]; materials: THREE.Material[] } {
-  if (!mesh || !geometry || lod === "off") {
-    return { geometries: [], materials: [] };
+): { ratios: number[]; distances: number[] } {
+  if (lod === "off") {
+    return { ratios: [], distances: [] };
   }
 
-  // Calculate LOD settings.
-  let ratios: number[] = [];
-  let distances: number[] = [];
   geometry.computeBoundingSphere();
 
   if (lod === "auto") {
-    // Automatic LOD settings based on geometry complexity.
     const boundingRadius = geometry.boundingSphere!.radius;
     const vertexCount = geometry.attributes.position.count;
 
-    // 1. Compute LOD ratios based on vertex count.
+    // Skip LOD for very simple meshes
     if (vertexCount < 50) {
-      // Very simple meshes: skip LOD.
-      return { geometries: [], materials: [] };
-    } else if (vertexCount < 500) {
+      return { ratios: [], distances: [] };
+    }
+
+    let ratios: number[];
+    if (vertexCount < 500) {
       ratios = [0.6, 0.2];
     } else if (vertexCount < 2000) {
       ratios = [0.4, 0.1, 0.03];
@@ -47,156 +51,186 @@ function createLODs(
       ratios = [0.2, 0.05, 0.01];
     }
 
-    // 2. Compute LOD distances based on bounding radius.
     const sizeFactor = Math.sqrt(boundingRadius + 1e-5);
-    const baseMultipliers = [1, 2, 3].slice(0, ratios.length); // Distance "steps" for LOD switching.
-    distances = baseMultipliers.map((m) => m * sizeFactor);
+    const baseMultipliers = [1, 2, 3].slice(0, ratios.length);
+    const distances = baseMultipliers.map((m) => m * sizeFactor);
+
+    return { ratios, distances };
   } else {
-    // Use provided custom LOD settings.
-    ratios = lod.map((pair) => pair[1]);
-    distances = lod.map((pair) => pair[0]);
+    return {
+      ratios: lod.map((pair) => pair[1]),
+      distances: lod.map((pair) => pair[0]),
+    };
   }
+}
 
-  // Create the LOD levels.
-  const geometries: THREE.BufferGeometry[] = [];
-  const materials: THREE.Material[] = [];
+// Helper to create simplified geometry for LOD
+function createSimplifiedGeometry(
+  geometry: THREE.BufferGeometry,
+  ratio: number,
+): THREE.BufferGeometry {
+  const targetCount =
+    Math.floor((geometry.index!.array.length * ratio) / 3) * 3;
+  const lodGeometry = geometry.clone();
 
-  ratios.forEach((ratio, index) => {
-    // Calculate target triangle count based on the ratio.
-    const targetCount =
-      Math.floor((geometry.index!.array.length * ratio) / 3) * 3;
-    const lodGeometry = geometry.clone();
+  const dstIndexArray = MeshoptSimplifier.simplify(
+    new Uint32Array(lodGeometry.index!.array),
+    new Float32Array(lodGeometry.attributes.position.array),
+    3,
+    targetCount,
+    0.02,
+    ["LockBorder"],
+  )[0];
 
-    // Use meshopt to simplify the geometry.
-    const dstIndexArray = MeshoptSimplifier.simplify(
-      new Uint32Array(lodGeometry.index!.array),
-      new Float32Array(lodGeometry.attributes.position.array),
-      3,
-      targetCount,
-      0.02, // Error tolerance.
-      ["LockBorder"], // Prevents triangle flipping artifacts.
-    )[0];
+  lodGeometry.index!.array.set(dstIndexArray);
+  lodGeometry.index!.needsUpdate = true;
+  lodGeometry.setDrawRange(0, dstIndexArray.length);
 
-    // Update the geometry with the simplified version.
-    lodGeometry.index!.array.set(dstIndexArray);
-    lodGeometry.index!.needsUpdate = true;
-    lodGeometry.setDrawRange(0, dstIndexArray.length);
-
-    // Create a cloned material for this LOD level.
-    const lodMaterial = Array.isArray(material)
-      ? material.map((x) => x.clone())
-      : material.clone();
-
-    // Add this LOD level to the instanced mesh.
-    mesh.addLOD(lodGeometry, lodMaterial, distances[index]);
-
-    // Store the geometry and materials for proper disposal later.
-    geometries.push(lodGeometry);
-    if (Array.isArray(lodMaterial)) {
-      materials.push(...lodMaterial);
-    } else {
-      materials.push(lodMaterial);
-    }
-  });
-  return { geometries, materials };
+  return lodGeometry;
 }
 
 /**
- * Shared base component for batched mesh rendering
- *
- * This component replaces BatchedMeshManager with a more React-friendly approach
- * using react-three-fiber's JSX components.
+ * Shared base component for batched mesh rendering using vanilla THREE.InstancedMesh
+ * with multi-mesh LOD support and distance-based sorting for proper alpha compositing.
  */
 export const BatchedMeshBase = React.forwardRef<
-  InstancedMesh2,
+  THREE.Group,
   {
-    // Data for instance positions and orientations.
+    // Data for instance positions and orientations
     batched_positions: Uint8Array;
     batched_wxyzs: Uint8Array;
     batched_scales: Uint8Array | null;
     batched_colors: Uint8Array | null;
 
-    // Geometry info.
+    // Geometry info
     geometry: THREE.BufferGeometry;
 
-    // Material info.
+    // Material info
     material: THREE.Material | THREE.Material[];
 
-    // Rendering options.
+    // Rendering options
     lod: LodSetting;
     cast_shadow: boolean;
     receive_shadow: boolean;
 
-    // Optional props.
+    // Optional props
     clickable?: boolean;
   }
 >(function BatchedMeshBase(props, ref) {
-  // Store the mesh instance in state so effects can depend on it.
-  const [mesh, setMesh] = React.useState<InstancedMesh2 | null>(null);
-
-  // Forward the ref from the parent.
-  React.useImperativeHandle(ref, () => mesh!, [mesh]);
-
-  // Reusable objects for transform calculations.
+  const groupRef = useRef<THREE.Group>(null);
+  const lodLevels = useRef<LODLevel[]>([]);
+  const instanceCount = useRef<number>(0);
+  const sortedIndices = useRef<Uint32Array | null>(null);
+  const instanceDistances = useRef<Float32Array | null>(null);
+  const lastCameraPosition = useRef<THREE.Vector3>(new THREE.Vector3());
+  const tempMatrix = useMemo(() => new THREE.Matrix4(), []);
   const tempPosition = useMemo(() => new THREE.Vector3(), []);
   const tempQuaternion = useMemo(() => new THREE.Quaternion(), []);
   const tempScale = useMemo(() => new THREE.Vector3(1, 1, 1), []);
-  const gl = useThree((state) => state.gl);
+  const tempColor = useMemo(() => new THREE.Color(), []);
+  const camera = useThree((state) => state.camera);
 
-  // Create and manage InstancedMesh2 manually.
+  // Forward the ref to the group
+  React.useImperativeHandle(ref, () => groupRef.current!, []);
+
+  // Initialize LOD levels and meshes
   useEffect(() => {
-    // Create new InstancedMesh2.
-    const instanceCount =
+    const count =
       props.batched_positions.byteLength / (3 * Float32Array.BYTES_PER_ELEMENT);
-    const newMesh = new InstancedMesh2(props.geometry.clone(), props.material, {
-      capacity: instanceCount,
-      renderer: gl,
+    instanceCount.current = count;
+
+    // Clean up previous LOD levels
+    lodLevels.current.forEach((level) => {
+      level.mesh.dispose();
+      level.geometry.dispose();
+      if (Array.isArray(level.material)) {
+        level.material.forEach((m) => m.dispose());
+      } else {
+        level.material.dispose();
+      }
+    });
+    lodLevels.current = [];
+
+    if (groupRef.current) {
+      groupRef.current.clear();
+    }
+
+    // Create base mesh (LOD 0)
+    const baseMesh = new THREE.InstancedMesh(
+      props.geometry,
+      props.material,
+      count
+    );
+    baseMesh.castShadow = props.cast_shadow;
+    baseMesh.receiveShadow = props.receive_shadow;
+
+    if (groupRef.current) {
+      groupRef.current.add(baseMesh);
+    }
+
+    const newLevels: LODLevel[] = [
+      {
+        mesh: baseMesh,
+        geometry: props.geometry,
+        material: props.material,
+        distance: 0,
+        ratio: 1.0,
+      },
+    ];
+
+    // Create additional LOD levels if needed
+    const { ratios, distances } = computeLODSettings(props.geometry, props.lod);
+
+    ratios.forEach((ratio, index) => {
+      const lodGeometry = createSimplifiedGeometry(props.geometry, ratio);
+      const lodMaterial = Array.isArray(props.material)
+        ? props.material.map((m) => m.clone())
+        : props.material.clone();
+
+      const lodMesh = new THREE.InstancedMesh(
+        lodGeometry,
+        lodMaterial,
+        count
+      );
+      lodMesh.castShadow = props.cast_shadow;
+      lodMesh.receiveShadow = props.receive_shadow;
+
+      if (groupRef.current) {
+        groupRef.current.add(lodMesh);
+      }
+
+      newLevels.push({
+        mesh: lodMesh,
+        geometry: lodGeometry,
+        material: lodMaterial,
+        distance: distances[index],
+        ratio,
+      });
     });
 
-    // Create LODs if needed.
-    let lodGeometries: THREE.BufferGeometry[] = [];
-    let lodMaterials: THREE.Material[] = [];
+    lodLevels.current = newLevels;
 
-    if (props.lod !== "off") {
-      const lods = createLODs(
-        newMesh,
-        props.geometry,
-        props.material,
-        props.lod,
-      );
-      lodGeometries = lods.geometries;
-      lodMaterials = lods.materials;
+    // Initialize sorting arrays
+    sortedIndices.current = new Uint32Array(count);
+    instanceDistances.current = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      sortedIndices.current[i] = i;
     }
-
-    // Update state with new mesh.
-    setMesh(newMesh);
 
     return () => {
-      // Cleanup on unmount or when dependencies change.
-      newMesh.disposeBVH();
-      newMesh.dispose();
-      // Dispose LOD resources captured via closure.
-      lodGeometries.forEach((geometry) => geometry.dispose());
-      lodMaterials.forEach((material) => material.dispose());
+      // Cleanup will happen in next effect run
     };
-  }, [props.geometry, props.lod, props.material]); // Recreate when these change.
+  }, [props.geometry, props.material, props.lod, props.batched_positions.byteLength]);
 
-  // Update instances when positions or orientations change.
+  // Update instance transforms
   useEffect(() => {
-    if (!mesh) return;
-
-    const instanceCount =
+    const count =
       props.batched_positions.byteLength / (3 * Float32Array.BYTES_PER_ELEMENT);
-    if (mesh.instancesCount !== instanceCount) {
-      if (mesh.capacity < instanceCount) {
-        // Increase capacity if needed.
-        mesh.resizeBuffers(instanceCount);
-      }
-      mesh.clearInstances();
-      mesh.addInstances(instanceCount, () => {});
+
+    if (count !== instanceCount.current) {
+      return; // Will be handled by the initialization effect
     }
 
-    // Create views to efficiently read float values.
     const positionsView = new DataView(
       props.batched_positions.buffer,
       props.batched_positions.byteOffset,
@@ -215,48 +249,41 @@ export const BatchedMeshBase = React.forwardRef<
         )
       : null;
 
-    // Update all instances.
-    mesh.updateInstances((obj, index) => {
-      // Calculate byte offsets for reading float values.
-      const posOffset = index * 3 * 4; // 3 floats, 4 bytes per float.
-      const wxyzOffset = index * 4 * 4; // 4 floats, 4 bytes per float.
+    // Update transforms for all instances in all LOD levels
+    for (let i = 0; i < count; i++) {
+      const posOffset = i * 3 * 4;
+      const wxyzOffset = i * 4 * 4;
       const scaleOffset =
         props.batched_scales &&
         props.batched_scales.byteLength ===
           (props.batched_wxyzs.byteLength / 4) * 3
-          ? index * 3 * 4 // Per-axis scaling: 3 floats, 4 bytes per float.
-          : index * 4; // Uniform scaling: 1 float, 4 bytes per float.
+          ? i * 3 * 4
+          : i * 4;
 
-      // Read position values.
       tempPosition.set(
-        positionsView.getFloat32(posOffset, true), // x.
-        positionsView.getFloat32(posOffset + 4, true), // y.
-        positionsView.getFloat32(posOffset + 8, true), // z.
+        positionsView.getFloat32(posOffset, true),
+        positionsView.getFloat32(posOffset + 4, true),
+        positionsView.getFloat32(posOffset + 8, true),
       );
 
-      // Read quaternion values.
       tempQuaternion.set(
-        wxyzsView.getFloat32(wxyzOffset + 4, true), // x.
-        wxyzsView.getFloat32(wxyzOffset + 8, true), // y.
-        wxyzsView.getFloat32(wxyzOffset + 12, true), // z.
-        wxyzsView.getFloat32(wxyzOffset, true), // w (first value).
+        wxyzsView.getFloat32(wxyzOffset + 4, true),
+        wxyzsView.getFloat32(wxyzOffset + 8, true),
+        wxyzsView.getFloat32(wxyzOffset + 12, true),
+        wxyzsView.getFloat32(wxyzOffset, true),
       );
 
-      // Read scale value if available.
       if (scalesView) {
-        // Check if we have per-axis scaling (N,3) or uniform scaling (N,).
         if (
           props.batched_scales!.byteLength ===
           (props.batched_wxyzs.byteLength / 4) * 3
         ) {
-          // Per-axis scaling: read 3 floats.
           tempScale.set(
-            scalesView.getFloat32(scaleOffset, true), // x scale.
-            scalesView.getFloat32(scaleOffset + 4, true), // y scale.
-            scalesView.getFloat32(scaleOffset + 8, true), // z scale.
+            scalesView.getFloat32(scaleOffset, true),
+            scalesView.getFloat32(scaleOffset + 4, true),
+            scalesView.getFloat32(scaleOffset + 8, true),
           );
         } else {
-          // Uniform scaling: read 1 float and apply to all axes.
           const scale = scalesView.getFloat32(scaleOffset, true);
           tempScale.setScalar(scale);
         }
@@ -264,90 +291,260 @@ export const BatchedMeshBase = React.forwardRef<
         tempScale.set(1, 1, 1);
       }
 
-      // Apply to the instance.
-      obj.position.copy(tempPosition);
-      obj.quaternion.copy(tempQuaternion);
-      obj.scale.copy(tempScale);
+      tempMatrix.compose(tempPosition, tempQuaternion, tempScale);
+
+      // Apply to all LOD meshes
+      lodLevels.current.forEach((level) => {
+        level.mesh.setMatrixAt(i, tempMatrix);
+      });
+    }
+
+    // Mark all instance matrices as needing update
+    lodLevels.current.forEach((level) => {
+      if (level.mesh.instanceMatrix) {
+        level.mesh.instanceMatrix.needsUpdate = true;
+      }
     });
   }, [
     props.batched_positions,
     props.batched_wxyzs,
     props.batched_scales,
-    mesh,
   ]);
 
-  // Compute BVH for raycasting for clickable meshes.
-  //
-  // We could also do this always. This would speed up frustum culling, but
-  // would add overhead to every position/quaternion/scale update. Since we
-  // don't know in advance if the mesh will be static or dynamic, it seems
-  // conservative to avoid computing a BVH for now.
-  //
-  // In the future, we could consider computing the BVH only if we detect that
-  // the mesh is static (no changes for N frames). There are a lot of possible
-  // heuristics that can be written here.
-  React.useEffect(() => {
-    if (mesh === null) return;
-    if (props.clickable || mesh.instancesCount > 50000) {
-      // We'll add a small margin to reduce the effort of updating the BVH if
-      // instances need to move. This adds a small overhead to
-      // raycasting/frustum culling, but should still be dramatically faster
-      // than no BVH at all.
-      mesh.computeBVH({ margin: mesh.geometry.boundingSphere!.radius * 0.2 });
-    } else {
-      mesh.disposeBVH();
-    }
-  }, [props.clickable, mesh]);
-
-  // Update instances when colors change.
-  React.useEffect(() => {
-    if (mesh === null || props.batched_colors === null) return;
-    for (let i = 0; i < mesh.instancesCount; i++) {
-      let color;
-      if (props.batched_colors.byteLength == 3) {
-        color = new THREE.Color(
-          props.batched_colors[0] / 255,
-          props.batched_colors[1] / 255,
-          props.batched_colors[2] / 255,
-        );
-      } else if (props.batched_colors.byteLength === mesh.instancesCount * 3) {
-        color = new THREE.Color(
-          props.batched_colors[i * 3] / 255,
-          props.batched_colors[i * 3 + 1] / 255,
-          props.batched_colors[i * 3 + 2] / 255,
-        );
-      } else {
-        console.error(
-          `Invalid batched_colors length: ${
-            props.batched_colors.byteLength
-          }, expected 3 or ${mesh.instancesCount * 3}`,
-        );
-        color = new THREE.Color(1, 1, 1); // Default to white.
-      }
-      mesh.setColorAt(i, color);
-    }
-  }, [props.batched_colors, mesh]);
-
-  // Update shadow settings.
+  // Update instance colors
   useEffect(() => {
-    if (!mesh) return;
+    if (!props.batched_colors) return;
 
-    mesh.castShadow = props.cast_shadow;
-    mesh.receiveShadow = props.receive_shadow;
+    const count = instanceCount.current;
+    const colors = props.batched_colors;
 
-    // Update all LOD objects too.
-    if (mesh.LODinfo && mesh.LODinfo.objects) {
-      mesh.LODinfo.objects.forEach((obj) => {
-        obj.castShadow = props.cast_shadow;
-        obj.receiveShadow = props.receive_shadow;
-      });
+    lodLevels.current.forEach((level) => {
+      for (let i = 0; i < count; i++) {
+        if (colors.byteLength === 3) {
+          tempColor.setRGB(
+            colors[0] / 255,
+            colors[1] / 255,
+            colors[2] / 255,
+          );
+        } else if (colors.byteLength === count * 3) {
+          tempColor.setRGB(
+            colors[i * 3] / 255,
+            colors[i * 3 + 1] / 255,
+            colors[i * 3 + 2] / 255,
+          );
+        } else {
+          console.error(
+            `Invalid batched_colors length: ${
+              colors.byteLength
+            }, expected 3 or ${count * 3}`,
+          );
+          tempColor.setRGB(1, 1, 1);
+        }
+        level.mesh.setColorAt(i, tempColor);
+      }
+
+      if (level.mesh.instanceColor) {
+        level.mesh.instanceColor.needsUpdate = true;
+      }
+    });
+  }, [props.batched_colors]);
+
+  // Update shadow settings
+  useEffect(() => {
+    lodLevels.current.forEach((level) => {
+      level.mesh.castShadow = props.cast_shadow;
+      level.mesh.receiveShadow = props.receive_shadow;
+    });
+  }, [props.cast_shadow, props.receive_shadow]);
+
+  // Sort instances and update LOD visibility
+  useFrame(() => {
+    if (!groupRef.current || lodLevels.current.length === 0) return;
+
+    const count = instanceCount.current;
+    if (count === 0) return;
+
+    // Check if camera has moved significantly (threshold: 0.1 units)
+    const cameraMovedSignificantly =
+      lastCameraPosition.current.distanceToSquared(camera.position) > 0.01;
+
+    if (!cameraMovedSignificantly && sortedIndices.current) {
+      // Only update LOD visibility without re-sorting
+      updateLODVisibility();
+      return;
     }
-  }, [props.cast_shadow, props.receive_shadow, mesh]);
 
-  // Return the mesh as a primitive and hover outlines if clickable.
+    // Update last camera position
+    lastCameraPosition.current.copy(camera.position);
+
+    // Calculate distances for all instances
+    const distances = instanceDistances.current!;
+    let minDepth = Infinity;
+    let maxDepth = -Infinity;
+
+    for (let i = 0; i < count; i++) {
+      // Get world position of instance
+      lodLevels.current[0].mesh.getMatrixAt(i, tempMatrix);
+      tempPosition.setFromMatrixPosition(tempMatrix);
+
+      const distance = tempPosition.distanceTo(camera.position);
+      distances[i] = distance;
+      minDepth = Math.min(minDepth, distance);
+      maxDepth = Math.max(maxDepth, distance);
+    }
+
+    // Perform counting sort (16-bit resolution)
+    const depthRange = maxDepth - minDepth;
+    if (depthRange < 0.001) {
+      // All instances at same distance, no need to sort
+      updateLODVisibility();
+      return;
+    }
+
+    const depthInv = (256 * 256 - 1) / depthRange;
+    const counts = new Uint32Array(256 * 256);
+    const quantized = new Uint32Array(count);
+
+    // Quantize and count
+    for (let i = 0; i < count; i++) {
+      quantized[i] = ((distances[i] - minDepth) * depthInv) | 0;
+      counts[quantized[i]]++;
+    }
+
+    // Compute starting positions
+    const starts = new Uint32Array(256 * 256);
+    for (let i = 1; i < 256 * 256; i++) {
+      starts[i] = starts[i - 1] + counts[i - 1];
+    }
+
+    // Build sorted index array
+    const sorted = sortedIndices.current!;
+    for (let i = 0; i < count; i++) {
+      sorted[starts[quantized[i]]++] = i;
+    }
+
+    // Update LOD visibility based on sorted order
+    updateLODVisibility();
+  });
+
+  function updateLODVisibility() {
+    const count = instanceCount.current;
+    const sorted = sortedIndices.current!;
+    const distances = instanceDistances.current!;
+
+    if (lodLevels.current.length <= 1) {
+      // No LOD, just update render order for alpha compositing
+      const baseMesh = lodLevels.current[0].mesh;
+
+      // Rearrange instances based on sorted order
+      const tempMatrices = new Float32Array(count * 16);
+      const tempColors = baseMesh.instanceColor ? new Float32Array(count * 3) : null;
+
+      // Save current state
+      for (let i = 0; i < count; i++) {
+        baseMesh.getMatrixAt(i, tempMatrix);
+        tempMatrix.toArray(tempMatrices, i * 16);
+
+        if (tempColors && baseMesh.instanceColor) {
+          baseMesh.getColorAt(i, tempColor);
+          tempColor.toArray(tempColors, i * 3);
+        }
+      }
+
+      // Apply sorted order (front to back for alpha)
+      for (let i = 0; i < count; i++) {
+        const srcIdx = sorted[i];
+        tempMatrix.fromArray(tempMatrices, srcIdx * 16);
+        baseMesh.setMatrixAt(i, tempMatrix);
+
+        if (tempColors && baseMesh.instanceColor) {
+          tempColor.fromArray(tempColors, srcIdx * 3);
+          baseMesh.setColorAt(i, tempColor);
+        }
+      }
+
+      if (baseMesh.instanceMatrix) {
+        baseMesh.instanceMatrix.needsUpdate = true;
+      }
+      if (baseMesh.instanceColor) {
+        baseMesh.instanceColor.needsUpdate = true;
+      }
+
+      // Update count to render all
+      baseMesh.count = count;
+      return;
+    }
+
+    // Multi-LOD case: organize instances by LOD level
+    const lodCounts = new Array(lodLevels.current.length).fill(0);
+    const lodInstances: number[][] = lodLevels.current.map(() => []);
+
+    // Assign each instance to appropriate LOD based on distance
+    for (let i = 0; i < count; i++) {
+      const instanceIdx = sorted[i];
+      const distance = distances[instanceIdx];
+
+      // Find appropriate LOD level
+      let lodIndex = 0;
+      for (let l = lodLevels.current.length - 1; l >= 0; l--) {
+        if (distance >= lodLevels.current[l].distance) {
+          lodIndex = l;
+          break;
+        }
+      }
+
+      lodInstances[lodIndex].push(instanceIdx);
+      lodCounts[lodIndex]++;
+    }
+
+    // Update each LOD mesh with its instances
+    lodLevels.current.forEach((level, lodIndex) => {
+      const instances = lodInstances[lodIndex];
+      const lodCount = instances.length;
+
+      if (lodCount === 0) {
+        // No instances at this LOD level
+        level.mesh.count = 0;
+        return;
+      }
+
+      // Rearrange instances for this LOD (sorted by distance)
+      for (let i = 0; i < lodCount; i++) {
+        const srcIdx = instances[i];
+
+        // Copy transform from source instance
+        lodLevels.current[0].mesh.getMatrixAt(srcIdx, tempMatrix);
+        level.mesh.setMatrixAt(i, tempMatrix);
+
+        // Copy color if available
+        if (level.mesh.instanceColor && lodLevels.current[0].mesh.instanceColor) {
+          lodLevels.current[0].mesh.getColorAt(srcIdx, tempColor);
+          level.mesh.setColorAt(i, tempColor);
+        }
+      }
+
+      // Hide remaining instances by placing them far away
+      tempMatrix.makeScale(0, 0, 0);
+      tempMatrix.setPosition(0, -100000, 0);
+      for (let i = lodCount; i < count; i++) {
+        level.mesh.setMatrixAt(i, tempMatrix);
+      }
+
+      if (level.mesh.instanceMatrix) {
+        level.mesh.instanceMatrix.needsUpdate = true;
+      }
+      if (level.mesh.instanceColor) {
+        level.mesh.instanceColor.needsUpdate = true;
+      }
+
+      // Update render count
+      level.mesh.count = lodCount;
+    });
+  }
+
   return (
     <>
-      {mesh && <primitive object={mesh} />}
+      <group ref={groupRef} />
       {props.clickable && (
         <BatchedMeshHoverOutlines
           geometry={props.geometry}

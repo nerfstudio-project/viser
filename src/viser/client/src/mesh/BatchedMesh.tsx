@@ -2,7 +2,6 @@ import React, { useMemo } from "react";
 import * as THREE from "three";
 import { createStandardMaterial } from "./MeshUtils";
 import { BatchedMeshesMessage } from "../WebsocketMessages";
-import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 import { ViewerContext } from "../ViewerContext";
 import { BatchedMeshBase } from "./BatchedMeshBase";
 
@@ -10,7 +9,7 @@ import { BatchedMeshBase } from "./BatchedMeshBase";
  * Component for rendering batched/instanced meshes
  */
 export const BatchedMesh = React.forwardRef<
-  InstancedMesh2,
+  THREE.Group,
   BatchedMeshesMessage & { children?: React.ReactNode }
 >(function BatchedMesh({ children, ...message }, ref) {
   const viewer = React.useContext(ViewerContext)!;
