@@ -126,8 +126,9 @@ class CameraHandle:
         """Corresponds to the t in `P_world = [R | t] p_camera`. Synchronized
         automatically when assigned.
 
-        The `look_at` point and `up_direction` vectors are maintained when updating
-        `position`, which means that updates to `position` will often also affect `wxyz`.
+        To preserve the camera orientation, position updates translate both the camera
+        and its `look_at` point together. To change position while looking at a fixed
+        point, set `look_at` after updating `position`.
         """
         assert self._state.update_timestamp != 0.0
         return self._state.position

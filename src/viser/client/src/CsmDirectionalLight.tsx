@@ -11,6 +11,8 @@ import {
   Vector3Tuple,
 } from "three";
 import { CSM, CSMParameters } from "./csm/CSM";
+// @ts-ignore
+import { CSMHelper } from "./csm/CSMHelper";
 
 interface CsmDirectionalLightProps
   extends Omit<CSMParameters, "lightDirection" | "camera" | "parent"> {
@@ -18,6 +20,7 @@ interface CsmDirectionalLightProps
   position?: Vector3Tuple; // Position of the light
   color?: number;
   castShadow?: boolean;
+  debug?: boolean; // Show CSM cascade visualization
 }
 
 // Store original shader chunks to restore them later.
@@ -84,7 +87,7 @@ function updateMaterialsInScene(scene: Object3D): void {
 
 // Modified approach that uses conditional rendering with proper mount/unmount.
 export function CsmDirectionalLight({
-  maxFar = 30,
+  maxFar = 20,
   shadowMapSize = 1024,
   lightIntensity = 0.25,
   cascades = 3,
@@ -97,6 +100,7 @@ export function CsmDirectionalLight({
   mode = "practical",
   color = 0xffffff,
   castShadow = true,
+  debug = false,
 }: CsmDirectionalLightProps) {
   // Standard directional light for the non-shadow case.
   if (!castShadow) {
@@ -126,6 +130,7 @@ export function CsmDirectionalLight({
       lightNear={lightNear}
       mode={mode}
       color={color}
+      debug={debug}
     />
   );
 }
@@ -144,6 +149,7 @@ function ShadowCsmLight({
   lightNear,
   mode,
   color,
+  debug = false,
 }: Omit<CsmDirectionalLightProps, "castShadow">) {
   const camera = useThree((three) => three.camera);
 
@@ -165,6 +171,7 @@ function ShadowCsmLight({
   }, [position]);
 
   const dummyGroupRef = useRef<THREE.Group>(null);
+  const helperRef = useRef<any | null>(null);
 
   // Pre-create reusable Vector3 instances to avoid creating new ones in useFrame
   const worldPosition = useMemo(() => new Vector3(), []);
@@ -230,6 +237,11 @@ function ShadowCsmLight({
 
     // Update CSM
     proxyInstance.instance.update();
+
+    // Update helper visualization if it exists.
+    if (helperRef.current) {
+      helperRef.current.update();
+    }
   });
 
   // Force a scene material update to ensure shadow changes take effect immediately.
@@ -257,10 +269,40 @@ function ShadowCsmLight({
       });
     }
 
+    // Create debug helper if debug mode is enabled.
+    if (debug && proxyInstance.instance) {
+      const helper = new CSMHelper(proxyInstance.instance);
+      helper.displayFrustum = true;
+      helper.displayPlanes = true;
+      helper.displayShadowBounds = true;
+      helper.updateVisibility();
+      scene.add(helper);
+      helperRef.current = helper;
+    }
+
     return () => {
+      // Clean up helper if it exists.
+      if (helperRef.current) {
+        scene.remove(helperRef.current);
+        // Dispose of helper geometries and materials.
+        helperRef.current.traverse((child: THREE.Object3D) => {
+          if ((child as THREE.Mesh).geometry) {
+            (child as THREE.Mesh).geometry.dispose();
+          }
+          if ((child as THREE.Mesh).material) {
+            const material = (child as THREE.Mesh).material;
+            if (Array.isArray(material)) {
+              material.forEach((m) => m.dispose());
+            } else {
+              material.dispose();
+            }
+          }
+        });
+        helperRef.current = null;
+      }
       proxyInstance.dispose();
     };
-  }, [proxyInstance, threeColor]);
+  }, [proxyInstance, threeColor, debug, scene]);
 
   return (
     <>

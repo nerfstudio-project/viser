@@ -161,7 +161,7 @@ export const CameraFrustumComponent = React.forwardRef<
           position={[0.0, 0.0, z * 0.999999]}
           rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
           castShadow={message.props.cast_shadow}
-          receiveShadow={message.props.receive_shadow}
+          receiveShadow={message.props.receive_shadow === true}
         >
           <planeGeometry
             attach="geometry"
