@@ -286,6 +286,9 @@ class WebsockServer(WebsockMessageHandler):
         assert self._stop_event is not None
         assert self._server_thread is not None
 
+        # Unregister the atexit handler to prevent double-stop.
+        atexit.unregister(self.stop)
+
         # Signal the background thread to stop.
         self._background_event_loop.call_soon_threadsafe(self._stop_event.set)
 

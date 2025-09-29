@@ -776,7 +776,7 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         rich.print(
             Panel(
                 table,
-                title="[bold]viser[/bold]"
+                title=f"[bold]viser[/bold] [dim](listening *:{port})[/dim]"
                 if host == "0.0.0.0"
                 else "[bold]viser[/bold]",
                 expand=False,
