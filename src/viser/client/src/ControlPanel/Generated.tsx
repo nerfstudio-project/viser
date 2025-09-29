@@ -78,7 +78,7 @@ function GuiContainer({ containerUuid }: { containerUuid: string }) {
   }
   const guiIdSet = viewer.useGui(
     (state) => state.guiUuidSetFromContainerUuid[containerUuid],
-  );
+  )!;
 
   // Render each GUI element in this container.
   const guiIdArray = [...Object.keys(guiIdSet)];
