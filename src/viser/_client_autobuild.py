@@ -94,7 +94,7 @@ def _build_viser_client(out_dir: Path, cached: bool = True) -> None:
         return
 
     node_bin_dir = _install_sandboxed_node()
-    npx_path = node_bin_dir / "npx"
+    npx_path = node_bin_dir / ("npx.cmd" if sys.platform == "win32" else "npx")
 
     subprocess_env = os.environ.copy()
     subprocess_env["NODE_VIRTUAL_ENV"] = str(node_bin_dir.parent)
@@ -156,7 +156,8 @@ def _install_sandboxed_node() -> Path:
         return node_bin_dir
 
     node_bin_dir = get_node_bin_dir()
-    if (node_bin_dir / "npx").exists():
+    npx_name = "npx.cmd" if sys.platform == "win32" else "npx"
+    if (node_bin_dir / npx_name).exists():
         rich.print("[bold](viser)[/bold] nodejs is set up!")
         return node_bin_dir
 
@@ -166,7 +167,7 @@ def _install_sandboxed_node() -> Path:
     )
 
     node_bin_dir = get_node_bin_dir()
-    assert (node_bin_dir / "npx").exists()
+    assert (node_bin_dir / npx_name).exists()
     return node_bin_dir
 
 
