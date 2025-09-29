@@ -759,8 +759,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
             # 0.0.0.0 is not a real IP and people are often confused by it;
             # we'll just print localhost. This is questionable from a security
             # perspective, but probably fine for our use cases.
-            http_url = f"http://localhost:{port} (http://0.0.0.0:{port})"
-            ws_url = f"ws://localhost:{port} (ws://0.0.0.0:{port})"
+            http_url = f"http://localhost:{port}"
+            ws_url = f"ws://localhost:{port}"
         else:
             http_url = f"http://{host}:{port}"
             ws_url = f"ws://{host}:{port}"
@@ -775,7 +775,7 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         rich.print(
             Panel(
                 table,
-                title="[bold]viser[/bold]"
+                title=f"[bold]viser[/bold] [dim](listening *:{port})[/dim]"
                 if host == "0.0.0.0"
                 else "[bold]viser[/bold]",
                 expand=False,
