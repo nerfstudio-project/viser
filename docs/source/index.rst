@@ -78,6 +78,6 @@ Install with: ``pip install viser[examples]``
    :target: https://pypi.org/project/viser/
 .. |nbsp| unicode:: 0xA0
    :trim:
-.. |discord| image:: https://img.shields.io/discord/1423204924518432809?logo=discord
+.. |discord| image:: https://img.shields.io/discord/1423204924518432809?logo=discord&label=discord
    :alt: Discord icon
    :target: https://discord.gg/pnNTkHNUwP
