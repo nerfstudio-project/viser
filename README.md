@@ -10,6 +10,8 @@
     <a href="https://pypi.org/project/viser/">
         <img alt="codecov" src="https://img.shields.io/pypi/pyversions/viser" />
     </a>
+    <a href="https://discord.gg/pnNTkHNUwP">
+        <img alt="Viser Discord"  src="https://img.shields.io/discord/1423204924518432809%2F1423356137255866499">
 </p>
 
 Viser is a 3D visualization library for computer vision and robotics in Python.
