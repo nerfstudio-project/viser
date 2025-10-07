@@ -53,7 +53,7 @@ export default function ControlPanel(props: {
   // TODO: will result in unnecessary re-renders.
   const viewer = React.useContext(ViewerContext)!;
   const showGenerated = viewer.useGui(
-    (state) => "root" in state.guiUuidSetFromContainerUuid,
+    (state) => Object.keys(state.guiUuidSetFromContainerUuid["root"] ?? {}).length > 0,
   );
   const [showSettings, { toggle }] = useDisclosure(false);
 

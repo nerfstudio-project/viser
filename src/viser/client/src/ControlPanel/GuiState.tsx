@@ -71,7 +71,7 @@ const cleanGuiState: GuiState = {
   backgroundAvailable: false,
   showOrbitOriginTool: false,
   showOrbitOriginCrosshair: 0,
-  guiUuidSetFromContainerUuid: {},
+  guiUuidSetFromContainerUuid: { root: {} },
   modals: [],
   guiOrderFromUuid: {},
   guiConfigFromUuid: {},
