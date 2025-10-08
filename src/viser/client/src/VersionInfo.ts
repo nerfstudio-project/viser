@@ -1,6 +1,6 @@
 // Automatically generated file - do not edit manually.
 // This is synchronized with the Python package version in viser/__init__.py.
-export const VISER_VERSION = "1.0.12";
+export const VISER_VERSION = "1.0.13";
 
 // GitHub contributors for the viser project.
 export interface Contributor {
@@ -120,6 +120,10 @@ export const GITHUB_CONTRIBUTORS: Contributor[] = [
   {
     login: "mcallisterdavid",
     html_url: "https://github.com/mcallisterdavid",
+  },
+  {
+    login: "david-dorf",
+    html_url: "https://github.com/david-dorf",
   },
   {
     login: "cvachha",
