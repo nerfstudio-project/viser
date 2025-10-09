@@ -132,10 +132,11 @@ class Record3dFrame:
         self, downsample_factor: int = 1
     ) -> Tuple[npt.NDArray[np.float32], npt.NDArray[np.uint8]]:
         rgb = self.rgb[::downsample_factor, ::downsample_factor]
-        depth = _resize_nearest(self.depth, rgb.shape[:2])
+        target_shape = (rgb.shape[0], rgb.shape[1])
+        depth = _resize_nearest(self.depth, target_shape)
         mask = cast(
             npt.NDArray[np.bool_],
-            _resize_nearest(self.mask, rgb.shape[:2]),
+            _resize_nearest(self.mask, target_shape),
         )
         assert depth.shape == rgb.shape[:2]
 
