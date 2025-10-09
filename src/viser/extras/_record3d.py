@@ -9,8 +9,30 @@ from typing import Tuple, cast
 import imageio.v3 as iio
 import numpy as np
 import numpy.typing as npt
-import skimage.transform
-from scipy.spatial.transform import Rotation
+
+from ..transforms import SO3
+
+
+def _resize_nearest(array: npt.NDArray, target_shape: Tuple[int, int]) -> npt.NDArray:
+    """Resize array to target shape using nearest neighbor interpolation.
+
+    Args:
+        array: Input array with shape (H, W) or (H, W, C).
+        target_shape: Target (height, width).
+
+    Returns:
+        Resized array with shape (target_shape[0], target_shape[1]) or
+        (target_shape[0], target_shape[1], C) if input has channels.
+    """
+    h_src, w_src = array.shape[:2]
+    h_tgt, w_tgt = target_shape
+
+    # Compute indices for nearest neighbor sampling.
+    row_indices = (np.arange(h_tgt) * h_src / h_tgt).astype(np.int32)
+    col_indices = (np.arange(w_tgt) * w_src / w_tgt).astype(np.int32)
+
+    # Apply indexing to resize.
+    return array[row_indices[:, None], col_indices[None, :]]
 
 
 class Record3dLoader:
@@ -29,9 +51,11 @@ class Record3dLoader:
         fps = metadata["fps"]
 
         T_world_cameras: np.ndarray = np.array(metadata["poses"], np.float32)
+        # Convert quaternions (xyzw format) to rotation matrices.
+        rotation_matrices = SO3.from_quaternion_xyzw(T_world_cameras[:, :4]).as_matrix()
         T_world_cameras = np.concatenate(
             [
-                Rotation.from_quat(T_world_cameras[:, :4]).as_matrix(),
+                rotation_matrices,
                 T_world_cameras[:, 4:, None],
             ],
             -1,
@@ -108,10 +132,10 @@ class Record3dFrame:
         self, downsample_factor: int = 1
     ) -> Tuple[npt.NDArray[np.float32], npt.NDArray[np.uint8]]:
         rgb = self.rgb[::downsample_factor, ::downsample_factor]
-        depth = skimage.transform.resize(self.depth, rgb.shape[:2], order=0)
+        depth = _resize_nearest(self.depth, rgb.shape[:2])
         mask = cast(
             npt.NDArray[np.bool_],
-            skimage.transform.resize(self.mask, rgb.shape[:2], order=0),
+            _resize_nearest(self.mask, rgb.shape[:2]),
         )
         assert depth.shape == rgb.shape[:2]
 

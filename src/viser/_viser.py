@@ -16,10 +16,6 @@ from typing import TYPE_CHECKING, Any, Callable, ContextManager, TypeVar, cast, 
 import imageio.v3 as iio
 import numpy as np
 import numpy.typing as npt
-import rich
-from rich import box, style
-from rich.panel import Panel
-from rich.table import Table
 from typing_extensions import Literal, deprecated
 
 from . import _client_autobuild, _messages, infra
@@ -755,6 +751,11 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         )
 
         # Form status print.
+        import rich
+        from rich import box, style
+        from rich.panel import Panel
+        from rich.table import Table
+
         port = server._port  # Port may have changed.
         if host == "0.0.0.0":
             # 0.0.0.0 is not a real IP and people are often confused by it;
@@ -893,6 +894,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         else:
             # Create a new tunnel!.
             if verbose:
+                import rich
+
                 rich.print("[bold](viser)[/bold] Share URL requested!")
 
             connect_event = threading.Event()
@@ -903,6 +906,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
 
             @self._share_tunnel.on_disconnect
             def _() -> None:
+                import rich
+
                 rich.print("[bold](viser)[/bold] Disconnected from share URL")
                 self._share_tunnel = None
                 self._websock_server.queue_message(_messages.ShareUrlUpdated(None))
@@ -912,6 +917,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
                 assert self._share_tunnel is not None
                 share_url = self._share_tunnel.get_url()
                 if verbose:
+                    import rich
+
                     if share_url is None:
                         rich.print("[bold](viser)[/bold] Could not generate share URL")
                     else:
@@ -931,6 +938,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         if self._share_tunnel is not None:
             self._share_tunnel.close()
         else:
+            import rich
+
             rich.print(
                 "[bold](viser)[/bold] Tried to disconnect from share URL, but already disconnected"
             )

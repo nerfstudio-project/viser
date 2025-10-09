@@ -5,8 +5,6 @@ import inspect
 import warnings
 from typing import Any, Callable, TypeVar
 
-import rich
-
 TCallable = TypeVar("TCallable", bound=Callable)
 
 
@@ -78,6 +76,8 @@ def deprecated_positional_shim(
 
                     # Issue deprecation warning with specific parameter names.
                     converted_params = list(extra_kwargs.keys())
+                    import rich
+
                     rich.print(
                         f"[bold](viser)[/bold] Passing {converted_params} as positional arguments to {func.__name__} "
                         f"is deprecated. Please use keyword arguments instead: {', '.join(f'{k}={v}' for k, v in extra_kwargs.items())}",

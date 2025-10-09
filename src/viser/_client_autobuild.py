@@ -5,15 +5,18 @@ import subprocess
 import sys
 from pathlib import Path
 
-import rich
-
 client_dir = Path(__file__).absolute().parent / "client"
 build_dir = client_dir / "build"
 
 
 def _check_viser_dev_running() -> bool:
     """Returns True if the viewer client has been launched via `npm run dev`."""
-    import psutil
+    try:
+        import psutil
+    except ImportError:
+        # If psutil is not installed, we can't check for dev server.
+        # This is fine for normal usage - only needed for development.
+        return False
 
     for process in psutil.process_iter():
         try:
@@ -52,12 +55,16 @@ def ensure_client_is_built() -> None:
     build = False
     if _check_viser_dev_running():
         # Don't run build if dev server is already running.
+        import rich
+
         rich.print(
             "[bold](viser)[/bold] The Viser viewer looks like it has been launched via"
             " `npm run dev`. Skipping build check..."
         )
         build = False
     elif not (build_dir / "index.html").exists():
+        import rich
+
         rich.print("[bold](viser)[/bold] No client build found. Building now...")
         build = True
     elif (
@@ -67,6 +74,8 @@ def ensure_client_is_built() -> None:
         _modified_time_recursive(client_dir / "src")
         > _modified_time_recursive(build_dir) + 10.0
     ):
+        import rich
+
         rich.print(
             "[bold](viser)[/bold] Client build looks out of date. Building now..."
         )
@@ -87,6 +96,8 @@ def _build_viser_client(out_dir: Path, cached: bool = True) -> None:
     """
 
     if cached and build_dir.exists() and (build_dir / "index.html").exists():
+        import rich
+
         rich.print(
             f"[bold](viser)[/bold] Copying client build from {build_dir} to {out_dir}."
         )
@@ -157,13 +168,22 @@ def _install_sandboxed_node() -> Path:
 
     node_bin_dir = get_node_bin_dir()
     if (node_bin_dir / "npx").exists():
+        import rich
+
         rich.print("[bold](viser)[/bold] nodejs is set up!")
         return node_bin_dir
 
     env_dir = client_dir / ".nodeenv"
-    subprocess.run(
+    result = subprocess.run(
         [sys.executable, "-m", "nodeenv", "--node=20.4.0", env_dir], check=False
     )
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            "Failed to install Node.js using nodeenv. "
+            "To rebuild the Viser client, install nodeenv with: "
+            "pip install 'nodeenv>=1.9.1'"
+        )
 
     node_bin_dir = get_node_bin_dir()
     assert (node_bin_dir / "npx").exists()
