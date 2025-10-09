@@ -437,7 +437,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">NewType</span><span class="p">,</span> <span class="n">TypeVar</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">msgspec</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">rich</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">websockets.asyncio.server</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">websockets.datastructures</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">websockets.exceptions</span>
@@ -810,6 +809,8 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_background_worker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ready_sem</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">rich</span>
+
         <span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host</span>
         <span class="n">port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_port</span>
         <span class="n">message_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_message_class</span>
