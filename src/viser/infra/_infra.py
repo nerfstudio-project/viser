@@ -18,7 +18,6 @@ from pathlib import Path
 from typing import Any, Callable, Generator, NewType, TypeVar
 
 import msgspec
-import rich
 import websockets.asyncio.server
 import websockets.datastructures
 import websockets.exceptions
@@ -332,6 +331,8 @@ class WebsockServer(WebsockMessageHandler):
             client_state.message_buffer.flush()
 
     def _background_worker(self, ready_sem: threading.Semaphore) -> None:
+        import rich
+
         host = self._host
         port = self._port
         message_class = self._message_class
