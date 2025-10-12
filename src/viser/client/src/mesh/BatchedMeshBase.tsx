@@ -152,6 +152,7 @@ export const BatchedMeshBase = React.forwardRef<
       capacity: instanceCount,
       renderer: gl,
     });
+    newMesh.frustumCulled = false;
 
     // Create LODs if needed.
     let lodGeometries: THREE.BufferGeometry[] = [];
