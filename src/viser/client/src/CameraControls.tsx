@@ -78,11 +78,13 @@ function OrbitOriginTool({
   pivotRef,
   onPivotChange,
   update,
+  crosshairVisible,
 }: {
   forceShow: boolean;
   pivotRef: React.RefObject<THREE.Group>;
   onPivotChange: (matrix: THREE.Matrix4) => void;
   update: () => void;
+  crosshairVisible: boolean;
 }) {
   const viewer = useContext(ViewerContext)!;
   const showOrbitOriginTool = viewer.useGui(
@@ -90,9 +92,6 @@ function OrbitOriginTool({
   );
   const enableOrbitCrosshair = viewer.useDevSettings(
     (state) => state.enableOrbitCrosshair,
-  );
-  const showOrbitOriginCrosshair = viewer.useGui(
-    (state) => state.showOrbitOriginCrosshair,
   );
   React.useEffect(update, [showOrbitOriginTool]);
 
@@ -124,9 +123,7 @@ function OrbitOriginTool({
         visible={show}
       />
       {/* Crosshair visualization at look-at point */}
-      <CrosshairVisual
-        visible={enableOrbitCrosshair && showOrbitOriginCrosshair > 0}
-      />
+      <CrosshairVisual visible={enableOrbitCrosshair && crosshairVisible} />
     </PivotControls>
   );
 }
@@ -147,23 +144,14 @@ export function SynchronizedCameraControls() {
 
   const viewerMutable = viewer.mutable.current;
 
-  // Functions to handle crosshair visibility counter
-  const showCrosshair = React.useCallback(() => {
-    viewer.useGui.setState((state) => ({
-      showOrbitOriginCrosshair: state.showOrbitOriginCrosshair + 1,
-    }));
-  }, [viewer]);
+  // Crosshair visibility state: separate counter for keyboard and flag for pointer interactions.
+  const [keyboardCrosshairCounter, setKeyboardCrosshairCounter] = useState(0);
+  const [pointerInteractionActive, setPointerInteractionActive] =
+    useState(false);
 
-  const hideCrosshair = React.useCallback(() => {
-    viewer.useGui.setState((state) => ({
-      showOrbitOriginCrosshair: Math.max(0, state.showOrbitOriginCrosshair - 1),
-    }));
-  }, [viewer]);
-
-  // Initialize to 0 on mount
-  React.useEffect(() => {
-    viewer.useGui.setState({ showOrbitOriginCrosshair: 0 });
-  }, []);
+  // Crosshair is visible if either keyboard keys are held or pointer interaction is active.
+  const crosshairVisible =
+    keyboardCrosshairCounter > 0 || pointerInteractionActive;
 
   // Animation state interface.
   interface CameraAnimation {
@@ -555,10 +543,12 @@ export function SynchronizedCameraControls() {
     });
     for (const key of Object.values(keys)) {
       key.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLD_START, () => {
-        showCrosshair();
+        // Keyboard inputs can overlap, so increment counter.
+        setKeyboardCrosshairCounter((count) => count + 1);
       });
       key.addEventListener(holdEvent.HOLD_EVENT_TYPE.HOLD_END, () => {
-        hideCrosshair();
+        // Decrement counter when key is released.
+        setKeyboardCrosshairCounter((count) => Math.max(0, count - 1));
       });
     }
 
@@ -568,7 +558,7 @@ export function SynchronizedCameraControls() {
     return () => {
       return;
     };
-  }, [CameraControls, showCrosshair, hideCrosshair]);
+  }, [CameraControls]);
 
   return (
     <>
@@ -580,10 +570,10 @@ export function SynchronizedCameraControls() {
         draggingSmoothTime={0.0}
         onChange={sendCamera}
         onStart={() => {
-          showCrosshair();
+          setPointerInteractionActive(true);
         }}
         onEnd={() => {
-          hideCrosshair();
+          setPointerInteractionActive(false);
         }}
         makeDefault
       />
@@ -594,6 +584,7 @@ export function SynchronizedCameraControls() {
           updateCameraLookAtAndUpFromPivotControl(matrix);
         }}
         update={updatePivotControlFromCameraLookAtAndup}
+        crosshairVisible={crosshairVisible}
       />
     </>
   );
