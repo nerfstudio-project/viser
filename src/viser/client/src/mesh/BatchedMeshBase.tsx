@@ -152,6 +152,10 @@ export const BatchedMeshBase = React.forwardRef<
       capacity: instanceCount,
       renderer: gl,
     });
+
+    // Disable global frustum culling. Leaving this on would require calling
+    // `computeBoundingSphere()` on the full mesh whenever instances move. Note
+    // that we still benefit from per-instance culling in IM2!
     newMesh.frustumCulled = false;
 
     // Create LODs if needed.
