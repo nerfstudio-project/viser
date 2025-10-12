@@ -313,7 +313,11 @@ export const BatchedMeshBase = React.forwardRef<
     for (let i = 0; i < mesh.instancesCount; i++) {
       mesh.setColorAt(i, color);
     }
-  }, [props.batched_colors, mesh, props.batched_positions]);
+  }, [
+    props.batched_colors,
+    mesh,
+    props.batched_positions.byteLength, // Track instance count changes.
+  ]);
 
   // Update instances when colors change (per-instance case).
   // When per-instance colors are provided, apply them individually.
