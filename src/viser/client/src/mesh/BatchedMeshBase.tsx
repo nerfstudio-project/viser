@@ -299,31 +299,41 @@ export const BatchedMeshBase = React.forwardRef<
     }
   }, [props.clickable, mesh]);
 
-  // Update instances when colors change.
+  // Update instances when colors change (broadcast case).
+  // When a single color is provided, broadcast it to all instances.
   React.useEffect(() => {
     if (mesh === null || props.batched_colors === null) return;
+    if (props.batched_colors.byteLength !== 3) return;
+
+    const color = new THREE.Color(
+      props.batched_colors[0] / 255,
+      props.batched_colors[1] / 255,
+      props.batched_colors[2] / 255,
+    );
     for (let i = 0; i < mesh.instancesCount; i++) {
-      let color;
-      if (props.batched_colors.byteLength == 3) {
-        color = new THREE.Color(
-          props.batched_colors[0] / 255,
-          props.batched_colors[1] / 255,
-          props.batched_colors[2] / 255,
-        );
-      } else if (props.batched_colors.byteLength === mesh.instancesCount * 3) {
-        color = new THREE.Color(
-          props.batched_colors[i * 3] / 255,
-          props.batched_colors[i * 3 + 1] / 255,
-          props.batched_colors[i * 3 + 2] / 255,
-        );
-      } else {
-        console.error(
-          `Invalid batched_colors length: ${
-            props.batched_colors.byteLength
-          }, expected 3 or ${mesh.instancesCount * 3}`,
-        );
-        color = new THREE.Color(1, 1, 1); // Default to white.
-      }
+      mesh.setColorAt(i, color);
+    }
+  }, [props.batched_colors, mesh, props.batched_positions]);
+
+  // Update instances when colors change (per-instance case).
+  // When per-instance colors are provided, apply them individually.
+  React.useEffect(() => {
+    if (mesh === null || props.batched_colors === null) return;
+    if (props.batched_colors.byteLength === 3) return;
+
+    if (props.batched_colors.byteLength !== mesh.instancesCount * 3) {
+      console.error(
+        `Invalid batched_colors length: ${props.batched_colors.byteLength}, expected 3 or ${mesh.instancesCount * 3}`,
+      );
+      return;
+    }
+
+    for (let i = 0; i < mesh.instancesCount; i++) {
+      const color = new THREE.Color(
+        props.batched_colors[i * 3] / 255,
+        props.batched_colors[i * 3 + 1] / 255,
+        props.batched_colors[i * 3 + 2] / 255,
+      );
       mesh.setColorAt(i, color);
     }
   }, [props.batched_colors, mesh]);
