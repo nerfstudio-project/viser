@@ -511,6 +511,13 @@ class GaussianSplatHandle(
     """
 
 
+class GaussianSplatSparkJSHandle(
+    _ClickableSceneNodeHandle,
+    _messages.GaussianSplatsSparkJSProps,
+):
+    """Handle for SparkJS Gaussian splatting objects with spherical harmonics support."""
+
+
 class MeshSkinnedHandle(
     _ClickableSceneNodeHandle,
     _messages.SkinnedMeshProps,

@@ -429,6 +429,15 @@ export interface GaussianSplatsMessage {
   name: string;
   props: { buffer: Uint8Array<ArrayBuffer> };
 }
+/** Message from server->client for SparkJS Gaussian splats with spherical harmonics support.
+ *
+ * (automatically generated)
+ */
+export interface GaussianSplatsSparkJSMessage {
+  type: "GaussianSplatsSparkJSMessage";
+  name: string;
+  props: { spz_data: Uint8Array<ArrayBuffer> };
+}
 /** Remove a particular node from the scene.
  *
  * (automatically generated)
@@ -1542,6 +1551,7 @@ export type Message =
   | CatmullRomSplineMessage
   | CubicBezierSplineMessage
   | GaussianSplatsMessage
+  | GaussianSplatsSparkJSMessage
   | RemoveSceneNodeMessage
   | GuiFolderMessage
   | GuiMarkdownMessage
@@ -1632,7 +1642,8 @@ export type SceneNodeMessage =
   | LineSegmentsMessage
   | CatmullRomSplineMessage
   | CubicBezierSplineMessage
-  | GaussianSplatsMessage;
+  | GaussianSplatsMessage
+  | GaussianSplatsSparkJSMessage;
 export type GuiComponentMessage =
   | GuiFolderMessage
   | GuiMarkdownMessage
@@ -1682,6 +1693,7 @@ const typeSetSceneNodeMessage = new Set([
   "CatmullRomSplineMessage",
   "CubicBezierSplineMessage",
   "GaussianSplatsMessage",
+  "GaussianSplatsSparkJSMessage",
 ]);
 export function isSceneNodeMessage(
   message: Message,

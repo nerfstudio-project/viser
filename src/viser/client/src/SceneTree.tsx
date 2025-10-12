@@ -42,6 +42,7 @@ import {
 import { CameraFrustumComponent } from "./CameraFrustumVariants";
 import { SceneNodeMessage } from "./WebsocketMessages";
 import { SplatObject } from "./Splatting/GaussianSplats";
+import { SparkJSGaussianSplats } from "./Splatting/SparkJSGaussianSplats";
 import { Paper } from "@mantine/core";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Line } from "./Line";
@@ -580,6 +581,26 @@ function createObjectFactory(
           >
             {children}
           </SplatObject>
+        ),
+      };
+    }
+    case "GaussianSplatsSparkJSMessage": {
+      return {
+        makeObject: (ref, children) => (
+          <SparkJSGaussianSplats
+            ref={ref}
+            spzData={
+              new Uint8Array(
+                message.props.spz_data.buffer.slice(
+                  message.props.spz_data.byteOffset,
+                  message.props.spz_data.byteOffset +
+                    message.props.spz_data.byteLength,
+                ),
+              )
+            }
+          >
+            {children}
+          </SparkJSGaussianSplats>
         ),
       };
     }

@@ -1620,6 +1620,19 @@ class GaussianSplatsProps:
 
 
 @dataclasses.dataclass
+class GaussianSplatsSparkJSMessage(_CreateSceneNodeMessage):
+    """Message from server->client for SparkJS Gaussian splats with spherical harmonics support."""
+
+    props: GaussianSplatsSparkJSProps
+
+
+@dataclasses.dataclass
+class GaussianSplatsSparkJSProps:
+    spz_data: bytes
+    """Binary data of SPZ format splat file."""
+
+
+@dataclasses.dataclass
 class GetRenderRequestMessage(Message):
     """Message from server->client requesting a render from a specified camera
     pose."""

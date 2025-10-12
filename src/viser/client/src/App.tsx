@@ -48,6 +48,14 @@ import { BrowserWarning } from "./BrowserWarning";
 import { MacWindowWrapper } from "./MacWindowWrapper";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
 import { VISER_VERSION, GITHUB_CONTRIBUTORS, Contributor } from "./VersionInfo";
+import "./Splatting/SparkJSComponents";
+
+// TypeScript declarations for SparkJS extended elements
+declare module "@react-three/fiber" {
+  interface ThreeElements {
+    sparkRenderer: any;
+  }
+}
 
 // ======= Utility functions =======
 
@@ -383,6 +391,19 @@ function NotificationsPanel() {
 }
 
 /**
+ * SparkRenderer wrapper component that provides the global renderer for all splats.
+ */
+function SparkRendererWrapper({ children }: { children: React.ReactNode }) {
+  const renderer = useThree((state) => state.gl);
+
+  const sparkRendererArgs = React.useMemo(() => {
+    return { renderer };
+  }, [renderer]);
+
+  return <sparkRenderer args={[sparkRendererArgs]}>{children}</sparkRenderer>;
+}
+
+/**
  * Main 3D canvas component.
  */
 function ViewerCanvas({ children }: { children: React.ReactNode }) {
@@ -485,6 +506,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   };
 
   const fixedDpr = viewer.useDevSettings((state) => state.fixedDpr);
+
   const sceneContents = React.useMemo(
     () => (
       <>
@@ -492,9 +514,11 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         <SceneContextSetter />
         {memoizedCameraControls}
         <SplatRenderContext>
-          <AdaptiveDpr />
-          {children}
-          <SceneNodeThreeObject name="" />
+          <SparkRendererWrapper>
+            <AdaptiveDpr />
+            {children}
+            <SceneNodeThreeObject name="" />
+          </SparkRendererWrapper>
         </SplatRenderContext>
         <DefaultLights />
       </>

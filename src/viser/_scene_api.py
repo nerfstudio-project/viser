@@ -38,6 +38,7 @@ from ._scene_handles import (
     DirectionalLightHandle,
     FrameHandle,
     GaussianSplatHandle,
+    GaussianSplatSparkJSHandle,
     GlbHandle,
     GridHandle,
     Gui3dContainerHandle,
@@ -1870,6 +1871,41 @@ class SceneApi:
             ),
         )
         node_handle = GaussianSplatHandle._make(
+            self, message, name, wxyz, position, visible
+        )
+        return node_handle
+
+    def add_gaussian_splats_sparkjs(
+        self,
+        name: str,
+        spz_binary: bytes,
+        *,
+        wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> GaussianSplatSparkJSHandle:
+        """Add a Gaussian Splatting model using SparkJS with spherical harmonics support.
+
+        This method uses the SparkJS renderer which supports spherical harmonics
+        and provides better rendering quality for Gaussian splats.
+
+        Arguments:
+            name: Scene node name.
+            spz_binary: Binary data of SPZ format splat file.
+            wxyz: R_parent_local transformation.
+            position: t_parent_local transformation.
+            visible: Initial visibility of scene node.
+
+        Returns:
+            Scene node handle.
+        """
+        message = _messages.GaussianSplatsSparkJSMessage(
+            name=name,
+            props=_messages.GaussianSplatsSparkJSProps(
+                spz_data=spz_binary,
+            ),
+        )
+        node_handle = GaussianSplatSparkJSHandle._make(
             self, message, name, wxyz, position, visible
         )
         return node_handle

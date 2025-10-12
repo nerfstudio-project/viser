@@ -27,4 +27,10 @@ export default defineConfig({
     outDir: "build",
     target: browserslistToEsbuild(),
   },
+  optimizeDeps: {
+    include: ["@sparkjsdev/spark"],
+    esbuildOptions: {
+      target: "esnext",
+    },
+  },
 });
