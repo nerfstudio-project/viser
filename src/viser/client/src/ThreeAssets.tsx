@@ -336,18 +336,20 @@ export const InstancedAxes = React.forwardRef<
 
     for (let i = 0; i < numInstances; i++) {
       // Calculate byte offsets for reading float values.
-      const posOffset = i * 3 * 4; // 3 floats, 4 bytes per float
-      const wxyzOffset = i * 4 * 4; // 4 floats, 4 bytes per float
+      // Use modulo as a defensive check to prevent out-of-bounds reads when
+      // array lengths don't match.
+      const posOffset = (i * 3 * 4) % batched_positions.byteLength;
+      const wxyzOffset = (i * 4 * 4) % batched_wxyzs.byteLength;
       const scaleOffset =
         batched_scales &&
         batched_scales.byteLength === (batched_wxyzs.byteLength / 4) * 3
-          ? i * 3 * 4 // Per-axis scaling: 3 floats, 4 bytes per float
-          : i * 4; // Uniform scaling: 1 float, 4 bytes per float
+          ? (i * 3 * 4) % batched_scales.byteLength // Per-axis scaling: 3 floats, 4 bytes per float
+          : (i * 4) % (batched_scales?.byteLength ?? 4); // Uniform scaling: 1 float, 4 bytes per float
 
       // Read scale value if available.
-      if (scalesView) {
+      if (scalesView && batched_scales) {
         // Check if we have per-axis scaling (N,3) or uniform scaling (N,).
-        if (batched_scales!.byteLength === (batched_wxyzs.byteLength / 4) * 3) {
+        if (batched_scales.byteLength === (batched_wxyzs.byteLength / 4) * 3) {
           // Per-axis scaling: read 3 floats.
           tmpScale.set(
             scalesView.getFloat32(scaleOffset, true), // x scale
