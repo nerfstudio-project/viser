@@ -151,8 +151,9 @@ export const BatchedMeshHoverOutlines: React.FC<
       // Only show outline if the batch index is valid (check bytes per position = 3 floats * 4 bytes)
       if (batchIndex >= 0 && batchIndex * 12 < batched_positions.byteLength) {
         // Calculate byte offsets.
-        const posOffset = batchIndex * 3 * 4; // 3 floats, 4 bytes per float
-        const wxyzOffset = batchIndex * 4 * 4; // 4 floats, 4 bytes per float
+        // Use modulo as a defensive check to prevent out-of-bounds reads.
+        const posOffset = (batchIndex * 3 * 4) % batched_positions.byteLength;
+        const wxyzOffset = (batchIndex * 4 * 4) % batched_wxyzs.byteLength;
 
         // Position the outline at the hovered instance.
         outlineRef.current.position.set(
@@ -170,14 +171,15 @@ export const BatchedMeshHoverOutlines: React.FC<
         );
 
         // Set scale to match the hovered instance
-        if (scalesView) {
+        if (scalesView && batched_scales) {
           // Check if we have per-axis scaling (N,3) or uniform scaling (N,).
           if (
-            batched_scales!.byteLength ===
+            batched_scales.byteLength ===
             (batched_wxyzs.byteLength / 4) * 3
           ) {
             // Per-axis scaling: read 3 floats.
-            const scaleOffset = batchIndex * 3 * 4; // 3 floats, 4 bytes per float
+            const scaleOffset =
+              (batchIndex * 3 * 4) % batched_scales.byteLength;
             outlineRef.current.scale.set(
               scalesView.getFloat32(scaleOffset, true), // x scale
               scalesView.getFloat32(scaleOffset + 4, true), // y scale
@@ -185,7 +187,7 @@ export const BatchedMeshHoverOutlines: React.FC<
             );
           } else {
             // Uniform scaling: read 1 float and apply to all axes.
-            const scaleOffset = batchIndex * 4; // 1 float, 4 bytes per float
+            const scaleOffset = (batchIndex * 4) % batched_scales.byteLength;
             const scale = scalesView.getFloat32(scaleOffset, true);
             outlineRef.current.scale.setScalar(scale);
           }

@@ -223,14 +223,11 @@ export const BatchedMeshBase = React.forwardRef<
     // Update all instances.
     mesh.updateInstances((obj, index) => {
       // Calculate byte offsets for reading float values.
-      const posOffset = index * 3 * 4; // 3 floats, 4 bytes per float.
-      const wxyzOffset = index * 4 * 4; // 4 floats, 4 bytes per float.
-      const scaleOffset =
-        props.batched_scales &&
-        props.batched_scales.byteLength ===
-          (props.batched_wxyzs.byteLength / 4) * 3
-          ? index * 3 * 4 // Per-axis scaling: 3 floats, 4 bytes per float.
-          : index * 4; // Uniform scaling: 1 float, 4 bytes per float.
+      // Use modulo as a defensive check to prevent out-of-bounds reads when
+      // array lengths don't match (e.g., if batched_wxyzs has fewer elements
+      // than batched_positions).
+      const posOffset = (index * 3 * 4) % props.batched_positions.byteLength;
+      const wxyzOffset = (index * 4 * 4) % props.batched_wxyzs.byteLength;
 
       // Read position values.
       tempPosition.set(
@@ -248,13 +245,14 @@ export const BatchedMeshBase = React.forwardRef<
       );
 
       // Read scale value if available.
-      if (scalesView) {
+      if (scalesView && props.batched_scales) {
         // Check if we have per-axis scaling (N,3) or uniform scaling (N,).
         if (
-          props.batched_scales!.byteLength ===
+          props.batched_scales.byteLength ===
           (props.batched_wxyzs.byteLength / 4) * 3
         ) {
           // Per-axis scaling: read 3 floats.
+          const scaleOffset = (index * 3 * 4) % props.batched_scales.byteLength;
           tempScale.set(
             scalesView.getFloat32(scaleOffset, true), // x scale.
             scalesView.getFloat32(scaleOffset + 4, true), // y scale.
@@ -262,6 +260,7 @@ export const BatchedMeshBase = React.forwardRef<
           );
         } else {
           // Uniform scaling: read 1 float and apply to all axes.
+          const scaleOffset = (index * 4) % props.batched_scales.byteLength;
           const scale = scalesView.getFloat32(scaleOffset, true);
           tempScale.setScalar(scale);
         }
