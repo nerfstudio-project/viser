@@ -190,8 +190,6 @@ async def _make_tunnel(
     local_port: int,
     shared_state: DictProxy | dict,
 ) -> None:
-    share_domain = "share.viser.studio"
-
     import requests
 
     try:

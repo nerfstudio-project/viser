@@ -31,6 +31,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent"
 ]
@@ -52,7 +53,6 @@ dependencies = [
 dev = [
     "pyright>=1.1.308",
     "ruff>=0.9.3",
-    "pre-commit==3.3.2",
     "pytest",
     "hypothesis[numpy]",
     "opencv-python>=4.0.0.21,<5.0.0",

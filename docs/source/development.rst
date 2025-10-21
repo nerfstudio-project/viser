@@ -31,7 +31,6 @@ First, install developer tools:
 
    # Using pip.
    pip install -e .[dev]
-   pre-commit install
 
 For code quality, rely primarily on ``pyright`` and ``ruff``:
 

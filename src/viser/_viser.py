@@ -28,6 +28,9 @@ from ._threadpool_exceptions import print_threadpool_errors
 from ._tunnel import ViserTunnel
 from .infra._infra import StateSerializer
 
+# Domain we use for share URLs.
+_SHARE_DOMAIN = "share.viser.studio"
+
 
 @dataclasses.dataclass
 class _CameraHandleState:
@@ -900,9 +903,7 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
 
             connect_event = threading.Event()
 
-            self._share_tunnel = ViserTunnel(
-                "share.viser.studio", self._websock_server._port
-            )
+            self._share_tunnel = ViserTunnel(_SHARE_DOMAIN, self._websock_server._port)
 
             @self._share_tunnel.on_disconnect
             def _() -> None:
