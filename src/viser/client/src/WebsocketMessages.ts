@@ -313,7 +313,7 @@ export interface BatchedMeshesMessage {
     faces: Uint8Array<ArrayBuffer>;
     batched_colors: Uint8Array<ArrayBuffer>;
     wireframe: boolean;
-    opacity: number | null;
+    batched_opacities: Uint8Array<ArrayBuffer> | null;
     flat_shading: boolean;
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";

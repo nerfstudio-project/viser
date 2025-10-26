@@ -23,21 +23,23 @@ export const BatchedMesh = React.forwardRef<
     const mat = createStandardMaterial({
       material: message.props.material,
       wireframe: message.props.wireframe,
-      opacity: message.props.opacity,
+      opacity: null, // Opacity is now handled per-instance
       flat_shading: message.props.flat_shading,
       side: message.props.side,
     });
 
-    // Set additional properties.
-    if (message.props.opacity !== null && message.props.opacity < 1.0) {
+    // Set transparent flag if we have opacity data.
+    // This must be set before the mesh is created for opacity to work properly.
+    if (message.props.batched_opacities) {
       mat.transparent = true;
+      mat.opacity = 1.0; // Will be overridden per-instance
     }
 
     return mat;
   }, [
     message.props.material,
     message.props.wireframe,
-    message.props.opacity,
+    message.props.batched_opacities,
     message.props.flat_shading,
     message.props.side,
   ]);
@@ -83,6 +85,7 @@ export const BatchedMesh = React.forwardRef<
         batched_wxyzs={message.props.batched_wxyzs}
         batched_scales={message.props.batched_scales}
         batched_colors={message.props.batched_colors}
+        batched_opacities={message.props.batched_opacities}
         lod={message.props.lod}
         cast_shadow={message.props.cast_shadow}
         receive_shadow={message.props.receive_shadow}

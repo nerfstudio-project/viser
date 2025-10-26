@@ -115,6 +115,7 @@ export const BatchedMeshBase = React.forwardRef<
     batched_wxyzs: Uint8Array;
     batched_scales: Uint8Array | null;
     batched_colors: Uint8Array | null;
+    batched_opacities: Uint8Array | null;
 
     // Geometry info.
     geometry: THREE.BufferGeometry;
@@ -345,6 +346,31 @@ export const BatchedMeshBase = React.forwardRef<
       mesh.setColorAt(i, color);
     }
   }, [props.batched_colors, mesh]);
+
+  // Update instances when opacities change (per-instance case).
+  // When per-instance opacities are provided, apply them individually.
+  React.useEffect(() => {
+    if (mesh === null || !props.batched_opacities) return;
+
+    const expectedBytes = mesh.instancesCount * Float32Array.BYTES_PER_ELEMENT;
+    if (props.batched_opacities.byteLength !== expectedBytes) {
+      console.error(
+        `Invalid batched_opacities length: ${props.batched_opacities.byteLength}, expected ${expectedBytes}`,
+      );
+      return;
+    }
+
+    const opacitiesView = new DataView(
+      props.batched_opacities.buffer,
+      props.batched_opacities.byteOffset,
+      props.batched_opacities.byteLength,
+    );
+
+    for (let i = 0; i < mesh.instancesCount; i++) {
+      const opacity = opacitiesView.getFloat32(i * 4, true);
+      mesh.setOpacityAt(i, opacity);
+    }
+  }, [props.batched_opacities, mesh]);
 
   // Update shadow settings.
   useEffect(() => {

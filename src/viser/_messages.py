@@ -795,8 +795,6 @@ class BatchedMeshesProps(_BatchedMeshExtraProps):
     """A numpy array of colors, where each color is represented by RGB integers. Should have shape (N, 3) or (3,)."""
     wireframe: bool
     """Boolean indicating if the mesh should be rendered as a wireframe."""
-    opacity: Optional[float]
-    """Opacity of the mesh. None means opaque."""
     flat_shading: bool
     """Whether to do flat shading."""
     side: Literal["front", "back", "double"]
@@ -807,6 +805,8 @@ class BatchedMeshesProps(_BatchedMeshExtraProps):
     """Whether or not to cast shadows."""
     receive_shadow: bool
     """Whether or not to receive shadows."""
+    batched_opacities: Optional[npt.NDArray[np.float32]] = None
+    """A numpy array of opacities. Should have shape (N,) for per-instance opacity. None means opaque."""
 
 
 @dataclasses.dataclass
