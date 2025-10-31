@@ -71,8 +71,8 @@ def main(
     # Let's rotate the scene so the average camera direction is pointing up.
     if reorient_scene:
         average_up = (
-            vtf.SO3(np.array([img.qvec for img in images.values()]))
-            @ np.array([0.0, -1.0, 0.0])  # -y is up in the local frame!
+            np.array([0.0, -1.0, 0.0]) # -y is up in the local frame!
+            @ vtf.SO3(np.array([img.qvec for img in images.values()])).as_matrix()
         ).mean(axis=0)
         average_up /= np.linalg.norm(average_up)
         server.scene.set_up_direction((average_up[0], average_up[1], average_up[2]))
