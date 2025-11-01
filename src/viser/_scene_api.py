@@ -972,7 +972,7 @@ class SceneApi:
         visible: bool = True,
         cast_shadow: bool = True,
         receive_shadow: bool | float = True,
-        variant: Literal["wireframe", "filled"] = "wireframe",
+        variant: Literal["wireframe", "filled", "image_plane"] = "wireframe",
     ) -> CameraFrustumHandle:
         """Add a camera frustum to the scene for visualization.
 

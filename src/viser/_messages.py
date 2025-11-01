@@ -253,9 +253,10 @@ class CameraFrustumProps:
     """Whether to receive shadows. If True, receives shadows normally. If
     False, no shadows. If a float (0-1), shadows are rendered with a fixed
     opacity regardless of lighting conditions. """
-    variant: Literal["wireframe", "filled"] = "wireframe"
+    variant: Literal["wireframe", "filled", "image_plane"] = "wireframe"
     """Variant of the frustum visualization. 'wireframe' shows lines only,
-    'filled' adds semi-transparent faces. """
+    'filled' adds semi-transparent faces. 'image-plane' shows only the image
+    plane."""
 
 
 @dataclasses.dataclass

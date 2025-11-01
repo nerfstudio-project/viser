@@ -55,31 +55,51 @@ export const CameraFrustumComponent = React.forwardRef<
     }
   });
 
-  const frustumPoints: [number, number, number][] = [
-    // Rectangle.
-    [-1, -1, 1],
-    [1, -1, 1],
-    [1, -1, 1],
-    [1, 1, 1],
-    [1, 1, 1],
-    [-1, 1, 1],
-    [-1, 1, 1],
-    [-1, -1, 1],
-    // Lines to origin.
-    [-1, -1, 1],
-    [0, 0, 0],
-    [0, 0, 0],
-    [1, -1, 1],
-    // Lines to origin.
-    [-1, 1, 1],
-    [0, 0, 0],
-    [0, 0, 0],
-    [1, 1, 1],
-    // Up direction indicator.
-    // Don't overlap with the image if the image is present.
-    [0.0, -1.2, 1.0],
-    imageTexture === undefined ? [0.0, -0.9, 1.0] : [0.0, -1.0, 1.0],
-  ].map((xyz) => [xyz[0] * x, xyz[1] * y, xyz[2] * z]);
+  let frustumPoints: [number, number, number][];
+  if (message.props.variant === "image_plane") {
+    frustumPoints = [
+      // Rectangle.
+      [-1, -1, 1],
+      [1, -1, 1],
+      [1, -1, 1],
+      [1, 1, 1],
+      [1, 1, 1],
+      [-1, 1, 1],
+      [-1, 1, 1],
+      [-1, -1, 1],
+      // Up direction indicator.
+      // Don't overlap with the image if the image is present.
+      // [0.0, -1.2, 1.0],
+      // imageTexture === undefined ? [0.0, -0.9, 1.0] : [0.0, -1.0, 1.0],
+    ];
+  } else {
+    frustumPoints = [
+      // Rectangle.
+      [-1, -1, 1],
+      [1, -1, 1],
+      [1, -1, 1],
+      [1, 1, 1],
+      [1, 1, 1],
+      [-1, 1, 1],
+      [-1, 1, 1],
+      [-1, -1, 1],
+      // Lines to origin.
+      [-1, -1, 1],
+      [0, 0, 0],
+      [0, 0, 0],
+      [1, -1, 1],
+      // Lines to origin.
+      [-1, 1, 1],
+      [0, 0, 0],
+      [0, 0, 0],
+      [1, 1, 1],
+      // Up direction indicator.
+      // Don't overlap with the image if the image is present.
+      [0.0, -1.2, 1.0],
+      imageTexture === undefined ? [0.0, -0.9, 1.0] : [0.0, -1.0, 1.0],
+    ];
+  }
+  frustumPoints = frustumPoints.map((pt) => [pt[0] * x, pt[1] * y, pt[2] * z]);
 
   // Create geometry for filled variant
   const geometry = React.useMemo(() => {
@@ -147,7 +167,7 @@ export const CameraFrustumComponent = React.forwardRef<
           <meshBasicMaterial
             color={isHovered ? 0xfbff00 : color}
             transparent
-            opacity={0.3}
+            opacity={0.1}
             side={THREE.DoubleSide}
             depthWrite={false}
           />

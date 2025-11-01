@@ -19,7 +19,7 @@ export interface CameraFrustumMessage {
     _image_data: Uint8Array<ArrayBuffer> | null;
     cast_shadow: boolean;
     receive_shadow: boolean | number;
-    variant: "wireframe" | "filled";
+    variant: "wireframe" | "filled" | "image_plane";
   };
 }
 /** GlTF message.
