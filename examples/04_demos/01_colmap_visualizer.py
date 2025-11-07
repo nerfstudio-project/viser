@@ -71,6 +71,7 @@ def main(
     # Let's rotate the scene so the average camera direction is pointing up.
     if reorient_scene:
         average_up = (
+            # `qvec` corresponds to T_camera_world; we convert to T_world_camera.
             vtf.SO3(np.array([img.qvec for img in images.values()])).inverse()
             @ np.array([0.0, -1.0, 0.0])  # -y is up in the local frame!
         ).mean(axis=0)
