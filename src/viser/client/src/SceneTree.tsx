@@ -4,6 +4,8 @@ import {
   Grid,
   PivotControls,
 } from "@react-three/drei";
+import { Text } from "@react-three/uikit";
+import { ConstantScreenSpaceBillboard } from "./ConstantScreenSpaceBillboard";
 import { ContextBridge, useContextBridge } from "its-fine";
 import { useFrame } from "@react-three/fiber";
 import React, { useEffect } from "react";
@@ -173,15 +175,15 @@ function createObjectFactory(
         message.props.plane == "xz"
           ? new THREE.Euler(0.0, 0.0, 0.0)
           : message.props.plane == "xy"
-          ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-          : message.props.plane == "yx"
-          ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-          : message.props.plane == "yz"
-          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-          : message.props.plane == "zx"
-          ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-          : //message.props.plane == "zy"
-            new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0),
+            ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+            : message.props.plane == "yx"
+              ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+              : message.props.plane == "yz"
+                ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                : message.props.plane == "zx"
+                  ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                  : //message.props.plane == "zy"
+                    new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0),
       );
 
       // When rotations are identity: plane is XY, while grid is XZ.
@@ -388,33 +390,24 @@ function createObjectFactory(
     case "LabelMessage": {
       return {
         makeObject: (ref, children) => (
-          // We wrap with <group /> because Html doesn't implement THREE.Object3D.
-          <group ref={ref}>
-            <Html>
-              <div
-                style={{
-                  width: "10em",
-                  fontSize: "0.8em",
-                  transform: "translateX(0.1em) translateY(0.5em)",
-                }}
-              >
-                <span
-                  style={{
-                    background: "#fff",
-                    border: "1px solid #777",
-                    borderRadius: "0.2em",
-                    color: "#333",
-                    padding: "0.2em",
-                  }}
-                >
-                  {message.props.text}
-                </span>
-              </div>
-            </Html>
-            {children}
-          </group>
+          <ConstantScreenSpaceBillboard ref={ref} unrotatedChildren={children}>
+            <Text
+              renderOrder={10_000}
+              depthTest={false}
+              fontSize={64}
+              color="black"
+              backgroundColor="#ffffff"
+              padding={3}
+              borderRadius={3}
+              borderWidth={3}
+              paddingX={12}
+              borderColor="#777777"
+            >
+              {message.props.text}
+            </Text>
+          </ConstantScreenSpaceBillboard>
         ),
-        unmountWhenInvisible: true,
+        unmountWhenInvisible: false,
       };
     }
     case "Gui3DMessage": {
@@ -829,8 +822,10 @@ export function SceneNodeThreeObject(props: { name: string }) {
           poseUpdateState: "updated",
         });
 
-        const wxyz = node.wxyz ?? [1, 0, 0, 0];
-        objRef.current.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+        if (message!.type !== "LabelMessage") {
+          const wxyz = node.wxyz ?? [1, 0, 0, 0];
+          objRef.current.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+        }
         const position = node.position ?? [0, 0, 0];
         objRef.current.position.set(position[0], position[1], position[2]);
 
