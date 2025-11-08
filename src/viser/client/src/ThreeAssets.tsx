@@ -584,6 +584,8 @@ export const ViserLabel = React.forwardRef<
         borderRadius={fontSize / 8}
         paddingY={fontSize / 4}
         paddingX={fontSize / 2}
+        anchorX="left"
+        anchorY="top"
       >
         {message.props.text}
       </Text>
