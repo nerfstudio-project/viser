@@ -3,9 +3,15 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { OutlinesIfHovered } from "./OutlinesIfHovered";
 import React from "react";
 import * as THREE from "three";
-import { ImageMessage, PointCloudMessage } from "./WebsocketMessages";
+import {
+  ImageMessage,
+  LabelMessage,
+  PointCloudMessage,
+} from "./WebsocketMessages";
 import { BatchedMeshHoverOutlines } from "./mesh/BatchedMeshHoverOutlines";
 import { MeshBasicMaterial } from "three";
+import { Text } from "@react-three/uikit";
+import { Billboard } from "./Billboard";
 
 const originGeom = new THREE.SphereGeometry(1.0);
 
@@ -526,5 +532,63 @@ export const ViserImage = React.forwardRef<
       </mesh>
       {children}
     </group>
+  );
+});
+
+export const ViserLabel = React.forwardRef<
+  THREE.Group,
+  LabelMessage & { children?: React.ReactNode }
+>(function ViserLabel({ children, ...message }, ref) {
+  const groupRef = React.useRef<THREE.Group>(null!);
+  const worldPos = React.useRef(new THREE.Vector3());
+  const frustum = React.useRef(new THREE.Frustum());
+  const projScreenMatrix = React.useRef(new THREE.Matrix4());
+
+  // UIKit's default pixelSize is 0.01, meaning 1 pixel = 0.01 scene units.
+  // So to get font_height in scene units, we need fontSize = font_height / 0.01.
+  const pixelSize = 0.01;
+  const fontSize = message.props.font_height / pixelSize;
+
+  useFrame(({ camera }) => {
+    if (!groupRef.current) return;
+
+    // Math for frustum culling.
+    projScreenMatrix.current.multiplyMatrices(
+      camera.projectionMatrix,
+      camera.matrixWorldInverse,
+    );
+    frustum.current.setFromProjectionMatrix(projScreenMatrix.current);
+    groupRef.current.getWorldPosition(worldPos.current);
+
+    // Frustum + distance-based culling.
+    const inFrustum = frustum.current.containsPoint(worldPos.current);
+    const distance = camera.position.distanceTo(worldPos.current);
+    const cutoffDistance =
+      message.props.cutoff_distance === null
+        ? camera.far
+        : Math.min(message.props.cutoff_distance, camera.far);
+    groupRef.current.visible = inFrustum && distance < cutoffDistance;
+  });
+
+  React.useImperativeHandle(ref, () => groupRef.current, []);
+
+  return (
+    <Billboard ref={groupRef} unrotatedChildren={children}>
+      <Text
+        renderOrder={10_000}
+        depthTest={message.props.depth_test}
+        fontSize={fontSize}
+        fontFamily="Inter"
+        color="black"
+        backgroundColor="rgba(255,255,255,0.8)"
+        borderRadius={fontSize / 8}
+        paddingY={fontSize / 4}
+        paddingX={fontSize / 2}
+        anchorX="left"
+        anchorY="top"
+      >
+        {message.props.text}
+      </Text>
+    </Billboard>
   );
 });
