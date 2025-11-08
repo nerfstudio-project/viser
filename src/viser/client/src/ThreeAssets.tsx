@@ -544,8 +544,6 @@ export const ViserLabel = React.forwardRef<
   const frustum = React.useRef(new THREE.Frustum());
   const projScreenMatrix = React.useRef(new THREE.Matrix4());
 
-  const [isVisible, setIsVisible] = React.useState(false);
-
   // UIKit's default pixelSize is 0.01, meaning 1 pixel = 0.01 scene units.
   // So to get font_height in scene units, we need fontSize = font_height / 0.01.
   const pixelSize = 0.01;
@@ -554,7 +552,7 @@ export const ViserLabel = React.forwardRef<
   useFrame(({ camera }) => {
     if (!groupRef.current) return;
 
-    // Frustum culling: hide labels outside camera view.
+    // Math for frustum culling.
     projScreenMatrix.current.multiplyMatrices(
       camera.projectionMatrix,
       camera.matrixWorldInverse,
@@ -562,38 +560,33 @@ export const ViserLabel = React.forwardRef<
     frustum.current.setFromProjectionMatrix(projScreenMatrix.current);
     groupRef.current.getWorldPosition(worldPos.current);
 
+    // Frustum + distance-based culling.
     const inFrustum = frustum.current.containsPoint(worldPos.current);
-
-    // Distance-based culling: hide labels beyond cutoff distance if specified.
     const distance = camera.position.distanceTo(worldPos.current);
     const cutoffDistance =
       message.props.cutoff_distance === null
         ? camera.far
         : Math.min(message.props.cutoff_distance, camera.far);
-
-    const shouldBeVisible = inFrustum && distance <= cutoffDistance;
-    setIsVisible(shouldBeVisible);
+    groupRef.current.visible = inFrustum && distance > cutoffDistance;
   });
 
   React.useImperativeHandle(ref, () => groupRef.current, []);
 
   return (
     <Billboard ref={groupRef} unrotatedChildren={children}>
-      {isVisible && (
-        <Text
-          renderOrder={10_000}
-          depthTest={message.props.depth_test}
-          fontSize={fontSize}
-          fontFamily="Inter"
-          color="black"
-          backgroundColor="rgba(255,255,255,0.8)"
-          borderRadius={fontSize / 8}
-          paddingY={fontSize / 4}
-          paddingX={fontSize / 2}
-        >
-          {message.props.text}
-        </Text>
-      )}
+      <Text
+        renderOrder={10_000}
+        depthTest={message.props.depth_test}
+        fontSize={fontSize}
+        fontFamily="Inter"
+        color="black"
+        backgroundColor="rgba(255,255,255,0.8)"
+        borderRadius={fontSize / 8}
+        paddingY={fontSize / 4}
+        paddingX={fontSize / 2}
+      >
+        {message.props.text}
+      </Text>
     </Billboard>
   );
 });

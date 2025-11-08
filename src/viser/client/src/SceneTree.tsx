@@ -4,8 +4,6 @@ import {
   Grid,
   PivotControls,
 } from "@react-three/drei";
-import { Text } from "@react-three/uikit";
-import { Billboard } from "./Billboard";
 import { ContextBridge, useContextBridge } from "its-fine";
 import { useFrame } from "@react-three/fiber";
 import React, { useEffect } from "react";
