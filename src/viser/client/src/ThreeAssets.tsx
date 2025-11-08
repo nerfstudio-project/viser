@@ -3,9 +3,15 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { OutlinesIfHovered } from "./OutlinesIfHovered";
 import React from "react";
 import * as THREE from "three";
-import { ImageMessage, PointCloudMessage } from "./WebsocketMessages";
+import {
+  ImageMessage,
+  LabelMessage,
+  PointCloudMessage,
+} from "./WebsocketMessages";
 import { BatchedMeshHoverOutlines } from "./mesh/BatchedMeshHoverOutlines";
 import { MeshBasicMaterial } from "three";
+import { Text } from "@react-three/uikit";
+import { Billboard } from "./Billboard";
 
 const originGeom = new THREE.SphereGeometry(1.0);
 
@@ -526,5 +532,63 @@ export const ViserImage = React.forwardRef<
       </mesh>
       {children}
     </group>
+  );
+});
+
+export const ViserLabel = React.forwardRef<
+  THREE.Group,
+  LabelMessage & { children?: React.ReactNode }
+>(function ViserLabel({ children, ...message }, ref) {
+  const groupRef = React.useRef<THREE.Group>(null!);
+  const worldPos = React.useRef(new THREE.Vector3());
+  const frustum = React.useRef(new THREE.Frustum());
+  const projScreenMatrix = React.useRef(new THREE.Matrix4());
+
+  useFrame(({ camera }) => {
+    if (!groupRef.current) return;
+
+    // Frustum culling: hide labels outside camera view.
+    projScreenMatrix.current.multiplyMatrices(
+      camera.projectionMatrix,
+      camera.matrixWorldInverse,
+    );
+    frustum.current.setFromProjectionMatrix(projScreenMatrix.current);
+    groupRef.current.getWorldPosition(worldPos.current);
+
+    const inFrustum = frustum.current.containsPoint(worldPos.current);
+
+    // Distance-based culling: hide labels beyond cutoff distance if specified.
+    const distance = camera.position.distanceTo(worldPos.current);
+    const cutoffDistance =
+      message.props.cutoff_distance === null
+        ? camera.far
+        : Math.min(message.props.cutoff_distance, camera.far);
+
+    if (!inFrustum || distance > cutoffDistance) {
+      groupRef.current.visible = false;
+      return;
+    }
+    groupRef.current.visible = true;
+  });
+
+  React.useImperativeHandle(ref, () => groupRef.current, []);
+
+  return (
+    <Billboard ref={groupRef} unrotatedChildren={children}>
+      <Text
+        renderOrder={10_000}
+        depthTest={message.props.depth_test}
+        fontSize={message.props.font_size}
+        color="black"
+        backgroundColor="#ffffff"
+        padding={3}
+        borderRadius={3}
+        borderWidth={1}
+        paddingX={12}
+        borderColor="#777777"
+      >
+        {message.props.text}
+      </Text>
+    </Billboard>
   );
 });

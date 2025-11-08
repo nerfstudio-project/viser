@@ -1239,6 +1239,9 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        font_size: float = 24.0,
+        depth_test: bool = False,
+        cutoff_distance: float | None = 30.0,
     ) -> LabelHandle:
         """Add a 2D label to the scene.
 
@@ -1251,11 +1254,22 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
+            font_size: Font size of the label in pixels.
+            depth_test: Whether to enable depth testing for the label.
+            cutoff_distance: Maximum distance from camera at which label is visible. None for no cutoff.
 
         Returns:
             Handle for manipulating scene node.
         """
-        message = _messages.LabelMessage(name, _messages.LabelProps(text))
+        message = _messages.LabelMessage(
+            name,
+            _messages.LabelProps(
+                text=text,
+                font_size=font_size,
+                depth_test=depth_test,
+                cutoff_distance=cutoff_distance,
+            ),
+        )
         return LabelHandle._make(self, message, name, wxyz, position, visible=visible)
 
     @deprecated_positional_shim

@@ -5,7 +5,7 @@ import {
   PivotControls,
 } from "@react-three/drei";
 import { Text } from "@react-three/uikit";
-import { ConstantScreenSpaceBillboard } from "./ConstantScreenSpaceBillboard";
+import { Billboard } from "./Billboard";
 import { ContextBridge, useContextBridge } from "its-fine";
 import { useFrame } from "@react-three/fiber";
 import React, { useEffect } from "react";
@@ -40,6 +40,7 @@ import {
   InstancedAxes,
   PointCloud,
   ViserImage,
+  ViserLabel,
 } from "./ThreeAssets";
 import { CameraFrustumComponent } from "./CameraFrustumVariants";
 import { SceneNodeMessage } from "./WebsocketMessages";
@@ -390,22 +391,9 @@ function createObjectFactory(
     case "LabelMessage": {
       return {
         makeObject: (ref, children) => (
-          <ConstantScreenSpaceBillboard ref={ref} unrotatedChildren={children}>
-            <Text
-              renderOrder={10_000}
-              depthTest={false}
-              fontSize={64}
-              color="black"
-              backgroundColor="#ffffff"
-              padding={3}
-              borderRadius={3}
-              borderWidth={3}
-              paddingX={12}
-              borderColor="#777777"
-            >
-              {message.props.text}
-            </Text>
-          </ConstantScreenSpaceBillboard>
+          <ViserLabel ref={ref} {...message}>
+            {children}
+          </ViserLabel>
         ),
         unmountWhenInvisible: false,
       };
