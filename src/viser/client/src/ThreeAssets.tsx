@@ -544,6 +544,13 @@ export const ViserLabel = React.forwardRef<
   const frustum = React.useRef(new THREE.Frustum());
   const projScreenMatrix = React.useRef(new THREE.Matrix4());
 
+  const [isVisible, setIsVisible] = React.useState(false);
+
+  // UIKit's default pixelSize is 0.01, meaning 1 pixel = 0.01 scene units.
+  // So to get font_height in scene units, we need fontSize = font_height / 0.01.
+  const pixelSize = 0.01;
+  const fontSize = message.props.font_height / pixelSize;
+
   useFrame(({ camera }) => {
     if (!groupRef.current) return;
 
@@ -564,31 +571,29 @@ export const ViserLabel = React.forwardRef<
         ? camera.far
         : Math.min(message.props.cutoff_distance, camera.far);
 
-    if (!inFrustum || distance > cutoffDistance) {
-      groupRef.current.visible = false;
-      return;
-    }
-    groupRef.current.visible = true;
+    const shouldBeVisible = inFrustum && distance <= cutoffDistance;
+    setIsVisible(shouldBeVisible);
   });
 
   React.useImperativeHandle(ref, () => groupRef.current, []);
 
   return (
     <Billboard ref={groupRef} unrotatedChildren={children}>
-      <Text
-        renderOrder={10_000}
-        depthTest={message.props.depth_test}
-        fontSize={message.props.font_size}
-        color="black"
-        backgroundColor="#ffffff"
-        padding={3}
-        borderRadius={3}
-        borderWidth={1}
-        paddingX={12}
-        borderColor="#777777"
-      >
-        {message.props.text}
-      </Text>
+      {isVisible && (
+        <Text
+          renderOrder={10_000}
+          depthTest={message.props.depth_test}
+          fontSize={fontSize}
+          fontFamily="Inter"
+          color="black"
+          backgroundColor="rgba(255,255,255,0.8)"
+          borderRadius={fontSize / 8}
+          paddingY={fontSize / 4}
+          paddingX={fontSize / 2}
+        >
+          {message.props.text}
+        </Text>
+      )}
     </Billboard>
   );
 });

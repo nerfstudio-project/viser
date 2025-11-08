@@ -102,7 +102,7 @@ export interface LabelMessage {
   name: string;
   props: {
     text: string;
-    font_size: number;
+    font_height: number;
     depth_test: boolean;
     cutoff_distance: number | null;
   };

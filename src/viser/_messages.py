@@ -381,8 +381,8 @@ class LabelMessage(_CreateSceneNodeMessage):
 class LabelProps:
     text: str
     """Text content of the label."""
-    font_size: float
-    """Font size of the label in pixels."""
+    font_height: float
+    """Height of the label text in scene units."""
     depth_test: bool
     """Whether to enable depth testing for the label."""
     cutoff_distance: Optional[float]

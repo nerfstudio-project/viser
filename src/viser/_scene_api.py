@@ -1239,7 +1239,7 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-        font_size: float = 24.0,
+        font_height: float = 0.1,
         depth_test: bool = False,
         cutoff_distance: float | None = 30.0,
     ) -> LabelHandle:
@@ -1254,7 +1254,7 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
-            font_size: Font size of the label in pixels.
+            font_height: Height of the label text in scene units.
             depth_test: Whether to enable depth testing for the label.
             cutoff_distance: Maximum distance from camera at which label is visible. None for no cutoff.
 
@@ -1265,7 +1265,7 @@ class SceneApi:
             name,
             _messages.LabelProps(
                 text=text,
-                font_size=font_size,
+                font_height=font_height,
                 depth_test=depth_test,
                 cutoff_distance=cutoff_distance,
             ),
