@@ -567,7 +567,7 @@ export const ViserLabel = React.forwardRef<
       message.props.cutoff_distance === null
         ? camera.far
         : Math.min(message.props.cutoff_distance, camera.far);
-    groupRef.current.visible = inFrustum && distance > cutoffDistance;
+    groupRef.current.visible = inFrustum && distance < cutoffDistance;
   });
 
   React.useImperativeHandle(ref, () => groupRef.current, []);
