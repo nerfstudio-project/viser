@@ -97,6 +97,17 @@ export interface GridMessage {
  *
  * (automatically generated)
  */
+export type LabelAnchor =
+  | "top-left"
+  | "top-center"
+  | "top-right"
+  | "center-left"
+  | "center-center"
+  | "center-right"
+  | "bottom-left"
+  | "bottom-center"
+  | "bottom-right";
+
 export interface LabelMessage {
   type: "LabelMessage";
   name: string;
@@ -104,7 +115,21 @@ export interface LabelMessage {
     text: string;
     font_height: number;
     depth_test: boolean;
-    cutoff_distance: number | null;
+    anchor: LabelAnchor;
+  };
+}
+/** Add batched 2D labels to the scene.
+ *
+ * (automatically generated)
+ */
+export interface BatchedLabelsMessage {
+  type: "BatchedLabelsMessage";
+  name: string;
+  props: {
+    batched_texts: string[];
+    batched_positions: Uint8Array<ArrayBuffer>;
+    font_height: number;
+    depth_test: boolean;
   };
 }
 /** Add a 3D gui element to the scene.
@@ -1527,6 +1552,7 @@ export type Message =
   | BatchedAxesMessage
   | GridMessage
   | LabelMessage
+  | BatchedLabelsMessage
   | Gui3DMessage
   | PointCloudMessage
   | DirectionalLightMessage
@@ -1618,6 +1644,7 @@ export type SceneNodeMessage =
   | BatchedAxesMessage
   | GridMessage
   | LabelMessage
+  | BatchedLabelsMessage
   | Gui3DMessage
   | PointCloudMessage
   | DirectionalLightMessage
@@ -1667,6 +1694,7 @@ const typeSetSceneNodeMessage = new Set([
   "BatchedAxesMessage",
   "GridMessage",
   "LabelMessage",
+  "BatchedLabelsMessage",
   "Gui3DMessage",
   "PointCloudMessage",
   "DirectionalLightMessage",

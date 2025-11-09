@@ -40,6 +40,18 @@ LiteralColor = Literal[
 
 TagLiteral = Literal["GuiComponentMessage", "SceneNodeMessage"]
 
+LabelAnchor = Literal[
+    "top-left",
+    "top-center",
+    "top-right",
+    "center-left",
+    "center-center",
+    "center-right",
+    "bottom-left",
+    "bottom-center",
+    "bottom-right",
+]
+
 
 class Message(infra.Message):
     _tags: ClassVar[Tuple[TagLiteral, ...]] = tuple()
@@ -387,6 +399,29 @@ class LabelProps:
     """Whether to enable depth testing for the label."""
     cutoff_distance: Optional[float]
     """Maximum distance from camera at which label is visible. None for no cutoff."""
+    anchor: LabelAnchor
+    """Anchor position of the label relative to its position."""
+
+
+@dataclasses.dataclass
+class BatchedLabelsMessage(_CreateSceneNodeMessage):
+    """Add batched 2D labels to the scene."""
+
+    props: BatchedLabelsProps
+
+
+@dataclasses.dataclass
+class BatchedLabelsProps:
+    batched_texts: Tuple[str, ...]
+    """Tuple of text strings for each label."""
+    batched_positions: npt.NDArray[np.float32]
+    """Positions for each label. Shape should be (N, 3)."""
+    font_height: float
+    """Height of the label text in scene units."""
+    depth_test: bool
+    """Whether to enable depth testing for the labels."""
+    cutoff_distance: Optional[float]
+    """Maximum distance from camera at which labels are visible. None for no cutoff."""
 
 
 @dataclasses.dataclass

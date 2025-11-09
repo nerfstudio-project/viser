@@ -4,14 +4,17 @@ import { OutlinesIfHovered } from "./OutlinesIfHovered";
 import React from "react";
 import * as THREE from "three";
 import {
+  BatchedLabelsMessage,
   ImageMessage,
   LabelMessage,
   PointCloudMessage,
 } from "./WebsocketMessages";
 import { BatchedMeshHoverOutlines } from "./mesh/BatchedMeshHoverOutlines";
 import { MeshBasicMaterial } from "three";
-import { Text } from "@react-three/uikit";
-import { Billboard } from "./Billboard";
+// @ts-ignore - troika-three-text doesn't have type definitions
+import { Text as TroikaText, BatchedText } from "troika-three-text";
+import { BatchedTextManagerContext } from "./BatchedTextManagerContext";
+import { ViewerContext } from "./ViewerContext";
 
 const originGeom = new THREE.SphereGeometry(1.0);
 
@@ -535,60 +538,270 @@ export const ViserImage = React.forwardRef<
   );
 });
 
+/**
+ * Convert label anchor to Troika anchorX and anchorY values.
+ */
+function labelAnchorToTroikaAnchors(anchor: string): {
+  anchorX: "left" | "center" | "right";
+  anchorY: "top" | "middle" | "bottom";
+} {
+  const [vertical, horizontal] = anchor.split("-");
+  const anchorY =
+    vertical === "top" ? "top" : vertical === "bottom" ? "bottom" : "middle";
+  const anchorX =
+    horizontal === "left"
+      ? "left"
+      : horizontal === "right"
+        ? "right"
+        : "center";
+  return { anchorX, anchorY };
+}
+
 export const ViserLabel = React.forwardRef<
   THREE.Group,
   LabelMessage & { children?: React.ReactNode }
 >(function ViserLabel({ children, ...message }, ref) {
+  const viewer = React.useContext(ViewerContext)!;
   const groupRef = React.useRef<THREE.Group>(null!);
-  const worldPos = React.useRef(new THREE.Vector3());
-  const frustum = React.useRef(new THREE.Frustum());
-  const projScreenMatrix = React.useRef(new THREE.Matrix4());
+  const textRef = React.useRef<TroikaText>(null!);
 
-  // UIKit's default pixelSize is 0.01, meaning 1 pixel = 0.01 scene units.
-  // So to get font_height in scene units, we need fontSize = font_height / 0.01.
-  const pixelSize = 0.01;
-  const fontSize = message.props.font_height / pixelSize;
-
-  useFrame(({ camera }) => {
-    if (!groupRef.current) return;
-
-    // Math for frustum culling.
-    projScreenMatrix.current.multiplyMatrices(
-      camera.projectionMatrix,
-      camera.matrixWorldInverse,
+  const manager = React.useContext(BatchedTextManagerContext);
+  if (!manager) {
+    throw new Error(
+      "ViserLabel must be used within GlobalBatchedTextManager context",
     );
-    frustum.current.setFromProjectionMatrix(projScreenMatrix.current);
-    groupRef.current.getWorldPosition(worldPos.current);
+  }
 
-    // Frustum + distance-based culling.
-    const inFrustum = frustum.current.containsPoint(worldPos.current);
-    const distance = camera.position.distanceTo(worldPos.current);
-    const cutoffDistance =
-      message.props.cutoff_distance === null
-        ? camera.far
-        : Math.min(message.props.cutoff_distance, camera.far);
-    groupRef.current.visible = inFrustum && distance < cutoffDistance;
+  // Troika Text fontSize is directly in world units.
+  const fontSize = message.props.font_height;
+
+  // Convert anchor to Troika format.
+  const { anchorX, anchorY } = labelAnchorToTroikaAnchors(message.props.anchor);
+
+  // Create text once on mount and register with global manager.
+  React.useEffect(() => {
+    const text = new TroikaText();
+    text.text = message.props.text;
+    // Use relative path for font so it works if client is in a subdirectory.
+    text.font = "./Inter-VariableFont_slnt,wght.ttf";
+    text.fontSize = fontSize;
+    text.color = 0x000000; // Black.
+    text.anchorX = anchorX;
+    text.anchorY = anchorY;
+
+    // Lower SDF resolution for better performance with many labels.
+    // Default is 64, lower values = lower quality but faster rendering.
+    text.sdfGlyphSize = 32;
+
+    // Position is always (0, 0, 0) in local space - parent transform handles wxyz/position.
+    text.position.set(0, 0, 0);
+
+    // Don't sync here - registerText will sync the BatchedText after adding.
+    textRef.current = text;
+    // Register with global manager.
+    manager.registerText(text, message.name, message.props.depth_test);
+
+    return () => {
+      manager.unregisterText(text);
+      text.dispose();
+    };
+  }, []); // Only create once.
+
+  // Update text content when it changes.
+  React.useEffect(() => {
+    if (textRef.current) {
+      textRef.current.text = message.props.text;
+      // Don't call text.sync() - let the BatchedText handle it via manager.syncText().
+      manager.syncText(textRef.current);
+    }
+  }, [message.props.text, manager]);
+
+  // Update font size when it changes.
+  React.useEffect(() => {
+    if (textRef.current) {
+      // Don't call text.sync(); let the BatchedText handle it via manager.syncText().
+      textRef.current.fontSize = fontSize;
+      manager.syncText(textRef.current);
+    }
+  }, [fontSize, manager]);
+
+  // Update anchor when it changes.
+  React.useEffect(() => {
+    if (textRef.current) {
+      textRef.current.anchorX = anchorX;
+      textRef.current.anchorY = anchorY;
+      // Don't call text.sync(): let the BatchedText handle it via manager.syncText().
+      manager.syncText(textRef.current);
+    }
+  }, [anchorX, anchorY, manager]);
+
+  // GlobalBatchedTextManager handles position updates, visibility, and culling.
+  React.useImperativeHandle(ref, () => groupRef.current, []);
+
+  // Use a selector to subscribe only to this node's children.
+  const hasChildren = viewer.useSceneTree((state) => {
+    const node = state[message.name];
+    return node?.children && node.children.length > 0;
+  });
+
+  // Return null when no children - GlobalBatchedTextManager handles the text rendering.
+  // Return group when there are children - SceneTree needs it to apply transforms to child nodes.
+  if (!hasChildren) {
+    return null;
+  } else {
+    return <group ref={groupRef}>{children}</group>;
+  }
+});
+
+export const ViserBatchedLabels = React.forwardRef<
+  THREE.Group,
+  BatchedLabelsMessage & { children?: React.ReactNode }
+>(function ViserBatchedLabels({ children, ...message }, ref) {
+  const viewer = React.useContext(ViewerContext)!;
+  const groupRef = React.useRef<THREE.Group>(null!);
+  const batchedTextRef = React.useRef<BatchedText>(null!);
+  const textObjectsRef = React.useRef<TroikaText[]>([]);
+  const materialPropsSetRef = React.useRef(false);
+
+  // Reuse objects to avoid allocations.
+  const groupQuaternion = React.useRef(new THREE.Quaternion());
+  const billboardQuaternion = React.useRef(new THREE.Quaternion());
+
+  // Troika Text fontSize is directly in world units.
+  const fontSize = message.props.font_height;
+
+  // Create BatchedText and individual Text objects when texts or fontSize change.
+  // This should happen rarely - most updates will be position changes.
+  React.useEffect(() => {
+    // Reset material props flag when recreating BatchedText.
+    materialPropsSetRef.current = false;
+
+    const batchedText = new BatchedText();
+    batchedTextRef.current = batchedText;
+    groupRef.current.add(batchedText);
+
+    const texts: TroikaText[] = [];
+    const numLabels = message.props.batched_texts.length;
+
+    for (let i = 0; i < numLabels; i++) {
+      const text = new TroikaText();
+      text.text = message.props.batched_texts[i];
+      // Use relative path for font so it works if client is in a subdirectory.
+      text.font = "./Inter-VariableFont_slnt,wght.ttf";
+      text.fontSize = fontSize;
+      text.color = 0x000000; // Black.
+      text.anchorX = "left";
+      text.anchorY = "top";
+
+      // Outline for readability.
+      text.outlineWidth = fontSize * 0.05;
+      text.outlineColor = 0xffffff;
+      text.outlineOpacity = 0.8;
+
+      // Initial position (will be updated by separate effect).
+      text.position.set(0, 0, 0);
+
+      // Sync to create geometry.
+      text.sync();
+      texts.push(text);
+      batchedText.add(text);
+    }
+
+    textObjectsRef.current = texts;
+
+    // BatchedText ignores individual Text materials and creates its own.
+    // Material properties will be set in useFrame once the material is created.
+
+    // Cleanup on unmount.
+    return () => {
+      texts.forEach((text) => {
+        batchedText.remove(text);
+        text.dispose();
+      });
+      groupRef.current.remove(batchedText);
+      batchedText.dispose();
+    };
+  }, [message.props.batched_texts, fontSize]);
+
+  // Update positions when they change (without recreating text objects).
+  React.useEffect(() => {
+    const texts = textObjectsRef.current;
+    if (texts.length === 0) return;
+
+    // Parse positions from Uint8Array buffer.
+    const positionsView = new DataView(
+      message.props.batched_positions.buffer,
+      message.props.batched_positions.byteOffset,
+      message.props.batched_positions.byteLength,
+    );
+
+    const numLabels = Math.min(
+      texts.length,
+      message.props.batched_positions.byteLength / (3 * 4),
+    );
+
+    for (let i = 0; i < numLabels; i++) {
+      const posOffset = i * 3 * 4; // 3 floats, 4 bytes per float.
+      const x = positionsView.getFloat32(posOffset, true);
+      const y = positionsView.getFloat32(posOffset + 4, true);
+      const z = positionsView.getFloat32(posOffset + 8, true);
+      texts[i].position.set(x, y, z);
+    }
+  }, [message.props.batched_positions]);
+
+  // Update depth test properties when they change.
+  React.useEffect(() => {
+    // Reset material props flag so useFrame updates materials with new depth_test setting.
+    materialPropsSetRef.current = false;
+  }, [message.props.depth_test]);
+
+  // Billboard rotation and distance culling.
+  useFrame(({ camera }) => {
+    if (!groupRef.current || textObjectsRef.current.length === 0) return;
+
+    // Set material properties on BatchedText if not yet set.
+    // BatchedText creates its material during the render loop, so we check here.
+    if (!materialPropsSetRef.current && batchedTextRef.current) {
+      const material = batchedTextRef.current.material;
+      if (material) {
+        // Material can be an array [outlineMaterial, mainMaterial] or a single material.
+        const materials = Array.isArray(material) ? material : [material];
+        materials.forEach((mat) => {
+          mat.depthTest = message.props.depth_test;
+          // Always disable depthWrite to avoid z-fighting between outline and fill.
+          mat.depthWrite = false;
+          // Mark as transparent for proper alpha blending and depth sorting.
+          mat.transparent = true;
+          mat.needsUpdate = true;
+        });
+        batchedTextRef.current.renderOrder = 10_000;
+        materialPropsSetRef.current = true;
+      }
+    }
+
+    // Calculate billboard rotation accounting for parent transform.
+    groupRef.current.updateMatrix();
+    groupRef.current.updateWorldMatrix(false, false);
+    groupRef.current.getWorldQuaternion(groupQuaternion.current);
+    camera
+      .getWorldQuaternion(billboardQuaternion.current)
+      .premultiply(groupQuaternion.current.invert());
+
+    // Get node visibility from scene tree (includes parent chain).
+    const node = viewer.useSceneTree.getState()[message.name];
+    const nodeVisible = node?.effectiveVisibility ?? false;
+
+    // Apply billboard rotation and visibility to each text.
+    textObjectsRef.current.forEach((text) => {
+      // Billboard rotation: apply the calculated quaternion.
+      text.quaternion.copy(billboardQuaternion.current);
+
+      // Set visibility based on scene tree.
+      text.visible = nodeVisible;
+    });
   });
 
   React.useImperativeHandle(ref, () => groupRef.current, []);
 
-  return (
-    <Billboard ref={groupRef} unrotatedChildren={children}>
-      <Text
-        renderOrder={10_000}
-        depthTest={message.props.depth_test}
-        fontSize={fontSize}
-        fontFamily="Inter"
-        color="black"
-        backgroundColor="rgba(255,255,255,0.8)"
-        borderRadius={fontSize / 8}
-        paddingY={fontSize / 4}
-        paddingX={fontSize / 2}
-        anchorX="left"
-        anchorY="top"
-      >
-        {message.props.text}
-      </Text>
-    </Billboard>
-  );
+  return <group ref={groupRef}>{children}</group>;
 });

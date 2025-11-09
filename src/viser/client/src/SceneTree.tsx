@@ -18,6 +18,7 @@ import { Html } from "@react-three/drei";
 import { useSceneTreeState } from "./SceneTreeState";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { HoverableContext, HoverState } from "./HoverContext";
+import { shallowArrayEqual } from "./utils/shallowArrayEqual";
 
 /** Turn a click event to normalized OpenCV coordinate (NDC) vector.
  * Normalizes click coordinates to be between (0, 0) as upper-left corner,
@@ -37,6 +38,7 @@ import {
   CoordinateFrame,
   InstancedAxes,
   PointCloud,
+  ViserBatchedLabels,
   ViserImage,
   ViserLabel,
 } from "./ThreeAssets";
@@ -55,6 +57,7 @@ import { SkinnedMesh } from "./mesh/SkinnedMesh";
 import { BatchedMesh } from "./mesh/BatchedMesh";
 import { SingleGlbAsset } from "./mesh/SingleGlbAsset";
 import { BatchedGlbAsset } from "./mesh/BatchedGlbAsset";
+import { GlobalBatchedTextManager } from "./GlobalBatchedTextManager";
 
 function rgbToInt(rgb: [number, number, number]): number {
   return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
@@ -396,6 +399,16 @@ function createObjectFactory(
         unmountWhenInvisible: false,
       };
     }
+    case "BatchedLabelsMessage": {
+      return {
+        makeObject: (ref, children) => (
+          <ViserBatchedLabels ref={ref} {...message}>
+            {children}
+          </ViserBatchedLabels>
+        ),
+        unmountWhenInvisible: false,
+      };
+    }
     case "Gui3DMessage": {
       return {
         makeObject: (ref, children) => {
@@ -719,39 +732,14 @@ export function SceneNodeThreeObject(props: { name: string }) {
     }, children);
   }, [makeObject, children]);
 
-  // Helper for transient visibility checks. Checks the .visible attribute of
-  // both this object and ancestors.
+  // Helper for transient visibility checks. Uses the cached effectiveVisibility
+  // which includes both this node and all ancestors in the scene tree.
   //
   // This is used for (1) suppressing click events and (2) unmounting when
   // unmountWhenInvisible is true. The latter is used for <Html /> components.
-  const parentRef = React.useRef<THREE.Object3D | null>(null);
   function isDisplayed(): boolean {
-    // We avoid checking objRef.current.visible because obj may be unmounted when
-    // unmountWhenInvisible=true.
     const node = viewer.useSceneTree.getState()[props.name];
-    const visibility =
-      (node?.overrideVisibility === undefined
-        ? node?.visibility
-        : node.overrideVisibility) ?? false;
-    if (visibility === false) return false;
-
-    // Check visibility of parents + ancestors by traversing the THREE.js hierarchy.
-    // This is needed for unmountWhenInvisible to work correctly.
-    if (groupRef.current && groupRef.current.parent !== null) {
-      // The parent will be unreadable after unmounting, so we cache it.
-      parentRef.current = groupRef.current.parent;
-    }
-    if (parentRef.current !== null) {
-      let visible = parentRef.current.visible;
-      if (visible) {
-        parentRef.current.traverseAncestors((ancestor) => {
-          visible = visible && ancestor.visible;
-        });
-      }
-      return visible;
-    }
-
-    return true;
+    return node?.effectiveVisibility ?? false;
   }
 
   // Pose needs to be updated whenever component is remounted / object is re-created.
@@ -793,14 +781,11 @@ export function SceneNodeThreeObject(props: { name: string }) {
       if (objRef.current === null) return;
       if (node === undefined) return;
 
+      // Use effective visibility which includes parent chain visibility.
       // If no visibility is found: we assume it's invisible. This will hide
       // scene nodes until we receive a visibility update, which always happens
       // after creation.
-      const visibility =
-        (node?.overrideVisibility === undefined
-          ? node?.visibility
-          : node.overrideVisibility) ?? false;
-      objRef.current.visible = visibility;
+      objRef.current.visible = node?.effectiveVisibility ?? false;
 
       if (node.poseUpdateState == "needsUpdate") {
         // Update pose state through zustand action.
@@ -999,8 +984,9 @@ function SceneNodeChildren(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const childrenNames = viewer.useSceneTree(
     (state) => state[props.name]?.children,
+    shallowArrayEqual,
   );
-  return (
+  const children = (
     <>
       {childrenNames &&
         childrenNames.map((child_id) => (
@@ -1009,4 +995,12 @@ function SceneNodeChildren(props: { name: string }) {
       <SceneNodeLabel name={props.name} />
     </>
   );
+  if (props.name == "") {
+    // Create a context for batched text rendering at the root level. We place
+    // this here instead of outside of the root node to make sure the root node
+    // rotation (eg, from `set_up_direction()`) is applied to text objects.
+    return <GlobalBatchedTextManager>{children}</GlobalBatchedTextManager>;
+  } else {
+    return children;
+  }
 }

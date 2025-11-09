@@ -13,6 +13,7 @@ export type SceneNode = {
   position?: [number, number, number];
   visibility?: boolean; // Visibility state from the server.
   overrideVisibility?: boolean; // Override from the GUI.
+  effectiveVisibility?: boolean; // Computed visibility including parent chain.
 };
 
 type SceneTreeState = {
@@ -36,6 +37,7 @@ export const rootNodeTemplate: SceneNode = {
   children: ["/WorldAxes"],
   clickable: false,
   visibility: true,
+  effectiveVisibility: true,
   // Default quaternion: 90° around X, 180° around Y, -90° around Z.
   // This matches the coordinate system transformation.
   wxyz: (() => {
@@ -60,6 +62,7 @@ const worldAxesNodeTemplate: SceneNode = {
   children: [],
   clickable: false,
   visibility: true,
+  effectiveVisibility: true,
 };
 
 /** Helper functions that operate on the scene tree store */
@@ -67,7 +70,8 @@ function createSceneTreeActions(
   store: UseBoundStore<StoreApi<SceneTreeState>>,
   nodeRefFromName: { [name: string]: undefined | THREE.Object3D },
 ) {
-  return {
+  // Declare actions object first so functions can reference each other
+  const actions = {
     addSceneNode: (message: SceneNodeMessage) => {
       const state = store.getState();
       const existingNode = state[message.name];
@@ -80,6 +84,9 @@ function createSceneTreeActions(
           message: message,
           children: existingNode?.children ?? [],
           clickable: existingNode?.clickable ?? false,
+          labelVisible: existingNode?.labelVisible ?? false,
+          // Default to true, will be updated when visibility is set
+          effectiveVisibility: existingNode?.effectiveVisibility ?? true,
         },
       };
 
@@ -173,14 +180,83 @@ function createSceneTreeActions(
         );
         return;
       }
-      store.setState({
+
+      // Check if any attributes actually changed to avoid unnecessary updates.
+      let hasChanged = false;
+      for (const key in attributes) {
+        if (
+          node[key as keyof SceneNode] !== attributes[key as keyof SceneNode]
+        ) {
+          hasChanged = true;
+          break;
+        }
+      }
+      if (hasChanged) {
+        store.setState({
+          [name]: {
+            ...node,
+            ...attributes,
+          },
+        });
+
+        // If visibility changed, recompute effective visibility for this node and descendants.
+        if ('visibility' in attributes || 'overrideVisibility' in attributes) {
+          actions.computeEffectiveVisibility(name);
+        }
+      }
+    },
+
+    computeEffectiveVisibility: (name: string) => {
+      const state = store.getState();
+      const node = state[name];
+      if (!node) return;
+
+      // Compute parent's effective visibility.
+      const parentName = name.split("/").slice(0, -1).join("/");
+      const parentNode = state[parentName];
+      const parentEffective = parentName === ""
+        ? true  // Root is always effectively visible
+        : (parentNode?.effectiveVisibility ?? true);
+
+      // Compute this node's visibility.
+      const nodeVisibility = (node.overrideVisibility ?? node.visibility) ?? true;
+      const effective = parentEffective && nodeVisibility;
+
+      // Update this node and all descendants.
+      const updates: SceneTreeState = {
         [name]: {
           ...node,
-          ...attributes,
+          effectiveVisibility: effective,
         },
-      });
+      };
+
+      // Recursively update children.
+      function updateChildren(nodeName: string, parentEffective: boolean) {
+        const n = state[nodeName];
+        if (!n) return;
+
+        n.children.forEach((childName) => {
+          const child = state[childName];
+          if (!child) return;
+
+          const childVisibility = (child.overrideVisibility ?? child.visibility) ?? true;
+          const childEffective = parentEffective && childVisibility;
+
+          updates[childName] = {
+            ...child,
+            effectiveVisibility: childEffective,
+          };
+
+          updateChildren(childName, childEffective);
+        });
+      }
+
+      updateChildren(name, effective);
+      store.setState(updates);
     },
   };
+
+  return actions;
 }
 
 /** Declare a scene state, and return a hook for accessing it. Note that we put

@@ -31,6 +31,7 @@ from ._scene_handles import (
     AmbientLightHandle,
     BatchedAxesHandle,
     BatchedGlbHandle,
+    BatchedLabelsHandle,
     BatchedMeshHandle,
     BoneState,
     BoxHandle,
@@ -1242,6 +1243,7 @@ class SceneApi:
         font_height: float = 0.1,
         depth_test: bool = False,
         cutoff_distance: float | None = 30.0,
+        anchor: _messages.LabelAnchor = "top-left",
     ) -> LabelHandle:
         """Add a 2D label to the scene.
 
@@ -1257,6 +1259,7 @@ class SceneApi:
             font_height: Height of the label text in scene units.
             depth_test: Whether to enable depth testing for the label.
             cutoff_distance: Maximum distance from camera at which label is visible. None for no cutoff.
+            anchor: Anchor position of the label relative to its position.
 
         Returns:
             Handle for manipulating scene node.
@@ -1268,9 +1271,62 @@ class SceneApi:
                 font_height=font_height,
                 depth_test=depth_test,
                 cutoff_distance=cutoff_distance,
+                anchor=anchor,
             ),
         )
         return LabelHandle._make(self, message, name, wxyz, position, visible=visible)
+
+    @deprecated_positional_shim
+    def add_batched_labels(
+        self,
+        name: str,
+        batched_texts: tuple[str, ...],
+        batched_positions: np.ndarray,
+        *,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+        font_height: float = 0.1,
+        depth_test: bool = False,
+        cutoff_distance: float | None = 30.0,
+    ) -> BatchedLabelsHandle:
+        """Add batched 2D labels to the scene for efficient rendering of many labels.
+
+        This method creates multiple text labels in a single batch, which is much more
+        efficient than individual labels when rendering thousands of labels.
+
+        Args:
+            name: Name of the batched labels node.
+            batched_texts: Tuple of text strings, one for each label.
+            batched_positions: Positions for each label. Shape should be (N, 3).
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+            font_height: Height of the label text in scene units.
+            depth_test: Whether to enable depth testing for the labels.
+            cutoff_distance: Maximum distance from camera at which labels are visible. None for no cutoff.
+
+        Returns:
+            Handle for manipulating batched labels scene node.
+        """
+        assert batched_positions.shape == (
+            len(batched_texts),
+            3,
+        ), f"Expected batched_positions shape ({len(batched_texts)}, 3), got {batched_positions.shape}"
+
+        message = _messages.BatchedLabelsMessage(
+            name,
+            _messages.BatchedLabelsProps(
+                batched_texts=batched_texts,
+                batched_positions=batched_positions.astype(np.float32),
+                font_height=font_height,
+                depth_test=depth_test,
+                cutoff_distance=cutoff_distance,
+            ),
+        )
+        return BatchedLabelsHandle._make(
+            self, message, name, wxyz, position, visible=visible
+        )
 
     @deprecated_positional_shim
     def add_point_cloud(

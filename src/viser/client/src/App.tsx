@@ -28,6 +28,7 @@ import { useDisclosure } from "@mantine/hooks";
 // Local imports.
 import { SynchronizedCameraControls } from "./CameraControls";
 import { SceneNodeThreeObject } from "./SceneTree";
+import { GlobalBatchedTextManager } from "./GlobalBatchedTextManager";
 import { ViewerContext, ViewerContextContents } from "./ViewerContext";
 import ControlPanel from "./ControlPanel/ControlPanel";
 import { useGuiState } from "./ControlPanel/GuiState";
