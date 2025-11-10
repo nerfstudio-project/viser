@@ -16,7 +16,7 @@ export type SceneNode = {
   effectiveVisibility?: boolean; // Computed visibility including parent chain.
 };
 
-type SceneTreeState = {
+export type SceneTreeState = {
   // Scene graph structure: nodes are stored flat at the root level.
   [name: string]: SceneNode | undefined;
 };
@@ -252,7 +252,6 @@ function createSceneTreeActions(
           updateChildren(childName, childEffective);
         });
       }
-
       updateChildren(name, effective);
       store.setState(updates);
     },

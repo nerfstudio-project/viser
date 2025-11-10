@@ -1,6 +1,7 @@
 import { ViewerContext } from "../ViewerContext";
 import { useThrottledMessageSender } from "../WebsocketUtils";
 import { GuiComponentContext } from "./GuiComponentContext";
+import { shallowObjectKeysEqual } from "../utils/shallowObjectKeysEqual";
 
 import { Box } from "@mantine/core";
 import React from "react";
@@ -78,6 +79,7 @@ function GuiContainer({ containerUuid }: { containerUuid: string }) {
   }
   const guiIdSet = viewer.useGui(
     (state) => state.guiUuidSetFromContainerUuid[containerUuid],
+    shallowObjectKeysEqual,
   )!;
 
   // Render each GUI element in this container.

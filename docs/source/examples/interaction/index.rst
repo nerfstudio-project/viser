@@ -12,3 +12,4 @@ Examples showing user input and interaction handling.
    camera_poses
    camera_commands
    gui_in_scene
+   epipolar_lines

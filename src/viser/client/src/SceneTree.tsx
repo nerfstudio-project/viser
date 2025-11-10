@@ -781,11 +781,10 @@ export function SceneNodeThreeObject(props: { name: string }) {
       if (objRef.current === null) return;
       if (node === undefined) return;
 
-      // Use effective visibility which includes parent chain visibility.
-      // If no visibility is found: we assume it's invisible. This will hide
-      // scene nodes until we receive a visibility update, which always happens
-      // after creation.
-      objRef.current.visible = node?.effectiveVisibility ?? false;
+      // Set node-local visibility. Three.js automatically handles parent chain
+      // propagation (children of invisible parents are not rendered).
+      objRef.current.visible =
+        node.overrideVisibility ?? node.visibility ?? true;
 
       if (node.poseUpdateState == "needsUpdate") {
         // Update pose state through zustand action.

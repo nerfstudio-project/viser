@@ -28,6 +28,7 @@ import { useDisclosure } from "@mantine/hooks";
 // Local imports.
 import { SynchronizedCameraControls } from "./CameraControls";
 import { SceneNodeThreeObject } from "./SceneTree";
+import { shallowArrayEqual } from "./utils/shallowArrayEqual";
 import { ViewerContext, ViewerContextContents } from "./ViewerContext";
 import ControlPanel from "./ControlPanel/ControlPanel";
 import { useGuiState } from "./ControlPanel/GuiState";
@@ -595,6 +596,7 @@ function DefaultLights() {
   // Get world rotation directly from scene tree state.
   const worldRotation = viewer.useSceneTree(
     (state) => state[""]?.wxyz ?? [1, 0, 0, 0],
+    shallowArrayEqual,
   );
 
   // Calculate environment map.
