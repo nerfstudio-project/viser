@@ -1240,7 +1240,9 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-        font_height: float | Literal["constant"] = "constant",
+        font_size_mode: Literal["screen", "scene"] = "screen",
+        font_screen_scale: float = 1.0,
+        font_scene_height: float = 0.075,
         depth_test: bool = False,
         anchor: _messages.LabelAnchor = "top-left",
     ) -> LabelHandle:
@@ -1259,7 +1261,9 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
-            font_height: Height of the label text. Either a float in scene units, or "constant" for screen-space sizing that maintains constant pixel size regardless of distance.
+            font_size_mode: Font sizing mode. 'screen' for screen-space sizing (constant pixel size), 'scene' for world-space sizing (size in scene units).
+            font_screen_scale: Scale factor for screen-space font size. Only used when font_size_mode='screen'.
+            font_scene_height: Font height in scene units. Only used when font_size_mode='scene'.
             depth_test: Whether to enable depth testing for the label.
             anchor: Anchor position of the label relative to its position.
 
@@ -1270,7 +1274,9 @@ class SceneApi:
             name,
             _messages.LabelProps(
                 text=text,
-                font_height=font_height,
+                font_size_mode=font_size_mode,
+                font_screen_scale=font_screen_scale,
+                font_scene_height=font_scene_height,
                 depth_test=depth_test,
                 anchor=anchor,
             ),
@@ -1287,7 +1293,9 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-        font_height: float | Literal["constant"] = "constant",
+        font_size_mode: Literal["screen", "scene"] = "screen",
+        font_screen_scale: float = 1.0,
+        font_scene_height: float = 0.075,
         depth_test: bool = False,
         anchor: _messages.LabelAnchor = "top-left",
     ) -> BatchedLabelsHandle:
@@ -1303,7 +1311,9 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
-            font_height: Height of the label text. Either a float in scene units, or "constant" for screen-space sizing that maintains constant pixel size regardless of distance.
+            font_size_mode: Font sizing mode. 'screen' for screen-space sizing (constant pixel size), 'scene' for world-space sizing (size in scene units).
+            font_screen_scale: Scale factor for screen-space font size. Only used when font_size_mode='screen'.
+            font_scene_height: Font height in scene units. Only used when font_size_mode='scene'.
             depth_test: Whether to enable depth testing for the labels.
             anchor: Anchor position of the labels relative to their positions.
 
@@ -1320,7 +1330,9 @@ class SceneApi:
             _messages.BatchedLabelsProps(
                 batched_texts=batched_texts,
                 batched_positions=batched_positions.astype(np.float32),
-                font_height=font_height,
+                font_size_mode=font_size_mode,
+                font_screen_scale=font_screen_scale,
+                font_scene_height=font_scene_height,
                 depth_test=depth_test,
                 anchor=anchor,
             ),

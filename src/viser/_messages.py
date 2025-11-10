@@ -393,8 +393,12 @@ class LabelMessage(_CreateSceneNodeMessage):
 class LabelProps:
     text: str
     """Text content of the label."""
-    font_height: float | Literal["constant"]
-    """Height of the label text. Either a float in scene units, or "constant" for screen-space sizing."""
+    font_size_mode: Literal["screen", "scene"]
+    """Font size mode: 'screen' for screen-space sizing, 'scene' for world-space sizing."""
+    font_screen_scale: float
+    """Scale factor for screen-space font size. Only used when font_size_mode='screen'."""
+    font_scene_height: float
+    """Font height in scene units. Only used when font_size_mode='scene'."""
     depth_test: bool
     """Whether to enable depth testing for the label."""
     anchor: LabelAnchor
@@ -414,8 +418,12 @@ class BatchedLabelsProps:
     """Tuple of text strings for each label."""
     batched_positions: npt.NDArray[np.float32]
     """Positions for each label. Shape should be (N, 3)."""
-    font_height: float | Literal["constant"]
-    """Height of the label text. Either a float in scene units, or "constant" for screen-space sizing."""
+    font_size_mode: Literal["screen", "scene"]
+    """Font size mode: 'screen' for screen-space sizing, 'scene' for world-space sizing."""
+    font_screen_scale: float
+    """Scale factor for screen-space font size. Only used when font_size_mode='screen'."""
+    font_scene_height: float
+    """Font height in scene units. Only used when font_size_mode='scene'."""
     depth_test: bool
     """Whether to enable depth testing for the labels."""
     anchor: LabelAnchor

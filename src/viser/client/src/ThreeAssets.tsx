@@ -19,6 +19,9 @@ import {
   setupBatchedTextMaterial,
   calculateBillboardRotation,
   createRectGeometry,
+  calculateBaseFontSize,
+  calculateScreenSpaceScale,
+  calculateAnchorOffset,
   LABEL_FONT,
   LABEL_TEXT_COLOR,
   LABEL_SDF_GLYPH_SIZE,
@@ -580,7 +583,7 @@ export const ViserLabel = React.forwardRef<
   const manager = React.useContext(BatchedLabelManagerContext);
   if (!manager) {
     throw new Error(
-      "ViserLabel must be used within BatchedTextManager context",
+      "ViserLabel must be used within BatchedLabelManager context",
     );
   }
 
@@ -588,8 +591,11 @@ export const ViserLabel = React.forwardRef<
   const { anchorX, anchorY } = labelAnchorToTroikaAnchors(message.props.anchor);
 
   // Calculate base font size (used for initial setup).
-  const baseFontSize =
-    message.props.font_height === "constant" ? 0.30 : message.props.font_height;
+  const baseFontSize = calculateBaseFontSize(
+    message.props.font_size_mode,
+    message.props.font_screen_scale,
+    message.props.font_scene_height,
+  );
 
   // Create text once on mount and register with global manager.
   React.useEffect(() => {
@@ -611,12 +617,14 @@ export const ViserLabel = React.forwardRef<
 
     // Don't sync here - registerText will sync the BatchedText after adding.
     textRef.current = text;
-    // Register with global manager, passing fontHeight and anchor info.
+    // Register with global manager, passing font parameters and anchor info.
     manager.registerText(
       text,
       message.name,
       message.props.depth_test,
-      message.props.font_height,
+      message.props.font_size_mode,
+      message.props.font_screen_scale,
+      message.props.font_scene_height,
       anchorX,
       anchorY,
     );
@@ -636,40 +644,31 @@ export const ViserLabel = React.forwardRef<
     }
   }, [message.props.text, manager]);
 
-  // Update anchor when it changes.
+  // Update text properties when they change.
+  // Use updateText() which is much more efficient than unregister/register.
   React.useEffect(() => {
     if (textRef.current) {
-      textRef.current.anchorX = anchorX;
-      textRef.current.anchorY = anchorY;
-      // Don't call text.sync(): let the BatchedText handle it via manager.syncText().
-      manager.syncText(textRef.current);
-    }
-  }, [anchorX, anchorY, manager]);
-
-  // Re-register when depth_test, font_height, or anchor changes.
-  // This ensures the manager has the correct metadata for rendering.
-  React.useEffect(() => {
-    if (textRef.current) {
-      manager.unregisterText(textRef.current);
-      manager.registerText(
+      manager.updateText(
         textRef.current,
-        message.name,
         message.props.depth_test,
-        message.props.font_height,
+        message.props.font_size_mode,
+        message.props.font_screen_scale,
+        message.props.font_scene_height,
         anchorX,
         anchorY,
       );
     }
   }, [
     message.props.depth_test,
-    message.props.font_height,
+    message.props.font_size_mode,
+    message.props.font_screen_scale,
+    message.props.font_scene_height,
     anchorX,
     anchorY,
     manager,
-    message.name,
   ]);
 
-  // BatchedTextManager handles position updates, visibility, and culling.
+  // BatchedLabelManager handles position updates, visibility, and culling.
   React.useImperativeHandle(ref, () => groupRef.current, []);
 
   // Use a selector to subscribe only to this node's children.
@@ -706,11 +705,17 @@ export const ViserBatchedLabels = React.forwardRef<
   const localOffset = React.useRef(new THREE.Vector3());
   const textWorldPos = React.useRef(new THREE.Vector3());
 
-  // Store font_height value (can be "constant" or a number).
-  const fontHeight = message.props.font_height;
+  // Get font sizing parameters.
+  const fontSizeMode = message.props.font_size_mode;
+  const fontScreenScale = message.props.font_screen_scale;
+  const fontSceneHeight = message.props.font_scene_height;
 
   // Calculate base font size.
-  const baseFontSize = fontHeight === "constant" ? 0.30 : fontHeight;
+  const baseFontSize = calculateBaseFontSize(
+    fontSizeMode,
+    fontScreenScale,
+    fontSceneHeight,
+  );
 
   // Convert anchor to Troika format.
   const { anchorX, anchorY } = labelAnchorToTroikaAnchors(message.props.anchor);
@@ -718,7 +723,21 @@ export const ViserBatchedLabels = React.forwardRef<
   // Create rectangle geometry once.
   const rectGeometry = React.useMemo(() => createRectGeometry(), []);
 
-  // Create BatchedText and individual Text objects when texts or fontSize change.
+  // Create shared material for background rectangles.
+  const sharedBackgroundMaterial = React.useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: LABEL_BACKGROUND_COLOR,
+        transparent: true,
+        opacity: LABEL_BACKGROUND_OPACITY,
+        depthTest: message.props.depth_test,
+        depthWrite: false,
+        toneMapped: false,
+      }),
+    [message.props.depth_test],
+  );
+
+  // Create BatchedText and individual Text objects when texts change.
   // This should happen rarely - most updates will be position changes.
   React.useEffect(() => {
     // Reset material props flag when recreating BatchedText.
@@ -731,20 +750,10 @@ export const ViserBatchedLabels = React.forwardRef<
     const texts: TroikaText[] = [];
     const numLabels = message.props.batched_texts.length;
 
-    // Create background instances
+    // Create background instances using shared material.
     const backgrounds: THREE.Object3D[] = [];
     for (let i = 0; i < numLabels; i++) {
-      const bgMesh = new THREE.Mesh(
-        rectGeometry,
-        new THREE.MeshBasicMaterial({
-          color: LABEL_BACKGROUND_COLOR,
-          transparent: true,
-          opacity: LABEL_BACKGROUND_OPACITY,
-          depthTest: message.props.depth_test,
-          depthWrite: false,
-          toneMapped: false,
-        }),
-      );
+      const bgMesh = new THREE.Mesh(rectGeometry, sharedBackgroundMaterial);
       bgMesh.renderOrder = 9999;
       groupRef.current.add(bgMesh);
       backgrounds.push(bgMesh);
@@ -766,8 +775,6 @@ export const ViserBatchedLabels = React.forwardRef<
       // Initial position (will be updated by separate effect).
       text.position.set(0, 0, 0);
 
-      // Sync to create geometry.
-      text.sync();
       texts.push(text);
       batchedText.add(text);
     }
@@ -785,19 +792,25 @@ export const ViserBatchedLabels = React.forwardRef<
       });
       backgrounds.forEach((bg) => {
         groupRef.current.remove(bg);
-        (bg as THREE.Mesh).geometry.dispose();
-        ((bg as THREE.Mesh).material as THREE.Material).dispose();
+        // Don't dispose shared material - it's managed by useMemo.
       });
       groupRef.current.remove(batchedText);
       batchedText.dispose();
     };
   }, [
     message.props.batched_texts,
-    baseFontSize,
     rectGeometry,
-    anchorX,
-    anchorY,
+    message.props.depth_test,
+    sharedBackgroundMaterial,
   ]);
+
+  // Update anchors when they change (without recreating text objects).
+  React.useEffect(() => {
+    textObjectsRef.current.forEach((text) => {
+      text.anchorX = anchorX;
+      text.anchorY = anchorY;
+    });
+  }, [anchorX, anchorY]);
 
   // Update positions when they change (without recreating text objects).
   React.useEffect(() => {
@@ -824,20 +837,6 @@ export const ViserBatchedLabels = React.forwardRef<
       texts[i].position.set(x, y, z);
     }
   }, [message.props.batched_positions]);
-
-  // Update depth test properties when they change.
-  React.useEffect(() => {
-    // Reset material props flag so useFrame updates materials with new depth_test setting.
-    materialPropsSetRef.current = false;
-
-    // Update background materials depth test setting.
-    backgroundInstancesRef.current.forEach((bg) => {
-      const mesh = bg as THREE.Mesh;
-      const mat = mesh.material as THREE.MeshBasicMaterial;
-      mat.depthTest = message.props.depth_test;
-      mat.needsUpdate = true;
-    });
-  }, [message.props.depth_test]);
 
   // Billboard rotation and distance culling.
   useFrame(({ camera }) => {
@@ -870,36 +869,24 @@ export const ViserBatchedLabels = React.forwardRef<
 
     // Apply billboard rotation and visibility to each text and background.
     textObjectsRef.current.forEach((text, i) => {
-      // Apply screen-space scaling if using "constant" font height.
+      // Apply font sizing based on mode.
       let paddingX = LABEL_BACKGROUND_PADDING_X;
       let paddingY = LABEL_BACKGROUND_PADDING_Y;
 
-      if (fontHeight === "constant") {
+      if (fontSizeMode === "screen") {
         // Scale based on distance and FOV to maintain consistent visual size.
-        // This matches the approach used for the orbit crosshair.
-        let scale: number;
-        if ("fov" in camera && typeof camera.fov === "number") {
-          // PerspectiveCamera: use Euclidean distance and FOV
-          // Text position is in local space, convert to world space for distance calculation
-          textWorldPos.current.copy(text.position);
-          textWorldPos.current.applyMatrix4(groupRef.current.matrixWorld);
-          const distance = camera.position.distanceTo(textWorldPos.current);
-          const fovScale = Math.tan(
-            ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 360,
-          );
-          // Reference distance is 10 units (baseFontSize is calibrated for this)
-          scale = (distance / 10.0) * fovScale;
-        } else {
-          // OrthographicCamera: use constant scale (no perspective)
-          scale = 1.0;
-        }
+        // Text position is in local space, convert to world space for distance calculation.
+        textWorldPos.current.copy(text.position);
+        textWorldPos.current.applyMatrix4(groupRef.current.matrixWorld);
+        const scale = calculateScreenSpaceScale(camera, textWorldPos.current);
 
+        // baseFontSize already includes fontScreenScale.
         text.fontSize = baseFontSize * scale;
         // Also scale padding to maintain constant screen-space padding.
-        paddingX = LABEL_BACKGROUND_PADDING_X * scale;
-        paddingY = LABEL_BACKGROUND_PADDING_Y * scale;
+        paddingX = LABEL_BACKGROUND_PADDING_X * scale * fontScreenScale;
+        paddingY = LABEL_BACKGROUND_PADDING_Y * scale * fontScreenScale;
       } else {
-        // Use the fixed font size.
+        // Use the fixed scene-space font size.
         text.fontSize = baseFontSize;
       }
 
@@ -912,8 +899,6 @@ export const ViserBatchedLabels = React.forwardRef<
       // Update background position and scale
       const bg = backgroundInstancesRef.current[i];
       if (bg && text.textRenderInfo) {
-        text.sync();
-
         // Get text bounds from textRenderInfo.
         const bounds = text.textRenderInfo.blockBounds;
         if (bounds) {
@@ -932,38 +917,15 @@ export const ViserBatchedLabels = React.forwardRef<
           const rectMinY = minY - paddingY / 2;
           const rectMaxY = maxY + paddingY / 2;
 
-          // Calculate the anchor point on the rectangle based on user's anchor choice.
-          // The text anchor is at (0, 0), and we want to position the background
-          // so that the rectangle's anchor aligns with the text's anchor.
-          let rectAnchorX = 0;
-          let rectAnchorY = 0;
-
-          if (anchorX === "left") {
-            rectAnchorX = rectMinX;
-          } else if (anchorX === "right") {
-            rectAnchorX = rectMaxX;
-          } else {
-            // center
-            rectAnchorX = (rectMinX + rectMaxX) / 2;
-          }
-
-          if (anchorY === "top") {
-            rectAnchorY = rectMaxY;
-          } else if (anchorY === "bottom") {
-            rectAnchorY = rectMinY;
-          } else {
-            // middle
-            rectAnchorY = (rectMinY + rectMaxY) / 2;
-          }
-
-          // The background center needs to be offset from the text position.
-          // Background is positioned at its center, so we need center of rectangle.
-          const rectCenterX = (rectMinX + rectMaxX) / 2;
-          const rectCenterY = (rectMinY + rectMaxY) / 2;
-
-          // Offset from text anchor (0, 0) to rectangle center.
-          const offsetX = rectCenterX - rectAnchorX;
-          const offsetY = rectCenterY - rectAnchorY;
+          // Calculate offset from text anchor to rectangle center.
+          const { offsetX, offsetY } = calculateAnchorOffset(
+            anchorX,
+            anchorY,
+            rectMinX,
+            rectMaxX,
+            rectMinY,
+            rectMaxY,
+          );
 
           // Position background at text center.
           // The center offset is in local space, so we need to rotate it by the billboard quaternion.

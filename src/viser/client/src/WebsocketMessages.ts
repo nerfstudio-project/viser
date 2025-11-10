@@ -102,7 +102,9 @@ export interface LabelMessage {
   name: string;
   props: {
     text: string;
-    font_height: number | "constant";
+    font_size_mode: "screen" | "scene";
+    font_screen_scale: number;
+    font_scene_height: number;
     depth_test: boolean;
     anchor:
       | "top-left"
@@ -126,7 +128,9 @@ export interface BatchedLabelsMessage {
   props: {
     batched_texts: string[];
     batched_positions: Uint8Array<ArrayBuffer>;
-    font_height: number | "constant";
+    font_size_mode: "screen" | "scene";
+    font_screen_scale: number;
+    font_scene_height: number;
     depth_test: boolean;
     anchor:
       | "top-left"
