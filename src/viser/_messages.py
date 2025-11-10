@@ -393,12 +393,10 @@ class LabelMessage(_CreateSceneNodeMessage):
 class LabelProps:
     text: str
     """Text content of the label."""
-    font_height: float
-    """Height of the label text in scene units."""
+    font_height: float | Literal["constant"]
+    """Height of the label text. Either a float in scene units, or "constant" for screen-space sizing."""
     depth_test: bool
     """Whether to enable depth testing for the label."""
-    cutoff_distance: Optional[float]
-    """Maximum distance from camera at which label is visible. None for no cutoff."""
     anchor: LabelAnchor
     """Anchor position of the label relative to its position."""
 
@@ -416,12 +414,12 @@ class BatchedLabelsProps:
     """Tuple of text strings for each label."""
     batched_positions: npt.NDArray[np.float32]
     """Positions for each label. Shape should be (N, 3)."""
-    font_height: float
-    """Height of the label text in scene units."""
+    font_height: float | Literal["constant"]
+    """Height of the label text. Either a float in scene units, or "constant" for screen-space sizing."""
     depth_test: bool
     """Whether to enable depth testing for the labels."""
-    cutoff_distance: Optional[float]
-    """Maximum distance from camera at which labels are visible. None for no cutoff."""
+    anchor: LabelAnchor
+    """Anchor position of the labels relative to their positions."""
 
 
 @dataclasses.dataclass

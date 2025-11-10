@@ -97,25 +97,23 @@ export interface GridMessage {
  *
  * (automatically generated)
  */
-export type LabelAnchor =
-  | "top-left"
-  | "top-center"
-  | "top-right"
-  | "center-left"
-  | "center-center"
-  | "center-right"
-  | "bottom-left"
-  | "bottom-center"
-  | "bottom-right";
-
 export interface LabelMessage {
   type: "LabelMessage";
   name: string;
   props: {
     text: string;
-    font_height: number;
+    font_height: number | "constant";
     depth_test: boolean;
-    anchor: LabelAnchor;
+    anchor:
+      | "top-left"
+      | "top-center"
+      | "top-right"
+      | "center-left"
+      | "center-center"
+      | "center-right"
+      | "bottom-left"
+      | "bottom-center"
+      | "bottom-right";
   };
 }
 /** Add batched 2D labels to the scene.
@@ -128,8 +126,18 @@ export interface BatchedLabelsMessage {
   props: {
     batched_texts: string[];
     batched_positions: Uint8Array<ArrayBuffer>;
-    font_height: number;
+    font_height: number | "constant";
     depth_test: boolean;
+    anchor:
+      | "top-left"
+      | "top-center"
+      | "top-right"
+      | "center-left"
+      | "center-center"
+      | "center-right"
+      | "bottom-left"
+      | "bottom-center"
+      | "bottom-right";
   };
 }
 /** Add a 3D gui element to the scene.

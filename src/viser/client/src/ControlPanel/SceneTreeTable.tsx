@@ -303,11 +303,7 @@ export default function SceneTreeTable() {
       <PropsPopoverProvider>
         <VisibilityPaintProvider>
           {childrenName.map((name) => (
-            <SceneTreeTableRow
-              nodeName={name}
-              key={name}
-              indentCount={0}
-            />
+            <SceneTreeTableRow nodeName={name} key={name} indentCount={0} />
           ))}
         </VisibilityPaintProvider>
       </PropsPopoverProvider>
@@ -440,8 +436,9 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
 
   // Get effective visibility (includes parent chain visibility)
   const isVisibleEffective =
-    viewer.useSceneTree((state) => state[props.nodeName]?.effectiveVisibility) ??
-    false;
+    viewer.useSceneTree(
+      (state) => state[props.nodeName]?.effectiveVisibility,
+    ) ?? false;
 
   // Ensure label visibility is cleaned up when component unmounts
   React.useEffect(() => {

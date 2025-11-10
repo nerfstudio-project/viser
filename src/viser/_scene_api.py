@@ -1240,9 +1240,8 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-        font_height: float = 0.1,
+        font_height: float | Literal["constant"] = "constant",
         depth_test: bool = False,
-        cutoff_distance: float | None = 30.0,
         anchor: _messages.LabelAnchor = "top-left",
     ) -> LabelHandle:
         """Add a 2D label to the scene.
@@ -1250,15 +1249,18 @@ class SceneApi:
         This method creates a text label in the 3D scene, which can be used to annotate
         or provide information about specific points or objects.
 
+        .. note::
+            For cases that need thousands of labels or atomic updates to the positions
+            of many labels, :meth:`add_batched_labels()` may be preferable.
+
         Args:
             name: Name of the label.
             text: Text content of the label.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
-            font_height: Height of the label text in scene units.
+            font_height: Height of the label text. Either a float in scene units, or "constant" for screen-space sizing that maintains constant pixel size regardless of distance.
             depth_test: Whether to enable depth testing for the label.
-            cutoff_distance: Maximum distance from camera at which label is visible. None for no cutoff.
             anchor: Anchor position of the label relative to its position.
 
         Returns:
@@ -1270,7 +1272,6 @@ class SceneApi:
                 text=text,
                 font_height=font_height,
                 depth_test=depth_test,
-                cutoff_distance=cutoff_distance,
                 anchor=anchor,
             ),
         )
@@ -1286,9 +1287,9 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-        font_height: float = 0.1,
+        font_height: float | Literal["constant"] = "constant",
         depth_test: bool = False,
-        cutoff_distance: float | None = 30.0,
+        anchor: _messages.LabelAnchor = "top-left",
     ) -> BatchedLabelsHandle:
         """Add batched 2D labels to the scene for efficient rendering of many labels.
 
@@ -1302,9 +1303,9 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
-            font_height: Height of the label text in scene units.
+            font_height: Height of the label text. Either a float in scene units, or "constant" for screen-space sizing that maintains constant pixel size regardless of distance.
             depth_test: Whether to enable depth testing for the labels.
-            cutoff_distance: Maximum distance from camera at which labels are visible. None for no cutoff.
+            anchor: Anchor position of the labels relative to their positions.
 
         Returns:
             Handle for manipulating batched labels scene node.
@@ -1321,7 +1322,7 @@ class SceneApi:
                 batched_positions=batched_positions.astype(np.float32),
                 font_height=font_height,
                 depth_test=depth_test,
-                cutoff_distance=cutoff_distance,
+                anchor=anchor,
             ),
         )
         return BatchedLabelsHandle._make(

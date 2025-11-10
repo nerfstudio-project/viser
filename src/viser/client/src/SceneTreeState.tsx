@@ -200,7 +200,7 @@ function createSceneTreeActions(
         });
 
         // If visibility changed, recompute effective visibility for this node and descendants.
-        if ('visibility' in attributes || 'overrideVisibility' in attributes) {
+        if ("visibility" in attributes || "overrideVisibility" in attributes) {
           actions.computeEffectiveVisibility(name);
         }
       }
@@ -214,12 +214,13 @@ function createSceneTreeActions(
       // Compute parent's effective visibility.
       const parentName = name.split("/").slice(0, -1).join("/");
       const parentNode = state[parentName];
-      const parentEffective = parentName === ""
-        ? true  // Root is always effectively visible
-        : (parentNode?.effectiveVisibility ?? true);
+      const parentEffective =
+        parentName === ""
+          ? true // Root is always effectively visible
+          : (parentNode?.effectiveVisibility ?? true);
 
       // Compute this node's visibility.
-      const nodeVisibility = (node.overrideVisibility ?? node.visibility) ?? true;
+      const nodeVisibility = node.overrideVisibility ?? node.visibility ?? true;
       const effective = parentEffective && nodeVisibility;
 
       // Update this node and all descendants.
@@ -239,7 +240,8 @@ function createSceneTreeActions(
           const child = state[childName];
           if (!child) return;
 
-          const childVisibility = (child.overrideVisibility ?? child.visibility) ?? true;
+          const childVisibility =
+            child.overrideVisibility ?? child.visibility ?? true;
           const childEffective = parentEffective && childVisibility;
 
           updates[childName] = {

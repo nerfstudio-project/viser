@@ -13,8 +13,20 @@ import { BatchedMeshHoverOutlines } from "./mesh/BatchedMeshHoverOutlines";
 import { MeshBasicMaterial } from "three";
 // @ts-ignore - troika-three-text doesn't have type definitions
 import { Text as TroikaText, BatchedText } from "troika-three-text";
-import { BatchedTextManagerContext } from "./BatchedTextManagerContext";
+import { BatchedLabelManagerContext } from "./BatchedLabelManagerContext";
 import { ViewerContext } from "./ViewerContext";
+import {
+  setupBatchedTextMaterial,
+  calculateBillboardRotation,
+  createRectGeometry,
+  LABEL_FONT,
+  LABEL_TEXT_COLOR,
+  LABEL_SDF_GLYPH_SIZE,
+  LABEL_BACKGROUND_COLOR,
+  LABEL_BACKGROUND_OPACITY,
+  LABEL_BACKGROUND_PADDING_X,
+  LABEL_BACKGROUND_PADDING_Y,
+} from "./LabelUtils";
 
 const originGeom = new THREE.SphereGeometry(1.0);
 
@@ -565,18 +577,19 @@ export const ViserLabel = React.forwardRef<
   const groupRef = React.useRef<THREE.Group>(null!);
   const textRef = React.useRef<TroikaText>(null!);
 
-  const manager = React.useContext(BatchedTextManagerContext);
+  const manager = React.useContext(BatchedLabelManagerContext);
   if (!manager) {
     throw new Error(
-      "ViserLabel must be used within GlobalBatchedTextManager context",
+      "ViserLabel must be used within BatchedTextManager context",
     );
   }
 
-  // Troika Text fontSize is directly in world units.
-  const fontSize = message.props.font_height;
-
   // Convert anchor to Troika format.
   const { anchorX, anchorY } = labelAnchorToTroikaAnchors(message.props.anchor);
+
+  // Calculate base font size (used for initial setup).
+  const baseFontSize =
+    message.props.font_height === "constant" ? 0.30 : message.props.font_height;
 
   // Create text once on mount and register with global manager.
   React.useEffect(() => {
@@ -584,7 +597,7 @@ export const ViserLabel = React.forwardRef<
     text.text = message.props.text;
     // Use relative path for font so it works if client is in a subdirectory.
     text.font = "./Inter-VariableFont_slnt,wght.ttf";
-    text.fontSize = fontSize;
+    text.fontSize = baseFontSize;
     text.color = 0x000000; // Black.
     text.anchorX = anchorX;
     text.anchorY = anchorY;
@@ -598,8 +611,15 @@ export const ViserLabel = React.forwardRef<
 
     // Don't sync here - registerText will sync the BatchedText after adding.
     textRef.current = text;
-    // Register with global manager.
-    manager.registerText(text, message.name, message.props.depth_test);
+    // Register with global manager, passing fontHeight and anchor info.
+    manager.registerText(
+      text,
+      message.name,
+      message.props.depth_test,
+      message.props.font_height,
+      anchorX,
+      anchorY,
+    );
 
     return () => {
       manager.unregisterText(text);
@@ -616,15 +636,6 @@ export const ViserLabel = React.forwardRef<
     }
   }, [message.props.text, manager]);
 
-  // Update font size when it changes.
-  React.useEffect(() => {
-    if (textRef.current) {
-      // Don't call text.sync(); let the BatchedText handle it via manager.syncText().
-      textRef.current.fontSize = fontSize;
-      manager.syncText(textRef.current);
-    }
-  }, [fontSize, manager]);
-
   // Update anchor when it changes.
   React.useEffect(() => {
     if (textRef.current) {
@@ -635,7 +646,30 @@ export const ViserLabel = React.forwardRef<
     }
   }, [anchorX, anchorY, manager]);
 
-  // GlobalBatchedTextManager handles position updates, visibility, and culling.
+  // Re-register when depth_test, font_height, or anchor changes.
+  // This ensures the manager has the correct metadata for rendering.
+  React.useEffect(() => {
+    if (textRef.current) {
+      manager.unregisterText(textRef.current);
+      manager.registerText(
+        textRef.current,
+        message.name,
+        message.props.depth_test,
+        message.props.font_height,
+        anchorX,
+        anchorY,
+      );
+    }
+  }, [
+    message.props.depth_test,
+    message.props.font_height,
+    anchorX,
+    anchorY,
+    manager,
+    message.name,
+  ]);
+
+  // BatchedTextManager handles position updates, visibility, and culling.
   React.useImperativeHandle(ref, () => groupRef.current, []);
 
   // Use a selector to subscribe only to this node's children.
@@ -644,7 +678,7 @@ export const ViserLabel = React.forwardRef<
     return node?.children && node.children.length > 0;
   });
 
-  // Return null when no children - GlobalBatchedTextManager handles the text rendering.
+  // Return null when no children - BatchedTextManager handles the text rendering.
   // Return group when there are children - SceneTree needs it to apply transforms to child nodes.
   if (!hasChildren) {
     return null;
@@ -663,12 +697,26 @@ export const ViserBatchedLabels = React.forwardRef<
   const textObjectsRef = React.useRef<TroikaText[]>([]);
   const materialPropsSetRef = React.useRef(false);
 
+  // Background rectangle instances for each text label.
+  const backgroundInstancesRef = React.useRef<THREE.Object3D[]>([]);
+
   // Reuse objects to avoid allocations.
   const groupQuaternion = React.useRef(new THREE.Quaternion());
   const billboardQuaternion = React.useRef(new THREE.Quaternion());
+  const localOffset = React.useRef(new THREE.Vector3());
+  const textWorldPos = React.useRef(new THREE.Vector3());
 
-  // Troika Text fontSize is directly in world units.
-  const fontSize = message.props.font_height;
+  // Store font_height value (can be "constant" or a number).
+  const fontHeight = message.props.font_height;
+
+  // Calculate base font size.
+  const baseFontSize = fontHeight === "constant" ? 0.30 : fontHeight;
+
+  // Convert anchor to Troika format.
+  const { anchorX, anchorY } = labelAnchorToTroikaAnchors(message.props.anchor);
+
+  // Create rectangle geometry once.
+  const rectGeometry = React.useMemo(() => createRectGeometry(), []);
 
   // Create BatchedText and individual Text objects when texts or fontSize change.
   // This should happen rarely - most updates will be position changes.
@@ -683,20 +731,37 @@ export const ViserBatchedLabels = React.forwardRef<
     const texts: TroikaText[] = [];
     const numLabels = message.props.batched_texts.length;
 
+    // Create background instances
+    const backgrounds: THREE.Object3D[] = [];
+    for (let i = 0; i < numLabels; i++) {
+      const bgMesh = new THREE.Mesh(
+        rectGeometry,
+        new THREE.MeshBasicMaterial({
+          color: LABEL_BACKGROUND_COLOR,
+          transparent: true,
+          opacity: LABEL_BACKGROUND_OPACITY,
+          depthTest: message.props.depth_test,
+          depthWrite: false,
+          toneMapped: false,
+        }),
+      );
+      bgMesh.renderOrder = 9999;
+      groupRef.current.add(bgMesh);
+      backgrounds.push(bgMesh);
+    }
+    backgroundInstancesRef.current = backgrounds;
+
     for (let i = 0; i < numLabels; i++) {
       const text = new TroikaText();
       text.text = message.props.batched_texts[i];
-      // Use relative path for font so it works if client is in a subdirectory.
-      text.font = "./Inter-VariableFont_slnt,wght.ttf";
-      text.fontSize = fontSize;
-      text.color = 0x000000; // Black.
-      text.anchorX = "left";
-      text.anchorY = "top";
+      text.font = LABEL_FONT;
+      text.fontSize = baseFontSize;
+      text.color = LABEL_TEXT_COLOR;
+      text.anchorX = anchorX;
+      text.anchorY = anchorY;
 
-      // Outline for readability.
-      text.outlineWidth = fontSize * 0.05;
-      text.outlineColor = 0xffffff;
-      text.outlineOpacity = 0.8;
+      // Lower SDF resolution for better performance with many labels.
+      text.sdfGlyphSize = LABEL_SDF_GLYPH_SIZE;
 
       // Initial position (will be updated by separate effect).
       text.position.set(0, 0, 0);
@@ -718,10 +783,21 @@ export const ViserBatchedLabels = React.forwardRef<
         batchedText.remove(text);
         text.dispose();
       });
+      backgrounds.forEach((bg) => {
+        groupRef.current.remove(bg);
+        (bg as THREE.Mesh).geometry.dispose();
+        ((bg as THREE.Mesh).material as THREE.Material).dispose();
+      });
       groupRef.current.remove(batchedText);
       batchedText.dispose();
     };
-  }, [message.props.batched_texts, fontSize]);
+  }, [
+    message.props.batched_texts,
+    baseFontSize,
+    rectGeometry,
+    anchorX,
+    anchorY,
+  ]);
 
   // Update positions when they change (without recreating text objects).
   React.useEffect(() => {
@@ -753,6 +829,14 @@ export const ViserBatchedLabels = React.forwardRef<
   React.useEffect(() => {
     // Reset material props flag so useFrame updates materials with new depth_test setting.
     materialPropsSetRef.current = false;
+
+    // Update background materials depth test setting.
+    backgroundInstancesRef.current.forEach((bg) => {
+      const mesh = bg as THREE.Mesh;
+      const mat = mesh.material as THREE.MeshBasicMaterial;
+      mat.depthTest = message.props.depth_test;
+      mat.needsUpdate = true;
+    });
   }, [message.props.depth_test]);
 
   // Billboard rotation and distance culling.
@@ -762,42 +846,145 @@ export const ViserBatchedLabels = React.forwardRef<
     // Set material properties on BatchedText if not yet set.
     // BatchedText creates its material during the render loop, so we check here.
     if (!materialPropsSetRef.current && batchedTextRef.current) {
-      const material = batchedTextRef.current.material;
-      if (material) {
-        // Material can be an array [outlineMaterial, mainMaterial] or a single material.
-        const materials = Array.isArray(material) ? material : [material];
-        materials.forEach((mat) => {
-          mat.depthTest = message.props.depth_test;
-          // Always disable depthWrite to avoid z-fighting between outline and fill.
-          mat.depthWrite = false;
-          // Mark as transparent for proper alpha blending and depth sorting.
-          mat.transparent = true;
-          mat.needsUpdate = true;
-        });
-        batchedTextRef.current.renderOrder = 10_000;
+      if (
+        setupBatchedTextMaterial(
+          batchedTextRef.current,
+          message.props.depth_test,
+        )
+      ) {
         materialPropsSetRef.current = true;
       }
     }
 
     // Calculate billboard rotation accounting for parent transform.
-    groupRef.current.updateMatrix();
-    groupRef.current.updateWorldMatrix(false, false);
-    groupRef.current.getWorldQuaternion(groupQuaternion.current);
-    camera
-      .getWorldQuaternion(billboardQuaternion.current)
-      .premultiply(groupQuaternion.current.invert());
+    calculateBillboardRotation(
+      groupRef.current,
+      camera,
+      groupQuaternion.current,
+      billboardQuaternion.current,
+    );
 
     // Get node visibility from scene tree (includes parent chain).
     const node = viewer.useSceneTree.getState()[message.name];
     const nodeVisible = node?.effectiveVisibility ?? false;
 
-    // Apply billboard rotation and visibility to each text.
-    textObjectsRef.current.forEach((text) => {
+    // Apply billboard rotation and visibility to each text and background.
+    textObjectsRef.current.forEach((text, i) => {
+      // Apply screen-space scaling if using "constant" font height.
+      let paddingX = LABEL_BACKGROUND_PADDING_X;
+      let paddingY = LABEL_BACKGROUND_PADDING_Y;
+
+      if (fontHeight === "constant") {
+        // Scale based on distance and FOV to maintain consistent visual size.
+        // This matches the approach used for the orbit crosshair.
+        let scale: number;
+        if ("fov" in camera && typeof camera.fov === "number") {
+          // PerspectiveCamera: use Euclidean distance and FOV
+          // Text position is in local space, convert to world space for distance calculation
+          textWorldPos.current.copy(text.position);
+          textWorldPos.current.applyMatrix4(groupRef.current.matrixWorld);
+          const distance = camera.position.distanceTo(textWorldPos.current);
+          const fovScale = Math.tan(
+            ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 360,
+          );
+          // Reference distance is 10 units (baseFontSize is calibrated for this)
+          scale = (distance / 10.0) * fovScale;
+        } else {
+          // OrthographicCamera: use constant scale (no perspective)
+          scale = 1.0;
+        }
+
+        text.fontSize = baseFontSize * scale;
+        // Also scale padding to maintain constant screen-space padding.
+        paddingX = LABEL_BACKGROUND_PADDING_X * scale;
+        paddingY = LABEL_BACKGROUND_PADDING_Y * scale;
+      } else {
+        // Use the fixed font size.
+        text.fontSize = baseFontSize;
+      }
+
       // Billboard rotation: apply the calculated quaternion.
       text.quaternion.copy(billboardQuaternion.current);
 
       // Set visibility based on scene tree.
       text.visible = nodeVisible;
+
+      // Update background position and scale
+      const bg = backgroundInstancesRef.current[i];
+      if (bg && text.textRenderInfo) {
+        text.sync();
+
+        // Get text bounds from textRenderInfo.
+        const bounds = text.textRenderInfo.blockBounds;
+        if (bounds) {
+          const [minX, minY, maxX, maxY] = bounds;
+          const width = maxX - minX;
+          const height = maxY - minY;
+
+          // Calculate rectangle dimensions (text + padding).
+          const rectWidth = width + paddingX;
+          const rectHeight = height + paddingY;
+
+          // Calculate rectangle bounds in text-local coordinates.
+          // Text bounds are relative to the text anchor (which is at 0,0).
+          const rectMinX = minX - paddingX / 2;
+          const rectMaxX = maxX + paddingX / 2;
+          const rectMinY = minY - paddingY / 2;
+          const rectMaxY = maxY + paddingY / 2;
+
+          // Calculate the anchor point on the rectangle based on user's anchor choice.
+          // The text anchor is at (0, 0), and we want to position the background
+          // so that the rectangle's anchor aligns with the text's anchor.
+          let rectAnchorX = 0;
+          let rectAnchorY = 0;
+
+          if (anchorX === "left") {
+            rectAnchorX = rectMinX;
+          } else if (anchorX === "right") {
+            rectAnchorX = rectMaxX;
+          } else {
+            // center
+            rectAnchorX = (rectMinX + rectMaxX) / 2;
+          }
+
+          if (anchorY === "top") {
+            rectAnchorY = rectMaxY;
+          } else if (anchorY === "bottom") {
+            rectAnchorY = rectMinY;
+          } else {
+            // middle
+            rectAnchorY = (rectMinY + rectMaxY) / 2;
+          }
+
+          // The background center needs to be offset from the text position.
+          // Background is positioned at its center, so we need center of rectangle.
+          const rectCenterX = (rectMinX + rectMaxX) / 2;
+          const rectCenterY = (rectMinY + rectMaxY) / 2;
+
+          // Offset from text anchor (0, 0) to rectangle center.
+          const offsetX = rectCenterX - rectAnchorX;
+          const offsetY = rectCenterY - rectAnchorY;
+
+          // Position background at text center.
+          // The center offset is in local space, so we need to rotate it by the billboard quaternion.
+          localOffset.current.set(offsetX, offsetY, 0);
+          localOffset.current.applyQuaternion(billboardQuaternion.current);
+
+          bg.position.copy(text.position);
+          bg.position.add(localOffset.current);
+
+          // Scale background to rectangle size.
+          bg.scale.set(rectWidth, rectHeight, 1);
+
+          // Match text rotation.
+          bg.quaternion.copy(billboardQuaternion.current);
+
+          // Match visibility.
+          bg.visible = nodeVisible;
+        } else {
+          bg.visible = false;
+        }
+      }
     });
   });
 

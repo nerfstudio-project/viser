@@ -57,7 +57,7 @@ import { SkinnedMesh } from "./mesh/SkinnedMesh";
 import { BatchedMesh } from "./mesh/BatchedMesh";
 import { SingleGlbAsset } from "./mesh/SingleGlbAsset";
 import { BatchedGlbAsset } from "./mesh/BatchedGlbAsset";
-import { GlobalBatchedTextManager } from "./GlobalBatchedTextManager";
+import { BatchedLabelManager } from "./BatchedLabelManager";
 
 function rgbToInt(rgb: [number, number, number]): number {
   return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
@@ -999,7 +999,7 @@ function SceneNodeChildren(props: { name: string }) {
     // Create a context for batched text rendering at the root level. We place
     // this here instead of outside of the root node to make sure the root node
     // rotation (eg, from `set_up_direction()`) is applied to text objects.
-    return <GlobalBatchedTextManager>{children}</GlobalBatchedTextManager>;
+    return <BatchedLabelManager>{children}</BatchedLabelManager>;
   } else {
     return children;
   }
