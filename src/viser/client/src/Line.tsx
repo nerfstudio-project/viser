@@ -1,6 +1,8 @@
 /** Adapted from: https://github.com/pmndrs/drei/blob/d5ee73265a49d59ab87aab0fad89e997e5495daa/src/core/Line.tsx
  *
- * But takes typed arrays as input instead of vanilla arrays.
+ * Modifications:
+ * - Takes typed arrays (Float32Array/Uint8Array) as input instead of vanilla arrays.
+ * - Updates geometry in place using useLayoutEffect to avoid flickering on prop changes.
  */
 
 import * as React from "react";
@@ -49,27 +51,29 @@ export const Line: ForwardRefComponent<LineProps, Line2 | LineSegments2> =
       );
       const [lineMaterial] = React.useState(() => new LineMaterial());
       const itemSize = 3; // We're now always using RGB colors (3 components)
-      const lineGeom = React.useMemo(() => {
-        const geom = segments ? new LineSegmentsGeometry() : new LineGeometry();
 
-        // points is already a Float32Array of [x,y,z] values
-        geom.setPositions(points);
+      // Create geometry once, then update it in place to avoid flicker.
+      const [lineGeom] = React.useState(() =>
+        segments ? new LineSegmentsGeometry() : new LineGeometry(),
+      );
 
+      // Update geometry positions when points change.
+      React.useLayoutEffect(() => {
+        lineGeom.setPositions(points);
+        line2.computeLineDistances();
+      }, [points, line2, lineGeom]);
+
+      // Update geometry colors when vertexColors change.
+      React.useLayoutEffect(() => {
         if (vertexColors) {
           // Convert Uint8Array (0-255) to Float32Array (0-1)
           const normalizedColors = new Float32Array(vertexColors).map(
             (c) => c / 255,
           );
           color = 0xffffff;
-          geom.setColors(normalizedColors, itemSize);
+          lineGeom.setColors(normalizedColors, itemSize);
         }
-
-        return geom;
-      }, [points, segments, vertexColors, itemSize]);
-
-      React.useLayoutEffect(() => {
-        line2.computeLineDistances();
-      }, [points, line2]);
+      }, [vertexColors, lineGeom, itemSize]);
 
       React.useLayoutEffect(() => {
         if (dashed) {
@@ -81,12 +85,14 @@ export const Line: ForwardRefComponent<LineProps, Line2 | LineSegments2> =
         lineMaterial.needsUpdate = true;
       }, [dashed, lineMaterial]);
 
+      // Clean up resources only when component unmounts.
+      // lineGeom and lineMaterial are stable references from useState.
       React.useEffect(() => {
         return () => {
           lineGeom.dispose();
           lineMaterial.dispose();
         };
-      }, [lineGeom]);
+      }, [lineGeom, lineMaterial]);
 
       return (
         <primitive object={line2} ref={ref} {...rest}>
