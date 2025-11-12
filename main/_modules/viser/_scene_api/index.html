@@ -1158,7 +1158,10 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Points should have shape (N, 2, 3) for N line segments.&quot;</span><span class="p">)</span>
 
         <span class="n">colors_array</span> <span class="o">=</span> <span class="n">colors_to_uint8</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">colors</span><span class="p">))</span>
-        <span class="n">colors_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">colors_array</span><span class="p">,</span> <span class="n">points_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">colors_array</span><span class="o">.</span><span class="n">shape</span> <span class="ow">in</span> <span class="p">{</span>
+            <span class="n">points_array</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+            <span class="p">(</span><span class="mi">3</span><span class="p">,),</span>
+        <span class="p">},</span> <span class="s2">&quot;Shape of colors should be (N, 2, 3) or (3,).&quot;</span>
 
         <span class="n">message</span> <span class="o">=</span> <span class="n">_messages</span><span class="o">.</span><span class="n">LineSegmentsMessage</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
