@@ -256,16 +256,12 @@ function SplatRendererImpl() {
           groupIndex * 12,
         );
 
-        // Determine visibility. If the parent has unmountWhenInvisible=true, the
-        // first frame after showing a hidden parent can have visible=true with
-        // an incorrect matrixWorld transform. There might be a better fix, but
-        // `prevVisible` is an easy workaround for this.
-        let visibleNow = node.visible && node.parent !== null;
-        if (visibleNow) {
-          node.traverseAncestors((ancestor) => {
-            visibleNow = visibleNow && ancestor.visible;
-          });
-        }
+        // Determine visibility. The node.visible is set by SceneTree based on
+        // effectiveVisibility which includes the parent chain. If the parent has
+        // unmountWhenInvisible=true, the first frame after showing a hidden parent
+        // can have visible=true with an incorrect matrixWorld transform. There
+        // might be a better fix, but `prevVisible` is an easy workaround for this.
+        const visibleNow = node.visible && node.parent !== null;
         groupVisibles.push(visibleNow && prevVisibles[groupIndex] === true);
         if (prevVisibles[groupIndex] !== visibleNow) {
           prevVisibles[groupIndex] = visibleNow;

@@ -19,6 +19,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
 import { ViewerContext } from "../ViewerContext";
+import { shallowArrayEqual } from "../utils/shallowArrayEqual";
 import {
   Box,
   Flex,
@@ -293,18 +294,16 @@ function EditNodeProps({
 /* Table for seeing an overview of the scene tree, toggling visibility, etc. * */
 export default function SceneTreeTable() {
   const viewer = React.useContext(ViewerContext)!;
-  const childrenName = viewer.useSceneTree((state) => state[""]!.children);
+  const childrenName = viewer.useSceneTree(
+    (state) => state[""]!.children,
+    shallowArrayEqual,
+  );
   return (
     <ScrollArea className={tableWrapper}>
       <PropsPopoverProvider>
         <VisibilityPaintProvider>
           {childrenName.map((name) => (
-            <SceneTreeTableRow
-              nodeName={name}
-              key={name}
-              isParentVisible={true}
-              indentCount={0}
-            />
+            <SceneTreeTableRow nodeName={name} key={name} indentCount={0} />
           ))}
         </VisibilityPaintProvider>
       </PropsPopoverProvider>
@@ -378,7 +377,6 @@ export function PropsPopoverProvider({
 // Modified SceneTreeTableRow
 const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   nodeName: string;
-  isParentVisible: boolean;
   indentCount: number;
 }) {
   const viewer = React.useContext(ViewerContext)!;
@@ -412,6 +410,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
 
   const childrenName = viewer.useSceneTree(
     (state) => state[props.nodeName]?.children,
+    shallowArrayEqual,
   );
   const expandable = (childrenName?.length ?? 0) > 0;
   const [expanded, { toggle: toggleExpanded }] = useDisclosure(false);
@@ -424,6 +423,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   };
 
   // Get server visibility and override visibility separately
+  // These use default equality (===) which is fine for boolean/undefined
   const serverVisibility =
     viewer.useSceneTree((state) => state[props.nodeName]?.visibility) ?? true;
   const overrideVisibility = viewer.useSceneTree(
@@ -434,6 +434,12 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   const isVisible =
     overrideVisibility !== undefined ? overrideVisibility : serverVisibility;
 
+  // Get effective visibility (includes parent chain visibility)
+  const isVisibleEffective =
+    viewer.useSceneTree(
+      (state) => state[props.nodeName]?.effectiveVisibility,
+    ) ?? false;
+
   // Ensure label visibility is cleaned up when component unmounts
   React.useEffect(() => {
     return () => {
@@ -441,7 +447,6 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
     };
   }, []);
 
-  const isVisibleEffective = isVisible && props.isParentVisible;
   const VisibleIcon = isVisible ? IconEye : IconEyeOff;
 
   const closePropsPopover = () => {
@@ -627,7 +632,6 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
         ? childrenName?.map((name) => (
             <SceneTreeTableRow
               nodeName={name}
-              isParentVisible={isVisibleEffective}
               key={name}
               indentCount={props.indentCount + 1}
             />

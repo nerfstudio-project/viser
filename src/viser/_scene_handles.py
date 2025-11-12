@@ -737,6 +737,13 @@ class LabelHandle(
     """Handle for 2D label objects. Does not support click events."""
 
 
+class BatchedLabelsHandle(
+    SceneNodeHandle,
+    _messages.BatchedLabelsProps,
+):
+    """Handle for batched 2D label objects. Does not support click events."""
+
+
 @dataclasses.dataclass
 class _TransformControlsState:
     last_updated: float

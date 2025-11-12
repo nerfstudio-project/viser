@@ -6,6 +6,7 @@ import { Box, Collapse, Paper } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { ViewerContext } from "../ViewerContext";
 import { folderLabel, folderToggleIcon, folderWrapper } from "./Folder.css";
+import { shallowObjectKeysEqual } from "../utils/shallowObjectKeysEqual";
 
 export default function FolderComponent({
   uuid,
@@ -16,6 +17,7 @@ export default function FolderComponent({
   const [opened, { toggle }] = useDisclosure(expand_by_default);
   const guiIdSet = viewer.useGui(
     (state) => state.guiUuidSetFromContainerUuid[uuid],
+    shallowObjectKeysEqual,
   );
   const guiContext = React.useContext(GuiComponentContext)!;
   const isEmpty = guiIdSet === undefined || Object.keys(guiIdSet).length === 0;
