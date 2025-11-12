@@ -35,6 +35,7 @@ Batching objects can help by reducing CPU overhead and WebGL draw calls. Viser
 provides several methods for batching, including:
 
 - :meth:`viser.SceneApi.add_batched_axes`
+- :meth:`viser.SceneApi.add_batched_labels`
 - :meth:`viser.SceneApi.add_batched_meshes_simple`
 - :meth:`viser.SceneApi.add_batched_meshes_trimesh`
 - :meth:`viser.SceneApi.add_batched_glb`
@@ -119,6 +120,10 @@ Smaller property updates are generally fine. A non-exhaustive list:
 * ✅ Setting scales of batched meshes.
 
   * Assigning :attr:`viser.BatchedMeshHandle.batched_scales`
+
+* ✅ Setting positions of batched labels.
+
+  * Assigning :attr:`viser.BatchedLabelsHandle.batched_positions`
 
 * ✅ Updating orientations and positions of bones in skinned meshes.
 

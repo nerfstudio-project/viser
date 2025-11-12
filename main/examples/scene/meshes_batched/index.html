@@ -601,7 +601,7 @@ For working with trimesh objects, see <a class="reference internal" href="../../
 <span class="linenos">141</span>
 <span class="linenos">142</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 <span class="linenos">143</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">configure_default_lights</span><span class="p">()</span>
-<span class="linenos">144</span>    <span class="n">grid_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_grid</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;grid&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="linenos">144</span>    <span class="n">grid_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_grid</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;/grid&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
 <span class="linenos">145</span>
 <span class="linenos">146</span>    <span class="c1"># Add GUI controls.</span>
 <span class="linenos">147</span>    <span class="n">instance_count_slider</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_slider</span><span class="p">(</span>
@@ -645,7 +645,7 @@ For working with trimesh objects, see <a class="reference internal" href="../../
 <span class="linenos">185</span>
 <span class="linenos">186</span>    <span class="c1"># Create batched mesh visualization.</span>
 <span class="linenos">187</span>    <span class="n">axes_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_batched_axes</span><span class="p">(</span>
-<span class="linenos">188</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;axes&quot;</span><span class="p">,</span>
+<span class="linenos">188</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;/axes&quot;</span><span class="p">,</span>
 <span class="linenos">189</span>        <span class="n">batched_positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
 <span class="linenos">190</span>        <span class="n">batched_wxyzs</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
 <span class="linenos">191</span>        <span class="n">batched_scales</span><span class="o">=</span><span class="n">scales</span><span class="p">,</span>
@@ -655,7 +655,7 @@ For working with trimesh objects, see <a class="reference internal" href="../../
 <span class="linenos">195</span>    <span class="n">initial_colors</span> <span class="o">=</span> <span class="n">generate_per_instance_colors</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">color_mode</span><span class="o">=</span><span class="s2">&quot;rainbow&quot;</span><span class="p">)</span>
 <span class="linenos">196</span>
 <span class="linenos">197</span>    <span class="n">mesh_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_batched_meshes_simple</span><span class="p">(</span>
-<span class="linenos">198</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;dragon&quot;</span><span class="p">,</span>
+<span class="linenos">198</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;/dragon&quot;</span><span class="p">,</span>
 <span class="linenos">199</span>        <span class="n">vertices</span><span class="o">=</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span>
 <span class="linenos">200</span>        <span class="n">faces</span><span class="o">=</span><span class="n">dragon_mesh</span><span class="o">.</span><span class="n">faces</span><span class="p">,</span>
 <span class="linenos">201</span>        <span class="n">batched_positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>

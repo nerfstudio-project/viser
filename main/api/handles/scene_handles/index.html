@@ -723,6 +723,96 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="viser.BatchedLabelsHandle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">BatchedLabelsHandle</span></span><a class="reference internal" href="../../../_modules/viser/_scene_handles/#BatchedLabelsHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.BatchedLabelsHandle" title="Link to this definition">¶</a></dt>
+<dd><p>Handle for batched 2D label objects. Does not support click events.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedLabelsHandle.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#viser.BatchedLabelsHandle.name" title="Link to this definition">¶</a></dt>
+<dd><p>Read-only name of the scene node.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedLabelsHandle.position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float32</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedLabelsHandle.position" title="Link to this definition">¶</a></dt>
+<dd><p>Position of the scene node. This is equivalent to the t in
+<cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.BatchedLabelsHandle.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#viser.BatchedLabelsHandle.remove" title="Link to this definition">¶</a></dt>
+<dd><p>Remove the node from the scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedLabelsHandle.visible">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.BatchedLabelsHandle.visible" title="Link to this definition">¶</a></dt>
+<dd><p>Whether the scene node is visible or not. Synchronized to clients automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedLabelsHandle.wxyz">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float32</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedLabelsHandle.wxyz" title="Link to this definition">¶</a></dt>
+<dd><p>Orientation of the scene node. This is the quaternion representation of the R
+in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedLabelsHandle.batched_texts">
+<span class="sig-name descname"><span class="pre">batched_texts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedLabelsHandle.batched_texts" title="Link to this definition">¶</a></dt>
+<dd><p>Tuple of text strings for each label.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedLabelsHandle.batched_positions">
+<span class="sig-name descname"><span class="pre">batched_positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">npt.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">np.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedLabelsHandle.batched_positions" title="Link to this definition">¶</a></dt>
+<dd><p>Positions for each label. Shape should be (N, 3).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedLabelsHandle.font_size_mode">
+<span class="sig-name descname"><span class="pre">font_size_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'screen'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'scene'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.BatchedLabelsHandle.font_size_mode" title="Link to this definition">¶</a></dt>
+<dd><p>‘screen’ for screen-space sizing, ‘scene’ for world-space sizing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Font size mode</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedLabelsHandle.font_screen_scale">
+<span class="sig-name descname"><span class="pre">font_screen_scale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.BatchedLabelsHandle.font_screen_scale" title="Link to this definition">¶</a></dt>
+<dd><p>Scale factor for screen-space font size. Only used when font_size_mode=’screen’.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedLabelsHandle.font_scene_height">
+<span class="sig-name descname"><span class="pre">font_scene_height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.BatchedLabelsHandle.font_scene_height" title="Link to this definition">¶</a></dt>
+<dd><p>Font height in scene units. Only used when font_size_mode=’scene’.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedLabelsHandle.depth_test">
+<span class="sig-name descname"><span class="pre">depth_test</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.BatchedLabelsHandle.depth_test" title="Link to this definition">¶</a></dt>
+<dd><p>Whether to enable depth testing for the labels.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.BatchedLabelsHandle.anchor">
+<span class="sig-name descname"><span class="pre">anchor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">LabelAnchor</span></em><a class="headerlink" href="#viser.BatchedLabelsHandle.anchor" title="Link to this definition">¶</a></dt>
+<dd><p>Anchor position of the labels relative to their positions.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="viser.BatchedMeshHandle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">BatchedMeshHandle</span></span><a class="reference internal" href="../../../_modules/viser/_scene_handles/#BatchedMeshHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.BatchedMeshHandle" title="Link to this definition">¶</a></dt>
 <dd><p>Handle for batched mesh objects.</p>
@@ -1944,6 +2034,12 @@ opacity regardless of lighting conditions.</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="viser.ImageHandle.format">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'auto'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'jpeg'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'png'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.ImageHandle.format" title="Link to this definition">¶</a></dt>
+<dd><p>Image format. ‘auto’ will use PNG for RGBA images and JPEG for RGB.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="viser.ImageHandle.name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#viser.ImageHandle.name" title="Link to this definition">¶</a></dt>
 <dd><p>Read-only name of the scene node.</p>
@@ -2041,12 +2137,6 @@ False, no shadows. If a float (0-1), shadows are rendered with a fixed
 opacity regardless of lighting conditions.</p>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="viser.ImageHandle.format">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'auto'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'jpeg'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'png'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.ImageHandle.format" title="Link to this definition">¶</a></dt>
-<dd><p>Image format. ‘auto’ will use PNG for RGBA images and JPEG for RGB.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -2097,9 +2187,26 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="viser.LabelHandle.font_height">
-<span class="sig-name descname"><span class="pre">font_height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.LabelHandle.font_height" title="Link to this definition">¶</a></dt>
-<dd><p>Height of the label text in scene units.</p>
+<dt class="sig sig-object py" id="viser.LabelHandle.font_size_mode">
+<span class="sig-name descname"><span class="pre">font_size_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'screen'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'scene'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.LabelHandle.font_size_mode" title="Link to this definition">¶</a></dt>
+<dd><p>‘screen’ for screen-space sizing, ‘scene’ for world-space sizing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Font size mode</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.LabelHandle.font_screen_scale">
+<span class="sig-name descname"><span class="pre">font_screen_scale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.LabelHandle.font_screen_scale" title="Link to this definition">¶</a></dt>
+<dd><p>Scale factor for screen-space font size. Only used when font_size_mode=’screen’.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.LabelHandle.font_scene_height">
+<span class="sig-name descname"><span class="pre">font_scene_height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.LabelHandle.font_scene_height" title="Link to this definition">¶</a></dt>
+<dd><p>Font height in scene units. Only used when font_size_mode=’scene’.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2109,9 +2216,9 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="viser.LabelHandle.cutoff_distance">
-<span class="sig-name descname"><span class="pre">cutoff_distance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.LabelHandle.cutoff_distance" title="Link to this definition">¶</a></dt>
-<dd><p>Maximum distance from camera at which label is visible. None for no cutoff.</p>
+<dt class="sig sig-object py" id="viser.LabelHandle.anchor">
+<span class="sig-name descname"><span class="pre">anchor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">LabelAnchor</span></em><a class="headerlink" href="#viser.LabelHandle.anchor" title="Link to this definition">¶</a></dt>
+<dd><p>Anchor position of the label relative to its position.</p>
 </dd></dl>
 
 </dd></dl>
@@ -3355,6 +3462,21 @@ other objects.</p>
 <li><a class="reference internal" href="#viser.BatchedGlbHandle.lod"><code class="docutils literal notranslate"><span class="pre">BatchedGlbHandle.lod</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#viser.BatchedLabelsHandle"><code class="docutils literal notranslate"><span class="pre">BatchedLabelsHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.BatchedLabelsHandle.name"><code class="docutils literal notranslate"><span class="pre">BatchedLabelsHandle.name</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedLabelsHandle.position"><code class="docutils literal notranslate"><span class="pre">BatchedLabelsHandle.position</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedLabelsHandle.remove"><code class="docutils literal notranslate"><span class="pre">BatchedLabelsHandle.remove()</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedLabelsHandle.visible"><code class="docutils literal notranslate"><span class="pre">BatchedLabelsHandle.visible</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedLabelsHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">BatchedLabelsHandle.wxyz</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedLabelsHandle.batched_texts"><code class="docutils literal notranslate"><span class="pre">BatchedLabelsHandle.batched_texts</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedLabelsHandle.batched_positions"><code class="docutils literal notranslate"><span class="pre">BatchedLabelsHandle.batched_positions</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedLabelsHandle.font_size_mode"><code class="docutils literal notranslate"><span class="pre">BatchedLabelsHandle.font_size_mode</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedLabelsHandle.font_screen_scale"><code class="docutils literal notranslate"><span class="pre">BatchedLabelsHandle.font_screen_scale</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedLabelsHandle.font_scene_height"><code class="docutils literal notranslate"><span class="pre">BatchedLabelsHandle.font_scene_height</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedLabelsHandle.depth_test"><code class="docutils literal notranslate"><span class="pre">BatchedLabelsHandle.depth_test</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedLabelsHandle.anchor"><code class="docutils literal notranslate"><span class="pre">BatchedLabelsHandle.anchor</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#viser.BatchedMeshHandle"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle</span></code></a><ul>
 <li><a class="reference internal" href="#viser.BatchedMeshHandle.name"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.name</span></code></a></li>
 <li><a class="reference internal" href="#viser.BatchedMeshHandle.on_click"><code class="docutils literal notranslate"><span class="pre">BatchedMeshHandle.on_click()</span></code></a></li>
@@ -3535,6 +3657,7 @@ other objects.</p>
 </li>
 <li><a class="reference internal" href="#viser.ImageHandle"><code class="docutils literal notranslate"><span class="pre">ImageHandle</span></code></a><ul>
 <li><a class="reference internal" href="#viser.ImageHandle.image"><code class="docutils literal notranslate"><span class="pre">ImageHandle.image</span></code></a></li>
+<li><a class="reference internal" href="#viser.ImageHandle.format"><code class="docutils literal notranslate"><span class="pre">ImageHandle.format</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.name"><code class="docutils literal notranslate"><span class="pre">ImageHandle.name</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.on_click"><code class="docutils literal notranslate"><span class="pre">ImageHandle.on_click()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.position"><code class="docutils literal notranslate"><span class="pre">ImageHandle.position</span></code></a></li>
@@ -3546,7 +3669,6 @@ other objects.</p>
 <li><a class="reference internal" href="#viser.ImageHandle.render_height"><code class="docutils literal notranslate"><span class="pre">ImageHandle.render_height</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">ImageHandle.cast_shadow</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">ImageHandle.receive_shadow</span></code></a></li>
-<li><a class="reference internal" href="#viser.ImageHandle.format"><code class="docutils literal notranslate"><span class="pre">ImageHandle.format</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.LabelHandle"><code class="docutils literal notranslate"><span class="pre">LabelHandle</span></code></a><ul>
@@ -3556,9 +3678,11 @@ other objects.</p>
 <li><a class="reference internal" href="#viser.LabelHandle.visible"><code class="docutils literal notranslate"><span class="pre">LabelHandle.visible</span></code></a></li>
 <li><a class="reference internal" href="#viser.LabelHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">LabelHandle.wxyz</span></code></a></li>
 <li><a class="reference internal" href="#viser.LabelHandle.text"><code class="docutils literal notranslate"><span class="pre">LabelHandle.text</span></code></a></li>
-<li><a class="reference internal" href="#viser.LabelHandle.font_height"><code class="docutils literal notranslate"><span class="pre">LabelHandle.font_height</span></code></a></li>
+<li><a class="reference internal" href="#viser.LabelHandle.font_size_mode"><code class="docutils literal notranslate"><span class="pre">LabelHandle.font_size_mode</span></code></a></li>
+<li><a class="reference internal" href="#viser.LabelHandle.font_screen_scale"><code class="docutils literal notranslate"><span class="pre">LabelHandle.font_screen_scale</span></code></a></li>
+<li><a class="reference internal" href="#viser.LabelHandle.font_scene_height"><code class="docutils literal notranslate"><span class="pre">LabelHandle.font_scene_height</span></code></a></li>
 <li><a class="reference internal" href="#viser.LabelHandle.depth_test"><code class="docutils literal notranslate"><span class="pre">LabelHandle.depth_test</span></code></a></li>
-<li><a class="reference internal" href="#viser.LabelHandle.cutoff_distance"><code class="docutils literal notranslate"><span class="pre">LabelHandle.cutoff_distance</span></code></a></li>
+<li><a class="reference internal" href="#viser.LabelHandle.anchor"><code class="docutils literal notranslate"><span class="pre">LabelHandle.anchor</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.LineSegmentsHandle"><code class="docutils literal notranslate"><span class="pre">LineSegmentsHandle</span></code></a><ul>

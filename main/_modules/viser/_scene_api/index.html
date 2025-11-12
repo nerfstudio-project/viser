@@ -450,6 +450,7 @@
     <span class="n">AmbientLightHandle</span><span class="p">,</span>
     <span class="n">BatchedAxesHandle</span><span class="p">,</span>
     <span class="n">BatchedGlbHandle</span><span class="p">,</span>
+    <span class="n">BatchedLabelsHandle</span><span class="p">,</span>
     <span class="n">BatchedMeshHandle</span><span class="p">,</span>
     <span class="n">BoneState</span><span class="p">,</span>
     <span class="n">BoxHandle</span><span class="p">,</span>
@@ -1722,14 +1723,20 @@
         <span class="n">wxyz</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
         <span class="n">position</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">font_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">font_size_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;screen&quot;</span><span class="p">,</span> <span class="s2">&quot;scene&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;screen&quot;</span><span class="p">,</span>
+        <span class="n">font_screen_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">font_scene_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.075</span><span class="p">,</span>
         <span class="n">depth_test</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">cutoff_distance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span>
+        <span class="n">anchor</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">LabelAnchor</span> <span class="o">=</span> <span class="s2">&quot;top-left&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LabelHandle</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a 2D label to the scene.</span>
 
 <span class="sd">        This method creates a text label in the 3D scene, which can be used to annotate</span>
 <span class="sd">        or provide information about specific points or objects.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            For cases that need thousands of labels or atomic updates to the positions</span>
+<span class="sd">            of many labels, :meth:`add_batched_labels()` may be preferable.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name: Name of the label.</span>
@@ -1737,9 +1744,11 @@
 <span class="sd">            wxyz: Quaternion rotation to parent frame from local frame (R_pl).</span>
 <span class="sd">            position: Translation to parent frame from local frame (t_pl).</span>
 <span class="sd">            visible: Whether or not this scene node is initially visible.</span>
-<span class="sd">            font_height: Height of the label text in scene units.</span>
+<span class="sd">            font_size_mode: Font sizing mode. &#39;screen&#39; for screen-space sizing (constant pixel size), &#39;scene&#39; for world-space sizing (size in scene units).</span>
+<span class="sd">            font_screen_scale: Scale factor for screen-space font size. Only used when font_size_mode=&#39;screen&#39;.</span>
+<span class="sd">            font_scene_height: Font height in scene units. Only used when font_size_mode=&#39;scene&#39;.</span>
 <span class="sd">            depth_test: Whether to enable depth testing for the label.</span>
-<span class="sd">            cutoff_distance: Maximum distance from camera at which label is visible. None for no cutoff.</span>
+<span class="sd">            anchor: Anchor position of the label relative to its position.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Handle for manipulating scene node.</span>
@@ -1748,12 +1757,77 @@
             <span class="n">name</span><span class="p">,</span>
             <span class="n">_messages</span><span class="o">.</span><span class="n">LabelProps</span><span class="p">(</span>
                 <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
-                <span class="n">font_height</span><span class="o">=</span><span class="n">font_height</span><span class="p">,</span>
+                <span class="n">font_size_mode</span><span class="o">=</span><span class="n">font_size_mode</span><span class="p">,</span>
+                <span class="n">font_screen_scale</span><span class="o">=</span><span class="n">font_screen_scale</span><span class="p">,</span>
+                <span class="n">font_scene_height</span><span class="o">=</span><span class="n">font_scene_height</span><span class="p">,</span>
                 <span class="n">depth_test</span><span class="o">=</span><span class="n">depth_test</span><span class="p">,</span>
-                <span class="n">cutoff_distance</span><span class="o">=</span><span class="n">cutoff_distance</span><span class="p">,</span>
+                <span class="n">anchor</span><span class="o">=</span><span class="n">anchor</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">LabelHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="o">=</span><span class="n">visible</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SceneApi.add_batched_labels">
+<a class="viewcode-back" href="../../../api/core/scene_api/#viser.SceneApi.add_batched_labels">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_batched_labels</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">batched_texts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">batched_positions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">wxyz</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">position</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">font_size_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;screen&quot;</span><span class="p">,</span> <span class="s2">&quot;scene&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;screen&quot;</span><span class="p">,</span>
+        <span class="n">font_screen_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">font_scene_height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.075</span><span class="p">,</span>
+        <span class="n">depth_test</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">anchor</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">LabelAnchor</span> <span class="o">=</span> <span class="s2">&quot;top-left&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BatchedLabelsHandle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add batched 2D labels to the scene for efficient rendering of many labels.</span>
+
+<span class="sd">        This method creates multiple text labels in a single batch, which is much more</span>
+<span class="sd">        efficient than individual labels when rendering thousands of labels.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Name of the batched labels node.</span>
+<span class="sd">            batched_texts: Tuple of text strings, one for each label.</span>
+<span class="sd">            batched_positions: Positions for each label. Shape should be (N, 3).</span>
+<span class="sd">            wxyz: Quaternion rotation to parent frame from local frame (R_pl).</span>
+<span class="sd">            position: Translation to parent frame from local frame (t_pl).</span>
+<span class="sd">            visible: Whether or not this scene node is initially visible.</span>
+<span class="sd">            font_size_mode: Font sizing mode. &#39;screen&#39; for screen-space sizing (constant pixel size), &#39;scene&#39; for world-space sizing (size in scene units).</span>
+<span class="sd">            font_screen_scale: Scale factor for screen-space font size. Only used when font_size_mode=&#39;screen&#39;.</span>
+<span class="sd">            font_scene_height: Font height in scene units. Only used when font_size_mode=&#39;scene&#39;.</span>
+<span class="sd">            depth_test: Whether to enable depth testing for the labels.</span>
+<span class="sd">            anchor: Anchor position of the labels relative to their positions.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Handle for manipulating batched labels scene node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">batched_positions</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">batched_texts</span><span class="p">),</span>
+            <span class="mi">3</span><span class="p">,</span>
+        <span class="p">),</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Expected batched_positions shape (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batched_texts</span><span class="p">)</span><span class="si">}</span><span class="s2">, 3), got </span><span class="si">{</span><span class="n">batched_positions</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="n">_messages</span><span class="o">.</span><span class="n">BatchedLabelsMessage</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span>
+            <span class="n">_messages</span><span class="o">.</span><span class="n">BatchedLabelsProps</span><span class="p">(</span>
+                <span class="n">batched_texts</span><span class="o">=</span><span class="n">batched_texts</span><span class="p">,</span>
+                <span class="n">batched_positions</span><span class="o">=</span><span class="n">batched_positions</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                <span class="n">font_size_mode</span><span class="o">=</span><span class="n">font_size_mode</span><span class="p">,</span>
+                <span class="n">font_screen_scale</span><span class="o">=</span><span class="n">font_screen_scale</span><span class="p">,</span>
+                <span class="n">font_scene_height</span><span class="o">=</span><span class="n">font_scene_height</span><span class="p">,</span>
+                <span class="n">depth_test</span><span class="o">=</span><span class="n">depth_test</span><span class="p">,</span>
+                <span class="n">anchor</span><span class="o">=</span><span class="n">anchor</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">BatchedLabelsHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="o">=</span><span class="n">visible</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SceneApi.add_point_cloud">
