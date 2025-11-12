@@ -47,7 +47,7 @@ import { SceneNodeMessage } from "./WebsocketMessages";
 import { SplatObject } from "./Splatting/GaussianSplats";
 import { Paper } from "@mantine/core";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
-import { Line } from "./Line";
+import { LineSegments } from "./Line";
 import { shadowArgs } from "./ShadowArgs";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
 import { BasicMesh } from "./mesh/BasicMesh";
@@ -476,34 +476,11 @@ function createObjectFactory(
     }
     case "LineSegmentsMessage": {
       return {
-        makeObject: (ref, children) => {
-          // The array conversion here isn't very efficient. We go from buffer
-          // => TypeArray => Javascript Array, then back to buffers in drei's
-          // <Line /> abstraction.
-          const pointsArray = new Float32Array(
-            message.props.points.buffer.slice(
-              message.props.points.byteOffset,
-              message.props.points.byteOffset + message.props.points.byteLength,
-            ),
-          );
-          const colorArray = new Uint8Array(
-            message.props.colors.buffer.slice(
-              message.props.colors.byteOffset,
-              message.props.colors.byteOffset + message.props.colors.byteLength,
-            ),
-          );
-          return (
-            <group ref={ref}>
-              <Line
-                points={pointsArray}
-                lineWidth={message.props.line_width}
-                vertexColors={colorArray}
-                segments={true}
-              />
-              {children}
-            </group>
-          );
-        },
+        makeObject: (ref, children) => (
+          <LineSegments ref={ref} {...message}>
+            {children}
+          </LineSegments>
+        ),
       };
     }
     case "CatmullRomSplineMessage": {
