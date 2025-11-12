@@ -83,7 +83,7 @@ export function calculateBaseFontSize(
   screenScale: number,
   sceneHeight: number,
 ): number {
-  return mode === "screen" ? 0.30 * screenScale : sceneHeight;
+  return mode === "screen" ? 0.3 * screenScale : sceneHeight;
 }
 
 /**

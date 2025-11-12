@@ -333,14 +333,19 @@ export const BatchedLabelManager: React.FC<{
             // Convert text position from local space to world space using group's matrix.
             tempWorldPos.current.copy(text.position);
             tempWorldPos.current.applyMatrix4(group.matrixWorld);
-            const scale = calculateScreenSpaceScale(camera, tempWorldPos.current);
+            const scale = calculateScreenSpaceScale(
+              camera,
+              tempWorldPos.current,
+            );
 
             // Set fontSize directly - Troika applies this as a scale, no sync needed.
             // baseFontSize already includes fontScreenScale.
             text.fontSize = textInfo.baseFontSize * scale;
             // Also scale padding to maintain constant screen-space padding.
-            paddingX = LABEL_BACKGROUND_PADDING_X * scale * textInfo.fontScreenScale;
-            paddingY = LABEL_BACKGROUND_PADDING_Y * scale * textInfo.fontScreenScale;
+            paddingX =
+              LABEL_BACKGROUND_PADDING_X * scale * textInfo.fontScreenScale;
+            paddingY =
+              LABEL_BACKGROUND_PADDING_Y * scale * textInfo.fontScreenScale;
           } else {
             // Use the fixed scene-space font size - no sync needed.
             text.fontSize = textInfo.baseFontSize;
