@@ -695,7 +695,10 @@ class SceneApi:
             raise ValueError("Points should have shape (N, 2, 3) for N line segments.")
 
         colors_array = colors_to_uint8(np.asarray(colors))
-        colors_array = np.broadcast_to(colors_array, points_array.shape)
+        assert colors_array.shape in {
+            points_array.shape,
+            (3,),
+        }, "Shape of colors should be (N, 2, 3) or (3,)."
 
         message = _messages.LineSegmentsMessage(
             name=name,

@@ -479,12 +479,26 @@ function createObjectFactory(
               message.props.colors.byteOffset + message.props.colors.byteLength,
             ),
           );
+
+          // Handle uniform color vs per-vertex colors.
+          let color: number | undefined = undefined;
+          let vertexColors: Uint8Array | undefined = undefined;
+
+          if (colorArray.length === 3) {
+            // Uniform color: convert RGB uint8 to hex number.
+            color = (colorArray[0] << 16) | (colorArray[1] << 8) | colorArray[2];
+          } else {
+            // Per-vertex colors.
+            vertexColors = colorArray;
+          }
+
           return (
             <group ref={ref}>
               <Line
                 points={pointsArray}
                 lineWidth={message.props.line_width}
-                vertexColors={colorArray}
+                color={color}
+                vertexColors={vertexColors}
                 segments={true}
               />
               {children}
