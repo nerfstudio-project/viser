@@ -1323,7 +1323,9 @@ class SceneApi:
         assert batched_positions.shape == (
             len(batched_texts),
             3,
-        ), f"Expected batched_positions shape ({len(batched_texts)}, 3), got {batched_positions.shape}"
+        ), (
+            f"Expected batched_positions shape ({len(batched_texts)}, 3), got {batched_positions.shape}"
+        )
 
         message = _messages.BatchedLabelsMessage(
             name,
