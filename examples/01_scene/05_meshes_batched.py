@@ -201,7 +201,7 @@ def main():
 
     server = viser.ViserServer()
     server.scene.configure_default_lights()
-    grid_handle = server.scene.add_grid(name="grid", width=12, height=12)
+    grid_handle = server.scene.add_grid(name="/grid", width=12, height=12)
 
     # Add GUI controls.
     instance_count_slider = server.gui.add_slider(
@@ -245,7 +245,7 @@ def main():
 
     # Create batched mesh visualization.
     axes_handle = server.scene.add_batched_axes(
-        name="axes",
+        name="/axes",
         batched_positions=positions,
         batched_wxyzs=rotations,
         batched_scales=scales,
@@ -255,7 +255,7 @@ def main():
     initial_colors = generate_per_instance_colors(positions, color_mode="rainbow")
 
     mesh_handle = server.scene.add_batched_meshes_simple(
-        name="dragon",
+        name="/dragon",
         vertices=dragon_mesh.vertices,
         faces=dragon_mesh.faces,
         batched_positions=positions,
