@@ -195,13 +195,20 @@ function createObjectFactory(
 
       let shadowPlane;
       if (message.props.shadow_opacity > 0.0) {
+        // Use very large dimensions for infinite grids to ensure shadows are visible.
+        const shadowWidth = message.props.infinite_grid
+          ? 10000
+          : message.props.width;
+        const shadowHeight = message.props.infinite_grid
+          ? 10000
+          : message.props.height;
         shadowPlane = (
           <mesh
             receiveShadow
             position={[0.0, 0.0, -0.01]}
             quaternion={planeQuaternion}
           >
-            <planeGeometry args={[message.props.width, message.props.height]} />
+            <planeGeometry args={[shadowWidth, shadowHeight]} />
             <shadowMaterial
               opacity={message.props.shadow_opacity}
               color={0x000000}
