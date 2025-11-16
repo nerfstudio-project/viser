@@ -34,22 +34,28 @@ function createLODs(
     // Automatic LOD settings based on geometry complexity.
     const boundingRadius = geometry.boundingSphere!.radius;
     const vertexCount = geometry.attributes.position.count;
+    let baseMultipliers: number[] = [];
 
     // 1. Compute LOD ratios based on vertex count.
-    if (vertexCount < 50) {
+    if (vertexCount < 256) {
       // Very simple meshes: skip LOD.
       return { geometries: [], materials: [] };
-    } else if (vertexCount < 500) {
-      ratios = [0.6, 0.2];
-    } else if (vertexCount < 2000) {
-      ratios = [0.4, 0.1, 0.03];
+    } else if (vertexCount < 1024) {
+      // 256 ~ 1024 vertices: just make super small when far away.
+      ratios = [0.25];
+      baseMultipliers = [2];
+    } else if (vertexCount < 8192) {
+      // 1024 ~ 8192 vertices: downsample to half and quarter size.
+      ratios = [0.5, 0.25];
+      baseMultipliers = [1, 8];
     } else {
-      ratios = [0.2, 0.05, 0.01];
+      // Largest meshes: downsample to 8192, 2048, and 512 vertices.
+      ratios = [8192 / vertexCount, 2048 / vertexCount, 512 / vertexCount];
+      baseMultipliers = [1, 2, 8];
     }
 
     // 2. Compute LOD distances based on bounding radius.
     const sizeFactor = Math.sqrt(boundingRadius + 1e-5);
-    const baseMultipliers = [1, 2, 3].slice(0, ratios.length); // Distance "steps" for LOD switching.
     distances = baseMultipliers.map((m) => m * sizeFactor);
   } else {
     // Use provided custom LOD settings.
