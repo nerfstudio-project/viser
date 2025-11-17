@@ -118,32 +118,6 @@ export interface LabelMessage {
       | "bottom-right";
   };
 }
-/** Add batched 2D labels to the scene.
- *
- * (automatically generated)
- */
-export interface BatchedLabelsMessage {
-  type: "BatchedLabelsMessage";
-  name: string;
-  props: {
-    batched_texts: string[];
-    batched_positions: Uint8Array<ArrayBuffer>;
-    font_size_mode: "screen" | "scene";
-    font_screen_scale: number;
-    font_scene_height: number;
-    depth_test: boolean;
-    anchor:
-      | "top-left"
-      | "top-center"
-      | "top-right"
-      | "center-left"
-      | "center-center"
-      | "center-right"
-      | "bottom-left"
-      | "bottom-center"
-      | "bottom-right";
-  };
-}
 /** Add a 3D gui element to the scene.
  *
  * (automatically generated)
@@ -1564,7 +1538,6 @@ export type Message =
   | BatchedAxesMessage
   | GridMessage
   | LabelMessage
-  | BatchedLabelsMessage
   | Gui3DMessage
   | PointCloudMessage
   | DirectionalLightMessage
@@ -1656,7 +1629,6 @@ export type SceneNodeMessage =
   | BatchedAxesMessage
   | GridMessage
   | LabelMessage
-  | BatchedLabelsMessage
   | Gui3DMessage
   | PointCloudMessage
   | DirectionalLightMessage

@@ -301,19 +301,15 @@ export const BatchedLabelManager: React.FC<{
     textInfoRef.current.forEach((textInfo, text) => {
       try {
         // Compute position from parent node + local position.
-        const parentObj =
+        const parentRef =
           viewer.mutable.current.nodeRefFromName[textInfo.parentName];
         const node = viewer.useSceneTree.getState()[textInfo.nodeName];
 
-        if (parentObj && node) {
-          // Get parent's world position.
-          parentObj.getWorldPosition(text.position);
-
+        if (parentRef && node) {
           // Add label's local position offset.
-          const localPos = node.position ?? [0, 0, 0];
-          text.position.x += localPos[0];
-          text.position.y += localPos[1];
-          text.position.z += localPos[2];
+          const textPosition = text.position as THREE.Vector3;
+          textPosition.set(...(node.position ?? [0, 0, 0]));
+          textPosition.applyMatrix4(parentRef.matrixWorld);
 
           // Use effectiveVisibility which includes parent chain.
           // Use opacity instead of visible since BatchedText ignores individual text.visible.
@@ -460,11 +456,11 @@ export const BatchedLabelManager: React.FC<{
         />
         {backgroundsByDepthTest.get(true)?.map((instanceId) => {
           const ref = backgroundInstanceRefsRef.current.get(instanceId);
-          return <Instance key={instanceId} ref={ref} renderOrder={9999} />;
+          return <Instance key={instanceId} ref={ref} renderOrder={10000} />;
         })}
       </Instances>
       {/* Background rectangles with depth test = false */}
-      <Instances frustumCulled={false}>
+      <Instances frustumCulled={false} renderOrder={9999}>
         <primitive object={rectGeometry} attach="geometry" />
         <meshBasicMaterial
           color={LABEL_BACKGROUND_COLOR}
@@ -476,7 +472,7 @@ export const BatchedLabelManager: React.FC<{
         />
         {backgroundsByDepthTest.get(false)?.map((instanceId) => {
           const ref = backgroundInstanceRefsRef.current.get(instanceId);
-          return <Instance key={instanceId} ref={ref} renderOrder={9999} />;
+          return <Instance key={instanceId} ref={ref} />;
         })}
       </Instances>
       {children}
