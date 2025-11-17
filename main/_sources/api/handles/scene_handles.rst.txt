@@ -25,8 +25,6 @@ methods like :func:`viser.ViserServer.add_frame()` or
 
 .. autoclass:: viser.BatchedGlbHandle
 
-.. autoclass:: viser.BatchedLabelsHandle
-
 .. autoclass:: viser.BatchedMeshHandle
 
 .. autoclass:: viser.BoxHandle
