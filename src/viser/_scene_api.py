@@ -1263,10 +1263,6 @@ class SceneApi:
         This method creates a text label in the 3D scene, which can be used to annotate
         or provide information about specific points or objects.
 
-        .. note::
-            For cases that need thousands of labels or atomic updates to the positions
-            of many labels, :meth:`add_batched_labels()` may be preferable.
-
         Args:
             name: Name of the label.
             text: Text content of the label.
