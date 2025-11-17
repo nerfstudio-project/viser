@@ -3,7 +3,6 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { OutlinesIfHovered } from "./OutlinesIfHovered";
 import React from "react";
 import * as THREE from "three";
-import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 import {
   ImageMessage,
   LabelMessage,
@@ -12,24 +11,10 @@ import {
 import { BatchedMeshHoverOutlines } from "./mesh/BatchedMeshHoverOutlines";
 import { MeshBasicMaterial } from "three";
 // @ts-ignore - troika-three-text doesn't have type definitions
-import { Text as TroikaText, BatchedText } from "troika-three-text";
+import { Text as TroikaText } from "troika-three-text";
 import { BatchedLabelManagerContext } from "./BatchedLabelManagerContext";
 import { ViewerContext } from "./ViewerContext";
-import {
-  setupBatchedTextMaterial,
-  calculateBillboardRotation,
-  createRectGeometry,
-  calculateBaseFontSize,
-  calculateScreenSpaceScale,
-  calculateAnchorOffset,
-  LABEL_FONT,
-  LABEL_TEXT_COLOR,
-  LABEL_SDF_GLYPH_SIZE,
-  LABEL_BACKGROUND_COLOR,
-  LABEL_BACKGROUND_OPACITY,
-  LABEL_BACKGROUND_PADDING_X,
-  LABEL_BACKGROUND_PADDING_Y,
-} from "./LabelUtils";
+import { calculateBaseFontSize } from "./LabelUtils";
 
 const originGeom = new THREE.SphereGeometry(1.0);
 
