@@ -9,10 +9,8 @@ import { ViewerContext } from "./ViewerContext";
 import {
   setupBatchedTextMaterial,
   calculateBillboardRotation,
-  createRectGeometry,
   calculateBaseFontSize,
   calculateScreenSpaceScale,
-  calculateAnchorOffset,
   LABEL_BACKGROUND_COLOR,
   LABEL_BACKGROUND_OPACITY,
   LABEL_BACKGROUND_PADDING_X,
@@ -67,15 +65,16 @@ export const BatchedLabelManager: React.FC<{
   const backgroundInstanceCounterRef = React.useRef(0);
 
   // Reuse objects to avoid allocations.
-  const groupQuaternion = React.useRef(new THREE.Quaternion());
-  const billboardQuaternion = React.useRef(new THREE.Quaternion());
-  const frustum = React.useRef(new THREE.Frustum());
-  const projScreenMatrix = React.useRef(new THREE.Matrix4());
-  const localOffset = React.useRef(new THREE.Vector3());
-  const tempWorldPos = React.useRef(new THREE.Vector3());
+  const groupQuaternion = React.useMemo(() => new THREE.Quaternion(), []);
+  const billboardQuaternion = React.useMemo(() => new THREE.Quaternion(), []);
+  const frustum = React.useMemo(() => new THREE.Frustum(), []);
+  const projScreenMatrix = React.useMemo(() => new THREE.Matrix4(), []);
+  const localOffset = React.useMemo(() => new THREE.Vector3(), []);
+  const tempWorldPos = React.useMemo(() => new THREE.Vector3(), []);
+  const tempCameraSpacePos = React.useMemo(() => new THREE.Vector3(), []);
 
-  // Create rectangle geometry once.
-  const rectGeometry = React.useMemo(() => createRectGeometry(), []);
+  // Create unit rectangle geometry once (scaled per-instance).
+  const rectGeometry = React.useMemo(() => new THREE.PlaneGeometry(1, 1), []);
 
   // Create the group once on mount.
   React.useEffect(() => {
@@ -272,18 +271,18 @@ export const BatchedLabelManager: React.FC<{
     dirtyBatchesRef.current.clear();
 
     // Compute frustum for culling (shared across all batches).
-    projScreenMatrix.current.multiplyMatrices(
+    projScreenMatrix.multiplyMatrices(
       camera.projectionMatrix,
       camera.matrixWorldInverse,
     );
-    frustum.current.setFromProjectionMatrix(projScreenMatrix.current);
+    frustum.setFromProjectionMatrix(projScreenMatrix);
 
     // Calculate billboard rotation accounting for parent transform (shared).
     calculateBillboardRotation(
       group,
       camera,
-      groupQuaternion.current,
-      billboardQuaternion.current,
+      groupQuaternion,
+      billboardQuaternion,
     );
 
     // Set material properties on BatchedText instances if not yet set.
@@ -301,19 +300,15 @@ export const BatchedLabelManager: React.FC<{
     textInfoRef.current.forEach((textInfo, text) => {
       try {
         // Compute position from parent node + local position.
-        const parentObj =
+        const parentRef =
           viewer.mutable.current.nodeRefFromName[textInfo.parentName];
         const node = viewer.useSceneTree.getState()[textInfo.nodeName];
 
-        if (parentObj && node) {
-          // Get parent's world position.
-          parentObj.getWorldPosition(text.position);
-
+        if (parentRef && node) {
           // Add label's local position offset.
-          const localPos = node.position ?? [0, 0, 0];
-          text.position.x += localPos[0];
-          text.position.y += localPos[1];
-          text.position.z += localPos[2];
+          const textPosition = text.position as THREE.Vector3;
+          textPosition.set(...(node.position ?? [0, 0, 0]));
+          textPosition.applyMatrix4(parentRef.matrixWorld);
 
           // Use effectiveVisibility which includes parent chain.
           // Use opacity instead of visible since BatchedText ignores individual text.visible.
@@ -331,11 +326,12 @@ export const BatchedLabelManager: React.FC<{
           if (textInfo.fontSizeMode === "screen") {
             // Scale based on distance and FOV to maintain consistent visual size.
             // Convert text position from local space to world space using group's matrix.
-            tempWorldPos.current.copy(text.position);
-            tempWorldPos.current.applyMatrix4(group.matrixWorld);
+            tempWorldPos.copy(text.position);
+            tempWorldPos.applyMatrix4(group.matrixWorld);
             const scale = calculateScreenSpaceScale(
               camera,
-              tempWorldPos.current,
+              tempWorldPos,
+              tempCameraSpacePos,
             );
 
             // Set fontSize directly - Troika applies this as a scale, no sync needed.
@@ -355,70 +351,94 @@ export const BatchedLabelManager: React.FC<{
           const backgroundRef = backgroundInstanceRefsRef.current.get(
             textInfo.backgroundInstanceId,
           );
-          if (backgroundRef?.current && text.textRenderInfo) {
+          if (backgroundRef?.current) {
             const bg = backgroundRef.current;
 
-            // Get text bounds from textRenderInfo.
-            const bounds = text.textRenderInfo.blockBounds;
-            if (bounds) {
-              const [minX, minY, maxX, maxY] = bounds;
-              const width = maxX - minX;
-              const height = maxY - minY;
+            // Only update position/scale if visible and we have text render info.
+            if (isVisible && text.textRenderInfo) {
+              // Get both bounds from textRenderInfo.
+              const blockBounds = text.textRenderInfo.blockBounds;
+              const visibleBounds = text.textRenderInfo.visibleBounds;
 
-              // Calculate rectangle dimensions (text + padding).
-              const rectWidth = width + paddingX;
-              const rectHeight = height + paddingY;
+              if (blockBounds && visibleBounds) {
+                // Use visibleBounds for sizing (actual glyphs without trailing whitespace).
+                const [blockMinX, blockMinY, blockMaxX, blockMaxY] =
+                  blockBounds;
+                const [visMinX, visMinY, visMaxX, visMaxY] = visibleBounds;
 
-              // Calculate rectangle bounds in text-local coordinates.
-              const rectMinX = minX - paddingX / 2;
-              const rectMaxX = maxX + paddingX / 2;
-              const rectMinY = minY - paddingY / 2;
-              const rectMaxY = maxY + paddingY / 2;
+                const visibleWidth = visMaxX - visMinX;
+                const visibleHeight = visMaxY - visMinY;
 
-              // Calculate offset from text anchor to rectangle center.
-              const { offsetX, offsetY } = calculateAnchorOffset(
-                textInfo.anchorX,
-                textInfo.anchorY,
-                rectMinX,
-                rectMaxX,
-                rectMinY,
-                rectMaxY,
-              );
+                // Calculate rectangle dimensions (text + padding).
+                const rectWidth = visibleWidth + paddingX;
+                const rectHeight = visibleHeight + paddingY;
 
-              // Position background at text center.
-              // The center offset is in local space, so we need to rotate it by the billboard quaternion.
-              localOffset.current.set(offsetX, offsetY, 0);
-              localOffset.current.applyQuaternion(billboardQuaternion.current);
+                // Calculate rectangle bounds in text-local coordinates based on visibleBounds.
+                const rectMinX = visMinX - paddingX / 2;
+                const rectMaxX = visMaxX + paddingX / 2;
+                const rectMinY = visMinY - paddingY / 2;
+                const rectMaxY = visMaxY + paddingY / 2;
 
-              bg.position.copy(text.position);
-              bg.position.add(localOffset.current);
+                // Troika anchors based on blockBounds - calculate where the text anchor is.
+                let textAnchorX = 0;
+                if (textInfo.anchorX === "left") {
+                  textAnchorX = blockMinX;
+                } else if (textInfo.anchorX === "right") {
+                  textAnchorX = blockMaxX;
+                } else {
+                  textAnchorX = (blockMinX + blockMaxX) / 2;
+                }
 
-              // Scale background to rectangle size.
-              bg.scale.set(rectWidth, rectHeight, 1);
+                let textAnchorY = 0;
+                if (textInfo.anchorY === "top") {
+                  textAnchorY = blockMaxY;
+                } else if (textInfo.anchorY === "bottom") {
+                  textAnchorY = blockMinY;
+                } else {
+                  textAnchorY = (blockMinY + blockMaxY) / 2;
+                }
 
-              // Match text rotation.
-              bg.quaternion.copy(billboardQuaternion.current);
+                // Background center based on visibleBounds.
+                const rectCenterX = (rectMinX + rectMaxX) / 2;
+                const rectCenterY = (rectMinY + rectMaxY) / 2;
 
-              // Match visibility.
-              bg.visible = isVisible;
+                // Offset from text anchor (blockBounds-based) to rectangle center (visibleBounds-based).
+                const offsetX = rectCenterX - textAnchorX;
+                const offsetY = rectCenterY - textAnchorY;
+
+                // Position background at text position with offset.
+                // The offset is in local space, so rotate by the billboard quaternion.
+                localOffset.set(offsetX, offsetY, 0);
+                localOffset.applyQuaternion(billboardQuaternion);
+
+                bg.position.copy(text.position);
+                bg.position.add(localOffset);
+
+                // Scale background to rectangle size.
+                bg.scale.set(rectWidth, rectHeight, 1);
+
+                // Match text rotation.
+                bg.quaternion.copy(billboardQuaternion);
+              }
             } else {
-              bg.visible = false;
+              // Hide background by scaling to 0 (InstancedMesh doesn't respect visible property).
+              bg.scale.set(0, 0, 0);
             }
           }
         } else {
           text.fillOpacity = 0.0;
 
-          // Hide background when text is hidden.
+          // Hide background when text is hidden (scale to 0 for InstancedMesh).
           const backgroundRef = backgroundInstanceRefsRef.current.get(
             textInfo.backgroundInstanceId,
           );
           if (backgroundRef?.current) {
-            backgroundRef.current.visible = false;
+            backgroundRef.current.scale.set(0, 0, 0);
           }
         }
 
         // Apply billboard rotation.
-        text.quaternion.copy(billboardQuaternion.current);
+        text.quaternion.copy(billboardQuaternion);
       } catch (error) {
         console.error("[BatchedLabelManager] Error updating text:", error);
       }
@@ -460,11 +480,11 @@ export const BatchedLabelManager: React.FC<{
         />
         {backgroundsByDepthTest.get(true)?.map((instanceId) => {
           const ref = backgroundInstanceRefsRef.current.get(instanceId);
-          return <Instance key={instanceId} ref={ref} renderOrder={9999} />;
+          return <Instance key={instanceId} ref={ref} renderOrder={10000} />;
         })}
       </Instances>
       {/* Background rectangles with depth test = false */}
-      <Instances frustumCulled={false}>
+      <Instances frustumCulled={false} renderOrder={9999}>
         <primitive object={rectGeometry} attach="geometry" />
         <meshBasicMaterial
           color={LABEL_BACKGROUND_COLOR}
@@ -476,7 +496,7 @@ export const BatchedLabelManager: React.FC<{
         />
         {backgroundsByDepthTest.get(false)?.map((instanceId) => {
           const ref = backgroundInstanceRefsRef.current.get(instanceId);
-          return <Instance key={instanceId} ref={ref} renderOrder={9999} />;
+          return <Instance key={instanceId} ref={ref} />;
         })}
       </Instances>
       {children}

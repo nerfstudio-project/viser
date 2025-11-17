@@ -13,9 +13,9 @@ export const LABEL_SDF_GLYPH_SIZE = 32;
  * Shared configuration for label backgrounds.
  */
 export const LABEL_BACKGROUND_COLOR = 0xffffff; // White
-export const LABEL_BACKGROUND_OPACITY = 0.9;
-export const LABEL_BACKGROUND_PADDING_X = 0.08;
-export const LABEL_BACKGROUND_PADDING_Y = 0.005;
+export const LABEL_BACKGROUND_OPACITY = 0.85;
+export const LABEL_BACKGROUND_PADDING_X = 0.2;
+export const LABEL_BACKGROUND_PADDING_Y = 0.2;
 
 /**
  * Set material properties on a BatchedText instance.
@@ -66,16 +66,6 @@ export function calculateBillboardRotation(
 }
 
 /**
- * Create a rectangle geometry for label backgrounds.
- */
-export function createRectGeometry(
-  width: number = 1,
-  height: number = 1,
-): THREE.PlaneGeometry {
-  return new THREE.PlaneGeometry(width, height);
-}
-
-/**
  * Calculate base font size from sizing mode and parameters.
  */
 export function calculateBaseFontSize(
@@ -93,62 +83,22 @@ export function calculateBaseFontSize(
 export function calculateScreenSpaceScale(
   camera: THREE.Camera,
   worldPosition: THREE.Vector3,
+  tempCameraSpacePos: THREE.Vector3,
 ): number {
   if ("fov" in camera && typeof camera.fov === "number") {
-    // PerspectiveCamera: use Euclidean distance and FOV.
-    const distance = camera.position.distanceTo(worldPosition);
+    // PerspectiveCamera: use Z-coordinate in camera space (not Euclidean distance).
+    // Transform world position to camera space (reuse temp vector to avoid allocation).
+    tempCameraSpacePos.copy(worldPosition);
+    tempCameraSpacePos.applyMatrix4(camera.matrixWorldInverse);
+    const depth = -tempCameraSpacePos.z; // Negative because camera looks down -Z axis.
+
     const fovScale = Math.tan(
       ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 360,
     );
-    // Reference distance is 10 units (baseFontSize is calibrated for this).
-    return (distance / 10.0) * fovScale;
+    // Reference depth is 10 units (baseFontSize is calibrated for this).
+    return (depth / 10.0) * fovScale;
   } else {
     // OrthographicCamera: use constant scale (no perspective).
     return 1.0;
   }
-}
-
-/**
- * Calculate anchor offset for a rectangle.
- * Returns the offset from the text anchor point (0,0) to the rectangle center.
- */
-export function calculateAnchorOffset(
-  anchorX: "left" | "center" | "right",
-  anchorY: "top" | "middle" | "bottom",
-  rectMinX: number,
-  rectMaxX: number,
-  rectMinY: number,
-  rectMaxY: number,
-): { offsetX: number; offsetY: number } {
-  // Calculate anchor point on rectangle based on user's anchor choice.
-  let rectAnchorX = 0;
-  let rectAnchorY = 0;
-
-  if (anchorX === "left") {
-    rectAnchorX = rectMinX;
-  } else if (anchorX === "right") {
-    rectAnchorX = rectMaxX;
-  } else {
-    // center
-    rectAnchorX = (rectMinX + rectMaxX) / 2;
-  }
-
-  if (anchorY === "top") {
-    rectAnchorY = rectMaxY;
-  } else if (anchorY === "bottom") {
-    rectAnchorY = rectMinY;
-  } else {
-    // middle
-    rectAnchorY = (rectMinY + rectMaxY) / 2;
-  }
-
-  // Background is positioned at its center.
-  const rectCenterX = (rectMinX + rectMaxX) / 2;
-  const rectCenterY = (rectMinY + rectMaxY) / 2;
-
-  // Offset from text anchor (0, 0) to rectangle center.
-  return {
-    offsetX: rectCenterX - rectAnchorX,
-    offsetY: rectCenterY - rectAnchorY,
-  };
 }

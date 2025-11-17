@@ -49,6 +49,7 @@ import { BrowserWarning } from "./BrowserWarning";
 import { MacWindowWrapper } from "./MacWindowWrapper";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
 import { VISER_VERSION, GITHUB_CONTRIBUTORS, Contributor } from "./VersionInfo";
+import { BatchedLabelManager } from "./BatchedLabelManager";
 
 // ======= Utility functions =======
 
@@ -495,7 +496,9 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         <SplatRenderContext>
           <AdaptiveDpr />
           {children}
-          <SceneNodeThreeObject name="" />
+          <BatchedLabelManager>
+            <SceneNodeThreeObject name="" />
+          </BatchedLabelManager>
         </SplatRenderContext>
         <DefaultLights />
       </>
