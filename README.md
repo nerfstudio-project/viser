@@ -40,6 +40,28 @@ pip install viser[examples]  # To include example dependencies.
 
 That's it! To learn more, we recommend looking at the examples in the [documentation](https://viser.studio/).
 
+## Development
+
+You can develop changes in a local fork using [pixi](https://pixi.sh/latest/installation/)
+
+You can view all pixi tasks for Viser by using:
+
+```bash
+pixi task list
+```
+
+These tasks can be run with the following command:
+
+```bash
+pixi run -e examples <task_name>
+```
+
+For example, to build and synchronize the client and server interfaces:
+
+```bash
+pixi run -e examples sync_client_server
+```
+
 ## Citation
 
 To cite Viser in your work, you can use the BibTeX for our [technical report](https://arxiv.org/abs/2507.22885):

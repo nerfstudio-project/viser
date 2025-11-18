@@ -112,3 +112,63 @@ lint.ignore = [
     "PLW0642",  # Reassigned self in instance method.
 ]
 exclude = [ ".nodeenv" ]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.pypi-dependencies]
+viser = { path = ".", editable = true }
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
+examples = { features = ["examples"], solve-group = "default" }
+
+[tool.pixi.tasks]
+## Client-Server Synchronization
+sync_client_server = "python sync_client_server.py --sync-messages --sync-version"
+
+## 00: Getting Started
+hello_world = "python examples/00_getting_started/00_hello_world.py"
+core_concepts = "python examples/00_getting_started/01_core_concepts.py"
+
+## 01: Scene
+coordinate_frames = "python examples/01_scene/00_coordinate_frames.py"
+point_clouds = "python examples/01_scene/01_point_clouds.py"
+meshes = "python examples/01_scene/02_meshes.py"
+lines = "python examples/01_scene/03_lines.py"
+images = "python examples/01_scene/04_images.py"
+meshes_batched = "python examples/01_scene/05_meshes_batched.py"
+lighting = "python examples/01_scene/06_lighting.py"
+background_composite = "python examples/01_scene/07_background_composite.py"
+set_up_direction = "python examples/01_scene/08_set_up_direction.py"
+gaussian_splats = "python examples/01_scene/09_gaussian_splats.py"
+
+## 02: GUI
+basic_controls = "python examples/02_gui/00_basic_controls.py"
+callbacks = "python examples/02_gui/01_callbacks.py"
+layouts = "python examples/02_gui/02_layouts.py"
+markdown = "python examples/02_gui/03_markdown.py"
+modals = "python examples/02_gui/04_modals.py"
+theming = "python examples/02_gui/05_theming.py"
+notifications = "python examples/02_gui/06_notifications.py"
+plotly_integration = "python examples/02_gui/07_plotly_integration.py"
+uplot = "python examples/02_gui/08_uplot.py"
+plots_as_images = "python examples/02_gui/09_plots_as_images.py"
+
+## 03: Interaction
+click_meshes = "python examples/03_interaction/00_click_meshes.py"
+scene_pointer = "python examples/03_interaction/01_scene_pointer.py"
+get_renders = "python examples/03_interaction/02_get_renders.py"
+camera_poses = "python examples/03_interaction/03_camera_poses.py"
+camera_commands = "python examples/03_interaction/04_camera_commands.py"
+gui_in_scene = "python examples/03_interaction/05_gui_in_scene.py"
+
+## 04: Demos
+record3d_visualizer = "python examples/04_demos/00_record3d_visualizer.py"
+colmap_visualizer = "python examples/04_demos/01_colmap_visualizer.py"
+urdf_visualizer = "python examples/04_demos/02_urdf_visualizer.py"
+smpl_visualizer = "python examples/04_demos/03_smpl_visualizer.py"
+smpl_skinned = "python examples/04_demos/04_smpl_skinned.py"
+games = "python examples/04_demos/05_games.py"

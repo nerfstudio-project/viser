@@ -20,3 +20,7 @@ src/viser/client/.nodeenv
 examples/assets
 
 **/.claude/settings.local.json
+
+# pixi environments
+.pixi
+*.egg-info
