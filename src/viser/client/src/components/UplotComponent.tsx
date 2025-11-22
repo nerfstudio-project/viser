@@ -155,6 +155,10 @@ function PlotComponent({
       return;
     }
     const span = xMax - xMin;
+    if (span === 0) {
+      // Avoid degenerate spans.
+      return;
+    }
     plotObj.setScale(xScaleKey, {
       min: xMin + xScaleState.current.relMin * span,
       max: xMin + xScaleState.current.relMax * span,
