@@ -171,14 +171,16 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   }`,
 );
 
-/**Hook to generate properties for rendering Gaussians via a three.js mesh.*/
-export function useGaussianMeshProps(
+/** Type for mesh props returned by createGaussianMeshProps. */
+export type GaussianMeshProps = ReturnType<typeof createGaussianMeshProps>;
+
+/** Create properties for rendering Gaussians via a three.js mesh. */
+export function createGaussianMeshProps(
   gaussianBuffer: Uint32Array,
   numGroups: number,
+  maxTextureSize: number,
 ) {
   const numGaussians = gaussianBuffer.length / 8;
-  const maxTextureSize = useThree((state) => state.gl).capabilities
-    .maxTextureSize;
 
   // Create instanced geometry.
   const geometry = new THREE.InstancedBufferGeometry();
@@ -237,10 +239,24 @@ export function useGaussianMeshProps(
     geometry,
     material,
     textureBuffer,
+    textureWidth,
+    textureHeight,
     sortedIndexAttribute,
     textureT_camera_groups,
     rowMajorT_camera_groups,
+    numGaussians,
+    numGroups,
   };
+}
+
+/**Hook to generate properties for rendering Gaussians via a three.js mesh.*/
+export function useGaussianMeshProps(
+  gaussianBuffer: Uint32Array,
+  numGroups: number,
+) {
+  const maxTextureSize = useThree((state) => state.gl).capabilities
+    .maxTextureSize;
+  return createGaussianMeshProps(gaussianBuffer, numGroups, maxTextureSize);
 }
 /**Global splat state.*/
 interface SplatState {
