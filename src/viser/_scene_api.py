@@ -619,7 +619,7 @@ class SceneApi:
         name: str,
         glb_data: bytes,
         *,
-        scale: float = 1.0,
+        scale: float | tuple[float, float, float] = 1.0,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -638,7 +638,8 @@ class SceneApi:
             name: A scene tree name. Names in the format of /parent/child can be used to
               define a kinematic tree.
             glb_data: A binary payload.
-            scale: A scale for resizing the GLB asset.
+            scale: Scale for resizing the GLB asset. A single float for uniform
+                scaling or a tuple of (x, y, z) for per-axis scaling.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -1367,6 +1368,7 @@ class SceneApi:
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
+        scale: float | tuple[float, float, float] = 1.0,
         cast_shadow: bool = True,
         receive_shadow: bool | float = True,
         wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
@@ -1395,6 +1397,8 @@ class SceneApi:
             flat_shading: Whether to do flat shading. This argument is ignored
                 when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
+            scale: Scale of the mesh. A single float for uniform scaling or a tuple
+                of (x, y, z) for per-axis scaling.
             cast_shadow: Whether this skinned mesh should cast shadows.
             receive_shadow: Whether this skinned mesh should receive shadows. If True,
                 receives shadows normally. If False, no shadows. If a float
@@ -1446,6 +1450,7 @@ class SceneApi:
                 flat_shading=flat_shading,
                 side=side,
                 material=material,
+                scale=scale,
                 bone_wxyzs=bone_wxyzs.astype(np.float32),
                 bone_positions=bone_positions.astype(np.float32),
                 skin_indices=top4_skin_indices.astype(np.uint16),
@@ -1484,6 +1489,7 @@ class SceneApi:
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
+        scale: float | tuple[float, float, float] = 1.0,
         cast_shadow: bool = True,
         receive_shadow: bool | float = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
@@ -1506,6 +1512,8 @@ class SceneApi:
             flat_shading: Whether to do flat shading. This argument is ignored
                 when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
+            scale: Scale of the mesh. A single float for uniform scaling or a tuple
+                of (x, y, z) for per-axis scaling.
             cast_shadow: Whether this mesh should cast shadows.
             receive_shadow: Whether this mesh should receive shadows. If True,
                 receives shadows normally. If False, no shadows. If a float
@@ -1539,6 +1547,7 @@ class SceneApi:
                 flat_shading=flat_shading,
                 side=side,
                 material=material,
+                scale=scale,
                 cast_shadow=cast_shadow,
                 receive_shadow=receive_shadow,
             ),
@@ -1551,7 +1560,7 @@ class SceneApi:
         name: str,
         mesh: trimesh.Trimesh,
         *,
-        scale: float = 1.0,
+        scale: float | tuple[float, float, float] = 1.0,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1564,7 +1573,8 @@ class SceneApi:
             name: A scene tree name. Names in the format of /parent/child can be used to
               define a kinematic tree.
             mesh: A trimesh mesh object.
-            scale: A scale for resizing the mesh.
+            scale: Scale for resizing the mesh. A single float for uniform scaling
+                or a tuple of (x, y, z) for per-axis scaling.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.

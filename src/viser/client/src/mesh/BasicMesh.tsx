@@ -93,6 +93,7 @@ export const BasicMesh = React.forwardRef<
       ref={ref}
       geometry={geometry}
       material={material}
+      scale={message.props.scale}
       castShadow={message.props.cast_shadow}
       receiveShadow={message.props.receive_shadow === true}
     >
