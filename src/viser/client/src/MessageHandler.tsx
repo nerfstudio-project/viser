@@ -37,6 +37,7 @@ function useMessageHandler() {
   const addGui = viewer.useGui((state) => state.addGui);
   const addModal = viewer.useGui((state) => state.addModal);
   const removeModal = viewer.useGui((state) => state.removeModal);
+  const setTimeline = viewer.useGui((state) => state.setTimeline);
   const removeGui = viewer.useGui((state) => state.removeGui);
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const updateUploadState = viewer.useGui((state) => state.updateUploadState);
@@ -220,6 +221,16 @@ function useMessageHandler() {
 
       case "GuiCloseModalMessage": {
         removeModal(message.uuid);
+        return;
+      }
+
+      case "TimelineMessage": {
+        setTimeline(message);
+        return;
+      }
+
+      case "TimelineRemoveMessage": {
+        setTimeline(null);
         return;
       }
 

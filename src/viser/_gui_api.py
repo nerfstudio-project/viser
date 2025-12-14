@@ -59,6 +59,7 @@ from ._gui_handles import (
     GuiUplotHandle,
     GuiVector2Handle,
     GuiVector3Handle,
+    TimelineHandle,
     SupportsRemoveProtocol,
     UploadedFile,
     _GuiHandleState,
@@ -211,6 +212,7 @@ class GuiApi:
             "root": _RootGuiContainer({})
         }
         self._modal_handle_from_uuid: dict[str, GuiModalHandle] = {}
+        self._timeline_handle: TimelineHandle | None = None
         self._current_file_upload_states: dict[str, _FileUploadState] = {}
 
         # Set to True when plotly.min.js has been sent to client.
@@ -231,6 +233,59 @@ class GuiApi:
         self, client_id: ClientId, message: _messages.GuiUpdateMessage
     ) -> None:
         """Callback for handling GUI messages."""
+
+        # Handle timeline updates
+        if message.uuid == "__timeline__":
+            timeline = self._timeline_handle
+            if timeline is None:
+                return
+
+            from ._viser import ClientHandle, ViserServer
+
+            # Get the client that triggered this event
+            if isinstance(self._owner, ClientHandle):
+                client = self._owner
+            elif isinstance(self._owner, ViserServer):
+                client = self._owner._connected_clients.get(client_id, None)
+                if client is None:
+                    return
+            else:
+                assert False
+
+            # Update value
+            if "value" in message.updates:
+                timeline._value = message.updates["value"]
+                # Trigger callbacks
+                event = GuiEvent(
+                    client_id=client_id,
+                    client=client,
+                    target=timeline,
+                )
+                for cb in timeline._update_callbacks:
+                    if asyncio.iscoroutinefunction(cb):
+                        await cb(event)
+                    else:
+                        self._thread_executor.submit(cb, event).add_done_callback(
+                            print_threadpool_errors
+                        )
+
+            # Handle play button click
+            if "play" in message.updates:
+                event = GuiEvent(
+                    client_id=client_id,
+                    client=client,
+                    target=timeline,
+                )
+                for cb in timeline._play_callbacks:
+                    if asyncio.iscoroutinefunction(cb):
+                        await cb(event)
+                    else:
+                        self._thread_executor.submit(cb, event).add_done_callback(
+                            print_threadpool_errors
+                        )
+            return
+
+        # Existing logic for regular GUI inputs
         handle = self._gui_input_handle_from_uuid.get(message.uuid, None)
         if handle is None:
             return

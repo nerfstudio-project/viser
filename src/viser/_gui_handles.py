@@ -52,6 +52,7 @@ from ._messages import (
     GuiUplotProps,
     GuiVector2Props,
     GuiVector3Props,
+    TimelineProps,
 )
 from ._scene_api import _encode_image_binary
 from .infra import ClientId
@@ -743,6 +744,85 @@ class GuiModalHandle:
             child.remove()
         self._gui_api._container_handle_from_uuid.pop(self._uuid)
         self._gui_api._modal_handle_from_uuid.pop(self._uuid)
+
+
+@dataclasses.dataclass
+class TimelineHandle:
+    """Handle for timeline slider widget.
+
+    Provides access to timeline state and callbacks for user interactions.
+    """
+
+    _gui_api: GuiApi
+    _value: float
+    _props: TimelineProps
+    _update_callbacks: list[Callable[[GuiEvent], None | Coroutine]]
+    _play_callbacks: list[Callable[[GuiEvent], None | Coroutine]]
+    _removed: bool = False
+
+    @property
+    def value(self) -> float:
+        """Current slider value. Synchronized automatically when assigned."""
+        return self._value
+
+    @value.setter
+    def value(self, value: float) -> None:
+        """Update slider value and sync to all clients."""
+        self._value = value
+        self._gui_api._websock_interface.queue_message(
+            GuiUpdateMessage("__timeline__", {"value": value})
+        )
+
+    @property
+    def visible(self) -> bool:
+        """Visibility state. Synchronized automatically when assigned."""
+        return self._props.visible
+
+    @visible.setter
+    def visible(self, visible: bool) -> None:
+        """Update visibility and sync to all clients."""
+        self._props.visible = visible
+        self._gui_api._websock_interface.queue_message(
+            GuiUpdateMessage("__timeline__", {"visible": visible})
+        )
+
+    def on_update(
+        self, func: Callable[[GuiEvent], None | Coroutine]
+    ) -> Callable[[GuiEvent], None | Coroutine]:
+        """Attach callback for when slider value changes.
+
+        Args:
+            func: Callback function. Takes GuiEvent with client info.
+
+        Returns:
+            The input function (for use as decorator).
+        """
+        self._update_callbacks.append(func)
+        return func
+
+    def on_play(
+        self, func: Callable[[GuiEvent], None | Coroutine]
+    ) -> Callable[[GuiEvent], None | Coroutine]:
+        """Attach callback for when play button is clicked.
+
+        Args:
+            func: Callback function. Takes GuiEvent with client info.
+
+        Returns:
+            The input function (for use as decorator).
+        """
+        self._play_callbacks.append(func)
+        return func
+
+    def remove(self) -> None:
+        """Remove timeline from display."""
+        if self._removed:
+            return
+        self._removed = True
+        self._gui_api._websock_interface.queue_message(
+            _messages.TimelineRemoveMessage()
+        )
+        self._gui_api._timeline_handle = None
 
 
 def _get_data_url(url: str, image_root: Path | None) -> str:

@@ -1290,6 +1290,47 @@ class GuiCloseModalMessage(Message):
 
 
 @dataclasses.dataclass
+class TimelineProps:
+    """Properties for timeline slider."""
+
+    min: float
+    """Minimum value."""
+    max: float
+    """Maximum value."""
+    step: float
+    """Step size."""
+    visible: bool
+    """Visibility state."""
+    precision: int
+    """Number of decimal places for display."""
+    _marks: Optional[Tuple[GuiSliderMark, ...]]
+    """Optional marks to display on slider."""
+
+
+@dataclasses.dataclass
+class TimelineMessage(Message):
+    """Create or update timeline slider at bottom of window."""
+
+    value: float
+    """Current slider value."""
+    props: TimelineProps
+    """Timeline properties."""
+
+    @override
+    def redundancy_key(self) -> str:
+        return "timeline"  # Fixed key for single instance
+
+
+@dataclasses.dataclass
+class TimelineRemoveMessage(Message):
+    """Remove timeline from display."""
+
+    @override
+    def redundancy_key(self) -> str:
+        return "timeline"  # Match creation key for proper replacement
+
+
+@dataclasses.dataclass
 class GuiButtonProps(GuiBaseProps):
     color: Union[LiteralColor, Tuple[int, int, int], None]
     """Color of the button."""

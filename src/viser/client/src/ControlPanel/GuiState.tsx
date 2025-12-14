@@ -7,6 +7,7 @@ import {
   GuiComponentMessage,
   GuiModalMessage,
   ThemeConfigurationMessage,
+  TimelineMessage,
 } from "../WebsocketMessages";
 
 interface GuiState {
@@ -21,6 +22,7 @@ interface GuiState {
     [containerUuid: string]: { [uuid: string]: true } | undefined;
   };
   modals: GuiModalMessage[];
+  timeline: TimelineMessage | null;
   guiOrderFromUuid: { [id: string]: number };
   guiConfigFromUuid: { [id: string]: GuiComponentMessage | undefined };
   uploadsInProgress: {
@@ -39,6 +41,7 @@ interface GuiActions {
   addGui: (config: GuiComponentMessage) => void;
   addModal: (config: GuiModalMessage) => void;
   removeModal: (id: string) => void;
+  setTimeline: (config: TimelineMessage | null) => void;
   updateGuiProps: (id: string, updates: { [key: string]: any }) => void;
   removeGui: (id: string) => void;
   resetGui: () => void;
@@ -71,6 +74,7 @@ const cleanGuiState: GuiState = {
   showOrbitOriginTool: false,
   guiUuidSetFromContainerUuid: { root: {} },
   modals: [],
+  timeline: null,
   guiOrderFromUuid: {},
   guiConfigFromUuid: {},
   uploadsInProgress: {},
@@ -122,6 +126,10 @@ export function useGuiState(initialServer: string) {
         removeModal: (id) =>
           set((state) => {
             state.modals = state.modals.filter((m) => m.uuid !== id);
+          }),
+        setTimeline: (config) =>
+          set((state) => {
+            state.timeline = config;
           }),
         removeGui: (id) =>
           set((state) => {

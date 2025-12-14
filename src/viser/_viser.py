@@ -28,6 +28,9 @@ from ._threadpool_exceptions import print_threadpool_errors
 from ._tunnel import ViserTunnel
 from .infra._infra import StateSerializer
 
+if TYPE_CHECKING:
+    from ._gui_handles import TimelineHandle
+
 
 @dataclasses.dataclass
 class _CameraHandleState:
@@ -490,6 +493,95 @@ class ClientHandle(DeprecatedAttributeShim if not TYPE_CHECKING else object):
             )
         )
         handle._sync_with_client("show")
+        return handle
+
+    def add_timeline(
+        self,
+        min: float,
+        max: float,
+        step: float,
+        initial_value: float,
+        *,
+        marks: tuple[float | tuple[float, str], ...] | None = None,
+        visible: bool = True,
+    ) -> TimelineHandle:
+        """Add a timeline slider to the bottom of the window.
+
+        Only one timeline can exist at a time. Creating a new timeline
+        will automatically replace any existing timeline.
+
+        The timeline includes a play button on the left and a slider
+        that spans half the window width.
+
+        Args:
+            min: Minimum slider value.
+            max: Maximum slider value.
+            step: Step size for slider increments.
+            initial_value: Initial slider value.
+            marks: Optional tuple of marks to display on slider.
+                   Each mark can be a float (value only) or tuple[float, str] (value + label).
+            visible: Whether timeline is initially visible.
+
+        Returns:
+            Handle for controlling the timeline and registering callbacks.
+
+        Example:
+            ```python
+            timeline = server.add_timeline(0.0, 10.0, 0.1, 0.0)
+
+            @timeline.on_update
+            def _(event: GuiEvent):
+                print(f"Timeline value: {timeline.value}")
+
+            @timeline.on_play
+            def _(event: GuiEvent):
+                print("Play button clicked!")
+            ```
+        """
+        from ._gui_api import _compute_precision_digits
+        from ._gui_handles import TimelineHandle
+
+        assert max >= min, f"max ({max}) must be >= min ({min})"
+        assert max >= initial_value >= min, (
+            f"initial_value ({initial_value}) must be between min ({min}) and max ({max})"
+        )
+
+        # Remove existing timeline if present
+        if self.gui._timeline_handle is not None:
+            self.gui._timeline_handle.remove()
+
+        # Create props
+        props = _messages.TimelineProps(
+            min=min,
+            max=max,
+            step=step,
+            visible=visible,
+            precision=_compute_precision_digits(step),
+            _marks=tuple(
+                _messages.GuiSliderMark(value=float(x[0]), label=x[1])
+                if isinstance(x, tuple)
+                else _messages.GuiSliderMark(value=float(x), label=None)
+                for x in marks
+            )
+            if marks is not None
+            else None,
+        )
+
+        # Send message to all clients
+        self._websock_server.queue_message(
+            _messages.TimelineMessage(value=initial_value, props=props)
+        )
+
+        # Create and store handle
+        handle = TimelineHandle(
+            _gui_api=self.gui,
+            _value=initial_value,
+            _props=props,
+            _update_callbacks=[],
+            _play_callbacks=[],
+        )
+
+        self.gui._timeline_handle = handle
         return handle
 
     @overload
@@ -1044,6 +1136,95 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         """
         for client in self.get_clients().values():
             client.send_file_download(filename, content, chunk_size, save_immediately)
+
+    def add_timeline(
+        self,
+        min: float,
+        max: float,
+        step: float,
+        initial_value: float,
+        *,
+        marks: tuple[float | tuple[float, str], ...] | None = None,
+        visible: bool = True,
+    ) -> TimelineHandle:
+        """Add a timeline slider to the bottom of the window for all connected clients.
+
+        Only one timeline can exist at a time. Creating a new timeline
+        will automatically replace any existing timeline.
+
+        The timeline includes a play button on the left and a slider
+        that spans half the window width.
+
+        Args:
+            min: Minimum slider value.
+            max: Maximum slider value.
+            step: Step size for slider increments.
+            initial_value: Initial slider value.
+            marks: Optional tuple of marks to display on slider.
+                   Each mark can be a float (value only) or tuple[float, str] (value + label).
+            visible: Whether timeline is initially visible.
+
+        Returns:
+            Handle for controlling the timeline and registering callbacks.
+
+        Example:
+            ```python
+            timeline = server.add_timeline(0.0, 10.0, 0.1, 0.0)
+
+            @timeline.on_update
+            def _(event: GuiEvent):
+                print(f"Timeline value: {timeline.value}")
+
+            @timeline.on_play
+            def _(event: GuiEvent):
+                print("Play button clicked!")
+            ```
+        """
+        from ._gui_api import _compute_precision_digits
+        from ._gui_handles import TimelineHandle
+
+        assert max >= min, f"max ({max}) must be >= min ({min})"
+        assert max >= initial_value >= min, (
+            f"initial_value ({initial_value}) must be between min ({min}) and max ({max})"
+        )
+
+        # Remove existing timeline if present
+        if self.gui._timeline_handle is not None:
+            self.gui._timeline_handle.remove()
+
+        # Create props
+        props = _messages.TimelineProps(
+            min=min,
+            max=max,
+            step=step,
+            visible=visible,
+            precision=_compute_precision_digits(step),
+            _marks=tuple(
+                _messages.GuiSliderMark(value=float(x[0]), label=x[1])
+                if isinstance(x, tuple)
+                else _messages.GuiSliderMark(value=float(x), label=None)
+                for x in marks
+            )
+            if marks is not None
+            else None,
+        )
+
+        # Send message to all clients
+        self._websock_server.queue_message(
+            _messages.TimelineMessage(value=initial_value, props=props)
+        )
+
+        # Create and store handle
+        handle = TimelineHandle(
+            _gui_api=self.gui,
+            _value=initial_value,
+            _props=props,
+            _update_callbacks=[],
+            _play_callbacks=[],
+        )
+
+        self.gui._timeline_handle = handle
+        return handle
 
     def get_event_loop(self) -> asyncio.AbstractEventLoop:
         """Get the asyncio event loop used by the Viser background thread. This

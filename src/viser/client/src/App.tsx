@@ -36,6 +36,7 @@ import { searchParamKey } from "./SearchParamsUtils";
 import { WebsocketMessageProducer } from "./WebsocketInterface";
 import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
+import { TimelineSlider } from "./components/Timeline";
 import { useSceneTreeState } from "./SceneTreeState";
 import { useEnvironmentState } from "./EnvironmentState";
 import { useDevSettingsStore } from "./DevSettingsStore";
@@ -307,6 +308,7 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
         <NotificationsPanel />
         <BrowserWarning />
         <ViserModal />
+        <TimelineSlider />
         {/* App layout */}
         <Box
           style={{
