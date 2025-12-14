@@ -17,7 +17,7 @@ export const SingleGlbAsset = React.forwardRef<
   ref: React.ForwardedRef<THREE.Group>,
 ) {
   // Load model without passing shadow settings - we'll apply them in useEffect.
-  const { gltf, meshes, mixerRef } = useGlbLoader(message.props.glb_data);
+  const { gltf, meshes, mixerRef } = useGlbLoader(message.props.glb_data, message.props.smooth_shading);
 
   // Apply shadow settings directly to the model.
   React.useEffect(() => {

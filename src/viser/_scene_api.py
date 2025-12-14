@@ -625,6 +625,7 @@ class SceneApi:
         visible: bool = True,
         cast_shadow: bool = True,
         receive_shadow: bool | float = True,
+        smooth_shading: bool = True,
     ) -> GlbHandle:
         """Add a general 3D asset via binary glTF (GLB).
 
@@ -652,7 +653,7 @@ class SceneApi:
             Handle for manipulating scene node.
         """
         message = _messages.GlbMessage(
-            name, _messages.GlbProps(glb_data, scale, cast_shadow, receive_shadow)
+            name, _messages.GlbProps(glb_data, scale, cast_shadow, receive_shadow, smooth_shading)
         )
         return GlbHandle._make(self, message, name, wxyz, position, visible)
 
@@ -1483,6 +1484,7 @@ class SceneApi:
         opacity: float | None = None,
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
+        smooth_shading: bool = True,
         side: Literal["front", "back", "double"] = "front",
         cast_shadow: bool = True,
         receive_shadow: bool | float = True,
@@ -1504,7 +1506,10 @@ class SceneApi:
             material: Material type of the mesh ('standard', 'toon3', 'toon5').
                 This argument is ignored when wireframe=True.
             flat_shading: Whether to do flat shading. This argument is ignored
-                when wireframe=True.
+                when wireframe=True. Deprecated: use smooth_shading instead.
+            smooth_shading: Whether to use smooth shading (averaged vertex normals).
+                If False, uses flat shading (one normal per face). Takes precedence
+                over flat_shading parameter.
             side: Side of the surface to render ('front', 'back', 'double').
             cast_shadow: Whether this mesh should cast shadows.
             receive_shadow: Whether this mesh should receive shadows. If True,
@@ -1528,6 +1533,8 @@ class SceneApi:
                 f"Invalid combination of {wireframe=} and {flat_shading=}. Flat shading argument will be ignored.",
                 stacklevel=2,
             )
+        # smooth_shading takes precedence over flat_shading (inverted logic)
+        use_flat_shading = not smooth_shading if smooth_shading is not None else flat_shading
         message = _messages.MeshMessage(
             name=name,
             props=_messages.MeshProps(
@@ -1536,7 +1543,7 @@ class SceneApi:
                 color=_encode_rgb(color),
                 wireframe=wireframe,
                 opacity=opacity,
-                flat_shading=flat_shading,
+                flat_shading=use_flat_shading,
                 side=side,
                 material=material,
                 cast_shadow=cast_shadow,
@@ -1557,6 +1564,7 @@ class SceneApi:
         visible: bool = True,
         cast_shadow: bool = True,
         receive_shadow: bool | float = True,
+        smooth_shading: bool = True,
     ) -> GlbHandle:
         """Add a trimesh mesh to the scene. Internally calls `self.add_glb()`.
 
@@ -1573,13 +1581,16 @@ class SceneApi:
                 receives shadows normally. If False, no shadows. If a float
                 (0-1), shadows are rendered with a fixed opacity regardless of
                 lighting conditions.
+            smooth_shading: Whether to use smooth shading (averaged vertex normals).
+                If True, normals are excluded from export and recalculated on client.
+                If False, flat shading is used (one normal per face).
 
         Returns:
             Handle for manipulating scene node.
         """
 
         with io.BytesIO() as data_buffer:
-            mesh.export(data_buffer, file_type="glb")
+            mesh.export(data_buffer, file_type="glb", include_normals=not smooth_shading)
             glb_data = data_buffer.getvalue()
             return self.add_glb(
                 name,
@@ -1590,6 +1601,7 @@ class SceneApi:
                 visible=visible,
                 cast_shadow=cast_shadow,
                 receive_shadow=receive_shadow,
+                smooth_shading=smooth_shading,
             )
 
     @deprecated_positional_shim
@@ -1780,6 +1792,7 @@ class SceneApi:
         lod: Literal["auto", "off"] | tuple[tuple[float, float], ...] = "auto",
         cast_shadow: bool = True,
         receive_shadow: bool = True,
+        smooth_shading: bool = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1831,6 +1844,7 @@ class SceneApi:
                 lod=lod,
                 cast_shadow=cast_shadow,
                 receive_shadow=receive_shadow,
+                smooth_shading=smooth_shading,
             ),
         )
         return BatchedGlbHandle._make(self, message, name, wxyz, position, visible)

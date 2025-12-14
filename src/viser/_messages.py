@@ -289,6 +289,8 @@ class GlbProps:
     """Whether to receive shadows. If True, receives shadows normally. If
     False, no shadows. If a float (0-1), shadows are rendered with a fixed
     opacity regardless of lighting conditions. """
+    smooth_shading: bool
+    """Whether to use smooth shading (averaged vertex normals) on the client. """
 
 
 @dataclasses.dataclass
@@ -848,6 +850,8 @@ class BatchedGlbProps(_BatchedMeshExtraProps):
     """Whether or not to cast shadows."""
     receive_shadow: bool
     """Whether or not to receive shadows."""
+    smooth_shading: bool
+    """Whether to use smooth shading (averaged vertex normals) on the client. """
 
 
 @dataclasses.dataclass
@@ -1583,7 +1587,7 @@ class ThemeConfigurationMessage(Message):
 
     titlebar_content: Optional[theme.TitlebarConfig]
     control_layout: Literal["floating", "collapsible", "fixed"]
-    control_width: Literal["small", "medium", "large"]
+    control_width: Literal["small", "medium", "large"] | str
     show_logo: bool
     show_share_button: bool
     dark_mode: bool

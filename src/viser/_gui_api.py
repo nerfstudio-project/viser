@@ -464,7 +464,7 @@ class GuiApi:
         *,
         titlebar_content: theme.TitlebarConfig | None = None,
         control_layout: Literal["floating", "collapsible", "fixed"] = "floating",
-        control_width: Literal["small", "medium", "large"] = "medium",
+        control_width: Literal["small", "medium", "large"] | int | float = "medium",
         dark_mode: bool = False,
         show_logo: bool = True,
         show_share_button: bool = True,
@@ -476,8 +476,8 @@ class GuiApi:
             titlebar_content: Optional configuration for the title bar.
             control_layout: The layout of control elements, options are "floating",
                             "collapsible", or "fixed".
-            control_width: The width of control elements, options are "small",
-                           "medium", or "large".
+            control_width: The width of control elements. Can be "small",
+                           "medium", "large", or a numeric value in pixels (int or float).
             dark_mode: A boolean indicating if dark mode should be enabled.
             show_logo: A boolean indicating if the logo should be displayed.
             show_share_button: A boolean indicating if the share button should be displayed.
@@ -522,11 +522,18 @@ class GuiApi:
             [isinstance(val, str) and val.startswith("#") for val in colors_cast]
         ), "All string colors should be in hexadecimal + prefixed with #, eg #ffffff."
 
+        # Convert numeric width to pixel string
+        control_width_str: str
+        if isinstance(control_width, (int, float)):
+            control_width_str = f"{control_width}px"
+        else:
+            control_width_str = control_width
+
         self._websock_interface.queue_message(
             _messages.ThemeConfigurationMessage(
                 titlebar_content=titlebar_content,
                 control_layout=control_layout,
-                control_width=control_width,
+                control_width=control_width_str,
                 dark_mode=dark_mode,
                 show_logo=show_logo,
                 show_share_button=show_share_button,

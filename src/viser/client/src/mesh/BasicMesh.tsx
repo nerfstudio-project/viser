@@ -1,5 +1,7 @@
+/** @jsxImportSource react */
 import React from "react";
 import * as THREE from "three";
+import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { createStandardMaterial } from "./MeshUtils";
 import { MeshMessage } from "../WebsocketMessages";
 import { OutlinesIfHovered } from "../OutlinesIfHovered";
@@ -16,7 +18,13 @@ export const BasicMesh = React.forwardRef<
 ) {
   // Create material based on props.
   const material = React.useMemo(() => {
-    return createStandardMaterial(message.props);
+    const mat = createStandardMaterial(message.props);
+    // Force smooth shading on materials (ensure flatShading matches the prop)
+    if (mat instanceof THREE.MeshStandardMaterial) {
+      mat.flatShading = message.props.flat_shading && !message.props.wireframe;
+      mat.needsUpdate = true;
+    }
+    return mat;
   }, [
     message.props.material,
     message.props.color,
@@ -28,7 +36,7 @@ export const BasicMesh = React.forwardRef<
 
   // Setup geometry using memoization.
   const geometry = React.useMemo(() => {
-    const geometry = new THREE.BufferGeometry();
+    let geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
       new THREE.BufferAttribute(
@@ -53,6 +61,7 @@ export const BasicMesh = React.forwardRef<
         1,
       ),
     );
+    geometry = BufferGeometryUtils.mergeVertices(geometry);
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
     return geometry;
@@ -89,6 +98,7 @@ export const BasicMesh = React.forwardRef<
   }, [shadowOpacity]);
 
   return (
+    // @ts-ignore - react-three-fiber JSX elements not recognized by TypeScript
     <mesh
       ref={ref}
       geometry={geometry}
@@ -103,9 +113,11 @@ export const BasicMesh = React.forwardRef<
         }
       />
       {shadowMaterial && shadowOpacity > 0 ? (
+        // @ts-ignore
         <mesh geometry={geometry} material={shadowMaterial} receiveShadow />
       ) : null}
       {children}
+      {/* @ts-ignore */}
     </mesh>
   );
 });

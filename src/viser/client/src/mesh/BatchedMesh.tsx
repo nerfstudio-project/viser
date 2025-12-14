@@ -1,5 +1,7 @@
+/** @jsxImportSource react */
 import React, { useMemo } from "react";
 import * as THREE from "three";
+import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { createStandardMaterial } from "./MeshUtils";
 import { BatchedMeshesMessage } from "../WebsocketMessages";
 import { InstancedMesh2 } from "@three.ez/instanced-mesh";
@@ -44,7 +46,7 @@ export const BatchedMesh = React.forwardRef<
 
   // Setup geometry using memoization.
   const geometry = useMemo(() => {
-    const geometry = new THREE.BufferGeometry();
+    let geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
       new THREE.BufferAttribute(
@@ -69,12 +71,16 @@ export const BatchedMesh = React.forwardRef<
         1,
       ),
     );
+
+    geometry = BufferGeometryUtils.mergeVertices(geometry);
+
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
     return geometry;
   }, [message.props.vertices.buffer, message.props.faces.buffer]);
 
   return (
+    // @ts-ignore - react-three-fiber JSX elements not recognized by TypeScript
     <group ref={ref}>
       <BatchedMeshBase
         geometry={geometry}
@@ -89,6 +95,7 @@ export const BatchedMesh = React.forwardRef<
         clickable={clickable}
       />
       {children}
+      {/* @ts-ignore */}
     </group>
   );
 });

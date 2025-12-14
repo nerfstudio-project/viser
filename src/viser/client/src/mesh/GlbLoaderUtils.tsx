@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import React from "react";
+import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { disposeMaterial } from "./MeshUtils";
 import { GLTF, GLTFLoader, DRACOLoader } from "three-stdlib";
 
@@ -30,7 +31,7 @@ export function disposeNode(node: any) {
 /**
  * Custom hook for loading a GLB model
  */
-export function useGlbLoader(glb_data: Uint8Array) {
+export function useGlbLoader(glb_data: Uint8Array, smoothShading: boolean = true) {
   // State for loaded model and meshes
   const [gltf, setGltf] = React.useState<GLTF>();
   const [meshes, setMeshes] = React.useState<THREE.Mesh[]>([]);
@@ -58,7 +59,37 @@ export function useGlbLoader(glb_data: Uint8Array) {
         const meshes: THREE.Mesh[] = [];
         gltf?.scene.traverse((obj) => {
           if (obj instanceof THREE.Mesh) {
+            const vertsBefore = obj.geometry.attributes.position?.count || 0;
+            const normalsBefore = obj.geometry.attributes.normal?.array.slice(0, 15);
+            
+            obj.geometry = BufferGeometryUtils.mergeVertices(obj.geometry);
+            
+            const vertsAfterMerge = obj.geometry.attributes.position?.count || 0;
+            
+            // Delete normals to force recomputation
+            obj.geometry.deleteAttribute('normal');
             obj.geometry.computeVertexNormals();
+            
+            const normalsAfter = obj.geometry.attributes.normal?.array.slice(0, 15);
+            
+            // Set smooth or flat shading on materials based on argument
+            if (obj.material) {
+              const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+              materials.forEach((mat) => {
+                if (mat instanceof THREE.MeshStandardMaterial || 
+                    mat instanceof THREE.MeshPhongMaterial ||
+                    mat instanceof THREE.MeshLambertMaterial) {
+                  mat.flatShading = !smoothShading;
+                  mat.needsUpdate = true;
+                }
+              });
+            }
+            
+            console.log(`[URDF Debug] Mesh: ${obj.name}`);
+            console.log(`  Vertices: ${vertsBefore} -> ${vertsAfterMerge} (merged ${vertsBefore - vertsAfterMerge})`);
+            console.log(`  Normals before compute:`, normalsBefore);
+            console.log(`  Normals after compute:`, normalsAfter);
+            
             obj.geometry.computeBoundingSphere();
             meshes.push(obj);
           }

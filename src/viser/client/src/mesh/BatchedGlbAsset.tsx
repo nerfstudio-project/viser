@@ -23,7 +23,7 @@ export const BatchedGlbAsset = React.forwardRef<
     viewer.useSceneTree((state) => state[message.name]?.clickable) ?? false;
 
   // Note: We don't support animations for batched meshes.
-  const { gltf } = useGlbLoader(message.props.glb_data);
+  const { gltf } = useGlbLoader(message.props.glb_data, message.props.smooth_shading);
 
   // Extract geometry and materials from the GLB.
   const { geometry, material } = useMemo(() => {

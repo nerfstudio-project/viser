@@ -297,9 +297,9 @@ class ViserUrdf:
 
         # Add the URDF's meshes/geometry to viser.
         index_mesh = 0
-        for link_name, mesh in scene.geometry.items():
+        smooth_shading = True
 
-            index_mesh += 1
+        for link_name, mesh in scene.geometry.items():
 
             assert isinstance(mesh, trimesh.Trimesh)
             T_parent_child = self._urdf.get_transform(
@@ -317,12 +317,16 @@ class ViserUrdf:
             mesh = mesh.copy()
             mesh.apply_scale(self._scale)
             mesh.apply_transform(T_parent_child)
+            
+            # Merge duplicate vertices before exporting for smooth shading
+            mesh.merge_vertices()
 
-            # apply a color from a list
-            mesh.visual.vertex_colors = colors[index_mesh]
+            # apply a color from a list (cycle through colors if more than 10 meshes)
+            mesh.visual.vertex_colors = colors[index_mesh % len(colors)]
+            index_mesh += 1
 
             if mesh_color_override is None:
-                self._meshes.append(self._target.scene.add_mesh_trimesh(name, mesh))
+                self._meshes.append(self._target.scene.add_mesh_trimesh(name, mesh, smooth_shading=smooth_shading))
             elif len(mesh_color_override) == 3:
                 self._meshes.append(
                     self._target.scene.add_mesh_simple(
@@ -330,6 +334,7 @@ class ViserUrdf:
                         mesh.vertices,
                         mesh.faces,
                         color=mesh_color_override,
+                        smooth_shading=smooth_shading,
                     )
                 )
             elif len(mesh_color_override) == 4:
@@ -340,6 +345,7 @@ class ViserUrdf:
                         mesh.faces,
                         color=mesh_color_override[:3],
                         opacity=mesh_color_override[3],
+                        smooth_shading=True,
                     )
                 )
             else:
@@ -352,7 +358,7 @@ class ViserUrdf:
             self._target.scene.add_line_segments(
                 name + "/feature_edges",
                 points=edge_coords,
-                colors=np.array([[[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]] * len(edge_coords)),  # black lines
+                colors=np.array([0.0, 0.0, 0.0]),  # black lines
                 line_width=1.0,
             )
 

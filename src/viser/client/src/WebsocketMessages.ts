@@ -18,7 +18,7 @@ export interface CameraFrustumMessage {
 export interface GlbMessage {
   type: "GlbMessage";
   name: string;
-  props: {'glb_data': Uint8Array<ArrayBuffer>, 'scale': number, 'cast_shadow': boolean, 'receive_shadow': (boolean | number)};
+  props: {'glb_data': Uint8Array<ArrayBuffer>, 'scale': number, 'cast_shadow': boolean, 'receive_shadow': (boolean | number), 'smooth_shading': boolean};
 }
 /** Coordinate frame message.
  *
@@ -190,7 +190,7 @@ export interface BatchedMeshesMessage {
 export interface BatchedGlbMessage {
   type: "BatchedGlbMessage";
   name: string;
-  props: {'batched_wxyzs': Uint8Array<ArrayBuffer>, 'batched_positions': Uint8Array<ArrayBuffer>, 'batched_scales': (Uint8Array<ArrayBuffer> | null), 'lod': ('auto' | 'off' | [number, number][]), 'glb_data': Uint8Array<ArrayBuffer>, 'cast_shadow': boolean, 'receive_shadow': boolean};
+  props: {'batched_wxyzs': Uint8Array<ArrayBuffer>, 'batched_positions': Uint8Array<ArrayBuffer>, 'batched_scales': (Uint8Array<ArrayBuffer> | null), 'lod': ('auto' | 'off' | [number, number][]), 'glb_data': Uint8Array<ArrayBuffer>, 'cast_shadow': boolean, 'receive_shadow': boolean, 'smooth_shading': boolean};
 }
 /** Message for transform gizmos.
  *
@@ -806,7 +806,7 @@ export interface ThemeConfigurationMessage {
   type: "ThemeConfigurationMessage";
   titlebar_content: ({'buttons': ({'text': (string | null), 'icon': ('GitHub' | 'Description' | 'Keyboard' | null), 'href': (string | null)}[] | null), 'image': ({'image_url_light': string, 'image_url_dark': (string | null), 'image_alt': string, 'href': (string | null)} | null)} | null);
   control_layout: 'floating' | 'collapsible' | 'fixed';
-  control_width: 'small' | 'medium' | 'large';
+  control_width: string;
   show_logo: boolean;
   show_share_button: boolean;
   dark_mode: boolean;
