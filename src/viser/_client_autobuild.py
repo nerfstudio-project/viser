@@ -105,7 +105,13 @@ def _build_viser_client(out_dir: Path, cached: bool = True) -> None:
         return
 
     node_bin_dir = _install_sandboxed_node()
-    npx_path = node_bin_dir / "npx"
+    
+    # On Windows, use .cmd extension for npm and npx
+    npm_name = "npm.cmd" if sys.platform == "win32" else "npm"
+    npx_name = "npx.cmd" if sys.platform == "win32" else "npx"
+    
+    npx_path = node_bin_dir / npx_name
+    npm_path = node_bin_dir / npm_name
 
     subprocess_env = os.environ.copy()
     subprocess_env["NODE_VIRTUAL_ENV"] = str(node_bin_dir.parent)
@@ -114,7 +120,6 @@ def _build_viser_client(out_dir: Path, cached: bool = True) -> None:
         + (";" if sys.platform == "win32" else ":")
         + subprocess_env["PATH"]
     )
-    npm_path = node_bin_dir / "npm"
     subprocess.run(
         args=[str(npm_path), "install"],
         env=subprocess_env,
@@ -167,7 +172,9 @@ def _install_sandboxed_node() -> Path:
         return node_bin_dir
 
     node_bin_dir = get_node_bin_dir()
-    if (node_bin_dir / "npx").exists():
+    # On Windows, check for npx.cmd instead of npx
+    npx_name = "npx.cmd" if sys.platform == "win32" else "npx"
+    if (node_bin_dir / npx_name).exists():
         import rich
 
         rich.print("[bold](viser)[/bold] nodejs is set up!")
@@ -186,7 +193,9 @@ def _install_sandboxed_node() -> Path:
         )
 
     node_bin_dir = get_node_bin_dir()
-    assert (node_bin_dir / "npx").exists()
+    # On Windows, check for npx.cmd instead of npx
+    npx_name = "npx.cmd" if sys.platform == "win32" else "npx"
+    assert (node_bin_dir / npx_name).exists()
     return node_bin_dir
 
 
