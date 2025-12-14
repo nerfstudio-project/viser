@@ -48,6 +48,7 @@ from ._messages import (
     GuiTabGroupProps,
     GuiTextProps,
     GuiUpdateMessage,
+    GuiUploadButtonProps,
     GuiUplotProps,
     GuiVector2Props,
     GuiVector3Props,
@@ -370,6 +371,20 @@ class GuiButtonHandle(_GuiInputHandle[bool], GuiButtonProps):
        Value of the button. Set to `True` when the button is pressed. Can be manually set back to `False`.
     """
 
+    def __init__(self, _impl: _GuiHandleState[bool], _icon: IconName | None):
+        super().__init__(impl=_impl)
+        self._icon = _icon
+
+    @property
+    def icon(self) -> IconName | None:
+        """Icon to display on the button. When set to None, no icon is displayed."""
+        return self._icon
+
+    @icon.setter
+    def icon(self, icon: IconName | None) -> None:
+        self._icon = icon
+        self._icon_html = None if icon is None else svg_from_icon(icon)
+
     def on_click(
         self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], NoneOrCoroutine]
     ) -> Callable[[GuiEvent[TGuiHandle]], NoneOrCoroutine]:
@@ -395,7 +410,7 @@ class UploadedFile:
     """Contents of the file."""
 
 
-class GuiUploadButtonHandle(_GuiInputHandle[UploadedFile]):
+class GuiUploadButtonHandle(_GuiInputHandle[UploadedFile], GuiUploadButtonProps):
     """Handle for an upload file button in our visualizer.
 
     The `.value` attribute will be updated with the contents of uploaded files.
@@ -405,6 +420,20 @@ class GuiUploadButtonHandle(_GuiInputHandle[UploadedFile]):
 
        Value of the input. Contains information about the uploaded file.
     """
+
+    def __init__(self, _impl: _GuiHandleState[UploadedFile], _icon: IconName | None):
+        super().__init__(impl=_impl)
+        self._icon = _icon
+
+    @property
+    def icon(self) -> IconName | None:
+        """Icon to display on the upload button. When set to None, no icon is displayed."""
+        return self._icon
+
+    @icon.setter
+    def icon(self, icon: IconName | None) -> None:
+        self._icon = icon
+        self._icon_html = None if icon is None else svg_from_icon(icon)
 
     def on_upload(
         self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], NoneOrCoroutine]
@@ -507,7 +536,7 @@ class GuiTabGroupHandle(_GuiHandle[None], GuiTabGroupProps):
         uuid = _make_uuid()
 
         # We may want to make this thread-safe in the future.
-        out = GuiTabHandle(_parent=self, _id=uuid)
+        out = GuiTabHandle(_parent=self, _id=uuid, _label=label, _icon=icon)
 
         self._tab_handles.append(out)
         self._tab_labels = self._tab_labels + (label,)
@@ -554,11 +583,28 @@ class GuiTabHandle:
 
     _parent: GuiTabGroupHandle
     _id: str  # Used as container ID of children.
+    _label: str
+    _icon: IconName | None
     _container_id_restore: str | None = None
     _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
     _removed: bool = False
+
+    @property
+    def icon(self) -> IconName | None:
+        """Icon to display on the tab. When set to None, no icon is displayed."""
+        return self._icon
+
+    @icon.setter
+    def icon(self, icon: IconName | None) -> None:
+        self._icon = icon
+        # Find the index of this tab in the parent's tab list.
+        tab_index = self._parent._tab_handles.index(self)
+        # Update the icon HTML in the parent's tuple.
+        icons_list = list(self._parent._tab_icons_html)
+        icons_list[tab_index] = None if icon is None else svg_from_icon(icon)
+        self._parent._tab_icons_html = tuple(icons_list)
 
     def __enter__(self) -> GuiTabHandle:
         self._container_id_restore = self._parent._impl.gui_api._get_container_uuid()

@@ -5,7 +5,6 @@ import { useGlbLoader } from "./GlbLoaderUtils";
 import { useFrame, useThree } from "@react-three/fiber";
 import { HoverableContext } from "../HoverContext";
 import { OutlinesMaterial } from "../Outlines";
-import { ViewerContext } from "../ViewerContext";
 
 /**
  * Component for rendering a single GLB model
@@ -27,7 +26,8 @@ export const SingleGlbAsset = React.forwardRef<
     gltf.scene.traverse((obj) => {
       if (obj instanceof THREE.Mesh) {
         obj.castShadow = message.props.cast_shadow;
-        obj.receiveShadow = message.props.receive_shadow;
+        // Only set receiveShadow if receive_shadow is a boolean true.
+        obj.receiveShadow = message.props.receive_shadow === true;
       }
     });
   }, [gltf, message.props.cast_shadow, message.props.receive_shadow]);
@@ -59,20 +59,48 @@ export const SingleGlbAsset = React.forwardRef<
     return material;
   }, [contextSize]);
   const outlineRef = React.useRef<THREE.Group>(null);
-  const hoveredRef = React.useContext(HoverableContext)!;
-  const viewer = React.useContext(ViewerContext)!;
+  const hoverContext = React.useContext(HoverableContext)!;
   useFrame(() => {
     if (outlineRef.current === null) return;
-    outlineRef.current.visible = hoveredRef.current.isHovered;
+    outlineRef.current.visible = hoverContext.state.current.isHovered;
   });
-  const clickable =
-    viewer.useSceneTree((state) => state[message.name]?.clickable) ?? false;
+  const clickable = hoverContext.clickable;
 
+  // Check if we should render shadow meshes.
+  const shadowOpacity =
+    typeof message.props.receive_shadow === "number"
+      ? message.props.receive_shadow
+      : 0.0;
+
+  // Create shadow material for shadow meshes.
+  const shadowMaterial = React.useMemo(() => {
+    if (shadowOpacity === 0.0) return null;
+    return new THREE.ShadowMaterial({
+      opacity: shadowOpacity,
+      color: 0x000000,
+      depthWrite: false,
+    });
+  }, [shadowOpacity]);
   if (!gltf) return null;
 
   return (
     <group ref={ref}>
       <primitive object={gltf.scene} scale={message.props.scale} />
+      {shadowMaterial && shadowOpacity > 0 ? (
+        <group scale={message.props.scale}>
+          {meshes.map((mesh, i) => (
+            <mesh
+              key={`shadow-${i}`}
+              geometry={mesh.geometry}
+              material={shadowMaterial}
+              receiveShadow
+              position={mesh.position}
+              rotation={mesh.rotation}
+              scale={mesh.scale}
+            />
+          ))}
+        </group>
+      ) : null}
       {clickable ? (
         <group ref={outlineRef} visible={false}>
           {meshes.map((mesh, i) => (

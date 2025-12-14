@@ -1,6 +1,6 @@
 // Automatically generated file - do not edit manually.
 // This is synchronized with the Python package version in viser/__init__.py.
-export const VISER_VERSION = "1.0.6";
+export const VISER_VERSION = "1.0.16";
 
 // GitHub contributors for the viser project.
 export interface Contributor {
@@ -50,28 +50,28 @@ export const GITHUB_CONTRIBUTORS: Contributor[] = [
     html_url: "https://github.com/sea-bass",
   },
   {
-    login: "ethanweber",
-    html_url: "https://github.com/ethanweber",
-  },
-  {
     login: "jkulhanek",
     html_url: "https://github.com/jkulhanek",
   },
   {
-    login: "AdamRashid96",
-    html_url: "https://github.com/AdamRashid96",
+    login: "ethanweber",
+    html_url: "https://github.com/ethanweber",
   },
   {
-    login: "vye16",
-    html_url: "https://github.com/vye16",
+    login: "zerolover",
+    html_url: "https://github.com/zerolover",
   },
   {
     login: "beckyfeng08",
     html_url: "https://github.com/beckyfeng08",
   },
   {
-    login: "zerolover",
-    html_url: "https://github.com/zerolover",
+    login: "vye16",
+    html_url: "https://github.com/vye16",
+  },
+  {
+    login: "AdamRashid96",
+    html_url: "https://github.com/AdamRashid96",
   },
   {
     login: "slecleach",
@@ -92,6 +92,14 @@ export const GITHUB_CONTRIBUTORS: Contributor[] = [
   {
     login: "simonbethke",
     html_url: "https://github.com/simonbethke",
+  },
+  {
+    login: "swnakamura",
+    html_url: "https://github.com/swnakamura",
+  },
+  {
+    login: "rowoflo",
+    html_url: "https://github.com/rowoflo",
   },
   {
     login: "MosesEbere",
@@ -118,6 +126,10 @@ export const GITHUB_CONTRIBUTORS: Contributor[] = [
     html_url: "https://github.com/mcallisterdavid",
   },
   {
+    login: "david-dorf",
+    html_url: "https://github.com/david-dorf",
+  },
+  {
     login: "cvachha",
     html_url: "https://github.com/cvachha",
   },
@@ -126,8 +138,8 @@ export const GITHUB_CONTRIBUTORS: Contributor[] = [
     html_url: "https://github.com/ArthurAllshire",
   },
   {
-    login: "Alescontrela",
-    html_url: "https://github.com/Alescontrela",
+    login: "escontra",
+    html_url: "https://github.com/escontra",
   },
   {
     login: "alberthli",

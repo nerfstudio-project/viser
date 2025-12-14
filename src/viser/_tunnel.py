@@ -8,8 +8,6 @@ from multiprocessing.managers import DictProxy
 from pathlib import Path
 from typing import Callable, Literal
 
-import rich
-
 
 @lru_cache
 def _is_multiprocess_ok() -> bool:
@@ -36,6 +34,8 @@ class ViserTunnel:
         # Heuristic for `if __name__ == "__main__"` check.
         self._multiprocess_ok = _is_multiprocess_ok()
         if not self._multiprocess_ok:
+            import rich
+
             rich.print(
                 "[bold](viser)[/bold] No `if __name__ == '__main__'` check found; creating share URL tunnel in a thread"
             )

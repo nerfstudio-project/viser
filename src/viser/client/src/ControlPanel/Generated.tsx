@@ -1,6 +1,7 @@
 import { ViewerContext } from "../ViewerContext";
 import { useThrottledMessageSender } from "../WebsocketUtils";
 import { GuiComponentContext } from "./GuiComponentContext";
+import { shallowObjectKeysEqual } from "../utils/shallowObjectKeysEqual";
 
 import { Box } from "@mantine/core";
 import React from "react";
@@ -61,15 +62,29 @@ export default function GeneratedGuiContainer({
 function GuiContainer({ containerUuid }: { containerUuid: string }) {
   const viewer = React.useContext(ViewerContext)!;
 
-  const guiIdSet =
-    viewer.useGui(
-      (state) => state.guiUuidSetFromContainerUuid[containerUuid],
-    ) ?? {};
+  // Ensure that the container exists in state. The goal of this is to prevent a race
+  // condition where `guiIdSet` is undefined on first render, which prevents zustand
+  // from tracking changes to it.
+  if (
+    viewer.useGui.getState().guiUuidSetFromContainerUuid[containerUuid] ===
+    undefined
+  ) {
+    viewer.useGui.setState({
+      ...viewer.useGui.getState(),
+      guiUuidSetFromContainerUuid: {
+        ...viewer.useGui.getState().guiUuidSetFromContainerUuid,
+        [containerUuid]: {},
+      },
+    });
+  }
+  const guiIdSet = viewer.useGui(
+    (state) => state.guiUuidSetFromContainerUuid[containerUuid],
+    shallowObjectKeysEqual,
+  )!;
 
   // Render each GUI element in this container.
   const guiIdArray = [...Object.keys(guiIdSet)];
   const guiOrderFromId = viewer!.useGui((state) => state.guiOrderFromUuid);
-  if (guiIdSet === undefined) return null;
 
   let guiUuidOrderPairArray = guiIdArray.map((uuid) => ({
     uuid: uuid,

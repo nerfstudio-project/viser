@@ -16,10 +16,6 @@ from typing import TYPE_CHECKING, Any, Callable, ContextManager, TypeVar, cast, 
 import imageio.v3 as iio
 import numpy as np
 import numpy.typing as npt
-import rich
-from rich import box, style
-from rich.panel import Panel
-from rich.table import Table
 from typing_extensions import Literal, deprecated
 
 from . import _client_autobuild, _messages, infra
@@ -126,8 +122,9 @@ class CameraHandle:
         """Corresponds to the t in `P_world = [R | t] p_camera`. Synchronized
         automatically when assigned.
 
-        The `look_at` point and `up_direction` vectors are maintained when updating
-        `position`, which means that updates to `position` will often also affect `wxyz`.
+        To preserve the camera orientation, position updates translate both the camera
+        and its `look_at` point together. To change position while looking at a fixed
+        point, set `look_at` after updating `position`.
         """
         assert self._state.update_timestamp != 0.0
         return self._state.position
@@ -754,6 +751,11 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         )
 
         # Form status print.
+        import rich
+        from rich import box, style
+        from rich.panel import Panel
+        from rich.table import Table
+
         port = server._port  # Port may have changed.
         if host == "0.0.0.0":
             # 0.0.0.0 is not a real IP and people are often confused by it;
@@ -775,7 +777,7 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         rich.print(
             Panel(
                 table,
-                title="[bold]viser[/bold]"
+                title=f"[bold]viser[/bold] [dim](listening *:{port})[/dim]"
                 if host == "0.0.0.0"
                 else "[bold]viser[/bold]",
                 expand=False,
@@ -892,6 +894,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         else:
             # Create a new tunnel!.
             if verbose:
+                import rich
+
                 rich.print("[bold](viser)[/bold] Share URL requested!")
 
             connect_event = threading.Event()
@@ -902,6 +906,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
 
             @self._share_tunnel.on_disconnect
             def _() -> None:
+                import rich
+
                 rich.print("[bold](viser)[/bold] Disconnected from share URL")
                 self._share_tunnel = None
                 self._websock_server.queue_message(_messages.ShareUrlUpdated(None))
@@ -911,6 +917,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
                 assert self._share_tunnel is not None
                 share_url = self._share_tunnel.get_url()
                 if verbose:
+                    import rich
+
                     if share_url is None:
                         rich.print("[bold](viser)[/bold] Could not generate share URL")
                     else:
@@ -930,6 +938,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         if self._share_tunnel is not None:
             self._share_tunnel.close()
         else:
+            import rich
+
             rich.print(
                 "[bold](viser)[/bold] Tried to disconnect from share URL, but already disconnected"
             )

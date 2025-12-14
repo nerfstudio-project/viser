@@ -3,9 +3,18 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { OutlinesIfHovered } from "./OutlinesIfHovered";
 import React from "react";
 import * as THREE from "three";
-import { ImageMessage, PointCloudMessage } from "./WebsocketMessages";
+import {
+  ImageMessage,
+  LabelMessage,
+  PointCloudMessage,
+} from "./WebsocketMessages";
 import { BatchedMeshHoverOutlines } from "./mesh/BatchedMeshHoverOutlines";
 import { MeshBasicMaterial } from "three";
+// @ts-ignore - troika-three-text doesn't have type definitions
+import { Text as TroikaText } from "troika-three-text";
+import { BatchedLabelManagerContext } from "./BatchedLabelManagerContext";
+import { ViewerContext } from "./ViewerContext";
+import { calculateBaseFontSize } from "./LabelUtils";
 
 const originGeom = new THREE.SphereGeometry(1.0);
 
@@ -205,7 +214,7 @@ export const CoordinateFrame = React.forwardRef<
             <meshBasicMaterial color={originColor} />
             <OutlinesIfHovered />
           </mesh>
-          <Instances limit={3}>
+          <Instances limit={6}>
             <meshBasicMaterial />
             <cylinderGeometry args={[axesRadius, axesRadius, axesLength, 16]} />
             <Instance
@@ -213,17 +222,18 @@ export const CoordinateFrame = React.forwardRef<
               position={[0.5 * axesLength, 0.0, 0.0]}
               color={0xcc0000}
             >
-              <OutlinesIfHovered />
+              {/* unmountOnHide is needed to use OutlineIfHovered within <Instances />. */}
+              <OutlinesIfHovered unmountOnHide enableCreaseAngle />
             </Instance>
             <Instance position={[0.0, 0.5 * axesLength, 0.0]} color={0x00cc00}>
-              <OutlinesIfHovered />
+              <OutlinesIfHovered unmountOnHide enableCreaseAngle />
             </Instance>
             <Instance
               rotation={new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)}
               position={[0.0, 0.0, 0.5 * axesLength]}
               color={0x0000cc}
             >
-              <OutlinesIfHovered />
+              <OutlinesIfHovered unmountOnHide enableCreaseAngle />
             </Instance>
           </Instances>
         </>
@@ -335,18 +345,20 @@ export const InstancedAxes = React.forwardRef<
 
     for (let i = 0; i < numInstances; i++) {
       // Calculate byte offsets for reading float values.
-      const posOffset = i * 3 * 4; // 3 floats, 4 bytes per float
-      const wxyzOffset = i * 4 * 4; // 4 floats, 4 bytes per float
+      // Use modulo as a defensive check to prevent out-of-bounds reads when
+      // array lengths don't match.
+      const posOffset = (i * 3 * 4) % batched_positions.byteLength;
+      const wxyzOffset = (i * 4 * 4) % batched_wxyzs.byteLength;
       const scaleOffset =
         batched_scales &&
         batched_scales.byteLength === (batched_wxyzs.byteLength / 4) * 3
-          ? i * 3 * 4 // Per-axis scaling: 3 floats, 4 bytes per float
-          : i * 4; // Uniform scaling: 1 float, 4 bytes per float
+          ? (i * 3 * 4) % batched_scales.byteLength // Per-axis scaling: 3 floats, 4 bytes per float
+          : (i * 4) % (batched_scales?.byteLength ?? 4); // Uniform scaling: 1 float, 4 bytes per float
 
       // Read scale value if available.
-      if (scalesView) {
+      if (scalesView && batched_scales) {
         // Check if we have per-axis scaling (N,3) or uniform scaling (N,).
-        if (batched_scales!.byteLength === (batched_wxyzs.byteLength / 4) * 3) {
+        if (batched_scales.byteLength === (batched_wxyzs.byteLength / 4) * 3) {
           // Per-axis scaling: read 3 floats.
           tmpScale.set(
             scalesView.getFloat32(scaleOffset, true), // x scale
@@ -506,7 +518,7 @@ export const ViserImage = React.forwardRef<
       <mesh
         rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
         castShadow={message.props.cast_shadow}
-        receiveShadow={message.props.receive_shadow}
+        receiveShadow={message.props.receive_shadow === true}
       >
         <OutlinesIfHovered />
         <planeGeometry
@@ -524,4 +536,137 @@ export const ViserImage = React.forwardRef<
       {children}
     </group>
   );
+});
+
+/**
+ * Convert label anchor to Troika anchorX and anchorY values.
+ */
+function labelAnchorToTroikaAnchors(anchor: string): {
+  anchorX: "left" | "center" | "right";
+  anchorY: "top" | "middle" | "bottom";
+} {
+  const [vertical, horizontal] = anchor.split("-");
+  const anchorY =
+    vertical === "top" ? "top" : vertical === "bottom" ? "bottom" : "middle";
+  const anchorX =
+    horizontal === "left"
+      ? "left"
+      : horizontal === "right"
+        ? "right"
+        : "center";
+  return { anchorX, anchorY };
+}
+
+export const ViserLabel = React.forwardRef<
+  THREE.Group,
+  LabelMessage & { children?: React.ReactNode }
+>(function ViserLabel({ children, ...message }, ref) {
+  const viewer = React.useContext(ViewerContext)!;
+  const groupRef = React.useRef<THREE.Group>(null!);
+  const textRef = React.useRef<TroikaText>(null!);
+
+  const manager = React.useContext(BatchedLabelManagerContext);
+  if (!manager) {
+    throw new Error(
+      "ViserLabel must be used within BatchedLabelManager context",
+    );
+  }
+
+  // Convert anchor to Troika format.
+  const { anchorX, anchorY } = labelAnchorToTroikaAnchors(message.props.anchor);
+
+  // Calculate base font size (used for initial setup).
+  const baseFontSize = calculateBaseFontSize(
+    message.props.font_size_mode,
+    message.props.font_screen_scale,
+    message.props.font_scene_height,
+  );
+
+  // Create text once on mount and register with global manager.
+  React.useEffect(() => {
+    const text = new TroikaText();
+    text.text = message.props.text;
+    // Use relative path for font so it works if client is in a subdirectory.
+    text.font = "./Inter-VariableFont_slnt,wght.ttf";
+    text.fontSize = baseFontSize;
+    text.color = 0x000000; // Black.
+    text.anchorX = anchorX;
+    text.anchorY = anchorY;
+
+    // Lower SDF resolution for better performance with many labels.
+    // Default is 64, lower values = lower quality but faster rendering.
+    text.sdfGlyphSize = 32;
+
+    // Position is always (0, 0, 0) in local space - parent transform handles wxyz/position.
+    text.position.set(0, 0, 0);
+
+    // Don't sync here - registerText will sync the BatchedText after adding.
+    textRef.current = text;
+    // Register with global manager, passing font parameters and anchor info.
+    manager.registerText(
+      text,
+      message.name,
+      message.props.depth_test,
+      message.props.font_size_mode,
+      message.props.font_screen_scale,
+      message.props.font_scene_height,
+      anchorX,
+      anchorY,
+    );
+
+    return () => {
+      manager.unregisterText(text);
+      text.dispose();
+    };
+  }, []); // Only create once.
+
+  // Update text content when it changes.
+  React.useEffect(() => {
+    if (textRef.current) {
+      textRef.current.text = message.props.text;
+      // Don't call text.sync() - let the BatchedText handle it via manager.syncText().
+      manager.syncText(textRef.current);
+    }
+  }, [message.props.text, manager]);
+
+  // Update text properties when they change.
+  // Use updateText() which is much more efficient than unregister/register.
+  React.useEffect(() => {
+    if (textRef.current) {
+      manager.updateText(
+        textRef.current,
+        message.props.depth_test,
+        message.props.font_size_mode,
+        message.props.font_screen_scale,
+        message.props.font_scene_height,
+        anchorX,
+        anchorY,
+      );
+    }
+  }, [
+    message.props.depth_test,
+    message.props.font_size_mode,
+    message.props.font_screen_scale,
+    message.props.font_scene_height,
+    anchorX,
+    anchorY,
+    manager,
+  ]);
+
+  // BatchedLabelManager handles position updates, visibility, and culling.
+  React.useImperativeHandle(ref, () => groupRef.current, []);
+
+  // Use a selector to subscribe only to this node's children.
+  const hasChildren = viewer.useSceneTree((state) => {
+    const node = state[message.name];
+    return node?.children && node.children.length > 0;
+  });
+
+  // Return null when no children - BatchedTextManager handles the text rendering.
+  // Return group when there are children - SceneTree needs it to apply transforms to child nodes.
+  if (!hasChildren) {
+    return null;
+  } else {
+    return <group ref={groupRef}>{children}</group>;
+  }
 });

@@ -56,6 +56,22 @@ export const IcosphereMesh = React.forwardRef<
     };
   }, [material]);
 
+  // Check if we should render a shadow mesh.
+  const shadowOpacity =
+    typeof message.props.receive_shadow === "number"
+      ? message.props.receive_shadow
+      : 0.0;
+
+  // Create shadow material for shadow mesh.
+  const shadowMaterial = React.useMemo(() => {
+    if (shadowOpacity === 0.0) return null;
+    return new THREE.ShadowMaterial({
+      opacity: shadowOpacity,
+      color: 0x000000,
+      depthWrite: false,
+    });
+  }, [shadowOpacity]);
+
   return (
     <group ref={ref}>
       <mesh
@@ -64,9 +80,12 @@ export const IcosphereMesh = React.forwardRef<
         scale={message.props.radius}
         material={material}
         castShadow={message.props.cast_shadow}
-        receiveShadow={message.props.receive_shadow}
+        receiveShadow={message.props.receive_shadow === true}
       >
-        <OutlinesIfHovered alwaysMounted />
+        <OutlinesIfHovered />
+        {shadowMaterial && shadowOpacity > 0 ? (
+          <mesh geometry={geometry} material={shadowMaterial} receiveShadow />
+        ) : null}
       </mesh>
       {children}
     </group>

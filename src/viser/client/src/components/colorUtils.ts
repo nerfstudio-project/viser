@@ -1,7 +1,7 @@
 // Utility functions for color conversions.
 
 export type RgbTuple = [number, number, number];
-export type RgbaTuple = [number, number, number, number];
+export type RgbaTuple = [number, number, number, number]; // R, G, B in [0, 255], A in [0, 255].
 
 /**
  * Convert an RGB tuple to a hex color string or handle null value
@@ -29,6 +29,7 @@ export function toMantineColor(
 }
 
 // Convert RGB tuple to rgb() string.
+// Input: RGB values in [0, 255].
 export function rgbToString(rgb: RgbTuple): string {
   return `rgb(${Math.round(rgb[0])}, ${Math.round(rgb[1])}, ${Math.round(
     rgb[2],
@@ -36,13 +37,16 @@ export function rgbToString(rgb: RgbTuple): string {
 }
 
 // Convert RGBA tuple to rgba() string.
+// Input: RGB values in [0, 255], A in [0, 255].
+// Output: CSS rgba() string with alpha in [0, 1].
 export function rgbaToString(rgba: RgbaTuple): string {
   return `rgba(${Math.round(rgba[0])}, ${Math.round(rgba[1])}, ${Math.round(
     rgba[2],
-  )}, ${rgba[3].toFixed(2)})`;
+  )}, ${(rgba[3] / 255).toFixed(4)})`;
 }
 
 // Parse any string to RGB tuple.
+// Output: RGB values in [0, 255].
 export function parseToRgb(value: string): RgbTuple | null {
   // Try to parse rgb(r, g, b) format.
   const rgbMatch = value.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
@@ -79,15 +83,16 @@ export function parseToRgb(value: string): RgbTuple | null {
 }
 
 // Parse any string to RGBA tuple.
+// Output: RGB values in [0, 255], A in [0, 255].
 export function parseToRgba(value: string): RgbaTuple | null {
-  // Try to parse rgba(r, g, b, a) format.
+  // Try to parse CSS `rgba(r, g, b, a)` format.
   const rgbaMatch = value.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/);
   if (rgbaMatch) {
     return [
       parseInt(rgbaMatch[1]),
       parseInt(rgbaMatch[2]),
       parseInt(rgbaMatch[3]),
-      parseFloat(rgbaMatch[4]),
+      Math.round(parseFloat(rgbaMatch[4]) * 255),
     ];
   }
 
@@ -95,60 +100,42 @@ export function parseToRgba(value: string): RgbaTuple | null {
   const hexMatch = value.match(/^#([0-9A-Fa-f]{3,8})$/);
   if (hexMatch) {
     const hex = hexMatch[1];
-    let r,
-      g,
-      b,
-      a = 1.0;
-
-    if (hex.length === 3) {
-      // Convert #RGB to full RGB values.
-      r = parseInt(hex[0] + hex[0], 16);
-      g = parseInt(hex[1] + hex[1], 16);
-      b = parseInt(hex[2] + hex[2], 16);
-    } else if (hex.length === 4) {
+    if (hex.length === 4) {
       // Convert #RGBA to full RGBA values.
-      r = parseInt(hex[0] + hex[0], 16);
-      g = parseInt(hex[1] + hex[1], 16);
-      b = parseInt(hex[2] + hex[2], 16);
-      a = parseInt(hex[3] + hex[3], 16) / 255;
-    } else if (hex.length === 6) {
-      // Parse #RRGGBB format.
-      r = parseInt(hex.substring(0, 2), 16);
-      g = parseInt(hex.substring(2, 4), 16);
-      b = parseInt(hex.substring(4, 6), 16);
+      return [
+        parseInt(hex[0] + hex[0], 16),
+        parseInt(hex[1] + hex[1], 16),
+        parseInt(hex[2] + hex[2], 16),
+        parseInt(hex[3] + hex[3], 16),
+      ];
     } else if (hex.length === 8) {
       // Parse #RRGGBBAA format.
-      r = parseInt(hex.substring(0, 2), 16);
-      g = parseInt(hex.substring(2, 4), 16);
-      b = parseInt(hex.substring(4, 6), 16);
-      a = parseInt(hex.substring(6, 8), 16) / 255;
-    } else {
-      return null;
+      return [
+        parseInt(hex.substring(0, 2), 16),
+        parseInt(hex.substring(2, 4), 16),
+        parseInt(hex.substring(4, 6), 16),
+        parseInt(hex.substring(6, 8), 16),
+      ];
     }
-
-    return [r, g, b, a];
   }
 
   // Try to parse RGB format and add default alpha.
   const rgbResult = parseToRgb(value);
   if (rgbResult) {
-    return [...rgbResult, 1.0];
+    return [...rgbResult, 255];
   }
 
   return null;
 }
 
 // Check if two RGB tuples are equal.
+// Input: RGB values in [0, 255].
 export function rgbEqual(a: RgbTuple, b: RgbTuple): boolean {
   return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
 }
 
 // Check if two RGBA tuples are equal.
+// Input: RGB values in [0, 255], A in [0, 255].
 export function rgbaEqual(a: RgbaTuple, b: RgbaTuple): boolean {
-  return (
-    a[0] === b[0] &&
-    a[1] === b[1] &&
-    a[2] === b[2] &&
-    Math.abs(a[3] - b[3]) < 0.001
-  );
+  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
 }

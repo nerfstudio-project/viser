@@ -53,7 +53,8 @@ export default function ControlPanel(props: {
   // TODO: will result in unnecessary re-renders.
   const viewer = React.useContext(ViewerContext)!;
   const showGenerated = viewer.useGui(
-    (state) => "root" in state.guiUuidSetFromContainerUuid,
+    (state) =>
+      Object.keys(state.guiUuidSetFromContainerUuid["root"] ?? {}).length > 0,
   );
   const [showSettings, { toggle }] = useDisclosure(false);
 
@@ -102,7 +103,10 @@ export default function ControlPanel(props: {
           <ServerControls />
         </Box>
       </Collapse>
-      <Collapse in={showGenerated && !showSettings}>
+      {/*As of Mantine 8.3.3, this `keepMounted` is necessary to prevent some
+      intermittent problems with the initial GUI height being set to 0 when
+      we're under high CPU load.*/}
+      <Collapse in={showGenerated && !showSettings} keepMounted>
         <MemoizedGeneratedGuiContainer containerUuid={ROOT_CONTAINER_ID} />
       </Collapse>
     </>

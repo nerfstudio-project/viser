@@ -6,6 +6,7 @@ import time
 import warnings
 from collections.abc import Coroutine
 from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -623,7 +624,7 @@ class SceneApi:
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
     ) -> GlbHandle:
         """Add a general 3D asset via binary glTF (GLB).
 
@@ -642,7 +643,10 @@ class SceneApi:
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
             cast_shadow: Whether this node should cast shadows.
-            receive_shadow: Whether this node should receive shadows.
+            receive_shadow: Whether this node should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
 
         Returns:
             Handle for manipulating scene node.
@@ -691,7 +695,10 @@ class SceneApi:
             raise ValueError("Points should have shape (N, 2, 3) for N line segments.")
 
         colors_array = colors_to_uint8(np.asarray(colors))
-        colors_array = np.broadcast_to(colors_array, points_array.shape)
+        assert colors_array.shape in {
+            points_array.shape,
+            (3,),
+        }, "Shape of colors should be (N, 2, 3) or (3,)."
 
         message = _messages.LineSegmentsMessage(
             name=name,
@@ -967,7 +974,7 @@ class SceneApi:
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
         variant: Literal["wireframe", "filled"] = "wireframe",
     ) -> CameraFrustumHandle:
         """Add a camera frustum to the scene for visualization.
@@ -994,7 +1001,10 @@ class SceneApi:
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
             cast_shadow: Whether this frustum should cast shadows.
-            receive_shadow: Whether this frustum should receive shadows.
+            receive_shadow: Whether this frustum should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
             variant: Variant of the frustum visualization. 'wireframe' shows lines only, 'filled' adds semi-transparent faces.
 
         Returns:
@@ -1149,15 +1159,16 @@ class SceneApi:
         )
         return BatchedAxesHandle._make(self, message, name, wxyz, position, visible)
 
-    @deprecated_positional_shim
+    @partial(
+        deprecated_positional_shim,
+        deprecated_kwargs=("width_segments", "height_segments"),
+    )
     def add_grid(
         self,
         name: str,
         width: float = 10.0,
         height: float = 10.0,
         *,
-        width_segments: int = 10,
-        height_segments: int = 10,
         plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"] = "xy",
         cell_color: RgbTupleOrArray = (200, 200, 200),
         cell_thickness: float = 1.0,
@@ -1165,6 +1176,10 @@ class SceneApi:
         section_color: RgbTupleOrArray = (140, 140, 140),
         section_thickness: float = 1.0,
         section_size: float = 1.0,
+        infinite_grid: bool = False,
+        fade_distance: float = 100.0,
+        fade_strength: float = 1.0,
+        fade_from: Literal["camera", "origin"] = "camera",
         shadow_opacity: float = 0.125,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
@@ -1178,8 +1193,6 @@ class SceneApi:
             name: Name of the grid.
             width: Width of the grid.
             height: Height of the grid.
-            width_segments: Number of segments along the width.
-            height_segments: Number of segments along the height.
             plane: The plane in which the grid is oriented (e.g., 'xy', 'yz').
             cell_color: Color of the grid cells as an RGB tuple.
             cell_thickness: Thickness of the grid lines.
@@ -1188,6 +1201,10 @@ class SceneApi:
             section_thickness: Thickness of the section lines.
             section_size: Size of each section in the grid.
             shadow_opacity: Opacity of shadows casted onto grid plane, 0: no shadows, 1: black shadows
+            infinite_grid: Whether the grid should appear infinite. If `True`, the width and height are ignored.
+            fade_distance: Distance at which the grid fades out.
+            fade_strength: Strength of the fade effect.
+            fade_from: Whether the grid should fade based on distance from the camera or the origin.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -1200,8 +1217,6 @@ class SceneApi:
             props=_messages.GridProps(
                 width=width,
                 height=height,
-                width_segments=width_segments,
-                height_segments=height_segments,
                 plane=plane,
                 cell_color=_encode_rgb(cell_color),
                 cell_thickness=cell_thickness,
@@ -1209,6 +1224,10 @@ class SceneApi:
                 section_color=_encode_rgb(section_color),
                 section_thickness=section_thickness,
                 section_size=section_size,
+                infinite_grid=infinite_grid,
+                fade_distance=fade_distance,
+                fade_strength=fade_strength,
+                fade_from=fade_from,
                 shadow_opacity=shadow_opacity,
             ),
         )
@@ -1223,6 +1242,21 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        font_size_mode: Literal["screen", "scene"] = "screen",
+        font_screen_scale: float = 1.0,
+        font_scene_height: float = 0.075,
+        depth_test: bool = False,
+        anchor: Literal[
+            "top-left",
+            "top-center",
+            "top-right",
+            "center-left",
+            "center-center",
+            "center-right",
+            "bottom-left",
+            "bottom-center",
+            "bottom-right",
+        ] = "top-left",
     ) -> LabelHandle:
         """Add a 2D label to the scene.
 
@@ -1235,11 +1269,26 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
+            font_size_mode: Font sizing mode. 'screen' for screen-space sizing (constant pixel size), 'scene' for world-space sizing (size in scene units).
+            font_screen_scale: Scale factor for screen-space font size. Only used when font_size_mode='screen'.
+            font_scene_height: Font height in scene units. Only used when font_size_mode='scene'.
+            depth_test: Whether to enable depth testing for the label.
+            anchor: Anchor position of the label relative to its position.
 
         Returns:
             Handle for manipulating scene node.
         """
-        message = _messages.LabelMessage(name, _messages.LabelProps(text))
+        message = _messages.LabelMessage(
+            name,
+            _messages.LabelProps(
+                text=text,
+                font_size_mode=font_size_mode,
+                font_screen_scale=font_screen_scale,
+                font_scene_height=font_scene_height,
+                depth_test=depth_test,
+                anchor=anchor,
+            ),
+        )
         return LabelHandle._make(self, message, name, wxyz, position, visible=visible)
 
     @deprecated_positional_shim
@@ -1319,7 +1368,7 @@ class SceneApi:
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
         wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1347,7 +1396,10 @@ class SceneApi:
                 when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
             cast_shadow: Whether this skinned mesh should cast shadows.
-            receive_shadow: Whether this skinned mesh should receive shadows.
+            receive_shadow: Whether this skinned mesh should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this mesh is initially visible.
@@ -1433,7 +1485,7 @@ class SceneApi:
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1455,7 +1507,10 @@ class SceneApi:
                 when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
             cast_shadow: Whether this mesh should cast shadows.
-            receive_shadow: Whether this mesh should receive shadows.
+            receive_shadow: Whether this mesh should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this mesh is initially visible.
@@ -1500,6 +1555,8 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        cast_shadow: bool = True,
+        receive_shadow: bool | float = True,
     ) -> GlbHandle:
         """Add a trimesh mesh to the scene. Internally calls `self.add_glb()`.
 
@@ -1511,6 +1568,11 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
+            cast_shadow: Whether this mesh should cast shadows.
+            receive_shadow: Whether this mesh should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
 
         Returns:
             Handle for manipulating scene node.
@@ -1526,6 +1588,8 @@ class SceneApi:
                 wxyz=wxyz,
                 position=position,
                 visible=visible,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
             )
 
     @deprecated_positional_shim
@@ -1856,7 +1920,7 @@ class SceneApi:
         flat_shading: bool = True,
         side: Literal["front", "back", "double"] = "front",
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1874,7 +1938,10 @@ class SceneApi:
             flat_shading: Whether to do flat shading.
             side: Side of the surface to render ('front', 'back', 'double').
             cast_shadow: Whether this box should cast shadows.
-            receive_shadow: Whether this box should receive shadows.
+            receive_shadow: Whether this box should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this box is initially visible.
@@ -1930,7 +1997,7 @@ class SceneApi:
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1949,7 +2016,10 @@ class SceneApi:
             flat_shading: Whether to do flat shading.
             side: Side of the surface to render ('front', 'back', 'double').
             cast_shadow: Whether this icosphere should cast shadows.
-            receive_shadow: Whether this icosphere should receive shadows.
+            receive_shadow: Whether this icosphere should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this icosphere is initially visible.
@@ -2041,7 +2111,7 @@ class SceneApi:
         format: Literal["auto", "png", "jpeg"] = "auto",
         jpeg_quality: int | None = None,
         cast_shadow: bool = True,
-        receive_shadow: bool = True,
+        receive_shadow: bool | float = True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -2057,7 +2127,10 @@ class SceneApi:
             format: Format to transport and display the image using. 'auto' will use PNG for RGBA images and JPEG for RGB.
             jpeg_quality: Quality of the jpeg image (if jpeg format is used).
             cast_shadow: Whether this image should cast shadows.
-            receive_shadow: Whether this image should receive shadows.
+            receive_shadow: Whether this image should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this image is initially visible.

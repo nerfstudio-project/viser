@@ -1,7 +1,7 @@
 Viser
 =====
 
-|pyright| |nbsp| |typescript| |nbsp| |versions|
+|pyright| |nbsp| |typescript| |nbsp| |versions| |discord|
 
 Viser is a 3D visualization library for computer vision and robotics in Python.
 
@@ -14,6 +14,12 @@ Features include:
 - An entirely web-based client, for easy use over SSH!
 
 The goal is to provide primitives that are (1) easy for simple visualization tasks, but (2) can be composed into more elaborate interfaces. For more about design goals, see the `technical report <https://arxiv.org/abs/2507.22885>`_.
+
+Install with:
+
+.. code-block:: bash
+
+   pip install viser
 
 Demo reel:
 
@@ -78,3 +84,6 @@ Install with: ``pip install viser[examples]``
    :target: https://pypi.org/project/viser/
 .. |nbsp| unicode:: 0xA0
    :trim:
+.. |discord| image:: https://img.shields.io/discord/1423204924518432809?logo=discord&label=discord
+   :alt: Discord icon
+   :target: https://discord.gg/pnNTkHNUwP

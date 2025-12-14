@@ -1,14 +1,17 @@
+from __future__ import annotations
+
 import functools
 import inspect
 import warnings
 from typing import Any, Callable, TypeVar
 
-import rich
-
 TCallable = TypeVar("TCallable", bound=Callable)
 
 
-def deprecated_positional_shim(func: TCallable) -> TCallable:
+def deprecated_positional_shim(
+    func: TCallable,
+    deprecated_kwargs: tuple[str, ...] = (),
+) -> TCallable:
     """Temporary shim to allow (deprecated) positional use of keyword-only
     arguments. This is for compatibility with the viser API from version
     <=0.2.23.
@@ -18,10 +21,24 @@ def deprecated_positional_shim(func: TCallable) -> TCallable:
     - If it raises a positional arguments TypeError, we catch it, raise a
       warning, convert the arguments to keyword arguments, and call the
       function again with the keyword arguments.
+
+    We also support the `deprecated_kwargs` argument, which is a list of
+    keyword arguments that are deprecated, ignored, and will be removed in the
+    future.
     """
 
     @functools.wraps(func)
     def inner(*args, **kwargs):
+        for kw in deprecated_kwargs:
+            if kw not in kwargs:
+                continue
+            kwargs.pop(kw)
+            warnings.warn(
+                f"The {kw} keyword argument is deprecated and will be removed.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+
         try:
             return func(*args, **kwargs)
         except TypeError as e:
@@ -59,6 +76,8 @@ def deprecated_positional_shim(func: TCallable) -> TCallable:
 
                     # Issue deprecation warning with specific parameter names.
                     converted_params = list(extra_kwargs.keys())
+                    import rich
+
                     rich.print(
                         f"[bold](viser)[/bold] Passing {converted_params} as positional arguments to {func.__name__} "
                         f"is deprecated. Please use keyword arguments instead: {', '.join(f'{k}={v}' for k, v in extra_kwargs.items())}",

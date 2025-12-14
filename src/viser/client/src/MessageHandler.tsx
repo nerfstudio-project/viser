@@ -86,6 +86,7 @@ function useMessageHandler() {
       if (message.type === "SkinnedMeshMessage") {
         viewerMutable.skinnedMeshState[message.name] = {
           initialized: false,
+          dirty: false,
           poses: [],
         };
 
@@ -226,12 +227,14 @@ function useMessageHandler() {
       case "SetBoneOrientationMessage": {
         const state = viewerMutable.skinnedMeshState;
         state[message.name].poses[message.bone_index].wxyz = message.wxyz;
+        state[message.name].dirty = true;
         break;
       }
       case "SetBonePositionMessage": {
         const state = viewerMutable.skinnedMeshState;
         state[message.name].poses[message.bone_index].position =
           message.position;
+        state[message.name].dirty = true;
         break;
       }
       case "SetCameraLookAtMessage": {
@@ -732,14 +735,23 @@ export function FrameSynchronizedMessageHandler() {
 
         // Apply accumulated prop updates to the zustand state.
         const currentState = viewer.useSceneTree.getState();
+        const mergedUpdates: typeof updates = {};
         for (const [k, v] of Object.entries(updates)) {
           if (!(k in currentState)) {
             console.log(`(OK) Tried to update non-existent scene node ${k}`);
             continue;
           }
-          updates[k] = { ...currentState[k], ...v };
+          mergedUpdates[k] = { ...currentState[k], ...v };
         }
-        viewer.useSceneTree.setState(updates);
+        viewer.useSceneTree.setState(mergedUpdates);
+
+        // Recompute effective visibility for nodes whose visibility changed.
+        // This needs to be done after updates are applied.
+        for (const [nodeName, nodeState] of Object.entries(updates)) {
+          if ("visibility" in nodeState) {
+            viewer.sceneTreeActions.computeEffectiveVisibility(nodeName);
+          }
+        }
       }
     },
     // We should handle messages before doing anything else!!

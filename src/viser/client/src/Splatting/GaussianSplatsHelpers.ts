@@ -8,7 +8,6 @@ import { shaderMaterial } from "@react-three/drei";
 const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   {
     numGaussians: 0,
-    focal: [1.0, 1.0],
     viewport: [640, 480],
     near: 1.0,
     far: 100.0,
@@ -18,6 +17,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     textureBuffer: null as THREE.DataTexture | null,
     textureT_camera_groups: null as THREE.DataTexture | null,
     transitionInState: 0.0,
+    projectionMatrixCustom: new THREE.Matrix4(),
   },
   `precision highp usampler2D; // Most important: ints must be 32-bit.
   precision mediump float;
@@ -35,10 +35,10 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
   // Various other uniforms...
   uniform uint numGaussians;
-  uniform vec2 focal;
   uniform vec2 viewport;
   uniform float near;
   uniform float far;
+  uniform mat4 projectionMatrixCustom;
 
   // Fade in state between [0, 1].
   uniform float transitionInState;
@@ -82,7 +82,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec4 c_cam = T_camera_group * vec4(center, 1);
     if (-c_cam.z < near || -c_cam.z > far)
       return;
-    vec4 pos2d = projectionMatrix * c_cam;
+    vec4 pos2d = projectionMatrixCustom * c_cam;
     float clip = 1.1 * pos2d.w;
     if (pos2d.x < -clip || pos2d.x > clip || pos2d.y < -clip || pos2d.y > clip)
       return;
@@ -101,6 +101,12 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     float startTime = 0.8 * float(sortedIndex) / float(numGaussians);
     float cov_scale = smoothstep(startTime, startTime + 0.2, transitionInState);
 
+    // Extract focal lengths from projection matrix
+    // In perspective projection: P[0][0] = 2*near/(right-left) = fx/width for symmetric frustum
+    // So fx = P[0][0] * viewport.x / 2.0, fy = P[1][1] * viewport.y / 2.0
+    float fx = projectionMatrixCustom[0][0] * viewport.x / 2.0;
+    float fy = projectionMatrixCustom[1][1] * viewport.y / 2.0;
+
     // Do the actual splatting.
     mat3 cov3d = mat3(
         triu01.x, triu01.y, triu23.x,
@@ -109,9 +115,9 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     );
     mat3 J = mat3(
         // Matrices are column-major.
-        focal.x / c_cam.z, 0., 0.0,
-        0., focal.y / c_cam.z, 0.0,
-        -(focal.x * c_cam.x) / (c_cam.z * c_cam.z), -(focal.y * c_cam.y) / (c_cam.z * c_cam.z), 0.
+        fx / c_cam.z, 0., 0.0,
+        0., fy / c_cam.z, 0.0,
+        -(fx * c_cam.x) / (c_cam.z * c_cam.z), -(fy * c_cam.y) / (c_cam.z * c_cam.z), 0.
     );
     mat3 A = J * mat3(T_camera_group);
     mat3 cov_proj = A * cov3d * transpose(A);
@@ -152,7 +158,6 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   `precision mediump float;
 
   uniform vec2 viewport;
-  uniform vec2 focal;
 
   in vec4 vRgba;
   in vec2 vPosition;
@@ -227,7 +232,6 @@ export function useGaussianMeshProps(
   material.textureBuffer = textureBuffer;
   material.textureT_camera_groups = textureT_camera_groups;
   material.numGaussians = numGaussians;
-  material.focal = [640, 480];
 
   return {
     geometry,

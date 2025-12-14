@@ -18,7 +18,6 @@ from pathlib import Path
 from typing import Any, Callable, Generator, NewType, TypeVar
 
 import msgspec
-import rich
 import websockets.asyncio.server
 import websockets.datastructures
 import websockets.exceptions
@@ -286,6 +285,9 @@ class WebsockServer(WebsockMessageHandler):
         assert self._stop_event is not None
         assert self._server_thread is not None
 
+        # Unregister the atexit handler to prevent double-stop.
+        atexit.unregister(self.stop)
+
         # Signal the background thread to stop.
         self._background_event_loop.call_soon_threadsafe(self._stop_event.set)
 
@@ -329,6 +331,8 @@ class WebsockServer(WebsockMessageHandler):
             client_state.message_buffer.flush()
 
     def _background_worker(self, ready_sem: threading.Semaphore) -> None:
+        import rich
+
         host = self._host
         port = self._port
         message_class = self._message_class

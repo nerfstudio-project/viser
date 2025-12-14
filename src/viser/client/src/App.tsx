@@ -6,7 +6,7 @@ import "./index.css";
 
 import { useInView } from "react-intersection-observer";
 import { Notifications } from "@mantine/notifications";
-import { Environment, PerformanceMonitor, Stats, Bvh } from "@react-three/drei";
+import { Environment, PerformanceMonitor, Stats } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import React, { useEffect, useMemo } from "react";
@@ -28,6 +28,7 @@ import { useDisclosure } from "@mantine/hooks";
 // Local imports.
 import { SynchronizedCameraControls } from "./CameraControls";
 import { SceneNodeThreeObject } from "./SceneTree";
+import { shallowArrayEqual } from "./utils/shallowArrayEqual";
 import { ViewerContext, ViewerContextContents } from "./ViewerContext";
 import ControlPanel from "./ControlPanel/ControlPanel";
 import { useGuiState } from "./ControlPanel/GuiState";
@@ -48,6 +49,7 @@ import { BrowserWarning } from "./BrowserWarning";
 import { MacWindowWrapper } from "./MacWindowWrapper";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
 import { VISER_VERSION, GITHUB_CONTRIBUTORS, Contributor } from "./VersionInfo";
+import { BatchedLabelManager } from "./BatchedLabelManager";
 
 // ======= Utility functions =======
 
@@ -487,17 +489,19 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const fixedDpr = viewer.useDevSettings((state) => state.fixedDpr);
   const sceneContents = React.useMemo(
     () => (
-      <Bvh firstHitOnly>
+      <>
         <BackgroundImage />
         <SceneContextSetter />
         {memoizedCameraControls}
         <SplatRenderContext>
           <AdaptiveDpr />
           {children}
-          <SceneNodeThreeObject name="" />
+          <BatchedLabelManager>
+            <SceneNodeThreeObject name="" />
+          </BatchedLabelManager>
         </SplatRenderContext>
         <DefaultLights />
-      </Bvh>
+      </>
     ),
     [children, memoizedCameraControls],
   );
@@ -595,6 +599,7 @@ function DefaultLights() {
   // Get world rotation directly from scene tree state.
   const worldRotation = viewer.useSceneTree(
     (state) => state[""]?.wxyz ?? [1, 0, 0, 0],
+    shallowArrayEqual,
   );
 
   // Calculate environment map.
@@ -668,18 +673,12 @@ function DefaultLights() {
   return (
     <>
       <CsmDirectionalLight
-        fade={true}
         lightIntensity={3.0}
         position={[-0.2, 1.0, -0.2]}
         cascades={3}
-        color={0xffffff}
-        maxFar={20}
-        mode="practical"
-        shadowBias={-0.0001}
         castShadow={enableDefaultLightsShadows}
       />
       <CsmDirectionalLight
-        color={0xffffff}
         lightIntensity={0.4}
         position={[0, -1, 0]}
         castShadow={false}

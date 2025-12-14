@@ -18,7 +18,7 @@ import viser.infra
 from viser._messages import Message
 
 
-def main(sync_messages: bool = True, sync_version: bool = True) -> None:
+def main(sync_messages: bool = False, sync_version: bool = False) -> None:
     messages_path = pathlib.Path(__file__).parent / pathlib.Path(
         "src/viser/client/src/WebsocketMessages.ts"
     )

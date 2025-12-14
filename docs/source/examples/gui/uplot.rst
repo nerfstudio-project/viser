@@ -64,6 +64,7 @@ Code
                            for i in range(num_lines)
                        ],
                    ),
+                   title="Real-time Sine Waves",
                    scales={
                        "x": viser.uplot.Scale(
                            time=False,
@@ -72,7 +73,7 @@ Code
                        "y": viser.uplot.Scale(range=(-1.5, 2.5)),
                    },
                    legend=viser.uplot.Legend(show=True),
-                   aspect=1.0,
+                   aspect=2.0,
                )
            )
    

@@ -18,7 +18,7 @@ export interface CameraFrustumMessage {
     _format: "jpeg" | "png";
     _image_data: Uint8Array<ArrayBuffer> | null;
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
     variant: "wireframe" | "filled";
   };
 }
@@ -33,7 +33,7 @@ export interface GlbMessage {
     glb_data: Uint8Array<ArrayBuffer>;
     scale: number;
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
   };
 }
 /** Coordinate frame message.
@@ -79,8 +79,6 @@ export interface GridMessage {
   props: {
     width: number;
     height: number;
-    width_segments: number;
-    height_segments: number;
     plane: "xz" | "xy" | "yx" | "yz" | "zx" | "zy";
     cell_color: [number, number, number];
     cell_thickness: number;
@@ -88,6 +86,10 @@ export interface GridMessage {
     section_color: [number, number, number];
     section_thickness: number;
     section_size: number;
+    infinite_grid: boolean;
+    fade_distance: number;
+    fade_strength: number;
+    fade_from: "camera" | "origin";
     shadow_opacity: number;
   };
 }
@@ -98,7 +100,23 @@ export interface GridMessage {
 export interface LabelMessage {
   type: "LabelMessage";
   name: string;
-  props: { text: string };
+  props: {
+    text: string;
+    font_size_mode: "screen" | "scene";
+    font_screen_scale: number;
+    font_scene_height: number;
+    depth_test: boolean;
+    anchor:
+      | "top-left"
+      | "top-center"
+      | "top-right"
+      | "center-left"
+      | "center-center"
+      | "center-right"
+      | "bottom-left"
+      | "bottom-center"
+      | "bottom-right";
+  };
 }
 /** Add a 3D gui element to the scene.
  *
@@ -229,7 +247,7 @@ export interface MeshMessage {
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
   };
 }
 /** Box message.
@@ -248,7 +266,7 @@ export interface BoxMessage {
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
   };
 }
 /** Icosphere message.
@@ -268,7 +286,7 @@ export interface IcosphereMessage {
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
   };
 }
 /** Skinned mesh message.
@@ -288,7 +306,7 @@ export interface SkinnedMeshMessage {
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
     bone_wxyzs: Uint8Array<ArrayBuffer>;
     bone_positions: Uint8Array<ArrayBuffer>;
     skin_indices: Uint8Array<ArrayBuffer>;
@@ -370,7 +388,7 @@ export interface ImageMessage {
     render_width: number;
     render_height: number;
     cast_shadow: boolean;
-    receive_shadow: boolean;
+    receive_shadow: boolean | number;
   };
 }
 /** Message from server->client carrying line segments information.
@@ -1103,7 +1121,8 @@ export interface ViewerCameraMessage {
 }
 /** Message for a raycast-like pointer in the scene.
  * origin is the viewing camera position, in world coordinates.
- * direction is the vector if a ray is projected from the camera through the clicked pixel,
+ * direction is the vector if a ray is projected from the camera through the
+ * clicked pixel,
  *
  *
  * (automatically generated)
@@ -1659,6 +1678,7 @@ const typeSetSceneNodeMessage = new Set([
   "BatchedAxesMessage",
   "GridMessage",
   "LabelMessage",
+  "BatchedLabelsMessage",
   "Gui3DMessage",
   "PointCloudMessage",
   "DirectionalLightMessage",

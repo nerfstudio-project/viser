@@ -28,27 +28,34 @@ function createLODs(
   // Calculate LOD settings.
   let ratios: number[] = [];
   let distances: number[] = [];
+  geometry.computeBoundingSphere();
 
   if (lod === "auto") {
     // Automatic LOD settings based on geometry complexity.
-    geometry.computeBoundingSphere();
     const boundingRadius = geometry.boundingSphere!.radius;
     const vertexCount = geometry.attributes.position.count;
+    let baseMultipliers: number[] = [];
 
     // 1. Compute LOD ratios based on vertex count.
-    if (vertexCount > 10_000) {
-      ratios = [0.2, 0.05, 0.01]; // Very complex
-    } else if (vertexCount > 2_000) {
-      ratios = [0.4, 0.1, 0.03]; // Medium complex
-    } else if (vertexCount > 500) {
-      ratios = [0.6, 0.2, 0.05]; // Light
+    if (vertexCount < 256) {
+      // Very simple meshes: skip LOD.
+      return { geometries: [], materials: [] };
+    } else if (vertexCount < 1024) {
+      // 256 ~ 1024 vertices: just make super small when far away.
+      ratios = [0.25];
+      baseMultipliers = [2];
+    } else if (vertexCount < 8192) {
+      // 1024 ~ 8192 vertices: downsample to half and quarter size.
+      ratios = [0.5, 0.25];
+      baseMultipliers = [1, 8];
     } else {
-      ratios = [0.85, 0.4, 0.1]; // Already simple
+      // Largest meshes: downsample to 8192, 2048, and 512 vertices.
+      ratios = [8192 / vertexCount, 2048 / vertexCount, 512 / vertexCount];
+      baseMultipliers = [1, 2, 8];
     }
 
     // 2. Compute LOD distances based on bounding radius.
     const sizeFactor = Math.sqrt(boundingRadius + 1e-5);
-    const baseMultipliers = [1, 2, 3]; // Distance "steps" for LOD switching.
     distances = baseMultipliers.map((m) => m * sizeFactor);
   } else {
     // Use provided custom LOD settings.
@@ -72,7 +79,7 @@ function createLODs(
       new Float32Array(lodGeometry.attributes.position.array),
       3,
       targetCount,
-      0.01, // Error tolerance.
+      0.02, // Error tolerance.
       ["LockBorder"], // Prevents triangle flipping artifacts.
     )[0];
 
@@ -152,6 +159,11 @@ export const BatchedMeshBase = React.forwardRef<
       renderer: gl,
     });
 
+    // Disable global frustum culling. Leaving this on would require calling
+    // `computeBoundingSphere()` on the full mesh whenever instances move. Note
+    // that we still benefit from per-instance culling in IM2!
+    newMesh.frustumCulled = false;
+
     // Create LODs if needed.
     let lodGeometries: THREE.BufferGeometry[] = [];
     let lodMaterials: THREE.Material[] = [];
@@ -193,7 +205,6 @@ export const BatchedMeshBase = React.forwardRef<
       }
       mesh.clearInstances();
       mesh.addInstances(instanceCount, () => {});
-      mesh.computeBVH();
     }
 
     // Create views to efficiently read float values.
@@ -218,14 +229,11 @@ export const BatchedMeshBase = React.forwardRef<
     // Update all instances.
     mesh.updateInstances((obj, index) => {
       // Calculate byte offsets for reading float values.
-      const posOffset = index * 3 * 4; // 3 floats, 4 bytes per float.
-      const wxyzOffset = index * 4 * 4; // 4 floats, 4 bytes per float.
-      const scaleOffset =
-        props.batched_scales &&
-        props.batched_scales.byteLength ===
-          (props.batched_wxyzs.byteLength / 4) * 3
-          ? index * 3 * 4 // Per-axis scaling: 3 floats, 4 bytes per float.
-          : index * 4; // Uniform scaling: 1 float, 4 bytes per float.
+      // Use modulo as a defensive check to prevent out-of-bounds reads when
+      // array lengths don't match (e.g., if batched_wxyzs has fewer elements
+      // than batched_positions).
+      const posOffset = (index * 3 * 4) % props.batched_positions.byteLength;
+      const wxyzOffset = (index * 4 * 4) % props.batched_wxyzs.byteLength;
 
       // Read position values.
       tempPosition.set(
@@ -243,13 +251,14 @@ export const BatchedMeshBase = React.forwardRef<
       );
 
       // Read scale value if available.
-      if (scalesView) {
+      if (scalesView && props.batched_scales) {
         // Check if we have per-axis scaling (N,3) or uniform scaling (N,).
         if (
-          props.batched_scales!.byteLength ===
+          props.batched_scales.byteLength ===
           (props.batched_wxyzs.byteLength / 4) * 3
         ) {
           // Per-axis scaling: read 3 floats.
+          const scaleOffset = (index * 3 * 4) % props.batched_scales.byteLength;
           tempScale.set(
             scalesView.getFloat32(scaleOffset, true), // x scale.
             scalesView.getFloat32(scaleOffset + 4, true), // y scale.
@@ -257,6 +266,7 @@ export const BatchedMeshBase = React.forwardRef<
           );
         } else {
           // Uniform scaling: read 1 float and apply to all axes.
+          const scaleOffset = (index * 4) % props.batched_scales.byteLength;
           const scale = scalesView.getFloat32(scaleOffset, true);
           tempScale.setScalar(scale);
         }
@@ -276,31 +286,68 @@ export const BatchedMeshBase = React.forwardRef<
     mesh,
   ]);
 
-  // Update instances when colors change.
+  // Compute BVH for raycasting for clickable meshes.
+  //
+  // We could also do this always. This would speed up frustum culling, but
+  // would add overhead to every position/quaternion/scale update. Since we
+  // don't know in advance if the mesh will be static or dynamic, it seems
+  // conservative to avoid computing a BVH for now.
+  //
+  // In the future, we could consider computing the BVH only if we detect that
+  // the mesh is static (no changes for N frames). There are a lot of possible
+  // heuristics that can be written here.
+  React.useEffect(() => {
+    if (mesh === null) return;
+    if (props.clickable || mesh.instancesCount > 50000) {
+      // We'll add a small margin to reduce the effort of updating the BVH if
+      // instances need to move. This adds a small overhead to
+      // raycasting/frustum culling, but should still be dramatically faster
+      // than no BVH at all.
+      mesh.computeBVH({ margin: mesh.geometry.boundingSphere!.radius * 0.2 });
+    } else {
+      mesh.disposeBVH();
+    }
+  }, [props.clickable, mesh]);
+
+  // Update instances when colors change (broadcast case).
+  // When a single color is provided, broadcast it to all instances.
   React.useEffect(() => {
     if (mesh === null || props.batched_colors === null) return;
+    if (props.batched_colors.byteLength !== 3) return;
+
+    const color = new THREE.Color(
+      props.batched_colors[0] / 255,
+      props.batched_colors[1] / 255,
+      props.batched_colors[2] / 255,
+    );
     for (let i = 0; i < mesh.instancesCount; i++) {
-      let color;
-      if (props.batched_colors.byteLength == 3) {
-        color = new THREE.Color(
-          props.batched_colors[0] / 255,
-          props.batched_colors[1] / 255,
-          props.batched_colors[2] / 255,
-        );
-      } else if (props.batched_colors.byteLength === mesh.instancesCount * 3) {
-        color = new THREE.Color(
-          props.batched_colors[i * 3] / 255,
-          props.batched_colors[i * 3 + 1] / 255,
-          props.batched_colors[i * 3 + 2] / 255,
-        );
-      } else {
-        console.error(
-          `Invalid batched_colors length: ${
-            props.batched_colors.byteLength
-          }, expected 3 or ${mesh.instancesCount * 3}`,
-        );
-        color = new THREE.Color(1, 1, 1); // Default to white.
-      }
+      mesh.setColorAt(i, color);
+    }
+  }, [
+    props.batched_colors,
+    mesh,
+    props.batched_positions.byteLength, // Track instance count changes.
+  ]);
+
+  // Update instances when colors change (per-instance case).
+  // When per-instance colors are provided, apply them individually.
+  React.useEffect(() => {
+    if (mesh === null || props.batched_colors === null) return;
+    if (props.batched_colors.byteLength === 3) return;
+
+    if (props.batched_colors.byteLength !== mesh.instancesCount * 3) {
+      console.error(
+        `Invalid batched_colors length: ${props.batched_colors.byteLength}, expected 3 or ${mesh.instancesCount * 3}`,
+      );
+      return;
+    }
+
+    for (let i = 0; i < mesh.instancesCount; i++) {
+      const color = new THREE.Color(
+        props.batched_colors[i * 3] / 255,
+        props.batched_colors[i * 3 + 1] / 255,
+        props.batched_colors[i * 3 + 2] / 255,
+      );
       mesh.setColorAt(i, color);
     }
   }, [props.batched_colors, mesh]);

@@ -43,12 +43,15 @@ export const CameraFrustumComponent = React.forwardRef<
   y *= message.props.scale;
   z *= message.props.scale;
 
-  const hoveredRef = React.useContext(HoverableContext);
+  const hoverContext = React.useContext(HoverableContext);
   const [isHovered, setIsHovered] = React.useState(false);
 
   useFrame(() => {
-    if (hoveredRef !== null && hoveredRef.current.isHovered !== isHovered) {
-      setIsHovered(hoveredRef.current.isHovered);
+    if (
+      hoverContext !== null &&
+      hoverContext.state.current.isHovered !== isHovered
+    ) {
+      setIsHovered(hoverContext.state.current.isHovered);
     }
   });
 
@@ -158,7 +161,7 @@ export const CameraFrustumComponent = React.forwardRef<
           position={[0.0, 0.0, z * 0.999999]}
           rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
           castShadow={message.props.cast_shadow}
-          receiveShadow={message.props.receive_shadow}
+          receiveShadow={message.props.receive_shadow === true}
         >
           <planeGeometry
             attach="geometry"
