@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+<robot name="winder_robot">
+  
+  <!-- Base Link - Chassis (ground link) -->
+  <link name="winder_chassis">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="mesh/winder_chassis.stl"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="mesh/winder_chassis.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="10.0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+
+  <!-- Carriage Link -->
+  <link name="winder_carriage">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="mesh/winder_carriage.stl"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="mesh/winder_carriage.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="5.0"/>
+      <inertia ixx="0.5" ixy="0.0" ixz="0.0" iyy="0.5" iyz="0.0" izz="0.5"/>
+    </inertial>
+  </link>
+
+  <!-- Cross Carriage Link -->
+  <link name="winder_crosscarriage">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="mesh/winder_crosscarriage.stl"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="mesh/winder_crosscarriage.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="3.0"/>
+      <inertia ixx="0.3" ixy="0.0" ixz="0.0" iyy="0.3" iyz="0.0" izz="0.3"/>
+    </inertial>
+  </link>
+
+  <!-- Eyelet Link -->
+  <link name="winder_eyelet">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="mesh/winder_eyelet2.stl"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="mesh/winder_eyelet2.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.0"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+    </inertial>
+  </link>
+
+  <!-- Spindle Link -->
+  <link name="winder_spindle">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="mesh/winder_spindle2.stl"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="mesh/winder_spindle2.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.0"/>
+      <inertia ixx="0.2" ixy="0.0" ixz="0.0" iyy="0.2" iyz="0.0" izz="0.2"/>
+    </inertial>
+  </link>
+
+  <!-- Joint: Carriage (Prismatic, X-axis) -->
+  <joint name="carriage" type="prismatic">
+    <parent link="winder_chassis"/>
+    <child link="winder_carriage"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-1000" upper="1000" effort="1000" velocity="10"/>
+  </joint>
+
+  <!-- Joint: Cross Carriage (Prismatic, Z-axis) -->
+  <joint name="cross_carriage" type="prismatic">
+    <parent link="winder_carriage"/>
+    <child link="winder_crosscarriage"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-500" upper="500" effort="1000" velocity="10"/>
+  </joint>
+
+  <!-- Joint: Eye (Revolute, Z-axis, rotation center: 762.75, 1230, -799.0) -->
+  <joint name="eye" type="revolute">
+    <parent link="winder_crosscarriage"/>
+    <child link="winder_eyelet"/>
+    <origin xyz="762.75 1230.0 -799.0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14159" upper="3.14159" effort="100" velocity="5"/>
+  </joint>
+
+  <!-- Joint: Spindle (Revolute, X-axis) -->
+  <joint name="spindle" type="revolute">
+    <parent link="winder_chassis"/>
+    <child link="winder_spindle"/>
+    <origin xyz="266.7 1163.38 -285.30" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-3.14159" upper="3.14159" effort="200" velocity="10"/>
+  </joint>
+
+</robot>

@@ -244,6 +244,32 @@ class ViserUrdf:
         # Add coordinate frame for each joint.
         for joint in self._urdf.joint_map.values():
             assert isinstance(joint, yourdfpy.Joint)
+
+            # # Extract position from origin matrix
+            # if isinstance(joint.origin, np.ndarray) and joint.origin.shape == (4, 4):
+            #     position = tuple(joint.origin[:3, 3])
+            # else:
+            #     position = (
+            #         joint.origin[0][3],
+            #         joint.origin[1][3],
+            #         joint.origin[2][3],
+            #     )
+
+            # # Build hierarchical frame name
+            # frame_name = _viser_name_from_frame(
+            #     scene,
+            #     joint.child,
+            #     prefixed_root_node_name,
+            # )
+
+            # self._joint_frames.append(
+            #     self._target.scene.add_frame(
+            #         frame_name,
+            #         show_axes=True,
+            #         position=position
+            #     )
+            # )
+
             self._joint_frames.append(
                 self._target.scene.add_frame(
                     _viser_name_from_frame(
@@ -255,8 +281,26 @@ class ViserUrdf:
                 )
             )
 
+        # list of 10 colors
+        colors = [
+            (0.9, 0.1, 0.1),
+            (0.1, 0.9, 0.1),
+            (0.1, 0.1, 0.9),
+            (0.9, 0.9, 0.1),
+            (0.9, 0.1, 0.9),
+            (0.1, 0.9, 0.9),
+            (0.5, 0.5, 0.5),
+            (0.9, 0.5, 0.1),
+            (0.5, 0.1, 0.9),
+            (0.1, 0.5, 0.9),
+        ]
+
         # Add the URDF's meshes/geometry to viser.
+        index_mesh = 0
         for link_name, mesh in scene.geometry.items():
+
+            index_mesh += 1
+
             assert isinstance(mesh, trimesh.Trimesh)
             T_parent_child = self._urdf.get_transform(
                 link_name,
@@ -273,6 +317,9 @@ class ViserUrdf:
             mesh = mesh.copy()
             mesh.apply_scale(self._scale)
             mesh.apply_transform(T_parent_child)
+
+            # apply a color from a list
+            mesh.visual.vertex_colors = colors[index_mesh]
 
             if mesh_color_override is None:
                 self._meshes.append(self._target.scene.add_mesh_trimesh(name, mesh))
@@ -297,6 +344,18 @@ class ViserUrdf:
                 )
             else:
                 assert_never(mesh_color_override)
+
+            # Yvan test debug: extract feature edges, and create a polyline mesh to overlay
+            feature_edges, edge_coords = extract_feature_edges(mesh)
+
+            # Use edge_coords for line segments, with a default color and line width
+            self._target.scene.add_line_segments(
+                name + "/feature_edges",
+                points=edge_coords,
+                colors=np.array([[[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]] * len(edge_coords)),  # black lines
+                line_width=1.0,
+            )
+
         return root_frame
 
 
@@ -332,3 +391,52 @@ def _viser_name_from_frame(
     if root_node_name != "/":
         frames.append(root_node_name)
     return "/".join(frames[::-1])
+
+def calculate_dihedral_angles(mesh):
+    """
+    Manually calculate dihedral angles between adjacent faces
+    """
+    face_adjacency = mesh.face_adjacency
+    
+    if len(face_adjacency) == 0:
+        return np.array([])
+    
+    # Get face normals
+    face_normals = mesh.face_normals
+    
+    # Calculate angles between adjacent face normals
+    face_pairs = face_adjacency
+    normal_pairs = face_normals[face_pairs]
+    
+    # Dot product between normal vectors
+    dot_products = np.sum(normal_pairs[:, 0] * normal_pairs[:, 1], axis=1)
+    
+    # Clamp to avoid numerical errors
+    dot_products = np.clip(dot_products, -1.0, 1.0)
+    
+    # Calculate dihedral angles
+    dihedral_angles = np.arccos(np.abs(dot_products))
+    
+    return dihedral_angles
+
+def extract_feature_edges(mesh, angle_tolerance_deg=30):
+    """
+    Extract feature edges using manual angle calculation
+    """
+    # Calculate dihedral angles
+    dihedral_angles = calculate_dihedral_angles(mesh)
+    
+    if len(dihedral_angles) == 0:
+        return np.array([]), np.array([])
+    
+    # Convert tolerance
+    angle_threshold = np.radians(angle_tolerance_deg)
+    
+    # Find sharp edges
+    feature_mask = dihedral_angles > angle_threshold
+    
+    # Get edge coordinates
+    feature_edges = mesh.face_adjacency_edges[feature_mask]
+    edge_coords = mesh.vertices[feature_edges]
+    
+    return feature_edges, edge_coords
