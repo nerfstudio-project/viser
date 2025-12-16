@@ -7,6 +7,7 @@ import contextlib
 import dataclasses
 import gzip
 import http
+import json
 import logging
 import mimetypes
 import queue
@@ -492,6 +493,16 @@ class WebsockServer(WebsockMessageHandler):
             # Ignore websocket packets.
             if request.headers.get("Upgrade") == "websocket":
                 return None
+
+            # Health check endpoint for client preflight.
+            if request.path == "/health":
+                health_response = json.dumps({"viser_version": viser.__version__})
+                return Response(
+                    http.HTTPStatus.OK,
+                    "OK",
+                    Headers({"Content-Type": "application/json"}),
+                    health_response.encode(),
+                )
 
             # Strip out search params, get relative path.
             path = request.path

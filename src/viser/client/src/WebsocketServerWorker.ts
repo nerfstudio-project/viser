@@ -47,8 +47,55 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
     self.postMessage(data, transferable);
   };
 
-  const tryConnect = () => {
+  // Convert WebSocket URL to HTTP URL for health check.
+  const wsToHttp = (wsUrl: string): string => {
+    return wsUrl.replace(/^ws:/, "http:").replace(/^wss:/, "https:");
+  };
+
+  // Check if server is healthy and get version.
+  const checkHealth = async (
+    httpUrl: string,
+  ): Promise<{ ok: true; version: string } | { ok: false }> => {
+    try {
+      const response = await fetch(`${httpUrl}/health`);
+      if (!response.ok) return { ok: false };
+      const data = await response.json();
+      return { ok: true, version: data.viser_version };
+    } catch {
+      return { ok: false };
+    }
+  };
+
+  const tryConnect = async () => {
     if (ws !== null) ws.close();
+
+    // Preflight health check before attempting WebSocket connection.
+    const httpUrl = wsToHttp(server!);
+    const health = await checkHealth(httpUrl);
+
+    if (!health.ok) {
+      // Server is not available, retry health check after delay.
+      if (server !== null) {
+        requestAnimationFrame(() => {
+          setTimeout(tryConnect, 1000);
+        });
+      }
+      return;
+    }
+
+    if (health.version !== VISER_VERSION) {
+      // Version mismatch - notify and stop reconnecting.
+      console.warn(
+        `Version mismatch detected. Client: ${VISER_VERSION}, Server: ${health.version}`,
+      );
+      postOutgoing({
+        type: "closed",
+        versionMismatch: true,
+        clientVersion: VISER_VERSION,
+        closeReason: `Version mismatch. Client: ${VISER_VERSION}, Server: ${health.version}`,
+      });
+      return;
+    }
 
     // Use a single protocol that includes both client identification and version.
     const protocol = `viser-v${VISER_VERSION}`;
