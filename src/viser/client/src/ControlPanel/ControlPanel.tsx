@@ -24,6 +24,7 @@ import {
 } from "@mantine/core";
 import {
   IconAdjustments,
+  IconPlayerPause,
   IconCloudCheck,
   IconArrowBack,
   IconShare,
@@ -161,13 +162,13 @@ export default function ControlPanel(props: {
 /* Icon and label telling us the current status of the websocket connection. */
 function ConnectionStatus() {
   const { useGui } = React.useContext(ViewerContext)!;
-  const connected = useGui((state) => state.websocketConnected);
+  const websocketState = useGui((state) => state.websocketState);
   const label = useGui((state) => state.label);
 
   return (
     <>
       <div style={{ width: "1.1em" }} /> {/* Spacer. */}
-      <Transition transition="skew-down" mounted={connected}>
+      <Transition transition="skew-down" mounted={websocketState === "connected"}>
         {(styles) => (
           <IconCloudCheck
             color={"#0b0"}
@@ -180,7 +181,7 @@ function ConnectionStatus() {
           />
         )}
       </Transition>
-      <Transition transition="skew-down" mounted={!connected}>
+      <Transition transition="skew-down" mounted={websocketState === "reconnecting"}>
         {(styles) => (
           <Loader
             size="xs"
@@ -190,8 +191,27 @@ function ConnectionStatus() {
           />
         )}
       </Transition>
+      <Transition transition="skew-down" mounted={websocketState === "inactive"}>
+        {(styles) => (
+          <IconPlayerPause
+            color={"var(--mantine-color-red-filled)"}
+            style={{
+              position: "absolute",
+              width: "1.25em",
+              height: "1.25em",
+              ...styles,
+            }}
+          />
+        )}
+      </Transition>
       <Box px="xs" style={{ flexGrow: 1, letterSpacing: "-0.5px" }} pt="0.1em">
-        {label !== "" ? label : connected ? "Connected" : "Connecting..."}
+        {label !== ""
+          ? label
+          : websocketState === "connected"
+            ? "Connected"
+            : websocketState === "reconnecting"
+              ? "Connecting..."
+              : "Inactive"}
       </Box>
     </>
   );
@@ -199,8 +219,10 @@ function ConnectionStatus() {
 
 function ShareButton() {
   const viewer = React.useContext(ViewerContext)!;
-  const viewerMutable = viewer.mutable.current; // Get mutable once
-  const connected = viewer.useGui((state) => state.websocketConnected);
+  const viewerMutable = viewer.mutable.current; // Get mutable once.
+  const connected = viewer.useGui(
+    (state) => state.websocketState === "connected",
+  );
   const shareUrl = viewer.useGui((state) => state.shareUrl);
   const setShareUrl = viewer.useGui((state) => state.setShareUrl);
 
