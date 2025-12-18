@@ -35,11 +35,11 @@ export function WebsocketMessageProducer() {
       }
 
       if (shouldRetry && retryIntervalId === null) {
-        // Retry immediately, then every 2 seconds.
+        // Retry immediately, then every second.
         postToWorker({ type: "retry" });
         retryIntervalId = setInterval(() => {
           postToWorker({ type: "retry" });
-        }, 2000);
+        }, 1000);
       } else if (!shouldRetry && retryIntervalId !== null) {
         clearInterval(retryIntervalId);
         retryIntervalId = null;
