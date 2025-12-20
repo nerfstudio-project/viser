@@ -1357,6 +1357,59 @@ origin sphere.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GaussianSplatHandle</span></span><a class="reference internal" href="../../../_modules/viser/_scene_handles/#GaussianSplatHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GaussianSplatHandle" title="Link to this definition">¶</a></dt>
 <dd><p>Handle for Gaussian splatting objects.</p>
 <p><strong>Work-in-progress.</strong> Gaussian rendering is still under development.</p>
+<dl class="simple">
+<dt>Buffer layout per Gaussian (8 uint32 elements = 32 bytes):</dt><dd><ul class="simple">
+<li><p>[0:3]: centers (3x float32)</p></li>
+<li><p>[3]: reserved for renderer</p></li>
+<li><p>[4:7]: covariance upper-triangular (6x float16)</p></li>
+<li><p>[7]: RGBA (4x uint8)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GaussianSplatHandle.centers">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">centers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float32</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.GaussianSplatHandle.centers" title="Link to this definition">¶</a></dt>
+<dd><p>(N, 3). Synchronized automatically when assigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Centers of the Gaussians. Shape</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GaussianSplatHandle.rgbs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rgbs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">uint8</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.GaussianSplatHandle.rgbs" title="Link to this definition">¶</a></dt>
+<dd><p>(N, 3). Values in [0, 1]. Synchronized automatically when assigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Colors of the Gaussians. Shape</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GaussianSplatHandle.opacities">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">opacities</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">uint8</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.GaussianSplatHandle.opacities" title="Link to this definition">¶</a></dt>
+<dd><p>(N, 1). Values in [0, 1]. Synchronized automatically when assigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Opacities of the Gaussians. Shape</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GaussianSplatHandle.covariances">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">covariances</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float32</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.GaussianSplatHandle.covariances" title="Link to this definition">¶</a></dt>
+<dd><p>(N, 3, 3). Synchronized automatically when assigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Covariances of the Gaussians. Shape</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.GaussianSplatHandle.name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#viser.GaussianSplatHandle.name" title="Link to this definition">¶</a></dt>
@@ -1938,12 +1991,6 @@ opacity regardless of lighting conditions.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ImageHandle</span></span><a class="reference internal" href="../../../_modules/viser/_scene_handles/#ImageHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ImageHandle" title="Link to this definition">¶</a></dt>
 <dd><p>Handle for 2D images, rendered in 3D.</p>
 <dl class="py property">
-<dt class="sig sig-object py" id="viser.ImageHandle.image">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">image</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#viser.ImageHandle.image" title="Link to this definition">¶</a></dt>
-<dd><p>Current content of the image. Synchronized automatically when assigned.</p>
-</dd></dl>
-
-<dl class="py property">
 <dt class="sig sig-object py" id="viser.ImageHandle.name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#viser.ImageHandle.name" title="Link to this definition">¶</a></dt>
 <dd><p>Read-only name of the scene node.</p>
@@ -2039,6 +2086,12 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 <dd><p>Whether to receive shadows. If True, receives shadows normally. If
 False, no shadows. If a float (0-1), shadows are rendered with a fixed
 opacity regardless of lighting conditions.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.ImageHandle.image">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">image</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#viser.ImageHandle.image" title="Link to this definition">¶</a></dt>
+<dd><p>Current content of the image. Synchronized automatically when assigned.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -3463,6 +3516,10 @@ other objects.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GaussianSplatHandle"><code class="docutils literal notranslate"><span class="pre">GaussianSplatHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.GaussianSplatHandle.centers"><code class="docutils literal notranslate"><span class="pre">GaussianSplatHandle.centers</span></code></a></li>
+<li><a class="reference internal" href="#viser.GaussianSplatHandle.rgbs"><code class="docutils literal notranslate"><span class="pre">GaussianSplatHandle.rgbs</span></code></a></li>
+<li><a class="reference internal" href="#viser.GaussianSplatHandle.opacities"><code class="docutils literal notranslate"><span class="pre">GaussianSplatHandle.opacities</span></code></a></li>
+<li><a class="reference internal" href="#viser.GaussianSplatHandle.covariances"><code class="docutils literal notranslate"><span class="pre">GaussianSplatHandle.covariances</span></code></a></li>
 <li><a class="reference internal" href="#viser.GaussianSplatHandle.name"><code class="docutils literal notranslate"><span class="pre">GaussianSplatHandle.name</span></code></a></li>
 <li><a class="reference internal" href="#viser.GaussianSplatHandle.on_click"><code class="docutils literal notranslate"><span class="pre">GaussianSplatHandle.on_click()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GaussianSplatHandle.position"><code class="docutils literal notranslate"><span class="pre">GaussianSplatHandle.position</span></code></a></li>
@@ -3551,7 +3608,6 @@ other objects.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.ImageHandle"><code class="docutils literal notranslate"><span class="pre">ImageHandle</span></code></a><ul>
-<li><a class="reference internal" href="#viser.ImageHandle.image"><code class="docutils literal notranslate"><span class="pre">ImageHandle.image</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.name"><code class="docutils literal notranslate"><span class="pre">ImageHandle.name</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.on_click"><code class="docutils literal notranslate"><span class="pre">ImageHandle.on_click()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.position"><code class="docutils literal notranslate"><span class="pre">ImageHandle.position</span></code></a></li>
@@ -3563,6 +3619,7 @@ other objects.</p>
 <li><a class="reference internal" href="#viser.ImageHandle.render_height"><code class="docutils literal notranslate"><span class="pre">ImageHandle.render_height</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">ImageHandle.cast_shadow</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">ImageHandle.receive_shadow</span></code></a></li>
+<li><a class="reference internal" href="#viser.ImageHandle.image"><code class="docutils literal notranslate"><span class="pre">ImageHandle.image</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.format"><code class="docutils literal notranslate"><span class="pre">ImageHandle.format</span></code></a></li>
 </ul>
 </li>
