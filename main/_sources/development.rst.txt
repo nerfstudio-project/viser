@@ -7,42 +7,40 @@ development. We assume that the repository is cloned to ``~/viser``.
 Python install
 --------------
 
-We recommend an editable install for Python development, ideally in a virtual
-environment (eg via conda).
+We recommend using `uv <https://docs.astral.sh/uv/>`_ for Python development.
 
 .. code-block:: bash
 
-   # Install package.
+   # Install uv (if not already installed).
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+
+   # Run any example directly (uv handles dependencies automatically).
    cd ~/viser
-   pip install -e .
+   uv run --extra examples python examples/00_getting_started/00_hello_world.py
 
-   # Install example dependencies.
-   pip install -e .[examples]
+Linting, formatting, type-checking
+----------------------------------
 
-After installation, any of the example scripts (``~/viser/examples``) should be
-runnable. A few of them require downloading assets, which can be done via the
-scripts in ``~/viser/examples/assets``.
-
-**Linting, formatting, type-checking.**
-
-First, install developer tools:
-
-.. code-block:: bash
-
-   # Using pip.
-   pip install -e .[dev]
-   pre-commit install
-
-For code quality, rely primarily on ``pyright`` and ``ruff``:
+For code quality, we use ``pyright`` for type checking and ``ruff`` for linting
+and formatting.
 
 .. code-block:: bash
 
    # Check static types.
-   pyright
+   uv run --extra dev pyright
 
-   # Lint and format.
-   ruff check --fix .
-   ruff format .
+   # Lint and auto-fix issues.
+   uvx ruff check --fix
+
+   # Format code.
+   uvx ruff format
+
+Running tests
+-------------
+
+.. code-block:: bash
+
+   uv run --extra dev pytest
 
 Client-Server Synchronization
 -----------------------------
@@ -79,7 +77,7 @@ use the ``sync_client_server.py`` script:
 .. code-block:: bash
 
    cd ~/viser
-   python sync_client_server.py --sync-messages --sync-version
+   uv run python sync_client_server.py --sync-messages --sync-version
 
 This script:
 
@@ -101,7 +99,7 @@ examples are a good place to start:
 .. code-block:: bash
 
    cd ~/viser/examples
-   python 05_camera_commands.py
+   uv run python 05_camera_commands.py
 
 When a ``viser`` script is launched, two URLs will be printed:
 
