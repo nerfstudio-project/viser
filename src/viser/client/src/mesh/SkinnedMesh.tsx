@@ -222,6 +222,7 @@ export const SkinnedMesh = React.forwardRef<
       geometry={geometry}
       material={material}
       skeleton={skeleton}
+      scale={message.props.scale}
       castShadow={message.props.cast_shadow}
       receiveShadow={message.props.receive_shadow === true}
       frustumCulled={false}
