@@ -14,7 +14,7 @@ interface GuiState {
   label: string;
   server: string;
   shareUrl: string | null;
-  websocketConnected: boolean;
+  websocketState: "connected" | "reconnecting" | "inactive";
   backgroundAvailable: boolean;
   showOrbitOriginTool: boolean;
   guiUuidSetFromContainerUuid: {
@@ -66,7 +66,7 @@ const cleanGuiState: GuiState = {
   label: "",
   server: "ws://localhost:8080", // Currently this will always be overridden.
   shareUrl: null,
-  websocketConnected: false,
+  websocketState: "inactive",
   backgroundAvailable: false,
   showOrbitOriginTool: false,
   guiUuidSetFromContainerUuid: { root: {} },
