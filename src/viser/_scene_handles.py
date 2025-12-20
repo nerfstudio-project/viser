@@ -508,7 +508,121 @@ class GaussianSplatHandle(
     """Handle for Gaussian splatting objects.
 
     **Work-in-progress.** Gaussian rendering is still under development.
+
+    Buffer layout per Gaussian (8 uint32 elements = 32 bytes):
+        - [0:3]: centers (3x float32)
+        - [3]: reserved for renderer
+        - [4:7]: covariance upper-triangular (6x float16)
+        - [7]: RGBA (4x uint8)
     """
+
+    def _ensure_buffer_size(self, num_gaussians: int) -> None:
+        """Ensure the internal buffer can hold the specified number of Gaussians.
+
+        If the buffer is already the correct size, this is a no-op. Otherwise,
+        a new buffer is allocated with default values (white color, full opacity,
+        small identity-like covariances, centers at origin).
+        """
+        if self.buffer.shape[0] == num_gaussians:
+            return
+
+        # Create new buffer with default values.
+        new_buffer = np.zeros((num_gaussians, 8), dtype=np.uint32)
+
+        # Set default RGBA to white, fully opaque (255, 255, 255, 255).
+        new_buffer[:, 7] = 0xFFFFFFFF
+
+        # Set default covariances to small identity-like values.
+        # Store as 6 float16 values: [cov00, cov01, cov02, cov11, cov12, cov22].
+        default_cov = np.array([0.01, 0.0, 0.0, 0.01, 0.0, 0.01], dtype=np.float16)
+        new_buffer[:, 4:7] = np.tile(default_cov.view(np.uint32), (num_gaussians, 1))
+
+        self.buffer = new_buffer
+
+    @property
+    def centers(self) -> npt.NDArray[np.float32]:
+        """Centers of the Gaussians. Shape: (N, 3). Synchronized automatically when assigned."""
+        return self.buffer[:, 0:3].view(np.float32)
+
+    @centers.setter
+    def centers(self, centers: np.ndarray) -> None:
+        assert centers.ndim == 2 and centers.shape[1] == 3, (
+            f"centers must have shape (N, 3), got {centers.shape}"
+        )
+        self._ensure_buffer_size(centers.shape[0])
+        self.buffer[:, 0:3] = centers.astype(np.float32).view(np.uint32)
+        self._queue_update("buffer", self.buffer)
+
+    @property
+    def rgbs(self) -> npt.NDArray[np.uint8]:
+        """Colors of the Gaussians. Shape: (N, 3). Values in [0, 1]. Synchronized automatically when assigned."""
+        rgba = self.buffer[:, 7:8].view(np.uint8).reshape(-1, 4)
+        return rgba[:, :3]
+
+    @rgbs.setter
+    def rgbs(self, rgbs: np.ndarray) -> None:
+        from ._assignable_props_api import colors_to_uint8
+
+        assert rgbs.ndim == 2 and rgbs.shape[1] == 3, (
+            f"rgbs must have shape (N, 3), got {rgbs.shape}"
+        )
+        self._ensure_buffer_size(rgbs.shape[0])
+        rgba = self.buffer[:, 7:8].view(np.uint8).reshape(-1, 4)
+        rgba[:, :3] = colors_to_uint8(rgbs)
+        self.buffer[:, 7:8] = rgba.view(np.uint32)
+        self._queue_update("buffer", self.buffer)
+
+    @property
+    def opacities(self) -> npt.NDArray[np.uint8]:
+        """Opacities of the Gaussians. Shape: (N, 1). Values in [0, 1]. Synchronized automatically when assigned."""
+        buffer = self.buffer
+        rgba = buffer[:, 7:8].view(np.uint8).reshape(-1, 4)
+        return rgba[:, 3:4]
+
+    @opacities.setter
+    def opacities(self, opacities: np.ndarray) -> None:
+        from ._assignable_props_api import colors_to_uint8
+
+        assert opacities.ndim == 2 and opacities.shape[1] == 1, (
+            f"opacities must have shape (N, 1), got {opacities.shape}"
+        )
+        self._ensure_buffer_size(opacities.shape[0])
+        rgba = self.buffer[:, 7:8].view(np.uint8).reshape(-1, 4)
+        rgba[:, 3:4] = colors_to_uint8(opacities)
+        self.buffer[:, 7:8] = rgba.view(np.uint32)
+        self._queue_update("buffer", self.buffer)
+
+    @property
+    def covariances(self) -> npt.NDArray[np.float32]:
+        """Covariances of the Gaussians. Shape: (N, 3, 3). Synchronized automatically when assigned."""
+        # Extract upper-triangular terms stored as 6 float16 values.
+        cov_triu_f16 = self.buffer[:, 4:7].view(np.float16).reshape(-1, 6)
+        cov_triu = cov_triu_f16.astype(np.float32)
+        # Reconstruct symmetric 3x3 matrix.
+        n = cov_triu.shape[0]
+        cov = np.zeros((n, 3, 3), dtype=np.float32)
+        cov[:, 0, 0] = cov_triu[:, 0]
+        cov[:, 0, 1] = cov_triu[:, 1]
+        cov[:, 0, 2] = cov_triu[:, 2]
+        cov[:, 1, 0] = cov_triu[:, 1]  # Symmetric.
+        cov[:, 1, 1] = cov_triu[:, 3]
+        cov[:, 1, 2] = cov_triu[:, 4]
+        cov[:, 2, 0] = cov_triu[:, 2]  # Symmetric.
+        cov[:, 2, 1] = cov_triu[:, 4]  # Symmetric.
+        cov[:, 2, 2] = cov_triu[:, 5]
+        return cov
+
+    @covariances.setter
+    def covariances(self, covariances: np.ndarray) -> None:
+        assert covariances.ndim == 3 and covariances.shape[1:] == (3, 3), (
+            f"covariances must have shape (N, 3, 3), got {covariances.shape}"
+        )
+        self._ensure_buffer_size(covariances.shape[0])
+        # Extract upper-triangular terms: indices [0,1,2,4,5,8] from flattened 3x3.
+        cov_triu = covariances.reshape((-1, 9))[:, np.array([0, 1, 2, 4, 5, 8])]
+        cov_triu_f16 = cov_triu.astype(np.float16)
+        self.buffer[:, 4:7] = np.ascontiguousarray(cov_triu_f16).view(np.uint32)
+        self._queue_update("buffer", self.buffer)
 
 
 class MeshSkinnedHandle(

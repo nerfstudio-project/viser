@@ -40,6 +40,18 @@ LiteralColor = Literal[
 
 TagLiteral = Literal["GuiComponentMessage", "SceneNodeMessage"]
 
+LabelAnchor = Literal[
+    "top-left",
+    "top-center",
+    "top-right",
+    "center-left",
+    "center-center",
+    "center-right",
+    "bottom-left",
+    "bottom-center",
+    "bottom-right",
+]
+
 
 class Message(infra.Message):
     _tags: ClassVar[Tuple[TagLiteral, ...]] = tuple()
@@ -269,8 +281,9 @@ class GlbMessage(_CreateSceneNodeMessage):
 class GlbProps:
     glb_data: bytes
     """A binary payload containing the GLB data. """
-    scale: float
-    """A scale for resizing the GLB asset."""
+    scale: Union[float, Tuple[float, float, float]]
+    """Scale for resizing the GLB asset. A single float for uniform scaling or
+    a tuple of (x, y, z) for per-axis scaling."""
     cast_shadow: bool
     """Whether or not to cast shadows."""
     receive_shadow: Union[bool, float]
@@ -381,6 +394,16 @@ class LabelMessage(_CreateSceneNodeMessage):
 class LabelProps:
     text: str
     """Text content of the label."""
+    font_size_mode: Literal["screen", "scene"]
+    """Font size mode: 'screen' for screen-space sizing, 'scene' for world-space sizing."""
+    font_screen_scale: float
+    """Scale factor for screen-space font size. Only used when font_size_mode='screen'."""
+    font_scene_height: float
+    """Font height in scene units. Only used when font_size_mode='scene'."""
+    depth_test: bool
+    """Whether to enable depth testing for the label."""
+    anchor: LabelAnchor
+    """Anchor position of the label relative to its position."""
 
 
 @dataclasses.dataclass
@@ -638,6 +661,9 @@ class MeshProps:
     """Side of the surface to render."""
     material: Literal["standard", "toon3", "toon5"]
     """Material type of the mesh."""
+    scale: Union[float, Tuple[float, float, float]]
+    """Scale of the mesh. A single float for uniform scaling or a tuple of
+    (x, y, z) for per-axis scaling."""
     cast_shadow: bool
     """Whether or not to cast shadows."""
     receive_shadow: Union[bool, float]

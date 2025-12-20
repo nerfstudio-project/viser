@@ -1,10 +1,10 @@
-import WebsocketServerWorker from "./WebsocketServerWorker?worker";
+import WebsocketClientWorker from "./WebsocketClientWorker?worker";
 import React, { useContext } from "react";
 import { notifications } from "@mantine/notifications";
 
 import { ViewerContext } from "./ViewerContext";
 import { syncSearchParamServer } from "./SearchParamsUtils";
-import { WsWorkerIncoming, WsWorkerOutgoing } from "./WebsocketServerWorker";
+import { WsWorkerIncoming, WsWorkerOutgoing } from "./WebsocketClientWorker";
 
 /** Component for handling websocket connections. */
 export function WebsocketMessageProducer() {
@@ -17,20 +17,54 @@ export function WebsocketMessageProducer() {
   syncSearchParamServer(server);
 
   React.useEffect(() => {
-    const worker = new WebsocketServerWorker();
+    const worker = new WebsocketClientWorker();
+    let isConnected = false;
+    let retryIntervalId: ReturnType<typeof setInterval> | null = null;
+
+    function postToWorker(data: WsWorkerIncoming) {
+      worker.postMessage(data);
+    }
+
+    // Start or stop the retry interval based on connection state and page focus.
+    function updateRetryInterval() {
+      const shouldRetry = !isConnected && document.hasFocus();
+      if (!isConnected) {
+        viewer.useGui.setState({
+          websocketState: shouldRetry ? "reconnecting" : "inactive",
+        });
+      }
+
+      if (shouldRetry && retryIntervalId === null) {
+        // Retry immediately, then every second.
+        postToWorker({ type: "retry" });
+        retryIntervalId = setInterval(() => {
+          postToWorker({ type: "retry" });
+        }, 1000);
+      } else if (!shouldRetry && retryIntervalId !== null) {
+        clearInterval(retryIntervalId);
+        retryIntervalId = null;
+      }
+    }
+
+    // Listen for focus changes.
+    window.addEventListener("focus", updateRetryInterval);
+    window.addEventListener("blur", updateRetryInterval);
 
     worker.onmessage = (event) => {
       const data: WsWorkerOutgoing = event.data;
       if (data.type === "connected") {
+        isConnected = true;
         resetGui();
         resetScene();
-        viewer.useGui.setState({ websocketConnected: true });
+        viewer.useGui.setState({ websocketState: "connected" });
+        updateRetryInterval();
         viewerMutable.sendMessage = (message) => {
-          postToWorker({ type: "send", message: message });
+          postToWorker({ type: "send", message });
         };
       } else if (data.type === "closed") {
+        isConnected = false;
         resetGui();
-        viewer.useGui.setState({ websocketConnected: false });
+        updateRetryInterval();
         viewerMutable.sendMessage = (message) => {
           console.log(
             `Tried to send ${message.type} but websocket is not connected!`,
@@ -52,17 +86,19 @@ export function WebsocketMessageProducer() {
         viewerMutable.messageQueue.push(...data.messages);
       }
     };
-    function postToWorker(data: WsWorkerIncoming) {
-      worker.postMessage(data);
-    }
-    postToWorker({ type: "set_server", server: server });
+    postToWorker({ type: "set_server", server });
     return () => {
+      window.removeEventListener("focus", updateRetryInterval);
+      window.removeEventListener("blur", updateRetryInterval);
+      if (retryIntervalId !== null) {
+        clearInterval(retryIntervalId);
+      }
       postToWorker({ type: "close" });
       viewerMutable.sendMessage = (message) =>
         console.log(
           `Tried to send ${message.type} but websocket is not connected!`,
         );
-      viewer.useGui.setState({ websocketConnected: false });
+      viewer.useGui.setState({ websocketState: "inactive" });
     };
   }, [server, resetGui, resetScene]);
 

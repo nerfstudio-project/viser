@@ -15,6 +15,12 @@ Features include:
 
 The goal is to provide primitives that are (1) easy for simple visualization tasks, but (2) can be composed into more elaborate interfaces. For more about design goals, see the `technical report <https://arxiv.org/abs/2507.22885>`_.
 
+Install with:
+
+.. code-block:: bash
+
+   pip install viser
+
 Demo reel:
 
 .. raw:: html

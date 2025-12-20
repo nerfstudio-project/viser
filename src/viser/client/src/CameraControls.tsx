@@ -407,7 +407,9 @@ export function SynchronizedCameraControls() {
 
   // Send camera for new connections.
   // We add a small delay to give the server time to add a callback.
-  const connected = viewer.useGui((state) => state.websocketConnected);
+  const connected = viewer.useGui(
+    (state) => state.websocketState === "connected",
+  );
   const initialCameraPositionSet = React.useRef(false);
   React.useEffect(() => {
     if (!initialCameraPositionSet.current) {

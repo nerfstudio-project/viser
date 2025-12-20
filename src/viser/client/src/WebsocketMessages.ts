@@ -31,7 +31,7 @@ export interface GlbMessage {
   name: string;
   props: {
     glb_data: Uint8Array<ArrayBuffer>;
-    scale: number;
+    scale: number | [number, number, number];
     cast_shadow: boolean;
     receive_shadow: boolean | number;
   };
@@ -100,7 +100,23 @@ export interface GridMessage {
 export interface LabelMessage {
   type: "LabelMessage";
   name: string;
-  props: { text: string };
+  props: {
+    text: string;
+    font_size_mode: "screen" | "scene";
+    font_screen_scale: number;
+    font_scene_height: number;
+    depth_test: boolean;
+    anchor:
+      | "top-left"
+      | "top-center"
+      | "top-right"
+      | "center-left"
+      | "center-center"
+      | "center-right"
+      | "bottom-left"
+      | "bottom-center"
+      | "bottom-right";
+  };
 }
 /** Add a 3D gui element to the scene.
  *
@@ -230,6 +246,7 @@ export interface MeshMessage {
     flat_shading: boolean;
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
+    scale: number | [number, number, number];
     cast_shadow: boolean;
     receive_shadow: boolean | number;
   };
@@ -289,6 +306,7 @@ export interface SkinnedMeshMessage {
     flat_shading: boolean;
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
+    scale: number | [number, number, number];
     cast_shadow: boolean;
     receive_shadow: boolean | number;
     bone_wxyzs: Uint8Array<ArrayBuffer>;
