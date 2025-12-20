@@ -792,6 +792,7 @@ export interface GuiButtonMessage {
       | [number, number, number]
       | null;
     _icon_html: string | null;
+    _hold_callback_freqs: number[];
   };
 }
 /** GuiUploadButtonMessage(uuid: 'str', container_uuid: 'str', props: 'GuiUploadButtonProps')
@@ -1364,6 +1365,17 @@ export interface GuiCloseModalMessage {
   type: "GuiCloseModalMessage";
   uuid: string;
 }
+/** Message sent from client->server when a button is being held.
+ *
+ * Sent periodically at the specified frequency while the button is pressed.
+ *
+ * (automatically generated)
+ */
+export interface GuiButtonHoldMessage {
+  type: "GuiButtonHoldMessage";
+  uuid: string;
+  frequency: number;
+}
 /** Sent client<->server when any property of a GUI component is changed.
  *
  * (automatically generated)
@@ -1609,6 +1621,7 @@ export type Message =
   | ResetGuiMessage
   | GuiModalMessage
   | GuiCloseModalMessage
+  | GuiButtonHoldMessage
   | GuiUpdateMessage
   | SceneNodeUpdateMessage
   | ThemeConfigurationMessage
@@ -1678,7 +1691,6 @@ const typeSetSceneNodeMessage = new Set([
   "BatchedAxesMessage",
   "GridMessage",
   "LabelMessage",
-  "BatchedLabelsMessage",
   "Gui3DMessage",
   "PointCloudMessage",
   "DirectionalLightMessage",

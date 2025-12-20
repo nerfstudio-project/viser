@@ -15,6 +15,7 @@ This example demonstrates the full range of GUI controls available in viser, inc
 **Interactive Elements:**
 
 * :meth:`viser.GuiApi.add_button` with custom icons from :class:`viser.Icon`
+* :meth:`viser.GuiButtonHandle.on_hold` for continuous actions while a button is held
 * :meth:`viser.GuiApi.add_checkbox` for boolean toggles
 * :meth:`viser.GuiApi.add_multi_slider` for multi-handle range controls
 * :meth:`viser.GuiApi.add_upload_button` for file uploads
@@ -65,6 +66,25 @@ def main() -> None:
             initial_value=(1.0, 1.0, 1.0),
             step=0.25,
         )
+
+        # Buttons with on_hold for continuous size adjustment while held.
+        gui_grow = server.gui.add_button("Grow (hold)", icon=viser.Icon.PLUS)
+        gui_shrink = server.gui.add_button("Shrink (hold)", icon=viser.Icon.MINUS)
+
+        @gui_grow.on_hold(callback_hz=10.0)
+        def _(_: viser.GuiEvent[viser.GuiButtonHandle]) -> None:
+            x, y, z = gui_vector3.value
+            gui_vector3.value = (x + 0.05, y + 0.05, z + 0.05)
+
+        @gui_shrink.on_hold(callback_hz=10.0)
+        def _(_: viser.GuiEvent[viser.GuiButtonHandle]) -> None:
+            x, y, z = gui_vector3.value
+            gui_vector3.value = (
+                max(0.1, x - 0.05),
+                max(0.1, y - 0.05),
+                max(0.1, z - 0.05),
+            )
+
         with server.gui.add_folder("Text toggle"):
             gui_checkbox_hide = server.gui.add_checkbox(
                 "Hide",
