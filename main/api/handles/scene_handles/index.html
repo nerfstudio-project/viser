@@ -1583,8 +1583,9 @@ in <cite>p_parent = [R | t] p_local</cite>. Synchronized to clients automaticall
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GlbHandle.scale">
-<span class="sig-name descname"><span class="pre">scale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><a class="headerlink" href="#viser.GlbHandle.scale" title="Link to this definition">¶</a></dt>
-<dd><p>A scale for resizing the GLB asset.</p>
+<span class="sig-name descname"><span class="pre">scale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.GlbHandle.scale" title="Link to this definition">¶</a></dt>
+<dd><p>Scale for resizing the GLB asset. A single float for uniform scaling or
+a tuple of (x, y, z) for per-axis scaling.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2374,6 +2375,13 @@ vertices. Should have shape (F, 3).</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="viser.MeshHandle.scale">
+<span class="sig-name descname"><span class="pre">scale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshHandle.scale" title="Link to this definition">¶</a></dt>
+<dd><p>Scale of the mesh. A single float for uniform scaling or a tuple of
+(x, y, z) for per-axis scaling.</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="viser.MeshHandle.cast_shadow">
 <span class="sig-name descname"><span class="pre">cast_shadow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><a class="headerlink" href="#viser.MeshHandle.cast_shadow" title="Link to this definition">¶</a></dt>
 <dd><p>Whether or not to cast shadows.</p>
@@ -2570,6 +2578,13 @@ vertices. Should have shape (F, 3).</p>
 <dt class="sig sig-object py" id="viser.MeshSkinnedHandle.material">
 <span class="sig-name descname"><span class="pre">material</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'standard'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon3'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'toon5'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.material" title="Link to this definition">¶</a></dt>
 <dd><p>Material type of the mesh.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.MeshSkinnedHandle.scale">
+<span class="sig-name descname"><span class="pre">scale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.MeshSkinnedHandle.scale" title="Link to this definition">¶</a></dt>
+<dd><p>Scale of the mesh. A single float for uniform scaling or a tuple of
+(x, y, z) for per-axis scaling.</p>
 </dd></dl>
 
 </dd></dl>
@@ -3664,6 +3679,7 @@ other objects.</p>
 <li><a class="reference internal" href="#viser.MeshHandle.flat_shading"><code class="docutils literal notranslate"><span class="pre">MeshHandle.flat_shading</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshHandle.side"><code class="docutils literal notranslate"><span class="pre">MeshHandle.side</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshHandle.material"><code class="docutils literal notranslate"><span class="pre">MeshHandle.material</span></code></a></li>
+<li><a class="reference internal" href="#viser.MeshHandle.scale"><code class="docutils literal notranslate"><span class="pre">MeshHandle.scale</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshHandle.cast_shadow"><code class="docutils literal notranslate"><span class="pre">MeshHandle.cast_shadow</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshHandle.receive_shadow"><code class="docutils literal notranslate"><span class="pre">MeshHandle.receive_shadow</span></code></a></li>
 </ul>
@@ -3695,6 +3711,7 @@ other objects.</p>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle.flat_shading"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.flat_shading</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle.side"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.side</span></code></a></li>
 <li><a class="reference internal" href="#viser.MeshSkinnedHandle.material"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.material</span></code></a></li>
+<li><a class="reference internal" href="#viser.MeshSkinnedHandle.scale"><code class="docutils literal notranslate"><span class="pre">MeshSkinnedHandle.scale</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.PointCloudHandle"><code class="docutils literal notranslate"><span class="pre">PointCloudHandle</span></code></a><ul>
