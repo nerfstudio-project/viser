@@ -516,6 +516,29 @@ class GaussianSplatHandle(
         - [7]: RGBA (4x uint8)
     """
 
+    def _ensure_buffer_size(self, num_gaussians: int) -> None:
+        """Ensure the internal buffer can hold the specified number of Gaussians.
+
+        If the buffer is already the correct size, this is a no-op. Otherwise,
+        a new buffer is allocated with default values (white color, full opacity,
+        small identity-like covariances, centers at origin).
+        """
+        if self.buffer.shape[0] == num_gaussians:
+            return
+
+        # Create new buffer with default values.
+        new_buffer = np.zeros((num_gaussians, 8), dtype=np.uint32)
+
+        # Set default RGBA to white, fully opaque (255, 255, 255, 255).
+        new_buffer[:, 7] = 0xFFFFFFFF
+
+        # Set default covariances to small identity-like values.
+        # Store as 6 float16 values: [cov00, cov01, cov02, cov11, cov12, cov22].
+        default_cov = np.array([0.01, 0.0, 0.0, 0.01, 0.0, 0.01], dtype=np.float16)
+        new_buffer[:, 4:7] = np.tile(default_cov.view(np.uint32), (num_gaussians, 1))
+
+        self.buffer = new_buffer
+
     @property
     def centers(self) -> npt.NDArray[np.float32]:
         """Centers of the Gaussians. Shape: (N, 3). Synchronized automatically when assigned."""
@@ -523,6 +546,10 @@ class GaussianSplatHandle(
 
     @centers.setter
     def centers(self, centers: np.ndarray) -> None:
+        assert centers.ndim == 2 and centers.shape[1] == 3, (
+            f"centers must have shape (N, 3), got {centers.shape}"
+        )
+        self._ensure_buffer_size(centers.shape[0])
         self.buffer[:, 0:3] = centers.astype(np.float32).view(np.uint32)
         self._queue_update("buffer", self.buffer)
 
@@ -536,6 +563,10 @@ class GaussianSplatHandle(
     def rgbs(self, rgbs: np.ndarray) -> None:
         from ._assignable_props_api import colors_to_uint8
 
+        assert rgbs.ndim == 2 and rgbs.shape[1] == 3, (
+            f"rgbs must have shape (N, 3), got {rgbs.shape}"
+        )
+        self._ensure_buffer_size(rgbs.shape[0])
         rgba = self.buffer[:, 7:8].view(np.uint8).reshape(-1, 4)
         rgba[:, :3] = colors_to_uint8(rgbs)
         self.buffer[:, 7:8] = rgba.view(np.uint32)
@@ -552,6 +583,10 @@ class GaussianSplatHandle(
     def opacities(self, opacities: np.ndarray) -> None:
         from ._assignable_props_api import colors_to_uint8
 
+        assert opacities.ndim == 2 and opacities.shape[1] == 1, (
+            f"opacities must have shape (N, 1), got {opacities.shape}"
+        )
+        self._ensure_buffer_size(opacities.shape[0])
         rgba = self.buffer[:, 7:8].view(np.uint8).reshape(-1, 4)
         rgba[:, 3:4] = colors_to_uint8(opacities)
         self.buffer[:, 7:8] = rgba.view(np.uint32)
@@ -579,6 +614,10 @@ class GaussianSplatHandle(
 
     @covariances.setter
     def covariances(self, covariances: np.ndarray) -> None:
+        assert covariances.ndim == 3 and covariances.shape[1:] == (3, 3), (
+            f"covariances must have shape (N, 3, 3), got {covariances.shape}"
+        )
+        self._ensure_buffer_size(covariances.shape[0])
         # Extract upper-triangular terms: indices [0,1,2,4,5,8] from flattened 3x3.
         cov_triu = covariances.reshape((-1, 9))[:, np.array([0, 1, 2, 4, 5, 8])]
         cov_triu_f16 = cov_triu.astype(np.float16)
