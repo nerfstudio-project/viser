@@ -9,6 +9,10 @@ export type SorterWorkerIncoming =
       setGroupIndices: Uint32Array;
     }
   | {
+      updateBuffer: Uint32Array;
+      updateGroupIndices: Uint32Array;
+    }
+  | {
       setTz_camera_groups: Float32Array;
     }
   | { close: true };
@@ -61,6 +65,15 @@ export type SorterWorkerIncoming =
         data.setBuffer,
         data.setGroupIndices,
       );
+    } else if ("updateBuffer" in data) {
+      // Update existing sorter with new buffer data.
+      if (sorter !== null) {
+        sorter.setBuffer(data.updateBuffer, data.updateGroupIndices);
+        // Trigger immediate sort if we have camera data.
+        if (Tz_camera_groups !== null) {
+          throttledSort();
+        }
+      }
     } else if ("setTz_camera_groups" in data) {
       // Update object transforms.
       Tz_camera_groups = data.setTz_camera_groups;

@@ -6,6 +6,7 @@ import { VISER_VERSION } from "./VersionInfo";
 export type WsWorkerIncoming =
   | { type: "send"; message: Message }
   | { type: "set_server"; server: string }
+  | { type: "retry" }
   | { type: "close" };
 
 export type WsWorkerOutgoing =
@@ -93,15 +94,6 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
       }
 
       clearTimeout(retryTimeout);
-
-      // Try to reconnect on next repaint.
-      // requestAnimationFrame() helps us avoid reconnecting from tabs that are
-      // hidden or minimized.
-      if (server !== null) {
-        requestAnimationFrame(() => {
-          setTimeout(tryConnect, 1000);
-        });
-      }
     };
 
     // State for tracking message timing.
@@ -195,7 +187,11 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
     } else if (data.type === "set_server") {
       server = data.server;
       tryConnect();
-    } else if (data.type == "close") {
+    } else if (data.type === "retry") {
+      if (server !== null) {
+        tryConnect();
+      }
+    } else if (data.type === "close") {
       server = null;
       ws !== null && ws.close();
       self.close();

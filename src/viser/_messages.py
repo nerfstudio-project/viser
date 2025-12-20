@@ -281,8 +281,9 @@ class GlbMessage(_CreateSceneNodeMessage):
 class GlbProps:
     glb_data: bytes
     """A binary payload containing the GLB data. """
-    scale: float
-    """A scale for resizing the GLB asset."""
+    scale: Union[float, Tuple[float, float, float]]
+    """Scale for resizing the GLB asset. A single float for uniform scaling or
+    a tuple of (x, y, z) for per-axis scaling."""
     cast_shadow: bool
     """Whether or not to cast shadows."""
     receive_shadow: Union[bool, float]
@@ -660,6 +661,9 @@ class MeshProps:
     """Side of the surface to render."""
     material: Literal["standard", "toon3", "toon5"]
     """Material type of the mesh."""
+    scale: Union[float, Tuple[float, float, float]]
+    """Scale of the mesh. A single float for uniform scaling or a tuple of
+    (x, y, z) for per-axis scaling."""
     cast_shadow: bool
     """Whether or not to cast shadows."""
     receive_shadow: Union[bool, float]

@@ -31,7 +31,7 @@ export interface GlbMessage {
   name: string;
   props: {
     glb_data: Uint8Array<ArrayBuffer>;
-    scale: number;
+    scale: number | [number, number, number];
     cast_shadow: boolean;
     receive_shadow: boolean | number;
   };
@@ -246,6 +246,7 @@ export interface MeshMessage {
     flat_shading: boolean;
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
+    scale: number | [number, number, number];
     cast_shadow: boolean;
     receive_shadow: boolean | number;
   };
@@ -305,6 +306,7 @@ export interface SkinnedMeshMessage {
     flat_shading: boolean;
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
+    scale: number | [number, number, number];
     cast_shadow: boolean;
     receive_shadow: boolean | number;
     bone_wxyzs: Uint8Array<ArrayBuffer>;
