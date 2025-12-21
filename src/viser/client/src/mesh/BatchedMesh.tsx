@@ -20,25 +20,28 @@ export const BatchedMesh = React.forwardRef<
   // Create a material based on the message props.
   const material = useMemo(() => {
     // Create the material with properties from the message.
+    // When per-instance opacities exist, material opacity stays at 1.0.
     const mat = createStandardMaterial({
       material: message.props.material,
       wireframe: message.props.wireframe,
-      opacity: null, // Opacity is now handled per-instance
+      opacity: message.props.batched_opacities ? null : message.props.opacity,
       flat_shading: message.props.flat_shading,
       side: message.props.side,
     });
 
-    // Set transparent flag if we have opacity data.
-    // This must be set before the mesh is created for opacity to work properly.
-    if (message.props.batched_opacities) {
+    // Set transparent flag if any transparency is involved.
+    if (
+      (message.props.opacity !== null && message.props.opacity < 1.0) ||
+      message.props.batched_opacities !== null
+    ) {
       mat.transparent = true;
-      mat.opacity = 1.0; // Will be overridden per-instance
     }
 
     return mat;
   }, [
     message.props.material,
     message.props.wireframe,
+    message.props.opacity,
     message.props.batched_opacities,
     message.props.flat_shading,
     message.props.side,
@@ -85,6 +88,7 @@ export const BatchedMesh = React.forwardRef<
         batched_wxyzs={message.props.batched_wxyzs}
         batched_scales={message.props.batched_scales}
         batched_colors={message.props.batched_colors}
+        opacity={message.props.opacity}
         batched_opacities={message.props.batched_opacities}
         lod={message.props.lod}
         cast_shadow={message.props.cast_shadow}

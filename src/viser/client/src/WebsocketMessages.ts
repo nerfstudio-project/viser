@@ -331,12 +331,13 @@ export interface BatchedMeshesMessage {
     faces: Uint8Array<ArrayBuffer>;
     batched_colors: Uint8Array<ArrayBuffer>;
     wireframe: boolean;
-    batched_opacities: Uint8Array<ArrayBuffer> | null;
+    opacity: number | null;
     flat_shading: boolean;
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
     cast_shadow: boolean;
     receive_shadow: boolean;
+    batched_opacities: Uint8Array<ArrayBuffer> | null;
   };
 }
 /** Message from server->client carrying batched GLB information.

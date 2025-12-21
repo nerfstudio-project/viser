@@ -1644,13 +1644,12 @@ class SceneApi:
             batched_colors: Colors of the mesh instances. Can be a single color as an RGB tuple
                 to apply to all instances, or an np.ndarray of shape (N, 3) to specify colors
                 for each instance. Defaults to (90, 200, 255).
-            batched_opacities: Float array of shape (N,) for per-instance opacities. None means opaque.
-                Cannot be used together with opacity parameter.
+            batched_opacities: Per-instance opacity multipliers, shape (N,). Each value is
+                multiplied with the global opacity parameter. None means all instances use
+                the global opacity.
             lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
             wireframe: Boolean indicating if the meshes should be rendered as wireframes.
-            opacity: Uniform opacity for all mesh instances. None means opaque. This is a legacy parameter;
-                use batched_opacities for per-instance opacity control. Cannot be used together with
-                batched_opacities parameter.
+            opacity: Opacity of the meshes. None means opaque.
             material: Material type of the meshes ('standard', 'toon3', 'toon5').
                 This argument is ignored when wireframe=True.
             flat_shading: Whether to do flat shading. This argument is ignored
@@ -1688,19 +1687,9 @@ class SceneApi:
             assert batched_scales.shape in ((num_instances,), (num_instances, 3))
 
         # Handle batched opacities.
-        # Support both the new batched_opacities parameter and legacy opacity parameter.
-        batched_opacities_array = None
-        if batched_opacities is not None and opacity is not None:
-            raise ValueError(
-                "Cannot specify both 'opacity' and 'batched_opacities'. "
-                "Use 'batched_opacities' for per-instance opacity or 'opacity' for uniform opacity."
-            )
         if batched_opacities is not None:
-            batched_opacities_array = np.asarray(batched_opacities).astype(np.float32)
-            assert batched_opacities_array.shape == (num_instances,)
-        elif opacity is not None:
-            # Convert single opacity to a vector for all instances.
-            batched_opacities_array = np.full((num_instances,), opacity, dtype=np.float32)
+            batched_opacities = np.asarray(batched_opacities).astype(np.float32)
+            assert batched_opacities.shape == (num_instances,)
 
         # Handle batched colors.
         batched_colors_array = None
@@ -1717,13 +1706,14 @@ class SceneApi:
                 batched_scales=batched_scales,
                 batched_colors=batched_colors_array,
                 wireframe=wireframe,
-                batched_opacities=batched_opacities_array,
+                opacity=opacity,
                 flat_shading=flat_shading,
                 side=side,
                 material=material,
                 lod=lod,
                 cast_shadow=cast_shadow,
                 receive_shadow=receive_shadow,
+                batched_opacities=batched_opacities,
             ),
         )
         return BatchedMeshHandle._make(self, message, name, wxyz, position, visible)
