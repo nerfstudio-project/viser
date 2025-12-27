@@ -3,7 +3,7 @@ import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { Box } from "@mantine/core";
 
 import { Button } from "@mantine/core";
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useEffect } from "react";
 import { htmlIconWrapper } from "./ComponentStyles.css";
 import { toMantineColor } from "./colorUtils";
 
@@ -19,47 +19,38 @@ export default function ButtonComponent({
   },
 }: GuiButtonMessage) {
   const { messageSender } = React.useContext(GuiComponentContext)!;
+  const holdIntervalsRef = useRef<ReturnType<typeof setInterval>[]>([]);
 
-  // Track interval timers for hold callbacks.
-  const holdIntervalsRef = useRef<Map<number, ReturnType<typeof setInterval>>>(
-    new Map(),
-  );
-
-  // Send a hold message for a specific frequency.
-  const sendHoldMessage = useCallback(
-    (frequency: number) => {
-      messageSender({
-        type: "GuiButtonHoldMessage",
-        uuid: uuid,
-        frequency: frequency,
-      });
-    },
-    [messageSender, uuid],
-  );
-
-  // Start hold timers when mouse is pressed.
-  const handleMouseDown = useCallback(() => {
-    // Start interval timers for each registered frequency.
-    for (const freq of holdCallbackFreqs) {
-      // Send immediately on press.
-      sendHoldMessage(freq);
-
-      // Then start interval timer.
-      const intervalMs = 1000 / freq;
-      const intervalId = setInterval(() => {
-        sendHoldMessage(freq);
-      }, intervalMs);
-      holdIntervalsRef.current.set(freq, intervalId);
-    }
-  }, [holdCallbackFreqs, sendHoldMessage]);
-
-  // Stop all hold timers.
   const stopHoldTimers = useCallback(() => {
-    for (const intervalId of holdIntervalsRef.current.values()) {
-      clearInterval(intervalId);
-    }
-    holdIntervalsRef.current.clear();
+    holdIntervalsRef.current.forEach(clearInterval);
+    holdIntervalsRef.current = [];
   }, []);
+
+  // Clean up on unmount.
+  useEffect(() => stopHoldTimers, [stopHoldTimers]);
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (holdCallbackFreqs.length === 0) return;
+      // Capture pointer to receive pointerup even if released outside element.
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      for (const freq of holdCallbackFreqs) {
+        messageSender({ type: "GuiButtonHoldMessage", uuid, frequency: freq });
+        holdIntervalsRef.current.push(
+          setInterval(
+            () =>
+              messageSender({
+                type: "GuiButtonHoldMessage",
+                uuid,
+                frequency: freq,
+              }),
+            1000 / freq,
+          ),
+        );
+      }
+    },
+    [holdCallbackFreqs, messageSender, uuid],
+  );
 
   if (!(visible ?? true)) return null;
 
@@ -76,9 +67,9 @@ export default function ButtonComponent({
             updates: { value: true },
           })
         }
-        onMouseDown={holdCallbackFreqs.length > 0 ? handleMouseDown : undefined}
-        onMouseUp={holdCallbackFreqs.length > 0 ? stopHoldTimers : undefined}
-        onMouseLeave={holdCallbackFreqs.length > 0 ? stopHoldTimers : undefined}
+        onPointerDown={handlePointerDown}
+        onPointerUp={stopHoldTimers}
+        onPointerCancel={stopHoldTimers}
         style={{
           height: "2em",
         }}
