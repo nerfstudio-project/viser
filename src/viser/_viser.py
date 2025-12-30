@@ -950,6 +950,84 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         if self._share_tunnel is not None:
             self._share_tunnel.close()
 
+    def _repr_html_(self) -> str:
+        """Display the Viser server in a Jupyter notebook.
+
+        This method is automatically called by Jupyter to display the server
+        as an interactive iframe.
+
+        Returns:
+            HTML string containing an iframe pointing to the local server.
+        """
+        return f"""<iframe
+    src="http://localhost:{self.get_port()}"
+    width="100%"
+    height="600px"
+    style="border: 1px solid #ccc; border-radius: 4px;"
+></iframe>"""
+
+    def show(
+        self,
+        height: int = 600,
+        embed: bool = False,
+    ) -> None:
+        """Display the Viser visualization in a Jupyter notebook.
+
+        Similar to Plotly's ``fig.show()``, this method displays the
+        visualization inline in a Jupyter notebook.
+
+        Args:
+            height: Height of the viewer in pixels.
+            embed: If True, use self-contained embedded HTML (works offline
+                but requires the embed client to be built). If False (default),
+                use an iframe pointing to the running server.
+        """
+        try:
+            from IPython.display import display, HTML  # type: ignore
+        except ImportError:
+            print(f"View at: http://localhost:{self.get_port()}")
+            return
+
+        if embed:
+            html = self.get_embed_html(height=height)
+        else:
+            html = f"""<iframe
+    src="http://localhost:{self.get_port()}"
+    width="100%"
+    height="{height}px"
+    style="border: 1px solid #ccc; border-radius: 4px;"
+></iframe>"""
+        display(HTML(html))
+
+    def get_embed_html(
+        self,
+        height: int = 600,
+        dark_mode: bool = False,
+    ) -> str:
+        """Generate self-contained HTML for static embedding.
+
+        This serializes the current scene state and embeds it along with
+        the Viser client into a single HTML string that can be used in
+        static documentation, myst-nb notebooks, or standalone HTML files.
+
+        Similar to Plotly's ``fig.to_html()``, this creates a fully
+        self-contained HTML that works without a running server.
+
+        Note: This requires the embed client to be built first. Run
+        ``npm run build:embed`` in the client directory if you haven't already.
+
+        Args:
+            height: Height of the embedded viewer in pixels.
+            dark_mode: Use dark color scheme.
+
+        Returns:
+            Self-contained HTML string with embedded scene and client.
+        """
+        from . import _embed
+
+        scene_bytes = self.get_scene_serializer().serialize()
+        return _embed.generate_embed_html(scene_bytes, height, dark_mode)
+
     def get_clients(self) -> dict[int, ClientHandle]:
         """Creates and returns a copy of the mapping from connected client IDs to
         handles.

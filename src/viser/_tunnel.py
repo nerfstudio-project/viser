@@ -193,6 +193,7 @@ async def _make_tunnel(
     share_domain = "share.viser.studio"
 
     import requests
+    import requests.exceptions
 
     try:
         response = requests.request(

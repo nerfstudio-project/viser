@@ -19,7 +19,7 @@ from collections import defaultdict, deque
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Union
 
 # ==================== TypeScript Type Parser ====================
 
@@ -1190,7 +1190,7 @@ def parse_properties(interface_body: str) -> List[Dict[str, str]]:
     return properties
 
 
-def parse_property(line: str, comment: str = "") -> Optional[Dict[str, str | bool]]:
+def parse_property(line: str, comment: str = "") -> Optional[Dict[str, Union[str, bool]]]:
     """Parse a single property line."""
     line = line.strip().rstrip(";").rstrip(",")
 

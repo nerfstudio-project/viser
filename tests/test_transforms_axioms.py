@@ -7,7 +7,7 @@ from typing import Tuple, Type
 
 import numpy as np
 import numpy.typing as onpt
-from utils import (
+from .utils import (
     assert_arrays_close,
     assert_transforms_close,
     general_group_test,

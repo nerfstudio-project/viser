@@ -10,8 +10,9 @@ Embed GUI controls directly in the 3D scene positioned relative to scene objects
 * Dynamic GUI panel visibility and positioning
 """
 
+from __future__ import annotations
+
 import time
-from typing import Optional
 
 import numpy as np
 
@@ -32,7 +33,7 @@ def _(client: viser.ClientHandle) -> None:
 
     rng = np.random.default_rng(0)
 
-    displayed_3d_container: Optional[viser.Gui3dContainerHandle] = None
+    displayed_3d_container: viser.Gui3dContainerHandle | None = None
 
     def make_frame(i: int) -> None:
         # Sample a random orientation + position.

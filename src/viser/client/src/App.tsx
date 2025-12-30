@@ -43,7 +43,7 @@ import { useThrottledMessageSender } from "./WebsocketUtils";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { theme } from "./AppTheme";
 import { FrameSynchronizedMessageHandler } from "./MessageHandler";
-import { PlaybackFromFile } from "./FilePlayback";
+import { PlaybackFromFile, PlaybackFromEmbedData } from "./FilePlayback";
 import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
 import { MacWindowWrapper } from "./MacWindowWrapper";
@@ -170,15 +170,25 @@ function ViewerRoot() {
   const playbackPath = searchParams.get("playbackPath");
   const darkMode = searchParams.get("darkMode") !== null;
 
+  // Check for embedded scene data (used for static embedding in docs/notebooks).
+  const embedData = (window as any).__VISER_EMBED_DATA__ as string | undefined;
+  const embedConfig = (window as any).__VISER_EMBED_CONFIG__ as
+    | { darkMode?: boolean }
+    | undefined;
+
   // Create a message source string.
-  const messageSource = playbackPath === null ? "websocket" : "file_playback";
+  const messageSource = embedData
+    ? "embed"
+    : playbackPath === null
+      ? "websocket"
+      : "file_playback";
 
   // Create a single ref with all mutable state.
   const nodeRefFromName = {};
   const mutable = React.useRef<ViewerMutable>({
     // Function references with default implementations.
     sendMessage:
-      playbackPath == null
+      messageSource === "websocket"
         ? (message: any) =>
             console.log(
               `Tried to send ${message.type} but websocket is not connected!`,
@@ -238,8 +248,9 @@ function ViewerRoot() {
     mutable,
   };
 
-  // Apply URL dark mode setting if provided.
-  if (darkMode) viewer.useGui.getState().theme.dark_mode = darkMode;
+  // Apply dark mode setting if provided via URL or embed config.
+  const effectiveDarkMode = darkMode || embedConfig?.darkMode;
+  if (effectiveDarkMode) viewer.useGui.getState().theme.dark_mode = true;
 
   return (
     <ViewerContext.Provider value={viewer}>
@@ -247,6 +258,9 @@ function ViewerRoot() {
         {messageSource === "websocket" && <WebsocketMessageProducer />}
         {messageSource === "file_playback" && (
           <PlaybackFromFile fileUrl={playbackPath!} />
+        )}
+        {messageSource === "embed" && (
+          <PlaybackFromEmbedData base64Data={embedData!} />
         )}
       </ViewerContents>
     </ViewerContext.Provider>
@@ -603,11 +617,13 @@ function DefaultLights() {
   );
 
   // Calculate environment map.
+  // In embed mode, use CDN presets from drei (no local files needed).
+  const isEmbedMode = viewer.messageSource === "embed";
   const envMapNode = useMemo(() => {
     if (environmentMap.hdri === null) return null;
 
-    // HDRI presets mapping.
-    const presetsObj = {
+    // HDRI presets mapping for full client (local files).
+    const presetsObj: Record<string, string> = {
       apartment: "lebombo_1k.hdr",
       city: "potsdamer_platz_1k.hdr",
       dawn: "kiara_1_dawn_1k.hdr",
@@ -653,18 +669,46 @@ function DefaultLights() {
         .multiply(Rquat_world_threeworld),
     );
 
+    // Shared environment props.
+    const commonProps = {
+      background: environmentMap.background,
+      backgroundBlurriness: environmentMap.background_blurriness,
+      backgroundIntensity: environmentMap.background_intensity,
+      backgroundRotation: backgroundRotation,
+      environmentIntensity: environmentMap.environment_intensity,
+      environmentRotation: environmentRotation,
+    };
+
+    // In embed mode, use CDN presets (all presets supported).
+    // In normal mode, use local HDRI files.
+    if (isEmbedMode) {
+      return (
+        <Environment
+          preset={
+            environmentMap.hdri as
+              | "apartment"
+              | "city"
+              | "dawn"
+              | "forest"
+              | "lobby"
+              | "night"
+              | "park"
+              | "studio"
+              | "sunset"
+              | "warehouse"
+          }
+          {...commonProps}
+        />
+      );
+    }
+
     return (
       <Environment
         files={`hdri/${presetsObj[environmentMap.hdri]}`}
-        background={environmentMap.background}
-        backgroundBlurriness={environmentMap.background_blurriness}
-        backgroundIntensity={environmentMap.background_intensity}
-        backgroundRotation={backgroundRotation}
-        environmentIntensity={environmentMap.environment_intensity}
-        environmentRotation={environmentRotation}
+        {...commonProps}
       />
     );
-  }, [environmentMap, worldRotation]);
+  }, [environmentMap, worldRotation, isEmbedMode]);
 
   // Return environment map only if lights are disabled.
   if (!enableDefaultLights) return envMapNode;

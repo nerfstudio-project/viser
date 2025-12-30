@@ -3,15 +3,55 @@ import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { Box } from "@mantine/core";
 
 import { Button } from "@mantine/core";
-import React from "react";
+import React, { useRef, useCallback, useEffect } from "react";
 import { htmlIconWrapper } from "./ComponentStyles.css";
 import { toMantineColor } from "./colorUtils";
 
 export default function ButtonComponent({
   uuid,
-  props: { visible, disabled, label, color, _icon_html: icon_html },
+  props: {
+    visible,
+    disabled,
+    label,
+    color,
+    _icon_html: icon_html,
+    _hold_callback_freqs: holdCallbackFreqs,
+  },
 }: GuiButtonMessage) {
   const { messageSender } = React.useContext(GuiComponentContext)!;
+  const holdIntervalsRef = useRef<ReturnType<typeof setInterval>[]>([]);
+
+  const stopHoldTimers = useCallback(() => {
+    holdIntervalsRef.current.forEach(clearInterval);
+    holdIntervalsRef.current = [];
+  }, []);
+
+  // Clean up on unmount.
+  useEffect(() => stopHoldTimers, [stopHoldTimers]);
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (holdCallbackFreqs.length === 0) return;
+      // Capture pointer to receive pointerup even if released outside element.
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      for (const freq of holdCallbackFreqs) {
+        messageSender({ type: "GuiButtonHoldMessage", uuid, frequency: freq });
+        holdIntervalsRef.current.push(
+          setInterval(
+            () =>
+              messageSender({
+                type: "GuiButtonHoldMessage",
+                uuid,
+                frequency: freq,
+              }),
+            1000 / freq,
+          ),
+        );
+      }
+    },
+    [holdCallbackFreqs, messageSender, uuid],
+  );
+
   if (!(visible ?? true)) return null;
 
   return (
@@ -27,9 +67,10 @@ export default function ButtonComponent({
             updates: { value: true },
           })
         }
-        style={{
-          height: "2em",
-        }}
+        onPointerDown={handlePointerDown}
+        onPointerUp={stopHoldTimers}
+        onPointerCancel={stopHoldTimers}
+        style={{ height: "2em" }}
         disabled={disabled ?? false}
         size="sm"
         leftSection={

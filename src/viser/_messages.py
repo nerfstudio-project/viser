@@ -281,9 +281,8 @@ class GlbMessage(_CreateSceneNodeMessage):
 class GlbProps:
     glb_data: bytes
     """A binary payload containing the GLB data. """
-    scale: Union[float, Tuple[float, float, float]]
-    """Scale for resizing the GLB asset. A single float for uniform scaling or
-    a tuple of (x, y, z) for per-axis scaling."""
+    scale: float
+    """A scale for resizing the GLB asset."""
     cast_shadow: bool
     """Whether or not to cast shadows."""
     receive_shadow: Union[bool, float]
@@ -1299,6 +1298,8 @@ class GuiButtonProps(GuiBaseProps):
     """Color of the button."""
     _icon_html: Optional[str]
     """(Private) HTML string for the icon to be displayed on the button."""
+    _hold_callback_freqs: Tuple[float, ...]
+    """(Private) Tuple of frequencies (Hz) at which hold callbacks should be triggered."""
 
 
 @dataclasses.dataclass
@@ -1306,6 +1307,17 @@ class GuiButtonMessage(_CreateGuiComponentMessage):
     value: bool
     container_uuid: str
     props: GuiButtonProps
+
+
+@dataclasses.dataclass
+class GuiButtonHoldMessage(Message):
+    """Message sent from client->server when a button is being held.
+
+    Sent periodically at the specified frequency while the button is pressed."""
+
+    uuid: str
+    frequency: float
+    """The frequency (Hz) at which this hold message was triggered."""
 
 
 @dataclasses.dataclass

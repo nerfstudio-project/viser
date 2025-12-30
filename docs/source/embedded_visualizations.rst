@@ -1,13 +1,118 @@
 Embedding Visualizations
 ========================
 
-This guide describes how to export 3D visualizations from Viser and embed them into static webpages. The process involves three main steps: exporting scene state, creating a client build, and hosting the visualization.
+Viser supports two main approaches for embedding 3D visualizations:
+
+1. **Self-contained HTML** (Jupyter notebooks, myst-nb, static HTML files) - No server required
+2. **Hosted playback** (GitHub Pages, custom hosting) - More flexible for large files
+
+Self-Contained HTML (Jupyter & Static)
+--------------------------------------
+
+Viser provides a Plotly-like API for embedding 3D visualizations directly in
+Jupyter notebooks or static HTML files. The embedded visualizations are
+completely self-contained and work offline.
+
+Jupyter Notebooks
+~~~~~~~~~~~~~~~~~
+
+In Jupyter notebooks, you can display Viser visualizations directly:
+
+.. code-block:: python
+
+    import viser
+
+    # Create server and add scene elements.
+    server = viser.ViserServer()
+    server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
+
+    # Option 1: Just return the server (uses _repr_html_).
+    # This creates an iframe to the local server.
+    server
+
+    # Option 2: Use show() like Plotly's fig.show().
+    server.show()
+
+    # Option 3: Use embedded mode (works offline, like Plotly's include_plotlyjs).
+    # This creates a self-contained HTML with all assets inlined.
+    server.show(embed=True)
+
+Static HTML Export
+~~~~~~~~~~~~~~~~~~
+
+For static HTML files (e.g., myst-nb documentation, standalone pages):
+
+.. code-block:: python
+
+    import viser
+    from pathlib import Path
+
+    server = viser.ViserServer()
+    server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
+
+    # Generate self-contained HTML.
+    html = server.get_embed_html(height=600, dark_mode=False)
+    Path("visualization.html").write_text(html)
+
+The resulting HTML file (~3-4MB) contains all JavaScript, CSS, and assets needed
+to display the visualization, and works completely offline.
+
+Animated Embeds
+~~~~~~~~~~~~~~~
+
+For animations, use :meth:`StateSerializer.insert_sleep` to add timing between
+frames, then generate the embed from the serialized data:
+
+.. code-block:: python
+
+    import viser
+    import numpy as np
+    from pathlib import Path
+
+    server = viser.ViserServer()
+    box = server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
+
+    # Get the scene serializer for recording animations.
+    serializer = server.get_scene_serializer()
+
+    # Animate the box position over 3 seconds.
+    for i in range(60):
+        t = i / 60 * 2 * np.pi
+        box.position = (np.sin(t), np.cos(t), 0.5)
+        serializer.insert_sleep(3.0 / 60)  # 3 second total duration
+
+    # Generate embed from serialized data.
+    html = viser.get_embed_html_from_bytes(serializer.serialize())
+    Path("animated.html").write_text(html)
+
+The embedded HTML will include a playback timeline with play/pause controls
+and a scrubber for navigating through the animation.
+
+Embed Mode Limitations
+~~~~~~~~~~~~~~~~~~~~~~
+
+The self-contained embed mode has some limitations compared to the full Viser
+client:
+
+- **Gaussian splats**: Not supported (Web Workers cannot be inlined)
+- **HDRIs**: All presets supported via CDN (requires internet connection)
+- **Fonts**: Uses system fonts instead of Inter
+- **GUI elements**: Scene-only mode (no interactive GUI panels)
+
+These limitations keep the embed size manageable (~3-4MB) while supporting most
+visualization use cases.
+
+
+Hosted Playback (Advanced)
+--------------------------
+
+For larger visualizations or when you need full feature support, you can host
+the Viser client separately and load scene data via URL.
 
 .. warning::
 
-   This workflow is experimental and not yet polished. We're documenting it
-   nonetheless, since we think it's quite useful! If you have suggestions or
-   improvements, issues and PRs are welcome.
+   This workflow is more complex than self-contained embedding. We're
+   documenting it nonetheless, since it's useful for advanced use cases.
 
 
 Step 1: Exporting Scene State

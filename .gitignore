@@ -16,6 +16,7 @@ htmlcov
 .vite
 build
 src/viser/client/build
+src/viser/client/build-embed
 src/viser/client/.nodeenv
 examples/assets
 

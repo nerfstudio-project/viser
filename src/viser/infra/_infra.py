@@ -17,7 +17,7 @@ from collections.abc import Coroutine
 from pathlib import Path
 from typing import Any, Callable, Generator, NewType, TypeVar
 
-import msgspec
+import msgspec.msgpack
 import websockets.asyncio.server
 import websockets.datastructures
 import websockets.exceptions
