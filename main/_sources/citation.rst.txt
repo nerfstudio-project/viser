@@ -5,12 +5,9 @@ To cite Viser in your work, you can use the BibTeX entry for our `technical repo
 
 .. code:: bibtex
 
-    @misc{yi2025viser,
-          title={Viser: Imperative, Web-based 3D Visualization in Python},
-          author={Brent Yi and Chung Min Kim and Justin Kerr and Gina Wu and Rebecca Feng and Anthony Zhang and Jonas Kulhanek and Hongsuk Choi and Yi Ma and Matthew Tancik and Angjoo Kanazawa},
-          year={2025},
-          eprint={2507.22885},
-          archivePrefix={arXiv},
-          primaryClass={cs.CV},
-          url={https://arxiv.org/abs/2507.22885},
+    @article{yi2025viser,
+        title={Viser: Imperative, web-based 3d visualization in python},
+        author={Yi, Brent and Kim, Chung Min and Kerr, Justin and Wu, Gina and Feng, Rebecca and Zhang, Anthony and Kulhanek, Jonas and Choi, Hongsuk and Ma, Yi and Tancik, Matthew and others},
+        journal={arXiv preprint arXiv:2507.22885},
+        year={2025}
     }
