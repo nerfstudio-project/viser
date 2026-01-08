@@ -1,165 +1,202 @@
 Embedded Visualizations
 ========================
 
-Viser supports embedding 3D visualizations in Jupyter notebooks, myst-nb
-documentation, and standalone HTML files. Embedded visualizations are
-self-contained and work offline.
+This guide describes how to export 3D visualizations from Viser and embed them into static webpages. The process involves three main steps: exporting scene state, creating a client build, and hosting the visualization.
 
-Jupyter Notebooks & myst-nb
----------------------------
+.. warning::
 
-Use :meth:`~viser.ViserServer.show` to display visualizations inline:
+   This workflow is experimental and not yet polished. We're documenting it
+   nonetheless, since we think it's quite useful! If you have suggestions or
+   improvements, issues and PRs are welcome.
 
-.. code-block:: python
 
-    import viser
+Step 1: Exporting Scene State
+-----------------------------
 
-    server = viser.ViserServer()
-    server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
+You can export static or dynamic 3D data from a Viser scene using the scene
+serializer. :func:`viser.ViserServer.get_scene_serializer` returns a serializer
+object that can serialize the current scene state to a binary format.
 
-    # Display inline (works in Jupyter notebooks and myst-nb docs).
-    server.show()
+Static Scene Export
+~~~~~~~~~~~~~~~~~~~
 
-    # Optional parameters:
-    server.show(height=600, dark_mode=True)
-
-The visualization is fully interactive with orbit controls, and works offline
-once loaded.
-
-Animated Visualizations
-~~~~~~~~~~~~~~~~~~~~~~~
-
-For animations, use :meth:`~viser.infra.StateSerializer.insert_sleep` to add
-timing between frames:
+For static 3D visualizations, :func:`viser.infra.StateSerializer.serialize` can be used to
+save the scene state:
 
 .. code-block:: python
 
-    import viser
-    import numpy as np
+   import viser
+   from pathlib import Path
 
-    server = viser.ViserServer()
-    box = server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
+   server = viser.ViserServer()
 
-    # Get the scene serializer for recording animations.
-    serializer = server.get_scene_serializer()
+   # Add objects to the scene via server.scene
+   # For example:
+   # server.scene.add_mesh(...)
+   # server.scene.add_point_cloud(...)
+   server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
 
-    # Animate the box position over 3 seconds.
-    for i in range(60):
-        t = i / 60 * 2 * np.pi
-        box.position = (np.sin(t), np.cos(t), 0.5)
-        serializer.insert_sleep(3.0 / 60)  # 3 second total duration
+   # Serialize and save the scene state
+   data = server.get_scene_serializer().serialize()  # Returns bytes
+   Path("recording.viser").write_bytes(data)
 
-    # Display the animation.
-    serializer.show()
 
-The embedded visualization includes a playback timeline with play/pause
-controls and a scrubber for navigating through the animation.
-
-Plain Python Scripts
---------------------
-
-When running outside of IPython (e.g., a plain Python script),
-:meth:`~viser.ViserServer.show` opens the visualization in your default web
-browser:
+As a suggestion, you can also add a button for exporting the scene state.
+Clicking the button in your web browser will trigger a download of the
+``.viser`` file.
 
 .. code-block:: python
 
-    import viser
+   import viser
+   server = viser.ViserServer()
 
-    server = viser.ViserServer()
-    server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
+   # Add objects to the scene via server.scene.
+   # For example:
+   # server.scene.add_mesh(...)
+   # server.scene.add_point_cloud(...)
+   server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
 
-    # Opens in default web browser.
-    server.show()
+   save_button = server.gui.add_button("Save Scene")
 
-Features & Limitations
-----------------------
+   @save_button.on_click
+   def _(event: viser.GuiEvent) -> None:
+       assert event.client is not None
+       event.client.send_file_download("recording.viser", server.get_scene_serializer().serialize())
 
-The embedded visualizations support most Viser scene features:
+   server.sleep_forever()
 
-- **3D primitives**: Boxes, spheres, meshes, point clouds, etc.
-- **Gaussian Splats**: Fully supported with WebAssembly sorting
-- **HDRIs**: All 10 presets embedded (~480KB total)
-- **Fonts**: Inter variable font for consistent typography
-- **Animations**: Timeline with play/pause and scrubbing
+Dynamic Scene Export
+~~~~~~~~~~~~~~~~~~~~
 
-**Limitations** compared to the full Viser client:
-
-- **GUI elements**: Scene-only mode (no interactive GUI panels)
-- **WebSocket connection**: Embeds are static snapshots, not live connections
-
-Exporting .viser Files
-----------------------
-
-You can export scene data to ``.viser`` files for hosting or sharing:
+For dynamic visualizations with animation, you can create a "3D video" by
+calling :meth:`StateSerializer.insert_sleep` between frames:
 
 .. code-block:: python
 
-    import viser
-    from pathlib import Path
+   import viser
+   import numpy as np
+   from pathlib import Path
 
-    server = viser.ViserServer()
-    server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
+   server = viser.ViserServer()
 
-    # Serialize and save the scene state.
-    data = server.get_scene_serializer().serialize()
-    Path("recording.viser").write_bytes(data)
+   # Add objects to the scene via server.scene
+   # For example:
+   # server.scene.add_mesh(...)
+   # server.scene.add_point_cloud(...)
+   box = server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
 
-You can also add a download button to export from the browser:
+   # Create serializer.
+   serializer = server.get_scene_serializer()
 
-.. code-block:: python
+   num_frames = 100
+   for t in range(num_frames):
+       # Update existing scene objects or add new ones.
+       box.position = (0.0, 0.0, np.sin(t / num_frames * 2 * np.pi))
 
-    import viser
+       # Add a frame delay.
+       serializer.insert_sleep(1.0 / 30.0)
 
-    server = viser.ViserServer()
-    server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
+   # Save the complete animation.
+   data = serializer.serialize()  # Returns bytes
+   Path("recording.viser").write_bytes(data)
 
-    save_button = server.gui.add_button("Save Scene")
+.. note::
+   Always add scene elements using :attr:`ViserServer.scene`, not :attr:`ClientHandle.scene`.
 
-    @save_button.on_click
-    def _(event: viser.GuiEvent) -> None:
-        assert event.client is not None
-        data = server.get_scene_serializer().serialize()
-        event.client.send_file_download("recording.viser", data)
+.. note::
+   The ``.viser`` file is a binary format containing scene state data and is not meant to be human-readable.
 
-    server.sleep_forever()
+Step 2: Creating a Viser Client Build
+-------------------------------------
 
-Hosted Playback (Advanced)
---------------------------
+To serve the 3D visualization, you'll need two things:
 
-For hosting visualizations on a web server (e.g., GitHub Pages), you can serve
-the Viser client with a ``.viser`` file:
+1. The ``.viser`` file containing your scene data
+2. A build of the Viser client (static HTML/JS/CSS files)
 
-1. **Build the client**:
+With Viser installed, create the Viser client build using the command-line tool:
 
-   .. code-block:: bash
+.. code-block:: bash
 
-       viser-build-client --output-dir viser-client/
+   # View available options
+   viser-build-client --help
 
-2. **Host with your .viser file**:
+   # Build to a specific directory
+   viser-build-client --output-dir viser-client/
 
-   .. code-block::
 
-       .
-       ├── recordings/
-       │   └── recording.viser
-       └── viser-client/
-           ├── index.html
-           └── ...
+Step 3: Hosting
+---------------
 
-3. **Access via URL**:
+Directory Structure
+~~~~~~~~~~~~~~~~~~~
 
-   .. code-block::
-
-       https://yoursite.com/viser-client/?playbackPath=../recordings/recording.viser
-
-Camera Positioning
-~~~~~~~~~~~~~~~~~~
-
-To set the initial camera pose, add ``&logCamera`` to the URL to log camera
-positions to the browser console as you navigate. Then add the logged
-parameters to your URL:
+For our hosting instructions, we're going to assume the following directory structure:
 
 .. code-block::
 
-    ?playbackPath=...&initialCameraPosition=2.2,-4.2,-0.9&initialCameraLookAt=-0.1,0.3,-0.2&initialCameraUp=0.3,-0.9,0.3
+    .
+    ├── recordings/
+    │   └── recording.viser    # Your exported scene data
+    └── viser-client/
+        ├── index.html         # Generated client files
+        ├── assets/
+        └── ...
+
+This is just a suggestion; you can structure your files however you like.
+
+Local Development Server
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+For testing locally, you can use Python's built-in HTTP server:
+
+.. code-block:: bash
+
+    # Navigate to the parent directory containing both folders
+    cd /path/to/parent/dir
+
+    # Start the server (default port 8000)
+    python -m http.server 8000
+
+Then open your browser and navigate to:
+
+* ``http://localhost:8000/viser-client/`` (default port)
+
+This should show the a standard Viser client. To visualize the exported scene, you'll need to specify a URL via the ``?playbackPath=`` parameter:
+
+* ``http://localhost:8000/viser-client/?playbackPath=http://localhost:8000/recordings/recording.viser``
+
+
+GitHub Pages Deployment
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To host your visualization on GitHub Pages:
+
+1. Create a new repository or use an existing one
+2. Create a ``gh-pages`` branch or enable GitHub Pages on your main branch
+3. Push your directory structure to the repository:
+
+   .. code-block:: bash
+
+       git add recordings/ viser-client/
+       git commit -m "Add Viser visualization"
+       git push origin main  # or gh-pages
+
+Your visualization will be available at: ``https://user.github.io/repo/viser-client/?playbackPath=https://user.github.io/repo/recordings/recording.viser``
+
+You can embed this into other webpages using an HTML ``<iframe />`` tag.
+
+
+Step 4: Setting the initial camera pose
+-----------------------------------------------
+
+To set the initial camera pose, you can add a ``&logCamera`` parameter to the URL:
+
+* ``http://localhost:8000/viser-client/?playbackPath=http://localhost:8000/recordings/recording.viser&logCamera``
+
+Then, open your Javascript console. You should see the camera pose printed
+whenever you move the camera. It should look something like this:
+
+* ``&initialCameraPosition=2.216,-4.233,-0.947&initialCameraLookAt=-0.115,0.346,-0.192&initialCameraUp=0.329,-0.904,0.272``
+
+You can then add this string to the URL to set the initial camera pose.
