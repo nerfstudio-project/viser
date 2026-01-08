@@ -179,7 +179,11 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
       viewerMutable.messageQueue.push(message);
     }
 
-    if (mutable.currentTime >= recording.durationSeconds) {
+    // Don't loop for static scenes (durationSeconds === 0).
+    if (
+      mutable.currentTime >= recording.durationSeconds &&
+      recording.durationSeconds > 0
+    ) {
       mutable.currentIndex = 0;
       mutable.currentTime = recording.messages[0][0];
     }
@@ -197,6 +201,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
         lastUpdate = now;
 
         updatePlayback();
+        // Stop playback for static scenes once all messages are processed.
         if (
           playbackMutable.current.currentIndex === recording.messages.length &&
           recording.durationSeconds === 0.0
@@ -418,7 +423,11 @@ export function PlaybackFromEmbedData({
       viewerMutable.messageQueue.push(message);
     }
 
-    if (mutable.currentTime >= recording.durationSeconds) {
+    // Don't loop for static scenes (durationSeconds === 0).
+    if (
+      mutable.currentTime >= recording.durationSeconds &&
+      recording.durationSeconds > 0
+    ) {
       mutable.currentIndex = 0;
       mutable.currentTime = recording.messages[0][0];
     }
@@ -436,6 +445,7 @@ export function PlaybackFromEmbedData({
         lastUpdate = now;
 
         updatePlayback();
+        // Stop playback for static scenes once all messages are processed.
         if (
           playbackMutable.current.currentIndex === recording.messages.length &&
           recording.durationSeconds === 0.0

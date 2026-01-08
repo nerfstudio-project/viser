@@ -1,4 +1,4 @@
-import WebsocketClientWorker from "./WebsocketClientWorker?worker";
+import WebsocketClientWorker from "./WebsocketClientWorker?worker&inline";
 import React, { useContext } from "react";
 import { notifications } from "@mantine/notifications";
 

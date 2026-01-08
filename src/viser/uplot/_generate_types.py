@@ -1190,7 +1190,9 @@ def parse_properties(interface_body: str) -> List[Dict[str, str]]:
     return properties
 
 
-def parse_property(line: str, comment: str = "") -> Optional[Dict[str, Union[str, bool]]]:
+def parse_property(
+    line: str, comment: str = ""
+) -> Optional[Dict[str, Union[str, bool]]]:
     """Parse a single property line."""
     line = line.strip().rstrip(";").rstrip(",")
 

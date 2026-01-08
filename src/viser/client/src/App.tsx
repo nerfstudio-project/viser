@@ -6,7 +6,8 @@ import "./index.css";
 
 import { useInView } from "react-intersection-observer";
 import { Notifications } from "@mantine/notifications";
-import { Environment, PerformanceMonitor, Stats } from "@react-three/drei";
+import { PerformanceMonitor, Stats } from "@react-three/drei";
+import { HDRJPGEnvironment } from "./HDRJPGEnvironment";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import React, { useEffect, useMemo } from "react";
@@ -50,6 +51,36 @@ import { MacWindowWrapper } from "./MacWindowWrapper";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
 import { VISER_VERSION, GITHUB_CONTRIBUTORS, Contributor } from "./VersionInfo";
 import { BatchedLabelManager } from "./BatchedLabelManager";
+
+// Import logo as asset for proper bundling/inlining.
+import logoSvg from "./assets/logo.svg";
+
+// Import HDRI files as assets for proper bundling/inlining.
+// These are HDR JPEG (gainmap) format files that are ~10x smaller than traditional HDR.
+import hdriApartment from "./assets/lebombo_1k.jpg";
+import hdriCity from "./assets/potsdamer_platz_1k.jpg";
+import hdriDawn from "./assets/kiara_1_dawn_1k.jpg";
+import hdriForest from "./assets/forest_slope_1k.jpg";
+import hdriLobby from "./assets/st_fagans_interior_1k.jpg";
+import hdriNight from "./assets/dikhololo_night_1k.jpg";
+import hdriPark from "./assets/rooitou_park_1k.jpg";
+import hdriStudio from "./assets/studio_small_03_1k.jpg";
+import hdriSunset from "./assets/venice_sunset_1k.jpg";
+import hdriWarehouse from "./assets/empty_warehouse_01_1k.jpg";
+
+// Map preset names to imported HDRI assets.
+const hdriPresets: Record<string, string> = {
+  apartment: hdriApartment,
+  city: hdriCity,
+  dawn: hdriDawn,
+  forest: hdriForest,
+  lobby: hdriLobby,
+  night: hdriNight,
+  park: hdriPark,
+  studio: hdriStudio,
+  sunset: hdriSunset,
+  warehouse: hdriWarehouse,
+};
 
 // ======= Utility functions =======
 
@@ -168,10 +199,18 @@ function ViewerRoot() {
 
   const searchParams = new URLSearchParams(window.location.search);
   const playbackPath = searchParams.get("playbackPath");
-  const darkMode = searchParams.get("darkMode") !== null;
 
-  // Check for embedded scene data (used for static embedding in docs/notebooks).
-  const embedData = (window as any).__VISER_EMBED_DATA__ as string | undefined;
+  // Check for scene data in URL hash (used for embedding in notebooks/docs).
+  // Format: #sceneData=base64encodeddata&darkMode
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
+  const hashSceneData = hashParams.get("sceneData");
+  const darkMode =
+    searchParams.get("darkMode") !== null ||
+    hashParams.get("darkMode") !== null;
+
+  // Check for embedded scene data via window global (legacy).
+  const embedData =
+    hashSceneData ?? ((window as any).__VISER_EMBED_DATA__ as string | undefined);
   const embedConfig = (window as any).__VISER_EMBED_CONFIG__ as
     | { darkMode?: boolean }
     | undefined;
@@ -617,24 +656,9 @@ function DefaultLights() {
   );
 
   // Calculate environment map.
-  // In embed mode, use CDN presets from drei (no local files needed).
-  const isEmbedMode = viewer.messageSource === "embed";
+  // Uses HDR JPEG (gainmap) format for smaller file sizes (~10x reduction).
   const envMapNode = useMemo(() => {
     if (environmentMap.hdri === null) return null;
-
-    // HDRI presets mapping for full client (local files).
-    const presetsObj: Record<string, string> = {
-      apartment: "lebombo_1k.hdr",
-      city: "potsdamer_platz_1k.hdr",
-      dawn: "kiara_1_dawn_1k.hdr",
-      forest: "forest_slope_1k.hdr",
-      lobby: "st_fagans_interior_1k.hdr",
-      night: "dikhololo_night_1k.hdr",
-      park: "rooitou_park_1k.hdr",
-      studio: "studio_small_03_1k.hdr",
-      sunset: "venice_sunset_1k.hdr",
-      warehouse: "empty_warehouse_01_1k.hdr",
-    };
 
     // Calculate quaternions for world transformation.
     const Rquat_threeworld_world = new THREE.Quaternion(
@@ -669,46 +693,18 @@ function DefaultLights() {
         .multiply(Rquat_world_threeworld),
     );
 
-    // Shared environment props.
-    const commonProps = {
-      background: environmentMap.background,
-      backgroundBlurriness: environmentMap.background_blurriness,
-      backgroundIntensity: environmentMap.background_intensity,
-      backgroundRotation: backgroundRotation,
-      environmentIntensity: environmentMap.environment_intensity,
-      environmentRotation: environmentRotation,
-    };
-
-    // In embed mode, use CDN presets (all presets supported).
-    // In normal mode, use local HDRI files.
-    if (isEmbedMode) {
-      return (
-        <Environment
-          preset={
-            environmentMap.hdri as
-              | "apartment"
-              | "city"
-              | "dawn"
-              | "forest"
-              | "lobby"
-              | "night"
-              | "park"
-              | "studio"
-              | "sunset"
-              | "warehouse"
-          }
-          {...commonProps}
-        />
-      );
-    }
-
     return (
-      <Environment
-        files={`hdri/${presetsObj[environmentMap.hdri]}`}
-        {...commonProps}
+      <HDRJPGEnvironment
+        files={hdriPresets[environmentMap.hdri]}
+        background={environmentMap.background}
+        backgroundBlurriness={environmentMap.background_blurriness}
+        backgroundIntensity={environmentMap.background_intensity}
+        backgroundRotation={backgroundRotation}
+        environmentIntensity={environmentMap.environment_intensity}
+        environmentRotation={environmentRotation}
       />
     );
-  }, [environmentMap, worldRotation, isEmbedMode]);
+  }, [environmentMap, worldRotation]);
 
   // Return environment map only if lights are disabled.
   if (!enableDefaultLights) return envMapNode;
@@ -937,7 +933,7 @@ function ViserLogo() {
           onClick={openAbout}
           title="About Viser"
         >
-          <Image src="./logo.svg" style={{ width: "2.5em", height: "auto" }} />
+          <Image src={logoSvg} style={{ width: "2.5em", height: "auto" }} />
         </Box>
       </Tooltip>
       <Modal

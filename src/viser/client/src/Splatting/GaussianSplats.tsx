@@ -26,7 +26,7 @@ import MakeSorterModulePromise from "./WasmSorter/Sorter.mjs";
 
 import React from "react";
 import * as THREE from "three";
-import SplatSortWorker from "./SplatSortWorker?worker";
+import SplatSortWorker from "./SplatSortWorker?worker&inline";
 import { useFrame, useThree } from "@react-three/fiber";
 import { SorterWorkerIncoming } from "./SplatSortWorker";
 import { v4 as uuidv4 } from "uuid";
@@ -118,12 +118,6 @@ function SplatRenderer() {
   const groupBufferFromId = splatContext.useGaussianSplatStore(
     (state) => state.groupBufferFromId,
   );
-
-  // Gaussian splats are disabled in embed mode because the worker cannot be
-  // inlined into a single HTML file. This is a known limitation.
-  if (typeof __VISER_EMBED_MODE__ !== "undefined" && __VISER_EMBED_MODE__) {
-    return null;
-  }
 
   // Only mount implementation (which will load sort worker, etc) if there are
   // Gaussians to render.

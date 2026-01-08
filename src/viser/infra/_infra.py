@@ -3,6 +3,7 @@ from __future__ import annotations
 import abc
 import asyncio
 import atexit
+import base64
 import contextlib
 import dataclasses
 import gzip
@@ -12,6 +13,7 @@ import mimetypes
 import queue
 import threading
 import time
+import webbrowser
 from asyncio.events import AbstractEventLoop
 from collections.abc import Coroutine
 from pathlib import Path
@@ -96,6 +98,95 @@ class StateSerializer:
         assert isinstance(packed_bytes, bytes)
         self._handler._record_handle = None
         return gzip.compress(packed_bytes, compresslevel=9)
+
+    def show(self, height: int = 400, dark_mode: bool = False) -> None:
+        """Display the serialized scene in a Jupyter notebook or web browser.
+
+        In Jupyter notebooks/labs, displays an inline IFrame. When running as a
+        script, opens the visualization in the default web browser.
+
+        See also :meth:`viser.ViserServer.show`.
+
+        Args:
+            height: Height of the embedded viewer in pixels.
+            dark_mode: Use dark color scheme.
+        """
+        from viser import _embed
+
+        scene_bytes = self.serialize()
+
+        # Display in IPython (Jupyter, myst-nb, etc.) using blob URL.
+        # Scene data is passed via URL hash (#sceneData=base64...) so it
+        # persists in notebook output. Client HTML is loaded via blob URL.
+        try:
+            from IPython.core.getipython import get_ipython  # type: ignore
+
+            ipython = get_ipython()
+            if ipython is not None:
+                import uuid
+                from urllib.parse import quote
+
+                from IPython.display import HTML, display  # type: ignore
+
+                # Build URL hash with scene data and optional dark mode.
+                scene_b64 = base64.b64encode(scene_bytes).decode("ascii")
+                url_hash = f"#sceneData={quote(scene_b64, safe='')}"
+                if dark_mode:
+                    url_hash += "&darkMode"
+
+                # Encode client HTML as base64 for blob URL creation.
+                client_html = _embed._get_client_html()
+                client_b64 = base64.b64encode(client_html.encode("utf-8")).decode(
+                    "ascii"
+                )
+                container_id = f"viser-embed-{uuid.uuid4().hex[:8]}"
+
+                wrapper_html = f"""
+                <div id="{container_id}" style="width: 100%; height: {height}px;"></div>
+                <script>
+                (function() {{
+                    var container = document.getElementById("{container_id}");
+                    var clientHtml = atob("{client_b64}");
+                    var blob = new Blob([clientHtml], {{type: "text/html"}});
+                    var url = URL.createObjectURL(blob) + "{url_hash}";
+                    var iframe = document.createElement("iframe");
+                    iframe.src = url;
+                    iframe.style.width = "100%";
+                    iframe.style.height = "100%";
+                    iframe.style.border = "none";
+                    container.appendChild(iframe);
+                }})();
+                </script>
+                """
+                display(HTML(wrapper_html))
+                return
+        except ImportError:
+            pass
+
+        # Fallback: write a small launcher HTML that loads client with hash.
+        # We can't pass long hashes directly via webbrowser.open() due to
+        # command-line length limits, so we write a launcher that redirects.
+        import tempfile
+        from urllib.parse import quote
+
+        scene_b64 = base64.b64encode(scene_bytes).decode("ascii")
+        url_hash = f"#sceneData={quote(scene_b64, safe='')}"
+        if dark_mode:
+            url_hash += "&darkMode"
+
+        client_uri = _embed._get_client_html_path().as_uri()
+        # Use an iframe instead of redirect for better cross-platform compatibility.
+        launcher_html = f"""<!DOCTYPE html>
+<html>
+<head><style>body{{margin:0}}iframe{{width:100%;height:100vh;border:none}}</style></head>
+<body><iframe src="{client_uri}{url_hash}"></iframe></body>
+</html>"""
+
+        with tempfile.NamedTemporaryFile(
+            "w", suffix=".html", delete=False, encoding="utf-8"
+        ) as f:
+            f.write(launcher_html)
+            webbrowser.open("file://" + f.name)
 
 
 class WebsockMessageHandler:

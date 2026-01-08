@@ -6,25 +6,57 @@ import viteTsconfigPaths from "vite-tsconfig-paths";
 import svgrPlugin from "vite-plugin-svgr";
 import eslint from "vite-plugin-eslint";
 import browserslistToEsbuild from "browserslist-to-esbuild";
+import singleFileCompression from "vite-plugin-singlefile-compression";
 
+// Unified Vite config for both development and production builds.
+// - Development: Standard HMR server without single-file bundling.
+// - Production: Self-contained single HTML file with all assets inlined.
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-    eslint({ failOnError: false, failOnWarning: false }),
-    viteTsconfigPaths(),
-    svgrPlugin(),
-    vanillaExtractPlugin(),
-  ],
-  server: {
-    port: 3000,
-    hmr: { port: 1025 },
-  },
-  worker: {
-    format: "es",
-  },
-  build: {
-    outDir: "build",
-    target: browserslistToEsbuild(),
-  },
+export default defineConfig(({ command }) => {
+  const isDev = command === "serve";
+
+  return {
+    plugins: [
+      react(),
+      // ESLint only needed during development.
+      ...(isDev ? [eslint({ failOnError: false, failOnWarning: false })] : []),
+      viteTsconfigPaths(),
+      svgrPlugin(),
+      vanillaExtractPlugin(),
+      // Single-file compression only for production builds.
+      // Uses browser's native DecompressionStream for smaller output.
+      ...(!isDev ? [singleFileCompression()] : []),
+    ],
+    server: {
+      port: 3000,
+      hmr: { port: 1025 },
+    },
+    build: {
+      outDir: "build",
+      target: browserslistToEsbuild(),
+      // Inline all assets including fonts and images for single-file output.
+      assetsInlineLimit: 100000000,
+      // Disable code splitting to ensure single file output.
+      rollupOptions: {
+        output: {
+          manualChunks: undefined,
+          inlineDynamicImports: true,
+        },
+      },
+    },
+    worker: {
+      format: "es",
+      // Workers need react plugin for JSX in production.
+      ...(!isDev && { plugins: () => [react()] }),
+      rollupOptions: {
+        output: {
+          inlineDynamicImports: true,
+        },
+      },
+    },
+    // Exclude libultrahdr WASM from optimization (required for @monogrid/gainmap-js).
+    optimizeDeps: {
+      exclude: ["@monogrid/gainmap-js/libultrahdr"],
+    },
+  };
 });

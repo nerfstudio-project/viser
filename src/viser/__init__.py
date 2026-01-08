@@ -58,7 +58,6 @@ from ._scene_handles import SplineCubicBezierHandle as SplineCubicBezierHandle
 from ._scene_handles import SpotLightHandle as SpotLightHandle
 from ._scene_handles import TransformControlsEvent as TransformControlsEvent
 from ._scene_handles import TransformControlsHandle as TransformControlsHandle
-from ._embed import get_embed_html_from_bytes as get_embed_html_from_bytes
 from ._viser import CameraHandle as CameraHandle
 from ._viser import ClientHandle as ClientHandle
 from ._viser import ViserServer as ViserServer
