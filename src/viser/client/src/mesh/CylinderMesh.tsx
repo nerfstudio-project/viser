@@ -1,21 +1,19 @@
 import React from "react";
 import * as THREE from "three";
 import { createStandardMaterial } from "./MeshUtils";
-import { IcosphereMessage } from "../WebsocketMessages";
+import { CylinderMessage } from "../WebsocketMessages";
 import { OutlinesIfHovered } from "../OutlinesIfHovered";
 
-// Cache icosphere geometries based on # of subdivisions. In theory this cache
-// can grow indefinitely, but this doesn't seem worth the complexity of
-// preventing.
-const icosphereGeometryCache = new Map<number, THREE.IcosahedronGeometry>();
+// Cache cylinder geometries based on # of radial segments.
+const cylinderGeometryCache = new Map<number, THREE.CylinderGeometry>();
 
 /**
- * Component for rendering icosphere meshes
+ * Component for rendering cylinder meshes
  */
-export const IcosphereMesh = React.forwardRef<
+export const CylinderMesh = React.forwardRef<
   THREE.Group,
-  IcosphereMessage & { children?: React.ReactNode }
->(function IcosphereMesh(
+  CylinderMessage & { children?: React.ReactNode }
+>(function CylinderMesh(
   { children, ...message },
   ref: React.ForwardedRef<THREE.Group>,
 ) {
@@ -33,14 +31,14 @@ export const IcosphereMesh = React.forwardRef<
 
   // Setup geometry using memoization.
   const geometry = React.useMemo(() => {
-    if (!icosphereGeometryCache.has(message.props.subdivisions)) {
-      icosphereGeometryCache.set(
-        message.props.subdivisions,
-        new THREE.IcosahedronGeometry(1.0, message.props.subdivisions),
+    if (!cylinderGeometryCache.has(message.props.radial_segments)) {
+      cylinderGeometryCache.set(
+        message.props.radial_segments,
+        new THREE.CylinderGeometry(1.0, 1.0, 1.0, message.props.radial_segments),
       );
     }
-    return icosphereGeometryCache.get(message.props.subdivisions)!;
-  }, [message.props.subdivisions]);
+    return cylinderGeometryCache.get(message.props.radial_segments)!;
+  }, [message.props.radial_segments]);
 
   // Clean up geometry when it changes.
   React.useEffect(() => {
@@ -76,12 +74,13 @@ export const IcosphereMesh = React.forwardRef<
     <group ref={ref}>
       <mesh
         geometry={geometry}
-        scale={message.props.radius}
+        scale={[message.props.radius, message.props.height, message.props.radius]}
+        rotation={new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)}
         material={material}
         castShadow={message.props.cast_shadow}
         receiveShadow={message.props.receive_shadow === true}
       >
-        <OutlinesIfHovered />
+        <OutlinesIfHovered enableCreaseAngle />
         {shadowMaterial && shadowOpacity > 0 ? (
           <mesh geometry={geometry} material={shadowMaterial} receiveShadow />
         ) : null}
