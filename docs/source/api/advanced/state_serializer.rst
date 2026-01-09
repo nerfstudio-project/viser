@@ -1,5 +1,5 @@
 State Serializer
-----------------
+================
 
 .. autoclass:: viser.infra.StateSerializer
    :members:

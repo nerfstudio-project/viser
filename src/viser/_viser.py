@@ -950,22 +950,6 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         if self._share_tunnel is not None:
             self._share_tunnel.close()
 
-    def _repr_html_(self) -> str:
-        """Display the Viser server in a Jupyter notebook.
-
-        This method is automatically called by Jupyter to display the server
-        as an interactive iframe.
-
-        Returns:
-            HTML string containing an iframe pointing to the local server.
-        """
-        return f"""<iframe
-    src="http://localhost:{self.get_port()}"
-    width="100%"
-    height="600px"
-    style="border: 1px solid #ccc; border-radius: 4px;"
-></iframe>"""
-
     def get_clients(self) -> dict[int, ClientHandle]:
         """Creates and returns a copy of the mapping from connected client IDs to
         handles.

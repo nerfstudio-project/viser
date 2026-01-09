@@ -2596,10 +2596,9 @@ class SceneApi:
         """
         from ._viser import ViserServer
 
-        if not isinstance(self._owner, ViserServer):
-            raise RuntimeError(
-                "show() is only available on server.scene, not on client scene APIs."
-            )
+        assert isinstance(self._owner, ViserServer), (
+            "show() is only available on server.scene, not on client scene APIs."
+        )
 
         # Clear any previous recording state to allow multiple show() calls.
         self._owner._websock_server._record_handle = None
