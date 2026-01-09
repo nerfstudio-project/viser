@@ -52,6 +52,7 @@ import { CsmDirectionalLight } from "./CsmDirectionalLight";
 import { BasicMesh } from "./mesh/BasicMesh";
 import { BoxMesh } from "./mesh/BoxMesh";
 import { IcosphereMesh } from "./mesh/IcosphereMesh";
+import { CylinderMesh } from "./mesh/CylinderMesh";
 import { SkinnedMesh } from "./mesh/SkinnedMesh";
 import { BatchedMesh } from "./mesh/BatchedMesh";
 import { SingleGlbAsset } from "./mesh/SingleGlbAsset";
@@ -288,6 +289,15 @@ function createObjectFactory(
           <IcosphereMesh ref={ref} {...message}>
             {children}
           </IcosphereMesh>
+        ),
+      };
+    }
+    case "CylinderMessage": {
+      return {
+        makeObject: (ref, children) => (
+          <CylinderMesh ref={ref} {...message}>
+            {children}
+          </CylinderMesh>
         ),
       };
     }

@@ -290,6 +290,27 @@ export interface IcosphereMessage {
     receive_shadow: boolean | number;
   };
 }
+/** Cylinder message.
+ *
+ * (automatically generated)
+ */
+export interface CylinderMessage {
+  type: "CylinderMessage";
+  name: string;
+  props: {
+    radius: number;
+    height: number;
+    color: [number, number, number];
+    radial_segments: number;
+    wireframe: boolean;
+    opacity: number | null;
+    flat_shading: boolean;
+    side: "front" | "back" | "double";
+    material: "standard" | "toon3" | "toon5";
+    cast_shadow: boolean;
+    receive_shadow: boolean | number;
+  };
+}
 /** Skinned mesh message.
  *
  * (automatically generated)
@@ -1563,6 +1584,7 @@ export type Message =
   | MeshMessage
   | BoxMessage
   | IcosphereMessage
+  | CylinderMessage
   | SkinnedMeshMessage
   | BatchedMeshesMessage
   | BatchedGlbMessage
@@ -1655,6 +1677,7 @@ export type SceneNodeMessage =
   | MeshMessage
   | BoxMessage
   | IcosphereMessage
+  | CylinderMessage
   | SkinnedMeshMessage
   | BatchedMeshesMessage
   | BatchedGlbMessage
@@ -1704,6 +1727,7 @@ const typeSetSceneNodeMessage = new Set([
   "MeshMessage",
   "BoxMessage",
   "IcosphereMessage",
+  "CylinderMessage",
   "SkinnedMeshMessage",
   "BatchedMeshesMessage",
   "BatchedGlbMessage",

@@ -487,6 +487,13 @@ class IcosphereHandle(
     """Handle for icosphere objects."""
 
 
+class CylinderHandle(
+    _ClickableSceneNodeHandle,
+    _messages.CylinderProps,
+):
+    """Handle for cylinder objects."""
+
+
 class BatchedMeshHandle(
     _ClickableSceneNodeHandle,
     _messages.BatchedMeshesProps,
