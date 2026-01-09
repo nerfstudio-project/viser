@@ -31,7 +31,7 @@ export interface GlbMessage {
   name: string;
   props: {
     glb_data: Uint8Array<ArrayBuffer>;
-    scale: number | [number, number, number];
+    scale: number;
     cast_shadow: boolean;
     receive_shadow: boolean | number;
   };

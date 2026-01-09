@@ -79,9 +79,7 @@ export default function ButtonComponent({
         onPointerUp={stopHoldTimers}
         onPointerCancel={stopHoldTimers}
         onLostPointerCapture={stopHoldTimers}
-        style={{
-          height: "2em",
-        }}
+        style={{ height: "2em" }}
         disabled={disabled ?? false}
         size="sm"
         leftSection={

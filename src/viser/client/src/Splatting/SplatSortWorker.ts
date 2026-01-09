@@ -1,7 +1,9 @@
 /** Worker for sorting splats.
  */
 
-import MakeSorterModulePromise from "./WasmSorter/Sorter.mjs";
+import MakeSorterModuleFactory from "./WasmSorter/Sorter.mjs";
+// Import WASM as base64 URL for inlining - avoids import.meta.url issues with blob URLs.
+import SorterWasmUrl from "./WasmSorter/Sorter.wasm?url";
 
 export type SorterWorkerIncoming =
   | {
@@ -55,7 +57,10 @@ export type SorterWorkerIncoming =
     }, 0);
   };
 
-  const SorterModulePromise = MakeSorterModulePromise();
+  // Fetch WASM binary and pass to Emscripten module to avoid import.meta.url issues.
+  const SorterModulePromise = fetch(SorterWasmUrl)
+    .then((response) => response.arrayBuffer())
+    .then((wasmBinary) => MakeSorterModuleFactory({ wasmBinary }));
 
   self.onmessage = async (e) => {
     const data = e.data as SorterWorkerIncoming;
