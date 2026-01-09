@@ -18,6 +18,7 @@
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=302659d7" />
@@ -377,10 +378,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Notes</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../interactive_notebooks/">Interactive Notebooks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../performance_tips/">Performance Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../development/">Development</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../embedded_visualizations/">Embedding Visualizations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../embedded_visualizations/">Embedded Visualizations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../citation/">Citation</a></li>
 </ul>
 
@@ -422,6 +424,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">atexit</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
@@ -431,12 +434,13 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">queue</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">webbrowser</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">asyncio.events</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractEventLoop</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Coroutine</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">NewType</span><span class="p">,</span> <span class="n">TypeVar</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">msgspec</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">msgspec.msgpack</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">websockets.asyncio.server</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">websockets.datastructures</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">websockets.exceptions</span>
@@ -522,6 +526,76 @@
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">packed_bytes</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_handler</span><span class="o">.</span><span class="n">_record_handle</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">gzip</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">packed_bytes</span><span class="p">,</span> <span class="n">compresslevel</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StateSerializer.show">
+<a class="viewcode-back" href="../../../../api/auxiliary/infrastructure/#viser.infra.StateSerializer.show">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span><span class="p">,</span> <span class="n">dark_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display the serialized scene in a Jupyter notebook or web browser.</span>
+
+<span class="sd">        In Jupyter notebooks/labs, displays an inline IFrame. When running as a</span>
+<span class="sd">        script, opens the visualization in the default web browser.</span>
+
+<span class="sd">        See also :meth:`viser.ViserServer.show`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            height: Height of the embedded viewer in pixels.</span>
+<span class="sd">            dark_mode: Use dark color scheme.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">html</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">html_module</span>
+
+        <span class="n">scene_bytes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+        <span class="n">scene_b64</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">scene_bytes</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Get client HTML and inject scene data as global variables.</span>
+        <span class="c1"># The client reads from window.__VISER_EMBED_DATA__ (App.tsx).</span>
+        <span class="n">client_html_path</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;client&quot;</span> <span class="o">/</span> <span class="s2">&quot;build&quot;</span> <span class="o">/</span> <span class="s2">&quot;index.html&quot;</span>
+        <span class="p">)</span>
+        <span class="n">client_html</span> <span class="o">=</span> <span class="n">client_html_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
+        <span class="n">dark_mode_str</span> <span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="k">if</span> <span class="n">dark_mode</span> <span class="k">else</span> <span class="s2">&quot;false&quot;</span>
+        <span class="n">inject_script</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&lt;script&gt;&quot;</span>
+            <span class="sa">f</span><span class="s1">&#39;window.__VISER_EMBED_DATA__=&quot;</span><span class="si">{</span><span class="n">scene_b64</span><span class="si">}</span><span class="s1">&quot;;&#39;</span>
+            <span class="sa">f</span><span class="s2">&quot;window.__VISER_EMBED_CONFIG__=</span><span class="se">{{</span><span class="s2">darkMode:</span><span class="si">{</span><span class="n">dark_mode_str</span><span class="si">}</span><span class="se">}}</span><span class="s2">;&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&lt;/script&gt;&quot;</span>
+        <span class="p">)</span>
+        <span class="n">modified_html</span> <span class="o">=</span> <span class="n">client_html</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&lt;/head&gt;&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">inject_script</span><span class="si">}</span><span class="s2">&lt;/head&gt;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Display in IPython (Jupyter, Colab, myst-nb, etc.) using srcdoc.</span>
+        <span class="c1"># This embeds the entire HTML inline, avoiding file serving issues.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.core.getipython</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_ipython</span>  <span class="c1"># type: ignore</span>
+
+            <span class="n">ipython</span> <span class="o">=</span> <span class="n">get_ipython</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">ipython</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTML</span><span class="p">,</span> <span class="n">display</span>  <span class="c1"># type: ignore</span>
+
+                <span class="c1"># Escape HTML for srcdoc attribute.</span>
+                <span class="n">escaped_html</span> <span class="o">=</span> <span class="n">html_module</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">modified_html</span><span class="p">,</span> <span class="n">quote</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+                <span class="c1"># Wrap in div to avoid IPython&#39;s &quot;Consider using IFrame&quot; warning.</span>
+                <span class="n">display</span><span class="p">(</span>
+                    <span class="n">HTML</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;&lt;div style=&quot;border:1px solid #ddd&quot;&gt;&#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;&lt;iframe srcdoc=&quot;</span><span class="si">{</span><span class="n">escaped_html</span><span class="si">}</span><span class="s1">&quot; &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;width=&quot;100%&quot; height=&quot;</span><span class="si">{</span><span class="n">height</span><span class="si">}</span><span class="s1">&quot; &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;style=&quot;border:none;display:block&quot;&gt;&lt;/iframe&gt;&#39;</span>
+                        <span class="sa">f</span><span class="s2">&quot;&lt;/div&gt;&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">return</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="c1"># Fallback for scripts: write the modified HTML to a temp file.</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span>
+            <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.html&quot;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">modified_html</span><span class="p">)</span>
+            <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;file://&quot;</span> <span class="o">+</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
 </div>
 
 

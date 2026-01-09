@@ -1,4 +1,4 @@
-Embedding Visualizations
+Embedded Visualizations
 ========================
 
 This guide describes how to export 3D visualizations from Viser and embed them into static webpages. The process involves three main steps: exporting scene state, creating a client build, and hosting the visualization.

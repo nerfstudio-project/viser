@@ -19,6 +19,7 @@
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
@@ -378,10 +379,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Notes</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../interactive_notebooks/">Interactive Notebooks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../performance_tips/">Performance Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../development/">Development</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../embedded_visualizations/">Embedding Visualizations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../embedded_visualizations/">Embedded Visualizations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../citation/">Citation</a></li>
 </ul>
 
@@ -457,6 +459,26 @@ for example via <code class="docutils literal notranslate"><span class="pre">pat
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.14)">bytes</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dark_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/viser/infra/_infra/#StateSerializer.show"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Display the serialized scene in a Jupyter notebook or web browser.</p>
+<p>In Jupyter notebooks/labs, displays an inline IFrame. When running as a
+script, opens the visualization in the default web browser.</p>
+<p>See also <code class="xref py py-meth docutils literal notranslate"><span class="pre">viser.ViserServer.show()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Height of the embedded viewer in pixels.</p></li>
+<li><p><strong>dark_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Use dark color scheme.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>

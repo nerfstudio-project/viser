@@ -18,6 +18,7 @@
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
@@ -377,10 +378,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Notes</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../interactive_notebooks/">Interactive Notebooks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../performance_tips/">Performance Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../development/">Development</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../embedded_visualizations/">Embedding Visualizations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../embedded_visualizations/">Embedded Visualizations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../citation/">Citation</a></li>
 </ul>
 
@@ -3116,6 +3118,37 @@
         <span class="k">for</span> <span class="n">node_name</span><span class="p">,</span> <span class="n">handle</span> <span class="ow">in</span> <span class="n">handle_from_node_name</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">node_name</span> <span class="o">==</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">node_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span><span class="p">):</span>
                 <span class="n">handle</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SceneApi.show">
+<a class="viewcode-back" href="../../../api/core/scene_api/#viser.SceneApi.show">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span><span class="p">,</span> <span class="n">dark_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display the scene in a Jupyter notebook or web browser.</span>
+
+<span class="sd">        In Jupyter notebooks/labs, displays an inline IFrame with the embedded</span>
+<span class="sd">        scene. When running as a script, opens the visualization in the default</span>
+<span class="sd">        web browser.</span>
+
+<span class="sd">        This method is only available when called on ``server.scene``, not on</span>
+<span class="sd">        individual client scene APIs.</span>
+
+<span class="sd">        See also :meth:`viser.infra.StateSerializer.show()`, which can also be</span>
+<span class="sd">        used for dynamic scenes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            height: Height of the embedded viewer in pixels.</span>
+<span class="sd">            dark_mode: Use dark color scheme.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">._viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ViserServer</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="p">,</span> <span class="n">ViserServer</span><span class="p">),</span> <span class="p">(</span>
+            <span class="s2">&quot;show() is only available on server.scene, not on client scene APIs.&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Clear any previous recording state to allow multiple show() calls.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">_record_handle</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">get_scene_serializer</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">dark_mode</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

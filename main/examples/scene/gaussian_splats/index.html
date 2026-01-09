@@ -19,6 +19,7 @@
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
@@ -378,10 +379,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Notes</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../interactive_notebooks/">Interactive Notebooks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../performance_tips/">Performance Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../development/">Development</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../embedded_visualizations/">Embedding Visualizations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../embedded_visualizations/">Embedded Visualizations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../citation/">Citation</a></li>
 </ul>
 
@@ -504,14 +506,14 @@ python<span class="w"> </span>01_scene/09_gaussian_splats.py<span class="w">  </
 <span class="linenos"> 54</span>    <span class="nb">print</span><span class="p">(</span>
 <span class="linenos"> 55</span>        <span class="sa">f</span><span class="s2">&quot;Splat file with </span><span class="si">{</span><span class="n">num_gaussians</span><span class="si">=}</span><span class="s2"> loaded in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
 <span class="linenos"> 56</span>    <span class="p">)</span>
-<span class="linenos"> 57</span>    <span class="k">return</span> <span class="p">{</span>
-<span class="linenos"> 58</span>        <span class="s2">&quot;centers&quot;</span><span class="p">:</span> <span class="n">centers</span><span class="p">,</span>
+<span class="linenos"> 57</span>    <span class="k">return</span> <span class="n">SplatFile</span><span class="p">(</span>
+<span class="linenos"> 58</span>        <span class="n">centers</span><span class="o">=</span><span class="n">centers</span><span class="p">,</span>
 <span class="linenos"> 59</span>        <span class="c1"># Colors should have shape (N, 3).</span>
-<span class="linenos"> 60</span>        <span class="s2">&quot;rgbs&quot;</span><span class="p">:</span> <span class="n">splat_uint8</span><span class="p">[:,</span> <span class="mi">24</span><span class="p">:</span><span class="mi">27</span><span class="p">]</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">,</span>
-<span class="linenos"> 61</span>        <span class="s2">&quot;opacities&quot;</span><span class="p">:</span> <span class="n">splat_uint8</span><span class="p">[:,</span> <span class="mi">27</span><span class="p">:</span><span class="mi">28</span><span class="p">]</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">,</span>
+<span class="linenos"> 60</span>        <span class="n">rgbs</span><span class="o">=</span><span class="n">splat_uint8</span><span class="p">[:,</span> <span class="mi">24</span><span class="p">:</span><span class="mi">27</span><span class="p">]</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">,</span>
+<span class="linenos"> 61</span>        <span class="n">opacities</span><span class="o">=</span><span class="n">splat_uint8</span><span class="p">[:,</span> <span class="mi">27</span><span class="p">:</span><span class="mi">28</span><span class="p">]</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">,</span>
 <span class="linenos"> 62</span>        <span class="c1"># Covariances should have shape (N, 3, 3).</span>
-<span class="linenos"> 63</span>        <span class="s2">&quot;covariances&quot;</span><span class="p">:</span> <span class="n">covariances</span><span class="p">,</span>
-<span class="linenos"> 64</span>    <span class="p">}</span>
+<span class="linenos"> 63</span>        <span class="n">covariances</span><span class="o">=</span><span class="n">covariances</span><span class="p">,</span>
+<span class="linenos"> 64</span>    <span class="p">)</span>
 <span class="linenos"> 65</span>
 <span class="linenos"> 66</span>
 <span class="linenos"> 67</span><span class="k">def</span><span class="w"> </span><span class="nf">load_ply_file</span><span class="p">(</span><span class="n">ply_file_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">center</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SplatFile</span><span class="p">:</span>
@@ -538,12 +540,12 @@ python<span class="w"> </span>01_scene/09_gaussian_splats.py<span class="w">  </
 <span class="linenos"> 88</span>    <span class="nb">print</span><span class="p">(</span>
 <span class="linenos"> 89</span>        <span class="sa">f</span><span class="s2">&quot;PLY file with </span><span class="si">{</span><span class="n">num_gaussians</span><span class="si">=}</span><span class="s2"> loaded in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
 <span class="linenos"> 90</span>    <span class="p">)</span>
-<span class="linenos"> 91</span>    <span class="k">return</span> <span class="p">{</span>
-<span class="linenos"> 92</span>        <span class="s2">&quot;centers&quot;</span><span class="p">:</span> <span class="n">positions</span><span class="p">,</span>
-<span class="linenos"> 93</span>        <span class="s2">&quot;rgbs&quot;</span><span class="p">:</span> <span class="n">colors</span><span class="p">,</span>
-<span class="linenos"> 94</span>        <span class="s2">&quot;opacities&quot;</span><span class="p">:</span> <span class="n">opacities</span><span class="p">,</span>
-<span class="linenos"> 95</span>        <span class="s2">&quot;covariances&quot;</span><span class="p">:</span> <span class="n">covariances</span><span class="p">,</span>
-<span class="linenos"> 96</span>    <span class="p">}</span>
+<span class="linenos"> 91</span>    <span class="k">return</span> <span class="n">SplatFile</span><span class="p">(</span>
+<span class="linenos"> 92</span>        <span class="n">centers</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
+<span class="linenos"> 93</span>        <span class="n">rgbs</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
+<span class="linenos"> 94</span>        <span class="n">opacities</span><span class="o">=</span><span class="n">opacities</span><span class="p">,</span>
+<span class="linenos"> 95</span>        <span class="n">covariances</span><span class="o">=</span><span class="n">covariances</span><span class="p">,</span>
+<span class="linenos"> 96</span>    <span class="p">)</span>
 <span class="linenos"> 97</span>
 <span class="linenos"> 98</span>
 <span class="linenos"> 99</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
