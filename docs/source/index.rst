@@ -67,6 +67,7 @@ Install with: ``pip install viser[examples]``
    :maxdepth: 1
    :titlesonly:
 
+   ./interactive_notebooks.ipynb
    ./conventions.rst
    ./performance_tips.rst
    ./development.rst

@@ -6,14 +6,15 @@ import numpy as np
 import numpy.typing as npt
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from utils import (
+
+import viser.transforms as vtf
+
+from .utils import (
     assert_arrays_close,
     assert_transforms_close,
     general_group_test,
     sample_transform,
 )
-
-import viser.transforms as vtf
 
 
 @general_group_test

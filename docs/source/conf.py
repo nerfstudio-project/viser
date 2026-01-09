@@ -60,7 +60,12 @@ extensions = [
     "sphinxcontrib.ansi",
     "sphinxcontrib.googleanalytics",  # google analytics extension https://github.com/sphinx-contrib/googleanalytics/tree/master
     "sphinx_copybutton",  # adds copy buttons to code blocks
+    "myst_nb",  # Jupyter notebook support
 ]
+
+# -- Options for myst-nb extension -------------------------------------------
+nb_execution_mode = "auto"  # Execute notebooks without outputs during build.
+nb_execution_timeout = 60  # Timeout for cell execution in seconds.
 programoutput_use_ansi = True
 html_ansi_stylesheet = "black-on-white.css"
 
@@ -116,8 +121,11 @@ templates_path = ["_templates"]
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_suffix = ".rst"
-# source_suffix = ".rst"
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".ipynb": "myst-nb",
+    ".md": "myst-nb",
+}
 
 # The master toctree document.
 master_doc = "index"

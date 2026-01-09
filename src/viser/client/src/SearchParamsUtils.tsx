@@ -5,6 +5,9 @@
 export const searchParamKey = "websocket";
 
 export function syncSearchParamServer(server: string) {
+  // Skip URL updates in srcdoc iframes (e.g., Jupyter notebook embeds).
+  if (window.location.protocol === "about:") return;
+
   const searchParams = new URLSearchParams(window.location.search);
   // No need to update the URL bar if the websocket port matches the HTTP port.
   // So if we navigate to http://localhost:8081, this should by default connect to ws://localhost:8081.

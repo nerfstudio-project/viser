@@ -6,7 +6,8 @@ import "./index.css";
 
 import { useInView } from "react-intersection-observer";
 import { Notifications } from "@mantine/notifications";
-import { Environment, PerformanceMonitor, Stats } from "@react-three/drei";
+import { PerformanceMonitor, Stats } from "@react-three/drei";
+import { HDRJPGEnvironment } from "./HDRJPGEnvironment";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import React, { useEffect, useMemo } from "react";
@@ -43,13 +44,43 @@ import { useThrottledMessageSender } from "./WebsocketUtils";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { theme } from "./AppTheme";
 import { FrameSynchronizedMessageHandler } from "./MessageHandler";
-import { PlaybackFromFile } from "./FilePlayback";
+import { PlaybackFromFile, PlaybackFromEmbedData } from "./FilePlayback";
 import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
 import { MacWindowWrapper } from "./MacWindowWrapper";
 import { CsmDirectionalLight } from "./CsmDirectionalLight";
 import { VISER_VERSION, GITHUB_CONTRIBUTORS, Contributor } from "./VersionInfo";
 import { BatchedLabelManager } from "./BatchedLabelManager";
+
+// Import logo as asset for proper bundling/inlining.
+import logoSvg from "./assets/logo.svg";
+
+// Import HDRI files as assets for proper bundling/inlining.
+// These are HDR JPEG (gainmap) format files that are ~10x smaller than traditional HDR.
+import hdriApartment from "./assets/lebombo_1k.jpg";
+import hdriCity from "./assets/potsdamer_platz_1k.jpg";
+import hdriDawn from "./assets/kiara_1_dawn_1k.jpg";
+import hdriForest from "./assets/forest_slope_1k.jpg";
+import hdriLobby from "./assets/st_fagans_interior_1k.jpg";
+import hdriNight from "./assets/dikhololo_night_1k.jpg";
+import hdriPark from "./assets/rooitou_park_1k.jpg";
+import hdriStudio from "./assets/studio_small_03_1k.jpg";
+import hdriSunset from "./assets/venice_sunset_1k.jpg";
+import hdriWarehouse from "./assets/empty_warehouse_01_1k.jpg";
+
+// Map preset names to imported HDRI assets.
+const hdriPresets: Record<string, string> = {
+  apartment: hdriApartment,
+  city: hdriCity,
+  dawn: hdriDawn,
+  forest: hdriForest,
+  lobby: hdriLobby,
+  night: hdriNight,
+  park: hdriPark,
+  studio: hdriStudio,
+  sunset: hdriSunset,
+  warehouse: hdriWarehouse,
+};
 
 // ======= Utility functions =======
 
@@ -168,17 +199,27 @@ function ViewerRoot() {
 
   const searchParams = new URLSearchParams(window.location.search);
   const playbackPath = searchParams.get("playbackPath");
+
+  // Check for embedded scene data via window global.
+  const embedData = (window as any).__VISER_EMBED_DATA__ as string | undefined;
+  const embedConfig = (window as any).__VISER_EMBED_CONFIG__ as
+    | { darkMode?: boolean }
+    | undefined;
   const darkMode = searchParams.get("darkMode") !== null;
 
   // Create a message source string.
-  const messageSource = playbackPath === null ? "websocket" : "file_playback";
+  const messageSource = embedData
+    ? "embed"
+    : playbackPath === null
+      ? "websocket"
+      : "file_playback";
 
   // Create a single ref with all mutable state.
   const nodeRefFromName = {};
   const mutable = React.useRef<ViewerMutable>({
     // Function references with default implementations.
     sendMessage:
-      playbackPath == null
+      messageSource === "websocket"
         ? (message: any) =>
             console.log(
               `Tried to send ${message.type} but websocket is not connected!`,
@@ -238,8 +279,9 @@ function ViewerRoot() {
     mutable,
   };
 
-  // Apply URL dark mode setting if provided.
-  if (darkMode) viewer.useGui.getState().theme.dark_mode = darkMode;
+  // Apply dark mode setting if provided via URL or embed config.
+  const effectiveDarkMode = darkMode || embedConfig?.darkMode;
+  if (effectiveDarkMode) viewer.useGui.getState().theme.dark_mode = true;
 
   return (
     <ViewerContext.Provider value={viewer}>
@@ -247,6 +289,9 @@ function ViewerRoot() {
         {messageSource === "websocket" && <WebsocketMessageProducer />}
         {messageSource === "file_playback" && (
           <PlaybackFromFile fileUrl={playbackPath!} />
+        )}
+        {messageSource === "embed" && (
+          <PlaybackFromEmbedData base64Data={embedData!} />
         )}
       </ViewerContents>
     </ViewerContext.Provider>
@@ -603,22 +648,9 @@ function DefaultLights() {
   );
 
   // Calculate environment map.
+  // Uses HDR JPEG (gainmap) format for smaller file sizes (~10x reduction).
   const envMapNode = useMemo(() => {
     if (environmentMap.hdri === null) return null;
-
-    // HDRI presets mapping.
-    const presetsObj = {
-      apartment: "lebombo_1k.hdr",
-      city: "potsdamer_platz_1k.hdr",
-      dawn: "kiara_1_dawn_1k.hdr",
-      forest: "forest_slope_1k.hdr",
-      lobby: "st_fagans_interior_1k.hdr",
-      night: "dikhololo_night_1k.hdr",
-      park: "rooitou_park_1k.hdr",
-      studio: "studio_small_03_1k.hdr",
-      sunset: "venice_sunset_1k.hdr",
-      warehouse: "empty_warehouse_01_1k.hdr",
-    };
 
     // Calculate quaternions for world transformation.
     const Rquat_threeworld_world = new THREE.Quaternion(
@@ -654,8 +686,8 @@ function DefaultLights() {
     );
 
     return (
-      <Environment
-        files={`hdri/${presetsObj[environmentMap.hdri]}`}
+      <HDRJPGEnvironment
+        files={hdriPresets[environmentMap.hdri]}
         background={environmentMap.background}
         backgroundBlurriness={environmentMap.background_blurriness}
         backgroundIntensity={environmentMap.background_intensity}
@@ -893,7 +925,7 @@ function ViserLogo() {
           onClick={openAbout}
           title="About Viser"
         >
-          <Image src="./logo.svg" style={{ width: "2.5em", height: "auto" }} />
+          <Image src={logoSvg} style={{ width: "2.5em", height: "auto" }} />
         </Box>
       </Tooltip>
       <Modal
