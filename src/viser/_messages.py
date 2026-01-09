@@ -282,8 +282,8 @@ class GlbProps:
     glb_data: bytes
     """A binary payload containing the GLB data. """
     scale: Union[float, Tuple[float, float, float]]
-    """Scale for resizing the GLB asset. A single float for uniform scaling or
-    a tuple of (x, y, z) for per-axis scaling."""
+    """A scale for resizing the GLB asset. A single float for uniform scaling
+    or a tuple of (x, y, z) for per-axis scaling."""
     cast_shadow: bool
     """Whether or not to cast shadows."""
     receive_shadow: Union[bool, float]

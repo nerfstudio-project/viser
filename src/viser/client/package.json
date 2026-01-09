@@ -10,6 +10,7 @@
     "@mantine/vanilla-extract": "^8.3.0",
     "@mdx-js/mdx": "^3.0.1",
     "@mdx-js/react": "^3.0.1",
+    "@monogrid/gainmap-js": "^3.4.0",
     "@msgpack/msgpack": "^3.0.0-beta2",
     "@react-three/drei": "^10.7.3",
     "@react-three/fiber": "^9.3.0",
@@ -46,6 +47,7 @@
     "uplot-react": "^1.2.2",
     "uuid": "^11.0.5",
     "vite": "^5.2.6",
+    "vite-plugin-singlefile": "^2.0.3",
     "vite-plugin-svgr": "^4.2.0",
     "vite-tsconfig-paths": "^4.2.0",
     "zustand": "^4.3.7"
