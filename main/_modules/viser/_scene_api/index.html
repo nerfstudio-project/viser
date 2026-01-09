@@ -2114,7 +2114,6 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">batched_scales</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">batched_colors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">RgbTupleOrArray</span> <span class="o">=</span> <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
-        <span class="n">batched_opacities</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">lod</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;off&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
         <span class="n">wireframe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">opacity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2145,9 +2144,6 @@
 <span class="sd">            batched_colors: Colors of the mesh instances. Can be a single color as an RGB tuple</span>
 <span class="sd">                to apply to all instances, or an np.ndarray of shape (N, 3) to specify colors</span>
 <span class="sd">                for each instance. Defaults to (90, 200, 255).</span>
-<span class="sd">            batched_opacities: Per-instance opacity multipliers, shape (N,). Each value is</span>
-<span class="sd">                multiplied with the global opacity parameter. None means all instances use</span>
-<span class="sd">                the global opacity.</span>
 <span class="sd">            lod: LOD settings, either &quot;off&quot;, &quot;auto&quot;, or a tuple of (distance, ratio) pairs.</span>
 <span class="sd">            wireframe: Boolean indicating if the meshes should be rendered as wireframes.</span>
 <span class="sd">            opacity: Opacity of the meshes. None means opaque.</span>
@@ -2187,11 +2183,6 @@
             <span class="n">batched_scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">batched_scales</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
             <span class="k">assert</span> <span class="n">batched_scales</span><span class="o">.</span><span class="n">shape</span> <span class="ow">in</span> <span class="p">((</span><span class="n">num_instances</span><span class="p">,),</span> <span class="p">(</span><span class="n">num_instances</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
-        <span class="c1"># Handle batched opacities.</span>
-        <span class="k">if</span> <span class="n">batched_opacities</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">batched_opacities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">batched_opacities</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="n">batched_opacities</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">num_instances</span><span class="p">,)</span>
-
         <span class="c1"># Handle batched colors.</span>
         <span class="n">batched_colors_array</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">batched_colors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -2214,7 +2205,6 @@
                 <span class="n">lod</span><span class="o">=</span><span class="n">lod</span><span class="p">,</span>
                 <span class="n">cast_shadow</span><span class="o">=</span><span class="n">cast_shadow</span><span class="p">,</span>
                 <span class="n">receive_shadow</span><span class="o">=</span><span class="n">receive_shadow</span><span class="p">,</span>
-                <span class="n">batched_opacities</span><span class="o">=</span><span class="n">batched_opacities</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">BatchedMeshHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span></div>
