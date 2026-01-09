@@ -42,13 +42,6 @@ export const IcosphereMesh = React.forwardRef<
     return icosphereGeometryCache.get(message.props.subdivisions)!;
   }, [message.props.subdivisions]);
 
-  // Clean up geometry when it changes.
-  React.useEffect(() => {
-    return () => {
-      if (geometry) geometry.dispose();
-    };
-  }, [geometry]);
-
   // Clean up material when it changes.
   React.useEffect(() => {
     return () => {

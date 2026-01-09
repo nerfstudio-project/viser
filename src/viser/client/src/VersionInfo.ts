@@ -14,12 +14,12 @@ export const GITHUB_CONTRIBUTORS: Contributor[] = [
     html_url: "https://github.com/brentyi",
   },
   {
-    login: "kerrj",
-    html_url: "https://github.com/kerrj",
-  },
-  {
     login: "chungmin99",
     html_url: "https://github.com/chungmin99",
+  },
+  {
+    login: "kerrj",
+    html_url: "https://github.com/kerrj",
   },
   {
     login: "tancik",
@@ -116,10 +116,6 @@ export const GITHUB_CONTRIBUTORS: Contributor[] = [
   {
     login: "ojh6404",
     html_url: "https://github.com/ojh6404",
-  },
-  {
-    login: "heiwang1997",
-    html_url: "https://github.com/heiwang1997",
   },
   {
     login: "hongsukchoi",

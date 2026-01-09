@@ -40,13 +40,6 @@ export const CylinderMesh = React.forwardRef<
     return cylinderGeometryCache.get(message.props.radial_segments)!;
   }, [message.props.radial_segments]);
 
-  // Clean up geometry when it changes.
-  React.useEffect(() => {
-    return () => {
-      if (geometry) geometry.dispose();
-    };
-  }, [geometry]);
-
   // Clean up material when it changes.
   React.useEffect(() => {
     return () => {

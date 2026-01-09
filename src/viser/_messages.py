@@ -746,7 +746,7 @@ class CylinderProps:
     color: Tuple[int, int, int]
     """Color of the cylinder as RGB integers."""
     radial_segments: int
-    """Number of segmented faces around the circumference of the cylinder. Synchronized"""
+    """Number of segmented faces around the circumference of the cylinder."""
     wireframe: bool
     """Boolean indicating if the cylinder should be rendered as a wireframe."""
     opacity: Optional[float]
