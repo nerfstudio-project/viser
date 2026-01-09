@@ -31,7 +31,7 @@ export interface GlbMessage {
   name: string;
   props: {
     glb_data: Uint8Array<ArrayBuffer>;
-    scale: number | [number, number, number];
+    scale: number;
     cast_shadow: boolean;
     receive_shadow: boolean | number;
   };
@@ -281,6 +281,27 @@ export interface IcosphereMessage {
     radius: number;
     subdivisions: number;
     color: [number, number, number];
+    wireframe: boolean;
+    opacity: number | null;
+    flat_shading: boolean;
+    side: "front" | "back" | "double";
+    material: "standard" | "toon3" | "toon5";
+    cast_shadow: boolean;
+    receive_shadow: boolean | number;
+  };
+}
+/** Cylinder message.
+ *
+ * (automatically generated)
+ */
+export interface CylinderMessage {
+  type: "CylinderMessage";
+  name: string;
+  props: {
+    radius: number;
+    height: number;
+    color: [number, number, number];
+    radial_segments: number;
     wireframe: boolean;
     opacity: number | null;
     flat_shading: boolean;
@@ -795,6 +816,7 @@ export interface GuiButtonMessage {
       | [number, number, number]
       | null;
     _icon_html: string | null;
+    _hold_callback_freqs: number[];
   };
 }
 /** GuiUploadButtonMessage(uuid: 'str', container_uuid: 'str', props: 'GuiUploadButtonProps')
@@ -1367,6 +1389,17 @@ export interface GuiCloseModalMessage {
   type: "GuiCloseModalMessage";
   uuid: string;
 }
+/** Message sent from client->server when a button is being held.
+ *
+ * Sent periodically at the specified frequency while the button is pressed.
+ *
+ * (automatically generated)
+ */
+export interface GuiButtonHoldMessage {
+  type: "GuiButtonHoldMessage";
+  uuid: string;
+  frequency: number;
+}
 /** Sent client<->server when any property of a GUI component is changed.
  *
  * (automatically generated)
@@ -1552,6 +1585,7 @@ export type Message =
   | MeshMessage
   | BoxMessage
   | IcosphereMessage
+  | CylinderMessage
   | SkinnedMeshMessage
   | BatchedMeshesMessage
   | BatchedGlbMessage
@@ -1612,6 +1646,7 @@ export type Message =
   | ResetGuiMessage
   | GuiModalMessage
   | GuiCloseModalMessage
+  | GuiButtonHoldMessage
   | GuiUpdateMessage
   | SceneNodeUpdateMessage
   | ThemeConfigurationMessage
@@ -1643,6 +1678,7 @@ export type SceneNodeMessage =
   | MeshMessage
   | BoxMessage
   | IcosphereMessage
+  | CylinderMessage
   | SkinnedMeshMessage
   | BatchedMeshesMessage
   | BatchedGlbMessage
@@ -1692,6 +1728,7 @@ const typeSetSceneNodeMessage = new Set([
   "MeshMessage",
   "BoxMessage",
   "IcosphereMessage",
+  "CylinderMessage",
   "SkinnedMeshMessage",
   "BatchedMeshesMessage",
   "BatchedGlbMessage",

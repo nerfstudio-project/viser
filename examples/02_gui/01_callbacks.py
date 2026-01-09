@@ -31,7 +31,9 @@ import viser
 def main() -> None:
     server = viser.ViserServer()
 
-    gui_reset_scene = server.gui.add_button("Reset Scene")
+    gui_reset_scene_click = server.gui.add_button("Reset Scene on Click")
+
+    gui_reset_scene_hold = server.gui.add_button("Reset Scene on Hold")
 
     gui_plane = server.gui.add_dropdown(
         "Grid plane", ("xz", "xy", "yx", "yz", "zx", "zy")
@@ -99,9 +101,20 @@ def main() -> None:
     gui_location.on_update(lambda _: draw_frame())
     gui_num_points.on_update(lambda _: draw_points())
 
-    @gui_reset_scene.on_click
+    @gui_reset_scene_click.on_click
     def _(_) -> None:
         """Reset the scene when the reset button is clicked."""
+        gui_show_frame.value = True
+        gui_location.value = 0.0
+        gui_axis.value = "x"
+        gui_num_points.value = 10_000
+
+        draw_frame()
+        draw_points()
+
+    @gui_reset_scene_hold.on_hold
+    def _(_) -> None:
+        """Reset the scene when the reset button is held."""
         gui_show_frame.value = True
         gui_location.value = 0.0
         gui_axis.value = "x"

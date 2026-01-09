@@ -1,14 +1,13 @@
+from unittest.mock import patch
+
 import viser
 import viser._client_autobuild
 
 
+@patch.object(viser._client_autobuild, "ensure_client_is_built", lambda: None)
 def test_remove_scene_node() -> None:
     """Test that viser's internal message buffer is cleaned up properly when we
     remove scene nodes."""
-
-    # def test_server_port_is_freed():
-    # Mock the client autobuild to avoid building the client.
-    viser._client_autobuild.ensure_client_is_built = lambda: None
 
     server = viser.ViserServer()
 
@@ -25,13 +24,10 @@ def test_remove_scene_node() -> None:
     assert len(internal_message_dict) == orig_len
 
 
+@patch.object(viser._client_autobuild, "ensure_client_is_built", lambda: None)
 def test_remove_gui_element() -> None:
     """Test that viser's internal message buffer is cleaned up properly when we
     remove GUI elements."""
-
-    # def test_server_port_is_freed():
-    # Mock the client autobuild to avoid building the client.
-    viser._client_autobuild.ensure_client_is_built = lambda: None
 
     server = viser.ViserServer()
 
@@ -52,13 +48,10 @@ def test_remove_gui_element() -> None:
     assert len(internal_message_dict) == orig_len
 
 
+@patch.object(viser._client_autobuild, "ensure_client_is_built", lambda: None)
 def test_remove_gui_in_modal() -> None:
     """Test that viser's internal message buffer is cleaned up properly when we
     remove GUI elements."""
-
-    # def test_server_port_is_freed():
-    # Mock the client autobuild to avoid building the client.
-    viser._client_autobuild.ensure_client_is_built = lambda: None
 
     server = viser.ViserServer()
 

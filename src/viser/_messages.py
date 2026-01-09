@@ -282,8 +282,8 @@ class GlbProps:
     glb_data: bytes
     """A binary payload containing the GLB data. """
     scale: Union[float, Tuple[float, float, float]]
-    """Scale for resizing the GLB asset. A single float for uniform scaling or
-    a tuple of (x, y, z) for per-axis scaling."""
+    """A scale for resizing the GLB asset. A single float for uniform scaling
+    or a tuple of (x, y, z) for per-axis scaling."""
     cast_shadow: bool
     """Whether or not to cast shadows."""
     receive_shadow: Union[bool, float]
@@ -641,6 +641,13 @@ class IcosphereMessage(_CreateSceneNodeMessage):
 
 
 @dataclasses.dataclass
+class CylinderMessage(_CreateSceneNodeMessage):
+    """Cylinder message."""
+
+    props: CylinderProps
+
+
+@dataclasses.dataclass
 class MeshProps:
     vertices: npt.NDArray[np.float32]
     """A numpy array of vertex positions. Should have shape (V, 3).
@@ -707,8 +714,7 @@ class IcosphereProps:
     radius: float
     """Radius of the icosphere."""
     subdivisions: int
-    """Number of subdivisions to use when creating the icosphere. Synchronized
-    """
+    """Number of subdivisions to use when creating the icosphere."""
     color: Tuple[int, int, int]
     """Color of the icosphere as RGB integers. """
     wireframe: bool
@@ -728,6 +734,34 @@ class IcosphereProps:
     """Whether to receive shadows. If True, receives shadows normally. If
     False, no shadows. If a float (0-1), shadows are rendered with a fixed
     opacity regardless of lighting conditions. """
+
+
+@dataclasses.dataclass
+class CylinderProps:
+    radius: float
+    """Radius of the cylinder."""
+    height: float
+    """Height of the cylinder."""
+    color: Tuple[int, int, int]
+    """Color of the cylinder as RGB integers."""
+    radial_segments: int
+    """Number of segmented faces around the circumference of the cylinder."""
+    wireframe: bool
+    """Boolean indicating if the cylinder should be rendered as a wireframe."""
+    opacity: Optional[float]
+    """Opacity of the cylinder. None means opaque."""
+    flat_shading: bool
+    """Whether to do flat shading."""
+    side: Literal["front", "back", "double"]
+    """Side of the surface to render."""
+    material: Literal["standard", "toon3", "toon5"]
+    """Material type of the cylinder."""
+    cast_shadow: bool
+    """Whether or not to cast shadows."""
+    receive_shadow: Union[bool, float]
+    """Whether to receive shadows. If True, receives shadows normally. If
+    False, no shadows. If a float (0-1), shadows are rendered with a fixed
+    opacity regardless of lighting conditions."""
 
 
 @dataclasses.dataclass
@@ -1301,6 +1335,8 @@ class GuiButtonProps(GuiBaseProps):
     """Color of the button."""
     _icon_html: Optional[str]
     """(Private) HTML string for the icon to be displayed on the button."""
+    _hold_callback_freqs: Tuple[float, ...]
+    """(Private) Tuple of frequencies (Hz) at which hold callbacks should be triggered."""
 
 
 @dataclasses.dataclass
@@ -1308,6 +1344,17 @@ class GuiButtonMessage(_CreateGuiComponentMessage):
     value: bool
     container_uuid: str
     props: GuiButtonProps
+
+
+@dataclasses.dataclass
+class GuiButtonHoldMessage(Message):
+    """Message sent from client->server when a button is being held.
+
+    Sent periodically at the specified frequency while the button is pressed."""
+
+    uuid: str
+    frequency: float
+    """The frequency (Hz) at which this hold message was triggered."""
 
 
 @dataclasses.dataclass

@@ -33,6 +33,7 @@ from ._scene_handles import BatchedGlbHandle as BatchedGlbHandle
 from ._scene_handles import BatchedMeshHandle as BatchedMeshHandle
 from ._scene_handles import BoxHandle as BoxHandle
 from ._scene_handles import CameraFrustumHandle as CameraFrustumHandle
+from ._scene_handles import CylinderHandle as CylinderHandle
 from ._scene_handles import DirectionalLightHandle as DirectionalLightHandle
 from ._scene_handles import FrameHandle as FrameHandle
 from ._scene_handles import GaussianSplatHandle as GaussianSplatHandle

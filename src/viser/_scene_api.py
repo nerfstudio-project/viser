@@ -35,6 +35,7 @@ from ._scene_handles import (
     BoneState,
     BoxHandle,
     CameraFrustumHandle,
+    CylinderHandle,
     DirectionalLightHandle,
     FrameHandle,
     GaussianSplatHandle,
@@ -2064,6 +2065,70 @@ class SceneApi:
         )
         return IcosphereHandle._make(self, message, name, wxyz, position, visible)
 
+    @deprecated_positional_shim
+    def add_cylinder(
+        self,
+        name: str,
+        radius: float = 1.0,
+        height: float = 1.0,
+        color: RgbTupleOrArray = (255, 0, 0),
+        *,
+        radial_segments: int = 32,
+        wireframe: bool = False,
+        opacity: float | None = None,
+        material: Literal["standard", "toon3", "toon5"] = "standard",
+        flat_shading: bool = False,
+        side: Literal["front", "back", "double"] = "front",
+        cast_shadow: bool = True,
+        receive_shadow: bool | float = True,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> CylinderHandle:
+        """Add a cylinder to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            radius: Radius of the cylinder.
+            height: Height of the cylinder.
+            color: Color of the cylinder as an RGB tuple.
+            radial_segments: Number of segmented faces around the circumference of the cylinder.
+            wireframe: Boolean indicating if the cylinder should be rendered as a wireframe.
+            opacity: Opacity of the cylinder. None means opaque.
+            material: Material type of the cylinder ('standard', 'toon3', 'toon5').
+            flat_shading: Whether to do flat shading.
+            side: Side of the surface to render ('front', 'back', 'double').
+            cast_shadow: Whether this cylinder should cast shadows.
+            receive_shadow: Whether this cylinder should receive shadows. If True,
+                receives shadows normally. If False, no shadows. If a float
+                (0-1), shadows are rendered with a fixed opacity regardless of
+                lighting conditions.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation from parent frame to local frame (t_pl).
+            visible: Whether or not this cylinder is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+        message = _messages.CylinderMessage(
+            name=name,
+            props=_messages.CylinderProps(
+                radius=radius,
+                height=height,
+                color=_encode_rgb(color),
+                radial_segments=radial_segments,
+                wireframe=wireframe,
+                opacity=opacity,
+                flat_shading=flat_shading,
+                side=side,
+                material=material,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
+            ),
+        )
+        return CylinderHandle._make(self, message, name, wxyz, position, visible)
+
     def set_background_image(
         self,
         image: np.ndarray | None,
@@ -2586,3 +2651,31 @@ class SceneApi:
         for node_name, handle in handle_from_node_name.items():
             if node_name == name or node_name.startswith(name + "/"):
                 handle.remove()
+
+    def show(self, height: int = 400, dark_mode: bool = False) -> None:
+        """Display the scene in a Jupyter notebook or web browser.
+
+        In Jupyter notebooks/labs, displays an inline IFrame with the embedded
+        scene. When running as a script, opens the visualization in the default
+        web browser.
+
+        This method is only available when called on ``server.scene``, not on
+        individual client scene APIs.
+
+        See also :meth:`viser.infra.StateSerializer.show()`, which can also be
+        used for dynamic scenes.
+
+        Args:
+            height: Height of the embedded viewer in pixels.
+            dark_mode: Use dark color scheme.
+        """
+        from ._viser import ViserServer
+
+        assert isinstance(self._owner, ViserServer), (
+            "show() is only available on server.scene, not on client scene APIs."
+        )
+
+        # Clear any previous recording state to allow multiple show() calls.
+        self._owner._websock_server._record_handle = None
+
+        self._owner.get_scene_serializer().show(height, dark_mode)
