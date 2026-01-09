@@ -358,6 +358,7 @@ export interface BatchedMeshesMessage {
     material: "standard" | "toon3" | "toon5";
     cast_shadow: boolean;
     receive_shadow: boolean;
+    batched_opacities: Uint8Array<ArrayBuffer> | null;
   };
 }
 /** Message from server->client carrying batched GLB information.

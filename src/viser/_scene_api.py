@@ -1614,6 +1614,7 @@ class SceneApi:
         *,
         batched_scales: tuple[float, ...] | np.ndarray | None = None,
         batched_colors: np.ndarray | RgbTupleOrArray = (90, 200, 255),
+        batched_opacities: tuple[float, ...] | np.ndarray | None = None,
         lod: Literal["auto", "off"] | tuple[tuple[float, float], ...] = "auto",
         wireframe: bool = False,
         opacity: float | None = None,
@@ -1644,6 +1645,9 @@ class SceneApi:
             batched_colors: Colors of the mesh instances. Can be a single color as an RGB tuple
                 to apply to all instances, or an np.ndarray of shape (N, 3) to specify colors
                 for each instance. Defaults to (90, 200, 255).
+            batched_opacities: Per-instance opacity multipliers, shape (N,). Each value is
+                multiplied with the global opacity parameter. None means all instances use
+                the global opacity.
             lod: LOD settings, either "off", "auto", or a tuple of (distance, ratio) pairs.
             wireframe: Boolean indicating if the meshes should be rendered as wireframes.
             opacity: Opacity of the meshes. None means opaque.
@@ -1683,6 +1687,11 @@ class SceneApi:
             batched_scales = np.asarray(batched_scales).astype(np.float32)
             assert batched_scales.shape in ((num_instances,), (num_instances, 3))
 
+        # Handle batched opacities.
+        if batched_opacities is not None:
+            batched_opacities = np.asarray(batched_opacities).astype(np.float32)
+            assert batched_opacities.shape == (num_instances,)
+
         # Handle batched colors.
         batched_colors_array = None
         if batched_colors is not None:
@@ -1705,6 +1714,7 @@ class SceneApi:
                 lod=lod,
                 cast_shadow=cast_shadow,
                 receive_shadow=receive_shadow,
+                batched_opacities=batched_opacities,
             ),
         )
         return BatchedMeshHandle._make(self, message, name, wxyz, position, visible)

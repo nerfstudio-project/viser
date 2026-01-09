@@ -867,6 +867,8 @@ class BatchedMeshesProps(_BatchedMeshExtraProps):
     """Whether or not to cast shadows."""
     receive_shadow: bool
     """Whether or not to receive shadows."""
+    batched_opacities: Optional[npt.NDArray[np.float32]] = None
+    """Per-instance opacity multipliers, shape (N,). Multiplied with global opacity."""
 
 
 @dataclasses.dataclass
