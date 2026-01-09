@@ -549,6 +549,39 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="viser.GuiButtonHandle.on_hold">
+<span class="sig-name descname"><span class="pre">on_hold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback_hz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">_HoldCallback</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_HoldCallback</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/viser/_gui_handles/#GuiButtonHandle.on_hold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiButtonHandle.on_hold" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">on_hold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_HoldCallback</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback_hz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_HoldCallback</span></span></span></dt>
+<dd><p>Attach a function to call repeatedly while a button is held down.</p>
+<p>The callback will be triggered immediately when the button is pressed,
+and then repeatedly at the specified frequency until released.</p>
+<dl>
+<dt>Can be used as a decorator with or without arguments:</dt><dd><p>&#64;button.on_hold
+def callback(event): …</p>
+<p>&#64;button.on_hold(callback_hz=30.0)
+def callback(event): …</p>
+</dd>
+<dt>Or called directly:</dt><dd><p>button.on_hold(callback)
+button.on_hold(callback, callback_hz=30.0)</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> – The callback function to attach. If None, returns a decorator.</p></li>
+<li><p><strong>callback_hz</strong> – The frequency in Hz at which to call the callback while
+the button is held. Defaults to 10.0 Hz.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Note:
+- If <cite>func</cite> is a regular function (defined with <cite>def</cite>), it will be executed in a thread pool.
+- If <cite>func</cite> is an async function (defined with <cite>async def</cite>), it will be executed in the event loop.</p>
+<p>Using async functions can be useful for reducing race conditions.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="viser.GuiButtonHandle.remove">
 <span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#viser.GuiButtonHandle.remove" title="Link to this definition">¶</a></dt>
 <dd><p>Permanently remove this GUI element from the visualizer.</p>
@@ -2362,6 +2395,7 @@ non-focused series to emphasize the active one.</p>
 <li><a class="reference internal" href="#viser.GuiButtonHandle.value"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.value</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiButtonHandle.icon"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.icon</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiButtonHandle.on_click"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.on_click()</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiButtonHandle.on_hold"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.on_hold()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiButtonHandle.remove"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.remove()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiButtonHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.update_timestamp</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiButtonHandle.color"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.color</span></code></a></li>

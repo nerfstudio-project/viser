@@ -436,6 +436,7 @@
     <span class="n">Literal</span><span class="p">,</span>
     <span class="n">Tuple</span><span class="p">,</span>
     <span class="n">TypeVar</span><span class="p">,</span>
+    <span class="n">overload</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">imageio.v3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">iio</span>
@@ -530,6 +531,16 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Callback for synchronizing inputs across clients.&quot;&quot;&quot;</span>
 
     <span class="n">removed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_GuiButtonHandleState</span><span class="p">(</span><span class="n">_GuiHandleState</span><span class="p">[</span><span class="nb">bool</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Internal API for button GUI elements with hold callback support.&quot;&quot;&quot;</span>
+
+    <span class="n">hold_cbs_from_freq</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">],</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Coroutine</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mapping from frequency (Hz) to list of callbacks to call when button is held.&quot;&quot;&quot;</span>
 
 
 <span class="c1"># Not exported for now because some GUI handles don&#39;t currently inhert from</span>
@@ -831,9 +842,15 @@
 <span class="sd">       Value of the button. Set to `True` when the button is pressed. Can be manually set back to `False`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">_icon</span><span class="p">:</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiButtonHandleState</span><span class="p">,</span> <span class="n">_icon</span><span class="p">:</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">impl</span><span class="o">=</span><span class="n">_impl</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_icon</span> <span class="o">=</span> <span class="n">_icon</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_button_impl</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_GuiButtonHandleState</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Access the button-specific implementation state.&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="p">,</span> <span class="n">_GuiButtonHandleState</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">icon</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -860,6 +877,77 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">update_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">func</span></div>
+
+
+    <span class="c1"># Type alias for button hold callbacks.</span>
+    <span class="n">_HoldCallback</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="s2">&quot;GuiEvent[GuiButtonHandle]&quot;</span><span class="p">],</span> <span class="s2">&quot;None | Coroutine&quot;</span><span class="p">]</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_hold</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">func</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">callback_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_HoldCallback</span><span class="p">],</span> <span class="n">_HoldCallback</span><span class="p">]:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_hold</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">func</span><span class="p">:</span> <span class="n">_HoldCallback</span><span class="p">,</span>
+        <span class="n">callback_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_HoldCallback</span><span class="p">:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="GuiButtonHandle.on_hold">
+<a class="viewcode-back" href="../../../api/handles/gui_handles/#viser.GuiButtonHandle.on_hold">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_hold</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">func</span><span class="p">:</span> <span class="n">_HoldCallback</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">callback_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_HoldCallback</span><span class="p">],</span> <span class="n">_HoldCallback</span><span class="p">]</span> <span class="o">|</span> <span class="n">_HoldCallback</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a function to call repeatedly while a button is held down.</span>
+
+<span class="sd">        The callback will be triggered immediately when the button is pressed,</span>
+<span class="sd">        and then repeatedly at the specified frequency until released.</span>
+
+<span class="sd">        Can be used as a decorator with or without arguments:</span>
+<span class="sd">            @button.on_hold</span>
+<span class="sd">            def callback(event): ...</span>
+
+<span class="sd">            @button.on_hold(callback_hz=30.0)</span>
+<span class="sd">            def callback(event): ...</span>
+
+<span class="sd">        Or called directly:</span>
+<span class="sd">            button.on_hold(callback)</span>
+<span class="sd">            button.on_hold(callback, callback_hz=30.0)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            func: The callback function to attach. If None, returns a decorator.</span>
+<span class="sd">            callback_hz: The frequency in Hz at which to call the callback while</span>
+<span class="sd">                the button is held. Defaults to 10.0 Hz.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">        - If `func` is a regular function (defined with `def`), it will be executed in a thread pool.</span>
+<span class="sd">        - If `func` is an async function (defined with `async def`), it will be executed in the event loop.</span>
+
+<span class="sd">        Using async functions can be useful for reducing race conditions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">button_impl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_button_impl</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">register_callback</span><span class="p">(</span>
+            <span class="n">f</span><span class="p">:</span> <span class="n">GuiButtonHandle</span><span class="o">.</span><span class="n">_HoldCallback</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiButtonHandle</span><span class="o">.</span><span class="n">_HoldCallback</span><span class="p">:</span>
+            <span class="c1"># Add callback to the frequency-specific list.</span>
+            <span class="k">if</span> <span class="n">callback_hz</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">button_impl</span><span class="o">.</span><span class="n">hold_cbs_from_freq</span><span class="p">:</span>
+                <span class="n">button_impl</span><span class="o">.</span><span class="n">hold_cbs_from_freq</span><span class="p">[</span><span class="n">callback_hz</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">button_impl</span><span class="o">.</span><span class="n">hold_cbs_from_freq</span><span class="p">[</span><span class="n">callback_hz</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+            <span class="c1"># Update the prop to notify client of new frequency.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hold_callback_freqs</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">button_impl</span><span class="o">.</span><span class="n">hold_cbs_from_freq</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+            <span class="k">return</span> <span class="n">f</span>
+
+        <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">register_callback</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">register_callback</span></div>
 </div>
 
 
