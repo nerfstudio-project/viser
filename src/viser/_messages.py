@@ -714,8 +714,7 @@ class IcosphereProps:
     radius: float
     """Radius of the icosphere."""
     subdivisions: int
-    """Number of subdivisions to use when creating the icosphere. Synchronized
-    """
+    """Number of subdivisions to use when creating the icosphere."""
     color: Tuple[int, int, int]
     """Color of the icosphere as RGB integers. """
     wireframe: bool
