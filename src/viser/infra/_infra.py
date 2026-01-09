@@ -20,7 +20,6 @@ from pathlib import Path
 from typing import Any, Callable, Generator, NewType, TypeVar
 
 import msgspec.msgpack
-import viser  # Import for version checking
 import websockets.asyncio.server
 import websockets.datastructures
 import websockets.exceptions
@@ -29,6 +28,8 @@ from websockets import Headers
 from websockets.asyncio.server import ServerConnection
 from websockets.http11 import Request, Response
 from websockets.typing import Subprotocol
+
+import viser  # Import for version checking
 
 from ._async_message_buffer import AsyncMessageBuffer
 from ._messages import Message
@@ -112,14 +113,15 @@ class StateSerializer:
         """
         import html as html_module
 
-        from viser import _embed
-
         scene_bytes = self.serialize()
         scene_b64 = base64.b64encode(scene_bytes).decode("ascii")
 
         # Get client HTML and inject scene data as global variables.
         # The client reads from window.__VISER_EMBED_DATA__ (App.tsx).
-        client_html = _embed._get_client_html()
+        client_html_path = (
+            Path(__file__).parent.parent / "client" / "build" / "index.html"
+        )
+        client_html = client_html_path.read_text()
         dark_mode_str = "true" if dark_mode else "false"
         inject_script = (
             f"<script>"
