@@ -14,6 +14,9 @@ import {
 } from "@mantine/core";
 import { IconHomeMove, IconPhoto } from "@tabler/icons-react";
 import React from "react";
+
+// Import logo as asset for proper bundling/inlining.
+import logoSvg from "../assets/logo.svg";
 import SceneTreeTable from "./SceneTreeTable";
 import { DevSettingsPanel } from "../DevSettingsPanel";
 
@@ -32,7 +35,7 @@ export default function ServerControls() {
           <TextInput
             leftSection={
               <Image
-                src="./logo.svg"
+                src={logoSvg}
                 style={{
                   width: "1rem",
                   height: "auto",

@@ -62,7 +62,7 @@ export type ViewerMutable = {
 
 export type ViewerContextContents = {
   // Non-mutable state.
-  messageSource: "websocket" | "file_playback";
+  messageSource: "websocket" | "file_playback" | "embed";
 
   // Zustand state hooks and actions.
   useSceneTree: UseSceneTree["store"];

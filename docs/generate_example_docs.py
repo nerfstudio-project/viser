@@ -9,6 +9,8 @@ This script:
 4. Saves it to docs/source/_static/examples/
 """
 
+from __future__ import annotations
+
 import asyncio
 import os
 import random
@@ -434,7 +436,7 @@ def generate_screenshot_includes(
 def cleanup_old_files(
     source_dir: Path,
     categories: dict,
-    examples: List[Tuple[str, Path, str, str, str]] = None,
+    examples: list[tuple[str, Path, str, str, str]] | None = None,
 ):
     """Remove old RST files and screenshots that are no longer needed."""
     # Clean up example category directories

@@ -2641,3 +2641,31 @@ class SceneApi:
         for node_name, handle in handle_from_node_name.items():
             if node_name == name or node_name.startswith(name + "/"):
                 handle.remove()
+
+    def show(self, height: int = 400, dark_mode: bool = False) -> None:
+        """Display the scene in a Jupyter notebook or web browser.
+
+        In Jupyter notebooks/labs, displays an inline IFrame with the embedded
+        scene. When running as a script, opens the visualization in the default
+        web browser.
+
+        This method is only available when called on ``server.scene``, not on
+        individual client scene APIs.
+
+        See also :meth:`viser.infra.StateSerializer.show()`, which can also be
+        used for dynamic scenes.
+
+        Args:
+            height: Height of the embedded viewer in pixels.
+            dark_mode: Use dark color scheme.
+        """
+        from ._viser import ViserServer
+
+        assert isinstance(self._owner, ViserServer), (
+            "show() is only available on server.scene, not on client scene APIs."
+        )
+
+        # Clear any previous recording state to allow multiple show() calls.
+        self._owner._websock_server._record_handle = None
+
+        self._owner.get_scene_serializer().show(height, dark_mode)

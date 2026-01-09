@@ -61,6 +61,7 @@ from ._gui_handles import (
     GuiVector3Handle,
     SupportsRemoveProtocol,
     UploadedFile,
+    _GuiButtonHandleState,
     _GuiHandleState,
     _GuiInputHandle,
     _make_uuid,
@@ -220,6 +221,9 @@ class GuiApi:
             _messages.GuiUpdateMessage, self._handle_gui_updates
         )
         self._websock_interface.register_handler(
+            _messages.GuiButtonHoldMessage, self._handle_gui_button_hold
+        )
+        self._websock_interface.register_handler(
             _messages.FileTransferStartUpload, self._handle_file_transfer_start
         )
         self._websock_interface.register_handler(
@@ -295,6 +299,44 @@ class GuiApi:
 
         if handle_state.sync_cb is not None:
             handle_state.sync_cb(client_id, updates_cast)
+
+    async def _handle_gui_button_hold(
+        self, client_id: ClientId, message: _messages.GuiButtonHoldMessage
+    ) -> None:
+        """Callback for handling button hold messages."""
+        handle = self._gui_input_handle_from_uuid.get(message.uuid, None)
+        if handle is None:
+            return
+
+        # Ensure this is a button handle with hold callbacks.
+        if not isinstance(handle, GuiButtonHandle):
+            return
+
+        # Get callbacks registered for this frequency.
+        callbacks = handle._button_impl.hold_cbs_from_freq.get(message.frequency, [])
+        if not callbacks:
+            return
+
+        # Get the client handle.
+        from ._viser import ClientHandle, ViserServer
+
+        if isinstance(self._owner, ClientHandle):
+            client = self._owner
+        elif isinstance(self._owner, ViserServer):
+            client = self._owner._connected_clients.get(client_id, None)
+            if client is None:
+                return
+        else:
+            assert False
+
+        # Call all callbacks for this frequency.
+        for cb in callbacks:
+            if asyncio.iscoroutinefunction(cb):
+                await cb(GuiEvent(client, client_id, handle))
+            else:
+                self._thread_executor.submit(
+                    cb, GuiEvent(client, client_id, handle)
+                ).add_done_callback(print_threadpool_errors)
 
     def _handle_file_transfer_start(
         self, client_id: ClientId, message: _messages.FileTransferStartUpload
@@ -985,27 +1027,41 @@ class GuiApi:
         # Re-wrap the GUI handle with a button interface.
         uuid = _make_uuid()
         order = _apply_default_order(order)
-        return GuiButtonHandle(
-            self._create_gui_input(
-                value=False,
-                message=_messages.GuiButtonMessage(
-                    value=False,
-                    uuid=uuid,
-                    container_uuid=self._get_container_uuid(),
-                    props=_messages.GuiButtonProps(
-                        order=order,
-                        label=label,
-                        hint=hint,
-                        color=color,
-                        _icon_html=None if icon is None else svg_from_icon(icon),
-                        disabled=disabled,
-                        visible=visible,
-                    ),
-                ),
-                is_button=True,
-            ),
-            _icon=icon,
+        props = _messages.GuiButtonProps(
+            order=order,
+            label=label,
+            hint=hint,
+            color=color,
+            _icon_html=None if icon is None else svg_from_icon(icon),
+            _hold_callback_freqs=(),
+            disabled=disabled,
+            visible=visible,
         )
+        message = _messages.GuiButtonMessage(
+            value=False,
+            uuid=uuid,
+            container_uuid=self._get_container_uuid(),
+            props=props,
+        )
+
+        # Send the message.
+        self._websock_interface.queue_message(message)
+
+        # Construct button-specific handle state with hold callback support.
+        handle_state = _GuiButtonHandleState(
+            props=props,
+            gui_api=self,
+            value=False,
+            update_timestamp=time.time(),
+            parent_container_id=self._get_container_uuid(),
+            update_cb=[],
+            is_button=True,
+            sync_cb=None,
+            uuid=uuid,
+            hold_cbs_from_freq={},
+        )
+
+        return GuiButtonHandle(handle_state, _icon=icon)
 
     @deprecated_positional_shim
     def add_upload_button(

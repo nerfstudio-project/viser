@@ -17,6 +17,7 @@ from typing import (
     Literal,
     Tuple,
     TypeVar,
+    overload,
 )
 
 import imageio.v3 as iio
@@ -111,6 +112,16 @@ class _GuiHandleState(Generic[T]):
     """Callback for synchronizing inputs across clients."""
 
     removed: bool = False
+
+
+@dataclasses.dataclass
+class _GuiButtonHandleState(_GuiHandleState[bool]):
+    """Internal API for button GUI elements with hold callback support."""
+
+    hold_cbs_from_freq: dict[float, list[Callable[[GuiEvent], None | Coroutine]]] = (
+        dataclasses.field(default_factory=dict)
+    )
+    """Mapping from frequency (Hz) to list of callbacks to call when button is held."""
 
 
 # Not exported for now because some GUI handles don't currently inhert from
@@ -371,9 +382,15 @@ class GuiButtonHandle(_GuiInputHandle[bool], GuiButtonProps):
        Value of the button. Set to `True` when the button is pressed. Can be manually set back to `False`.
     """
 
-    def __init__(self, _impl: _GuiHandleState[bool], _icon: IconName | None):
+    def __init__(self, _impl: _GuiButtonHandleState, _icon: IconName | None):
         super().__init__(impl=_impl)
         self._icon = _icon
+
+    @property
+    def _button_impl(self) -> _GuiButtonHandleState:
+        """Access the button-specific implementation state."""
+        assert isinstance(self._impl, _GuiButtonHandleState)
+        return self._impl
 
     @property
     def icon(self) -> IconName | None:
@@ -398,6 +415,74 @@ class GuiButtonHandle(_GuiInputHandle[bool], GuiButtonProps):
         """
         self._impl.update_cb.append(func)
         return func
+
+    # Type alias for button hold callbacks.
+    _HoldCallback = Callable[["GuiEvent[GuiButtonHandle]"], "None | Coroutine"]
+
+    @overload
+    def on_hold(
+        self,
+        func: None = None,
+        callback_hz: float = 10.0,
+    ) -> Callable[[_HoldCallback], _HoldCallback]: ...
+
+    @overload
+    def on_hold(
+        self,
+        func: _HoldCallback,
+        callback_hz: float = 10.0,
+    ) -> _HoldCallback: ...
+
+    def on_hold(
+        self,
+        func: _HoldCallback | None = None,
+        callback_hz: float = 10.0,
+    ) -> Callable[[_HoldCallback], _HoldCallback] | _HoldCallback:
+        """Attach a function to call repeatedly while a button is held down.
+
+        The callback will be triggered immediately when the button is pressed,
+        and then repeatedly at the specified frequency until released.
+
+        Can be used as a decorator with or without arguments:
+            @button.on_hold
+            def callback(event): ...
+
+            @button.on_hold(callback_hz=30.0)
+            def callback(event): ...
+
+        Or called directly:
+            button.on_hold(callback)
+            button.on_hold(callback, callback_hz=30.0)
+
+        Args:
+            func: The callback function to attach. If None, returns a decorator.
+            callback_hz: The frequency in Hz at which to call the callback while
+                the button is held. Defaults to 10.0 Hz.
+
+        Note:
+        - If `func` is a regular function (defined with `def`), it will be executed in a thread pool.
+        - If `func` is an async function (defined with `async def`), it will be executed in the event loop.
+
+        Using async functions can be useful for reducing race conditions.
+        """
+        button_impl = self._button_impl
+
+        def register_callback(
+            f: GuiButtonHandle._HoldCallback,
+        ) -> GuiButtonHandle._HoldCallback:
+            # Add callback to the frequency-specific list.
+            if callback_hz not in button_impl.hold_cbs_from_freq:
+                button_impl.hold_cbs_from_freq[callback_hz] = []
+            button_impl.hold_cbs_from_freq[callback_hz].append(f)
+
+            # Update the prop to notify client of new frequency.
+            self._hold_callback_freqs = tuple(button_impl.hold_cbs_from_freq.keys())
+
+            return f
+
+        if func is not None:
+            return register_callback(func)
+        return register_callback
 
 
 @dataclasses.dataclass

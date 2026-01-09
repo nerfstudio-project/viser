@@ -14,7 +14,7 @@ import { MeshBasicMaterial } from "three";
 import { Text as TroikaText } from "troika-three-text";
 import { BatchedLabelManagerContext } from "./BatchedLabelManagerContext";
 import { ViewerContext } from "./ViewerContext";
-import { calculateBaseFontSize } from "./LabelUtils";
+import { calculateBaseFontSize, LABEL_FONT } from "./LabelUtils";
 
 const originGeom = new THREE.SphereGeometry(1.0);
 
@@ -586,8 +586,7 @@ export const ViserLabel = React.forwardRef<
   React.useEffect(() => {
     const text = new TroikaText();
     text.text = message.props.text;
-    // Use relative path for font so it works if client is in a subdirectory.
-    text.font = "./Inter-VariableFont_slnt,wght.ttf";
+    text.font = LABEL_FONT;
     text.fontSize = baseFontSize;
     text.color = 0x000000; // Black.
     text.anchorX = anchorX;

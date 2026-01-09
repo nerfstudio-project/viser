@@ -22,8 +22,9 @@ Code
 .. code-block:: python
    :linenos:
 
+   from __future__ import annotations
+   
    import time
-   from typing import Optional
    
    import numpy as np
    
@@ -40,7 +41,7 @@ Code
    
        rng = np.random.default_rng(0)
    
-       displayed_3d_container: Optional[viser.Gui3dContainerHandle] = None
+       displayed_3d_container: viser.Gui3dContainerHandle | None = None
    
        def make_frame(i: int) -> None:
            # Sample a random orientation + position.
