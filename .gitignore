@@ -19,6 +19,7 @@ src/viser/client/build
 src/viser/client/build-embed
 src/viser/client/.nodeenv
 examples/assets
+_viser_client.html
 
 **/.claude/settings.local.json
 uv.lock

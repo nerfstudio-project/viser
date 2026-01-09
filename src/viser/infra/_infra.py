@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Callable, Generator, NewType, TypeVar
 
 import msgspec.msgpack
+import viser  # Import for version checking
 import websockets.asyncio.server
 import websockets.datastructures
 import websockets.exceptions
@@ -28,8 +29,6 @@ from websockets import Headers
 from websockets.asyncio.server import ServerConnection
 from websockets.http11 import Request, Response
 from websockets.typing import Subprotocol
-
-import viser  # Import for version checking
 
 from ._async_message_buffer import AsyncMessageBuffer
 from ._messages import Message
@@ -111,81 +110,58 @@ class StateSerializer:
             height: Height of the embedded viewer in pixels.
             dark_mode: Use dark color scheme.
         """
+        import html as html_module
+
         from viser import _embed
 
         scene_bytes = self.serialize()
+        scene_b64 = base64.b64encode(scene_bytes).decode("ascii")
 
-        # Display in IPython (Jupyter, myst-nb, etc.) using blob URL.
-        # Scene data is passed via URL hash (#sceneData=base64...) so it
-        # persists in notebook output. Client HTML is loaded via blob URL.
+        # Get client HTML and inject scene data as global variables.
+        # The client reads from window.__VISER_EMBED_DATA__ (App.tsx).
+        client_html = _embed._get_client_html()
+        dark_mode_str = "true" if dark_mode else "false"
+        inject_script = (
+            f"<script>"
+            f'window.__VISER_EMBED_DATA__="{scene_b64}";'
+            f"window.__VISER_EMBED_CONFIG__={{darkMode:{dark_mode_str}}};"
+            f"</script>"
+        )
+        modified_html = client_html.replace("</head>", f"{inject_script}</head>")
+
+        # Display in IPython (Jupyter, Colab, myst-nb, etc.) using srcdoc.
+        # This embeds the entire HTML inline, avoiding file serving issues.
         try:
             from IPython.core.getipython import get_ipython  # type: ignore
 
             ipython = get_ipython()
             if ipython is not None:
-                import uuid
-                from urllib.parse import quote
-
                 from IPython.display import HTML, display  # type: ignore
 
-                # Build URL hash with scene data and optional dark mode.
-                scene_b64 = base64.b64encode(scene_bytes).decode("ascii")
-                url_hash = f"#sceneData={quote(scene_b64, safe='')}"
-                if dark_mode:
-                    url_hash += "&darkMode"
+                # Escape HTML for srcdoc attribute.
+                escaped_html = html_module.escape(modified_html, quote=True)
 
-                # Encode client HTML as base64 for blob URL creation.
-                client_html = _embed._get_client_html()
-                client_b64 = base64.b64encode(client_html.encode("utf-8")).decode(
-                    "ascii"
+                # Wrap in div to avoid IPython's "Consider using IFrame" warning.
+                display(
+                    HTML(
+                        f'<div style="border:1px solid #ddd">'
+                        f'<iframe srcdoc="{escaped_html}" '
+                        f'width="100%" height="{height}" '
+                        f'style="border:none;display:block"></iframe>'
+                        f"</div>"
+                    )
                 )
-                container_id = f"viser-embed-{uuid.uuid4().hex[:8]}"
-
-                wrapper_html = f"""
-                <div id="{container_id}" style="width: 100%; height: {height}px;"></div>
-                <script>
-                (function() {{
-                    var container = document.getElementById("{container_id}");
-                    var clientHtml = atob("{client_b64}");
-                    var blob = new Blob([clientHtml], {{type: "text/html"}});
-                    var url = URL.createObjectURL(blob) + "{url_hash}";
-                    var iframe = document.createElement("iframe");
-                    iframe.src = url;
-                    iframe.style.width = "100%";
-                    iframe.style.height = "100%";
-                    iframe.style.border = "none";
-                    container.appendChild(iframe);
-                }})();
-                </script>
-                """
-                display(HTML(wrapper_html))
                 return
         except ImportError:
             pass
 
-        # Fallback: write a small launcher HTML that loads client with hash.
-        # We can't pass long hashes directly via webbrowser.open() due to
-        # command-line length limits, so we write a launcher that redirects.
+        # Fallback for scripts: write the modified HTML to a temp file.
         import tempfile
-        from urllib.parse import quote
-
-        scene_b64 = base64.b64encode(scene_bytes).decode("ascii")
-        url_hash = f"#sceneData={quote(scene_b64, safe='')}"
-        if dark_mode:
-            url_hash += "&darkMode"
-
-        client_uri = _embed._get_client_html_path().as_uri()
-        # Use an iframe instead of redirect for better cross-platform compatibility.
-        launcher_html = f"""<!DOCTYPE html>
-<html>
-<head><style>body{{margin:0}}iframe{{width:100%;height:100vh;border:none}}</style></head>
-<body><iframe src="{client_uri}{url_hash}"></iframe></body>
-</html>"""
 
         with tempfile.NamedTemporaryFile(
             "w", suffix=".html", delete=False, encoding="utf-8"
         ) as f:
-            f.write(launcher_html)
+            f.write(modified_html)
             webbrowser.open("file://" + f.name)
 
 

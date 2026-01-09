@@ -6,7 +6,8 @@ import viteTsconfigPaths from "vite-tsconfig-paths";
 import svgrPlugin from "vite-plugin-svgr";
 import eslint from "vite-plugin-eslint";
 import browserslistToEsbuild from "browserslist-to-esbuild";
-import singleFileCompression from "vite-plugin-singlefile-compression";
+import { viteSingleFile } from "vite-plugin-singlefile";
+import { compressHtml } from "./vite-plugin-compress-html.mts";
 
 // Unified Vite config for both development and production builds.
 // - Development: Standard HMR server without single-file bundling.
@@ -23,9 +24,8 @@ export default defineConfig(({ command }) => {
       viteTsconfigPaths(),
       svgrPlugin(),
       vanillaExtractPlugin(),
-      // Single-file compression only for production builds.
-      // Uses browser's native DecompressionStream for smaller output.
-      ...(!isDev ? [singleFileCompression()] : []),
+      // Single-file bundling and compression only for production builds.
+      ...(!isDev ? [viteSingleFile(), compressHtml()] : []),
     ],
     server: {
       port: 3000,

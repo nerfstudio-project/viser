@@ -200,20 +200,12 @@ function ViewerRoot() {
   const searchParams = new URLSearchParams(window.location.search);
   const playbackPath = searchParams.get("playbackPath");
 
-  // Check for scene data in URL hash (used for embedding in notebooks/docs).
-  // Format: #sceneData=base64encodeddata&darkMode
-  const hashParams = new URLSearchParams(window.location.hash.slice(1));
-  const hashSceneData = hashParams.get("sceneData");
-  const darkMode =
-    searchParams.get("darkMode") !== null ||
-    hashParams.get("darkMode") !== null;
-
-  // Check for embedded scene data via window global (legacy).
-  const embedData =
-    hashSceneData ?? ((window as any).__VISER_EMBED_DATA__ as string | undefined);
+  // Check for embedded scene data via window global.
+  const embedData = (window as any).__VISER_EMBED_DATA__ as string | undefined;
   const embedConfig = (window as any).__VISER_EMBED_CONFIG__ as
     | { darkMode?: boolean }
     | undefined;
+  const darkMode = searchParams.get("darkMode") !== null;
 
   // Create a message source string.
   const messageSource = embedData
