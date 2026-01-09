@@ -635,6 +635,9 @@ class WebsockServer(WebsockMessageHandler):
                         ws_handler,
                         host,
                         port_attempt,
+                        # Increase ws message size limit to 50MB to allow for large messages
+                        # (e.g. via client.get_render()).
+                        max_size=50 * 1024 * 1024,
                         # Compression can be too slow for our use cases.
                         compression=None,
                         process_request=(
