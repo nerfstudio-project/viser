@@ -456,6 +456,7 @@
     <span class="n">BoneState</span><span class="p">,</span>
     <span class="n">BoxHandle</span><span class="p">,</span>
     <span class="n">CameraFrustumHandle</span><span class="p">,</span>
+    <span class="n">CylinderHandle</span><span class="p">,</span>
     <span class="n">DirectionalLightHandle</span><span class="p">,</span>
     <span class="n">FrameHandle</span><span class="p">,</span>
     <span class="n">GaussianSplatHandle</span><span class="p">,</span>
@@ -2113,6 +2114,7 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">batched_scales</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">batched_colors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">RgbTupleOrArray</span> <span class="o">=</span> <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+        <span class="n">batched_opacities</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">lod</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;off&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
         <span class="n">wireframe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">opacity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2143,6 +2145,9 @@
 <span class="sd">            batched_colors: Colors of the mesh instances. Can be a single color as an RGB tuple</span>
 <span class="sd">                to apply to all instances, or an np.ndarray of shape (N, 3) to specify colors</span>
 <span class="sd">                for each instance. Defaults to (90, 200, 255).</span>
+<span class="sd">            batched_opacities: Per-instance opacity multipliers, shape (N,). Each value is</span>
+<span class="sd">                multiplied with the global opacity parameter. None means all instances use</span>
+<span class="sd">                the global opacity.</span>
 <span class="sd">            lod: LOD settings, either &quot;off&quot;, &quot;auto&quot;, or a tuple of (distance, ratio) pairs.</span>
 <span class="sd">            wireframe: Boolean indicating if the meshes should be rendered as wireframes.</span>
 <span class="sd">            opacity: Opacity of the meshes. None means opaque.</span>
@@ -2182,6 +2187,11 @@
             <span class="n">batched_scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">batched_scales</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
             <span class="k">assert</span> <span class="n">batched_scales</span><span class="o">.</span><span class="n">shape</span> <span class="ow">in</span> <span class="p">((</span><span class="n">num_instances</span><span class="p">,),</span> <span class="p">(</span><span class="n">num_instances</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
+        <span class="c1"># Handle batched opacities.</span>
+        <span class="k">if</span> <span class="n">batched_opacities</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">batched_opacities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">batched_opacities</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">batched_opacities</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">num_instances</span><span class="p">,)</span>
+
         <span class="c1"># Handle batched colors.</span>
         <span class="n">batched_colors_array</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">batched_colors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -2204,6 +2214,7 @@
                 <span class="n">lod</span><span class="o">=</span><span class="n">lod</span><span class="p">,</span>
                 <span class="n">cast_shadow</span><span class="o">=</span><span class="n">cast_shadow</span><span class="p">,</span>
                 <span class="n">receive_shadow</span><span class="o">=</span><span class="n">receive_shadow</span><span class="p">,</span>
+                <span class="n">batched_opacities</span><span class="o">=</span><span class="n">batched_opacities</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">BatchedMeshHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span></div>
@@ -2568,6 +2579,73 @@
             <span class="p">),</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">IcosphereHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SceneApi.add_cylinder">
+<a class="viewcode-back" href="../../../api/core/scene_api/#viser.SceneApi.add_cylinder">[docs]</a>
+    <span class="nd">@deprecated_positional_shim</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_cylinder</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">color</span><span class="p">:</span> <span class="n">RgbTupleOrArray</span> <span class="o">=</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">radial_segments</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+        <span class="n">wireframe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">opacity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">material</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;standard&quot;</span><span class="p">,</span> <span class="s2">&quot;toon3&quot;</span><span class="p">,</span> <span class="s2">&quot;toon5&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;standard&quot;</span><span class="p">,</span>
+        <span class="n">flat_shading</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">side</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;front&quot;</span><span class="p">,</span> <span class="s2">&quot;back&quot;</span><span class="p">,</span> <span class="s2">&quot;double&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;front&quot;</span><span class="p">,</span>
+        <span class="n">cast_shadow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">receive_shadow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">wxyz</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">position</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CylinderHandle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a cylinder to the scene.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: A scene tree name. Names in the format of /parent/child can be used to</span>
+<span class="sd">                define a kinematic tree.</span>
+<span class="sd">            radius: Radius of the cylinder.</span>
+<span class="sd">            height: Height of the cylinder.</span>
+<span class="sd">            color: Color of the cylinder as an RGB tuple.</span>
+<span class="sd">            radial_segments: Number of segmented faces around the circumference of the cylinder.</span>
+<span class="sd">            wireframe: Boolean indicating if the cylinder should be rendered as a wireframe.</span>
+<span class="sd">            opacity: Opacity of the cylinder. None means opaque.</span>
+<span class="sd">            material: Material type of the cylinder (&#39;standard&#39;, &#39;toon3&#39;, &#39;toon5&#39;).</span>
+<span class="sd">            flat_shading: Whether to do flat shading.</span>
+<span class="sd">            side: Side of the surface to render (&#39;front&#39;, &#39;back&#39;, &#39;double&#39;).</span>
+<span class="sd">            cast_shadow: Whether this cylinder should cast shadows.</span>
+<span class="sd">            receive_shadow: Whether this cylinder should receive shadows. If True,</span>
+<span class="sd">                receives shadows normally. If False, no shadows. If a float</span>
+<span class="sd">                (0-1), shadows are rendered with a fixed opacity regardless of</span>
+<span class="sd">                lighting conditions.</span>
+<span class="sd">            wxyz: Quaternion rotation to parent frame from local frame (R_pl).</span>
+<span class="sd">            position: Translation from parent frame to local frame (t_pl).</span>
+<span class="sd">            visible: Whether or not this cylinder is initially visible.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Handle for manipulating scene node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">_messages</span><span class="o">.</span><span class="n">CylinderMessage</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">props</span><span class="o">=</span><span class="n">_messages</span><span class="o">.</span><span class="n">CylinderProps</span><span class="p">(</span>
+                <span class="n">radius</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span>
+                <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">_encode_rgb</span><span class="p">(</span><span class="n">color</span><span class="p">),</span>
+                <span class="n">radial_segments</span><span class="o">=</span><span class="n">radial_segments</span><span class="p">,</span>
+                <span class="n">wireframe</span><span class="o">=</span><span class="n">wireframe</span><span class="p">,</span>
+                <span class="n">opacity</span><span class="o">=</span><span class="n">opacity</span><span class="p">,</span>
+                <span class="n">flat_shading</span><span class="o">=</span><span class="n">flat_shading</span><span class="p">,</span>
+                <span class="n">side</span><span class="o">=</span><span class="n">side</span><span class="p">,</span>
+                <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">,</span>
+                <span class="n">cast_shadow</span><span class="o">=</span><span class="n">cast_shadow</span><span class="p">,</span>
+                <span class="n">receive_shadow</span><span class="o">=</span><span class="n">receive_shadow</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">CylinderHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SceneApi.set_background_image">
