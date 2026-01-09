@@ -26,12 +26,20 @@ export default function ButtonComponent({
     holdIntervalsRef.current = [];
   }, []);
 
-  // Clean up on unmount.
+  // Clean up on unmount or when disabled.
   useEffect(() => stopHoldTimers, [stopHoldTimers]);
+  useEffect(() => {
+    if (disabled) stopHoldTimers();
+  }, [disabled, stopHoldTimers]);
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
+      // Only handle left click.
+      if (e.button !== 0) return;
       if (holdCallbackFreqs.length === 0) return;
+      // Prevent duplicate timers from multiple pointers.
+      if (holdIntervalsRef.current.length > 0) return;
+
       // Capture pointer to receive pointerup even if released outside element.
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
       for (const freq of holdCallbackFreqs) {
@@ -70,6 +78,7 @@ export default function ButtonComponent({
         onPointerDown={handlePointerDown}
         onPointerUp={stopHoldTimers}
         onPointerCancel={stopHoldTimers}
+        onLostPointerCapture={stopHoldTimers}
         style={{ height: "2em" }}
         disabled={disabled ?? false}
         size="sm"
