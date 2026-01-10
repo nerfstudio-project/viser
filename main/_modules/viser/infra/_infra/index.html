@@ -496,9 +496,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">insert_sleep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Insert a sleep into the recorded file. This can be useful for</span>
 <span class="sd">        dynamic 3D data.&quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handler</span><span class="o">.</span><span class="n">_record_handle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;serialize() was already called!&quot;</span>
-        <span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handler</span><span class="o">.</span><span class="n">_record_handles</span><span class="p">,</span> <span class="s2">&quot;serialize() was already called!&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">+=</span> <span class="n">duration</span></div>
 
 
@@ -512,9 +510,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            The recording as bytes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handler</span><span class="o">.</span><span class="n">_record_handle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;serialize() was already called!&quot;</span>
-        <span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handler</span><span class="o">.</span><span class="n">_record_handles</span><span class="p">,</span> <span class="s2">&quot;serialize() was already called!&quot;</span>
 
         <span class="n">packed_bytes</span> <span class="o">=</span> <span class="n">msgspec</span><span class="o">.</span><span class="n">msgpack</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
             <span class="p">{</span>
@@ -524,7 +520,7 @@
             <span class="p">}</span>
         <span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">packed_bytes</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_handler</span><span class="o">.</span><span class="n">_record_handle</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handler</span><span class="o">.</span><span class="n">_record_handles</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">gzip</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">packed_bytes</span><span class="p">,</span> <span class="n">compresslevel</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span></div>
 
 
@@ -612,8 +608,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_queued_messages</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
-        <span class="c1"># Set to None if not recording.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_record_handle</span><span class="p">:</span> <span class="n">StateSerializer</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># List of active serializers recording messages.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_record_handles</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">StateSerializer</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="WebsockMessageHandler.get_message_serializer">
 <a class="viewcode-back" href="../../../../api/auxiliary/infrastructure/#viser.infra.WebsockMessageHandler.get_message_serializer">[docs]</a>
@@ -622,9 +618,9 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateSerializer</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Start recording messages that are sent. Sent messages will be</span>
 <span class="sd">        serialized and can be used for playback.&quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_record_handle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Already recording.&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_record_handle</span> <span class="o">=</span> <span class="n">StateSerializer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">filter</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_record_handle</span></div>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">StateSerializer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">filter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_record_handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">serializer</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">serializer</span></div>
 
 
 <div class="viewcode-block" id="WebsockMessageHandler.register_handler">
@@ -678,8 +674,8 @@
 <a class="viewcode-back" href="../../../../api/auxiliary/infrastructure/#viser.infra.WebsockMessageHandler.queue_message">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">queue_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrapped method for sending messages.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_record_handle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_record_handle</span><span class="o">.</span><span class="n">_insert_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">handle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_record_handles</span><span class="p">:</span>
+            <span class="n">handle</span><span class="o">.</span><span class="n">_insert_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">get_message_buffer</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
@@ -1120,7 +1116,7 @@
                         <span class="n">ws_handler</span><span class="p">,</span>
                         <span class="n">host</span><span class="p">,</span>
                         <span class="n">port_attempt</span><span class="p">,</span>
-                        <span class="c1"># Increase ws message size limit to 50MB to allow for large messages</span>
+                        <span class="c1"># Increase ws message size limit to 50MB to allow large messages.</span>
                         <span class="c1"># (e.g. via client.get_render()).</span>
                         <span class="n">max_size</span><span class="o">=</span><span class="mi">50</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span>
                         <span class="c1"># Compression can be too slow for our use cases.</span>
