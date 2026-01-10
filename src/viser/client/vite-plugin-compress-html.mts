@@ -35,7 +35,9 @@ const loaderScript = `
     if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",run);}else{run();}
   }
 })();
-`.trim().replace(/\n/g, "");
+`
+  .trim()
+  .replace(/\n/g, "");
 
 export function compressHtml(): Plugin {
   return {
@@ -48,29 +50,33 @@ export function compressHtml(): Plugin {
           const originalSize = Buffer.byteLength(html, "utf8");
 
           // Find and compress the inline style.
-          const styleMatch = html.match(
-            /<style[^>]*>([\s\S]*?)<\/style>/
-          );
+          const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/);
           let styleAttr = "";
           if (styleMatch) {
-            const compressed = gzipSync(Buffer.from(styleMatch[1], "utf8"), { level: 9 });
+            const compressed = gzipSync(Buffer.from(styleMatch[1], "utf8"), {
+              level: 9,
+            });
             styleAttr = ` data-s="${toBase64(compressed)}"`;
             html = html.replace(styleMatch[0], "");
           }
 
           // Find and compress the inline script module.
           const scriptMatch = html.match(
-            /<script type="module" crossorigin>([\s\S]*?)<\/script>/
+            /<script type="module" crossorigin>([\s\S]*?)<\/script>/,
           );
           let scriptAttr = "";
           if (scriptMatch) {
-            const compressed = gzipSync(Buffer.from(scriptMatch[1], "utf8"), { level: 9 });
+            const compressed = gzipSync(Buffer.from(scriptMatch[1], "utf8"), {
+              level: 9,
+            });
             scriptAttr = ` data-c="${toBase64(compressed)}"`;
             html = html.replace(scriptMatch[0], "");
           }
 
           if (!styleMatch && !scriptMatch) {
-            console.log("[compress-html] No inline style or script found, skipping compression");
+            console.log(
+              "[compress-html] No inline style or script found, skipping compression",
+            );
             continue;
           }
 
@@ -80,7 +86,7 @@ export function compressHtml(): Plugin {
 
           const newSize = Buffer.byteLength(html, "utf8");
           console.log(
-            `[compress-html] ${fileName}: ${(originalSize / 1024).toFixed(1)} KiB -> ${(newSize / 1024).toFixed(1)} KiB`
+            `[compress-html] ${fileName}: ${(originalSize / 1024).toFixed(1)} KiB -> ${(newSize / 1024).toFixed(1)} KiB`,
           );
 
           chunk.source = html;

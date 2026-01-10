@@ -351,11 +351,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
 
 /** Component for playback from embedded base64 scene data.
  * Used for static embedding in HTML pages (e.g., myst-nb documentation). */
-export function PlaybackFromEmbedData({
-  base64Data,
-}: {
-  base64Data: string;
-}) {
+export function PlaybackFromEmbedData({ base64Data }: { base64Data: string }) {
   const viewer = useContext(ViewerContext)!;
   const viewerMutable = viewer.mutable.current;
 
