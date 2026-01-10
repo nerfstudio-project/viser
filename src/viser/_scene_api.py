@@ -2676,6 +2676,6 @@ class SceneApi:
         )
 
         # Clear any previous recording state to allow multiple show() calls.
-        self._owner._websock_server._record_handle = None
+        self._owner._websock_server._record_handles.clear()
 
         self._owner.get_scene_serializer().show(height, dark_mode)
