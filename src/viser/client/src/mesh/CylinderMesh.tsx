@@ -34,7 +34,12 @@ export const CylinderMesh = React.forwardRef<
     if (!cylinderGeometryCache.has(message.props.radial_segments)) {
       cylinderGeometryCache.set(
         message.props.radial_segments,
-        new THREE.CylinderGeometry(1.0, 1.0, 1.0, message.props.radial_segments),
+        new THREE.CylinderGeometry(
+          1.0,
+          1.0,
+          1.0,
+          message.props.radial_segments,
+        ),
       );
     }
     return cylinderGeometryCache.get(message.props.radial_segments)!;
@@ -67,7 +72,11 @@ export const CylinderMesh = React.forwardRef<
     <group ref={ref}>
       <mesh
         geometry={geometry}
-        scale={[message.props.radius, message.props.height, message.props.radius]}
+        scale={[
+          message.props.radius,
+          message.props.height,
+          message.props.radius,
+        ]}
         rotation={new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)}
         material={material}
         castShadow={message.props.cast_shadow}

@@ -168,7 +168,10 @@ function ConnectionStatus() {
   return (
     <>
       <div style={{ width: "1.1em" }} /> {/* Spacer. */}
-      <Transition transition="skew-down" mounted={websocketState === "connected"}>
+      <Transition
+        transition="skew-down"
+        mounted={websocketState === "connected"}
+      >
         {(styles) => (
           <IconCloudCheck
             color={"#0b0"}
@@ -181,7 +184,10 @@ function ConnectionStatus() {
           />
         )}
       </Transition>
-      <Transition transition="skew-down" mounted={websocketState === "reconnecting"}>
+      <Transition
+        transition="skew-down"
+        mounted={websocketState === "reconnecting"}
+      >
         {(styles) => (
           <Loader
             size="xs"
@@ -191,7 +197,10 @@ function ConnectionStatus() {
           />
         )}
       </Transition>
-      <Transition transition="skew-down" mounted={websocketState === "inactive"}>
+      <Transition
+        transition="skew-down"
+        mounted={websocketState === "inactive"}
+      >
         {(styles) => (
           <IconPlayerPause
             color={"var(--mantine-color-red-filled)"}
