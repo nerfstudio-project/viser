@@ -12,6 +12,7 @@ Features include:
 - Scene interaction tools (clicks, selection, transform gizmos)
 - Programmatic camera control and rendering
 - An entirely web-based client, for easy use over SSH!
+- Jupyter notebook compatibility
 
 The goal is to provide primitives that are (1) easy for simple visualization tasks, but (2) can be composed into more elaborate interfaces. For more about design goals, see the `technical report <https://arxiv.org/abs/2507.22885>`_.
 
@@ -27,7 +28,16 @@ Demo reel:
 
    <video src="https://brentyi.github.io/viser-example-assets/viser_demos.mp4" controls playsinline width="100%"></video><section id="examples">
 
+To cite Viser, you can use the BibTeX entry for our `technical report <https://arxiv.org/abs/2507.22885>`_:
 
+.. code:: bibtex
+
+    @article{yi2025viser,
+        title={Viser: Imperative, web-based 3d visualization in python},
+        author={Yi, Brent and Kim, Chung Min and Kerr, Justin and Wu, Gina and Feng, Rebecca and Zhang, Anthony and Kulhanek, Jonas and Choi, Hongsuk and Ma, Yi and Tancik, Matthew and Kanazawa, Angjoo},
+        journal={arXiv preprint arXiv:2507.22885},
+        year={2025}
+    }
 
 Examples
 --------

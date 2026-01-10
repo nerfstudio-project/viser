@@ -112,7 +112,7 @@ Step 2: Creating a Viser Client Build
 To serve the 3D visualization, you'll need two things:
 
 1. The ``.viser`` file containing your scene data
-2. A build of the Viser client (static HTML/JS/CSS files)
+2. A build of the Viser client
 
 With Viser installed, create the Viser client build using the command-line tool:
 
@@ -140,7 +140,6 @@ For our hosting instructions, we're going to assume the following directory stru
     │   └── recording.viser    # Your exported scene data
     └── viser-client/
         ├── index.html         # Generated client files
-        ├── assets/
         └── ...
 
 This is just a suggestion; you can structure your files however you like.
