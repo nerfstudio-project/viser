@@ -71,9 +71,7 @@ class StateSerializer:
     def insert_sleep(self, duration: float) -> None:
         """Insert a sleep into the recorded file. This can be useful for
         dynamic 3D data."""
-        assert self._handler._record_handle is not None, (
-            "serialize() was already called!"
-        )
+        assert self in self._handler._record_handles, "serialize() was already called!"
         self._time += duration
 
     def serialize(self) -> bytes:
@@ -84,9 +82,7 @@ class StateSerializer:
         Returns:
             The recording as bytes.
         """
-        assert self._handler._record_handle is not None, (
-            "serialize() was already called!"
-        )
+        assert self in self._handler._record_handles, "serialize() was already called!"
 
         packed_bytes = msgspec.msgpack.encode(
             {
@@ -96,7 +92,7 @@ class StateSerializer:
             }
         )
         assert isinstance(packed_bytes, bytes)
-        self._handler._record_handle = None
+        self._handler._record_handles.remove(self)
         return gzip.compress(packed_bytes, compresslevel=9)
 
     def show(self, height: int = 400, dark_mode: bool = False) -> None:
@@ -177,17 +173,17 @@ class WebsockMessageHandler:
         self._queued_messages: queue.Queue = queue.Queue()
         self._locked_thread_id = -1
 
-        # Set to None if not recording.
-        self._record_handle: StateSerializer | None = None
+        # List of active serializers recording messages.
+        self._record_handles: list[StateSerializer] = []
 
     def get_message_serializer(
         self, filter: Callable[[Message], bool]
     ) -> StateSerializer:
         """Start recording messages that are sent. Sent messages will be
         serialized and can be used for playback."""
-        assert self._record_handle is None, "Already recording."
-        self._record_handle = StateSerializer(self, filter)
-        return self._record_handle
+        serializer = StateSerializer(self, filter)
+        self._record_handles.append(serializer)
+        return serializer
 
     def register_handler(
         self,
@@ -229,8 +225,8 @@ class WebsockMessageHandler:
 
     def queue_message(self, message: Message) -> None:
         """Wrapped method for sending messages."""
-        if self._record_handle is not None:
-            self._record_handle._insert_message(message)
+        for handle in self._record_handles:
+            handle._insert_message(message)
 
         self.get_message_buffer().push(message)
 
