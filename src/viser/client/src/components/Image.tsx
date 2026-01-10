@@ -17,7 +17,7 @@ const ImageWithExpand = React.memo(function ImageWithExpand({
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <Box px="xs">
+    <Box px="xs" pb="0.5em">
       {label === null ? null : (
         <Text fz="sm" style={{ display: "block" }}>
           {label}
