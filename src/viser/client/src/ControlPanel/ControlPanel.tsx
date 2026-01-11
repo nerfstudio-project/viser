@@ -169,7 +169,7 @@ function ConnectionStatus() {
     <>
       <div style={{ width: "1.1em" }} /> {/* Spacer. */}
       <Transition
-        transition="skew-down"
+        transition="fade"
         mounted={websocketState === "connected"}
       >
         {(styles) => (
