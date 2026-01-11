@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import asyncio
 import multiprocessing as mp
+import ssl
 import threading
 from functools import lru_cache
 from multiprocessing.managers import DictProxy
 from pathlib import Path
 from typing import Callable, Literal
+
+import rich
 
 
 @lru_cache
@@ -212,6 +215,17 @@ async def _make_tunnel(
         raise e
 
     res = response.json()
+
+    # Require TLS for secure tunnel connections.
+    tls_port = res.get("tls_port")
+    if tls_port is None:
+        shared_state["status"] = "failed"
+        rich.print(
+            "[bold](viser)[/bold] Share server does not support encrypted connections. "
+            "Please update the server or use an older viser version."
+        )
+        return
+
     shared_state["url"] = res["url"]
     shared_state["max_conn_count"] = res["max_conn_count"]
     shared_state["status"] = "connected"
@@ -224,7 +238,7 @@ async def _make_tunnel(
                     "127.0.0.1",
                     local_port,
                     share_domain,
-                    res["port"],
+                    tls_port,
                     close_event if close_event is not None else asyncio.Event(),
                 )
             )
@@ -244,7 +258,8 @@ async def _simple_proxy(
     remote_port: int,
     close_event: asyncio.Event,
 ) -> None:
-    """Establish a connection to the tunnel server."""
+    """Establish an encrypted TLS connection to the tunnel server."""
+    ssl_context = ssl.create_default_context()
 
     async def close_writer(writer: asyncio.StreamWriter) -> None:
         """Utility for closing a writer and waiting until done, while suppressing errors
@@ -276,7 +291,9 @@ async def _simple_proxy(
         remote_w = None
         try:
             local_r, local_w = await asyncio.open_connection(local_host, local_port)
-            remote_r, remote_w = await asyncio.open_connection(remote_host, remote_port)
+            remote_r, remote_w = await asyncio.open_connection(
+                remote_host, remote_port, ssl=ssl_context
+            )
             await asyncio.wait(
                 [
                     asyncio.gather(

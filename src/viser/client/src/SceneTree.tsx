@@ -5,7 +5,7 @@ import {
   PivotControls,
 } from "@react-three/drei";
 import { ContextBridge, useContextBridge } from "its-fine";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import React, { useEffect } from "react";
 import * as THREE from "three";
 
@@ -731,10 +731,76 @@ export function SceneNodeThreeObject(props: { name: string }) {
     });
   }, [objNode]);
 
+  // Track hover state.
+  const hoveredRef = React.useRef<HoverState>({
+    isHovered: false,
+    instanceId: null,
+  });
+
+  // Track last pointer position for re-raycasting when mesh changes.
+  const lastPointerPos = React.useRef<{ clientX: number; clientY: number } | null>(
+    null,
+  );
+
+  // Frame counter for delayed hover recheck after objNode changes.
+  // We wait a few frames to ensure the new mesh geometry is fully rendered.
+  const hoverRecheckCountdown = React.useRef(0);
+  const isFirstObjNode = React.useRef(true);
+  React.useEffect(() => {
+    if (isFirstObjNode.current) {
+      isFirstObjNode.current = false;
+      return;
+    }
+    if (hoveredRef.current.isHovered) {
+      // Wait 2 frames for the new mesh to be fully rendered.
+      hoverRecheckCountdown.current = 2;
+    }
+  }, [objNode]);
+
+  // Get R3F state for raycasting.
+  const { raycaster, camera } = useThree();
+
+  // Reusable Vector2 for hover recheck raycasting.
+  const pointerNDC = React.useMemo(() => new THREE.Vector2(), []);
+
   // Update attributes on a per-frame basis. Currently does redundant work,
   // although this shouldn't be a bottleneck.
   useFrame(
     () => {
+      // Re-check hover state after objNode changes (mesh geometry update).
+      if (hoverRecheckCountdown.current > 0) {
+        hoverRecheckCountdown.current--;
+        if (
+          hoverRecheckCountdown.current === 0 &&
+          hoveredRef.current.isHovered &&
+          groupRef.current &&
+          lastPointerPos.current
+        ) {
+          // Compute NDC from stored pointer position.
+          const canvas = viewerMutable.canvas;
+          if (canvas) {
+            const rect = canvas.getBoundingClientRect();
+            pointerNDC.set(
+              ((lastPointerPos.current.clientX - rect.left) / rect.width) * 2 -
+                1,
+              -((lastPointerPos.current.clientY - rect.top) / rect.height) * 2 +
+                1,
+            );
+            raycaster.setFromCamera(pointerNDC, camera);
+            const intersects = raycaster.intersectObject(groupRef.current, true);
+            if (intersects.length === 0) {
+              // Pointer is no longer over this mesh, reset hover state.
+              hoveredRef.current.isHovered = false;
+              hoveredRef.current.instanceId = null;
+              viewerMutable.hoveredElementsCount--;
+              if (viewerMutable.hoveredElementsCount === 0) {
+                document.body.style.cursor = "auto";
+              }
+            }
+          }
+        }
+      }
+
       // Use getState() for performance in render loops (no re-renders).
       const node = viewer.useSceneTree.getState()[props.name];
 
@@ -799,12 +865,6 @@ export function SceneNodeThreeObject(props: { name: string }) {
   // Clicking logic.
   const sendClicksThrottled = useThrottledMessageSender(50).send;
 
-  // Track hover state.
-  const hoveredRef = React.useRef<HoverState>({
-    isHovered: false,
-    instanceId: null,
-  });
-
   // Handle case where clickable is toggled to false while still hovered.
   if (!clickable && hoveredRef.current.isHovered) {
     hoveredRef.current.isHovered = false;
@@ -814,17 +874,18 @@ export function SceneNodeThreeObject(props: { name: string }) {
     }
   }
 
-  // Reset hover state on unmount.
+  // Reset hover state on unmount only.
   useEffect(() => {
     return () => {
       if (hoveredRef.current.isHovered) {
+        hoveredRef.current.isHovered = false;
         viewerMutable.hoveredElementsCount--;
         if (viewerMutable.hoveredElementsCount === 0) {
           document.body.style.cursor = "auto";
         }
       }
     };
-  });
+  }, []);
 
   const dragInfo = React.useRef({
     dragging: false,
@@ -865,6 +926,13 @@ export function SceneNodeThreeObject(props: { name: string }) {
               : (e) => {
                   if (!isDisplayed()) return;
                   e.stopPropagation();
+
+                  // Update pointer position for re-raycasting when mesh changes.
+                  lastPointerPos.current = {
+                    clientX: e.clientX,
+                    clientY: e.clientY,
+                  };
+
                   const state = dragInfo.current;
                   const canvasBbox =
                     viewerMutable.canvas!.getBoundingClientRect();
@@ -921,6 +989,15 @@ export function SceneNodeThreeObject(props: { name: string }) {
                   if (!isDisplayed()) return;
                   e.stopPropagation();
 
+                  // Store pointer position for re-raycasting when mesh changes.
+                  lastPointerPos.current = {
+                    clientX: e.clientX,
+                    clientY: e.clientY,
+                  };
+
+                  // Guard against double-increment if already hovered.
+                  if (hoveredRef.current.isHovered) return;
+
                   // Update hover state
                   hoveredRef.current.isHovered = true;
                   // Store the instanceId in the hover ref
@@ -938,6 +1015,8 @@ export function SceneNodeThreeObject(props: { name: string }) {
               ? undefined
               : () => {
                   if (!isDisplayed()) return;
+                  // Guard against decrementing if already reset (e.g., by objNode change).
+                  if (!hoveredRef.current.isHovered) return;
 
                   // Update hover state
                   hoveredRef.current.isHovered = false;

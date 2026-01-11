@@ -1,10 +1,11 @@
 /**
  * Custom environment component using HDR JPEG (gainmap) format.
  * This replaces drei's Environment component to use the smaller HDR JPEG files.
+ * Fades in the environment map to prevent flickering on first render.
  */
 
-import { useEffect, useState } from "react";
-import { useThree } from "@react-three/fiber";
+import { useEffect, useState, useRef } from "react";
+import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { HDRJPGLoader } from "@monogrid/gainmap-js";
 
@@ -25,6 +26,9 @@ interface HDRJPGEnvironmentProps {
   environmentRotation?: THREE.Euler;
 }
 
+// Initial canvas opacity while loading.
+const LOADING_OPACITY = 0.05;
+
 export function HDRJPGEnvironment({
   files,
   background = false,
@@ -37,6 +41,15 @@ export function HDRJPGEnvironment({
   const gl = useThree((state) => state.gl);
   const scene = useThree((state) => state.scene);
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
+
+  // Track fade-in progress (0 to 1).
+  const fadeProgress = useRef(0);
+  const isFirstLoad = useRef(true);
+
+  // Set initial canvas opacity while loading.
+  useEffect(() => {
+    gl.domElement.style.opacity = LOADING_OPACITY.toString();
+  }, [gl]);
 
   // Load the HDR JPEG file.
   useEffect(() => {
@@ -52,7 +65,32 @@ export function HDRJPGEnvironment({
         }
         const tex = result.renderTarget.texture;
         tex.mapping = THREE.EquirectangularReflectionMapping;
+
+        // Reset fade progress for new texture, but only on first load.
+        if (isFirstLoad.current) {
+          fadeProgress.current = 0;
+          isFirstLoad.current = false;
+        } else {
+          fadeProgress.current = 1;
+        }
         setTexture(tex);
+
+        // Set environment.
+        scene.environment = tex;
+        scene.environmentIntensity = environmentIntensity;
+        if (environmentRotation) {
+          scene.environmentRotation = environmentRotation;
+        }
+
+        // Set background if enabled.
+        if (background) {
+          scene.background = tex;
+          scene.backgroundBlurriness = backgroundBlurriness;
+          scene.backgroundIntensity = backgroundIntensity;
+          if (backgroundRotation) {
+            scene.backgroundRotation = backgroundRotation;
+          }
+        }
       },
       undefined,
       (error) => {
@@ -65,60 +103,32 @@ export function HDRJPGEnvironment({
     };
   }, [files, gl]);
 
-  // Apply environment map to scene.
+  // Dispose of previous texture when changed.
+  useEffect(() => texture?.dispose, [texture]);
+
+  // Animate fade-in (only runs while fading).
+  useFrame(() => {
+    if (!texture || fadeProgress.current >= 1.0) return;
+
+    // Update fade progress.
+    fadeProgress.current = Math.min(1, fadeProgress.current + 1.0 / 5.0);
+    const fade = fadeProgress.current;
+
+    // Fade canvas opacity from LOADING_OPACITY to 1.
+    const canvasOpacity = LOADING_OPACITY + (1 - LOADING_OPACITY) * fade;
+    gl.domElement.style.opacity = canvasOpacity.toString();
+  });
+
+  // Cleanup on unmount.
   useEffect(() => {
-    if (!texture) return;
-
-    const prevEnvironment = scene.environment;
-    const prevBackground = scene.background;
-    const prevBackgroundBlurriness = scene.backgroundBlurriness;
-    const prevBackgroundIntensity = scene.backgroundIntensity;
-    const prevBackgroundRotation = scene.backgroundRotation?.clone();
-    const prevEnvironmentIntensity = scene.environmentIntensity;
-    const prevEnvironmentRotation = scene.environmentRotation?.clone();
-
-    // Set environment.
-    scene.environment = texture;
-    scene.environmentIntensity = environmentIntensity;
-    if (environmentRotation) {
-      scene.environmentRotation = environmentRotation;
-    }
-
-    // Set background if enabled.
-    if (background) {
-      scene.background = texture;
-      scene.backgroundBlurriness = backgroundBlurriness;
-      scene.backgroundIntensity = backgroundIntensity;
-      if (backgroundRotation) {
-        scene.backgroundRotation = backgroundRotation;
-      }
-    }
-
     return () => {
-      scene.environment = prevEnvironment;
-      scene.environmentIntensity = prevEnvironmentIntensity;
-      if (prevEnvironmentRotation) {
-        scene.environmentRotation = prevEnvironmentRotation;
-      }
+      gl.domElement.style.opacity = "1";
+      scene.environment = null;
       if (background) {
-        scene.background = prevBackground;
-        scene.backgroundBlurriness = prevBackgroundBlurriness;
-        scene.backgroundIntensity = prevBackgroundIntensity;
-        if (prevBackgroundRotation) {
-          scene.backgroundRotation = prevBackgroundRotation;
-        }
+        scene.background = null;
       }
     };
-  }, [
-    texture,
-    scene,
-    background,
-    backgroundBlurriness,
-    backgroundIntensity,
-    backgroundRotation,
-    environmentIntensity,
-    environmentRotation,
-  ]);
+  }, [gl, scene, background]);
 
   return null;
 }
