@@ -95,9 +95,9 @@ class StateSerializer:
         assert isinstance(packed_bytes, bytes)
         self._handler._record_handles.remove(self)
         # Use zstd for better compression ratio and speed.
-        # Prepend 4-byte size header for decompressor.
+        # Prepend 8-byte size header for decompressor.
         compressed = zstandard.ZstdCompressor(level=12).compress(packed_bytes)
-        return len(packed_bytes).to_bytes(4, "little") + compressed
+        return len(packed_bytes).to_bytes(8, "little") + compressed
 
     def show(self, height: int = 400, dark_mode: bool = False) -> None:
         """Display the serialized scene in a Jupyter notebook or web browser.
@@ -701,10 +701,9 @@ async def _message_producer(
                     "timestampSec": time.perf_counter(),
                 }
             )
-            # Compress and prepend size header (4 bytes, little-endian uint32).
-            # 4 bytes supports up to 4GB, which far exceeds our max message size.
+            # Compress and prepend size header (8 bytes, little-endian uint64).
             compressed = zstd.compress(inner)
-            serialized = len(inner).to_bytes(4, "little") + compressed
+            serialized = len(inner).to_bytes(8, "little") + compressed
             await websocket.send(serialized)
         elif client_api_version == 0:
             for msg in outgoing:

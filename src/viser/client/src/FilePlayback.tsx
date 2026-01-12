@@ -58,10 +58,10 @@ async function deserializeZstdMsgpackFile<T>(
     offset += chunk.length;
   }
 
-  // Read decompressed size from 4-byte little-endian header.
+  // Read decompressed size from 8-byte little-endian header.
   const view = new DataView(bytes.buffer);
-  const decompressedSize = view.getUint32(0, true);
-  const compressedData = bytes.slice(4);
+  const decompressedSize = Number(view.getBigUint64(0, true));
+  const compressedData = bytes.slice(8);
 
   // Decompress with zstd. Progress bar already at 100% from download.
   await zstdReady;
@@ -86,10 +86,10 @@ async function deserializeEmbeddedData<T>(
   // Data is already embedded, so mark download as complete.
   setStatus({ downloaded: 1.0, total: 1.0 });
 
-  // Read decompressed size from 4-byte little-endian header.
+  // Read decompressed size from 8-byte little-endian header.
   const view = new DataView(bytes.buffer);
-  const decompressedSize = view.getUint32(0, true);
-  const compressedData = bytes.slice(4);
+  const decompressedSize = Number(view.getBigUint64(0, true));
+  const compressedData = bytes.slice(8);
 
   // Decompress with zstd and decode msgpack.
   await zstdReady;

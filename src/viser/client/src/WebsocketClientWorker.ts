@@ -118,11 +118,10 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
         const buffer = await (event.data.arrayBuffer() as Promise<ArrayBuffer>);
         const bytes = new Uint8Array(buffer);
 
-        // Read decompressed size from 4-byte little-endian header.
-        // 4 bytes (uint32) supports up to 4GB, which far exceeds our max message size.
+        // Read decompressed size from 8-byte little-endian header.
         const view = new DataView(buffer);
-        const decompressedSize = view.getUint32(0, true); // little-endian
-        const compressedData = bytes.slice(4);
+        const decompressedSize = Number(view.getBigUint64(0, true));
+        const compressedData = bytes.slice(8);
 
         // Decompress and decode.
         await zstdReady;
