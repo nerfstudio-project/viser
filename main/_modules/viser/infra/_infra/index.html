@@ -444,6 +444,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">websockets.asyncio.server</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">websockets.datastructures</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">websockets.exceptions</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">zstandard</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">assert_never</span><span class="p">,</span> <span class="n">override</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">websockets</span><span class="w"> </span><span class="kn">import</span> <span class="n">Headers</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">websockets.asyncio.server</span><span class="w"> </span><span class="kn">import</span> <span class="n">ServerConnection</span>
@@ -521,7 +522,10 @@
         <span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">packed_bytes</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_handler</span><span class="o">.</span><span class="n">_record_handles</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">gzip</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">packed_bytes</span><span class="p">,</span> <span class="n">compresslevel</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span></div>
+        <span class="c1"># Use zstd for better compression ratio and speed.</span>
+        <span class="c1"># Prepend 8-byte size header for decompressor.</span>
+        <span class="n">compressed</span> <span class="o">=</span> <span class="n">zstandard</span><span class="o">.</span><span class="n">ZstdCompressor</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">packed_bytes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">packed_bytes</span><span class="p">)</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">compressed</span></div>
 
 
 <div class="viewcode-block" id="StateSerializer.show">
@@ -1164,6 +1168,7 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Infinite loop to broadcast windows of messages from a buffer.&quot;&quot;&quot;</span>
     <span class="n">window_generator</span> <span class="o">=</span> <span class="n">buffer</span><span class="o">.</span><span class="n">window_generator</span><span class="p">(</span><span class="n">client_id</span><span class="p">)</span>
+    <span class="n">zstd</span> <span class="o">=</span> <span class="n">zstandard</span><span class="o">.</span><span class="n">ZstdCompressor</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">while</span> <span class="ow">not</span> <span class="n">buffer</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">outgoing</span> <span class="o">=</span> <span class="k">await</span> <span class="n">window_generator</span><span class="o">.</span><span class="fm">__anext__</span><span class="p">()</span>
@@ -1171,7 +1176,8 @@
             <span class="k">break</span>
 
         <span class="k">if</span> <span class="n">client_api_version</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">serialized</span> <span class="o">=</span> <span class="n">msgspec</span><span class="o">.</span><span class="n">msgpack</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+            <span class="c1"># Encode the message structure.</span>
+            <span class="n">inner</span> <span class="o">=</span> <span class="n">msgspec</span><span class="o">.</span><span class="n">msgpack</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
                 <span class="p">{</span>
                     <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span>
                         <span class="n">message</span><span class="o">.</span><span class="n">as_serializable_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">outgoing</span>
@@ -1179,7 +1185,9 @@
                     <span class="s2">&quot;timestampSec&quot;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">(),</span>
                 <span class="p">}</span>
             <span class="p">)</span>
-            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">serialized</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+            <span class="c1"># Compress and prepend size header (8 bytes, little-endian uint64).</span>
+            <span class="n">compressed</span> <span class="o">=</span> <span class="n">zstd</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">inner</span><span class="p">)</span>
+            <span class="n">serialized</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">inner</span><span class="p">)</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">compressed</span>
             <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">client_api_version</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">outgoing</span><span class="p">:</span>
