@@ -2,16 +2,9 @@ import * as msgpack from "@msgpack/msgpack";
 import { Message } from "./WebsocketMessages";
 import { ZSTDDecoder } from "zstddec";
 
-// Lazily initialized zstd decoder.
-let zstdDecoder: ZSTDDecoder | null = null;
-
-async function getZstdDecoder(): Promise<ZSTDDecoder> {
-  if (zstdDecoder === null) {
-    zstdDecoder = new ZSTDDecoder();
-    await zstdDecoder.init();
-  }
-  return zstdDecoder;
-}
+// Initialize zstd decoder at module load.
+const zstdDecoder = new ZSTDDecoder();
+const zstdReady = zstdDecoder.init();
 
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { ViewerContext } from "./ViewerContext";
@@ -71,8 +64,8 @@ async function deserializeZstdMsgpackFile<T>(
   const compressedData = bytes.slice(4);
 
   // Decompress with zstd. Progress bar already at 100% from download.
-  const decoder = await getZstdDecoder();
-  const decompressed = decoder.decode(compressedData, decompressedSize);
+  await zstdReady;
+  const decompressed = zstdDecoder.decode(compressedData, decompressedSize);
 
   return msgpack.decode(decompressed) as T;
 }
@@ -99,8 +92,8 @@ async function deserializeEmbeddedData<T>(
   const compressedData = bytes.slice(4);
 
   // Decompress with zstd and decode msgpack.
-  const decoder = await getZstdDecoder();
-  const decompressed = decoder.decode(compressedData, decompressedSize);
+  await zstdReady;
+  const decompressed = zstdDecoder.decode(compressedData, decompressedSize);
 
   return msgpack.decode(decompressed) as T;
 }

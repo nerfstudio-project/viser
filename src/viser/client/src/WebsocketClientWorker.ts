@@ -4,16 +4,9 @@ import AwaitLock from "await-lock";
 import { VISER_VERSION } from "./VersionInfo";
 import { ZSTDDecoder } from "zstddec";
 
-// Lazily initialized zstd decoder.
-let zstdDecoder: ZSTDDecoder | null = null;
-
-async function getZstdDecoder(): Promise<ZSTDDecoder> {
-  if (zstdDecoder === null) {
-    zstdDecoder = new ZSTDDecoder();
-    await zstdDecoder.init();
-  }
-  return zstdDecoder;
-}
+// Initialize zstd decoder at module load.
+const zstdDecoder = new ZSTDDecoder();
+const zstdReady = zstdDecoder.init();
 
 
 export type WsWorkerIncoming =
@@ -132,8 +125,8 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
         const compressedData = bytes.slice(4);
 
         // Decompress and decode.
-        const decoder = await getZstdDecoder();
-        const decompressed = decoder.decode(compressedData, decompressedSize);
+        await zstdReady;
+        const decompressed = zstdDecoder.decode(compressedData, decompressedSize);
         return msgpack.decode(decompressed) as SerializedStruct;
       })();
 
