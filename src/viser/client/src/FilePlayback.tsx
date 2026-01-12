@@ -1,6 +1,17 @@
-import { decodeAsync, decode } from "@msgpack/msgpack";
+import * as msgpack from "@msgpack/msgpack";
 import { Message } from "./WebsocketMessages";
-import { decompress } from "fflate";
+import { ZSTDDecoder } from "zstddec";
+
+// Lazily initialized zstd decoder.
+let zstdDecoder: ZSTDDecoder | null = null;
+
+async function getZstdDecoder(): Promise<ZSTDDecoder> {
+  if (zstdDecoder === null) {
+    zstdDecoder = new ZSTDDecoder();
+    await zstdDecoder.init();
+  }
+  return zstdDecoder;
+}
 
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { ViewerContext } from "./ViewerContext";
@@ -20,8 +31,8 @@ import {
 } from "@tabler/icons-react";
 
 /** Download, decompress, and deserialize a file, which should be serialized
- * via msgpack and compressed via gzip. Also takes a hook for status updates. */
-async function deserializeGzippedMsgpackFile<T>(
+ * via msgpack and compressed via zstd. Also takes a hook for status updates. */
+async function deserializeZstdMsgpackFile<T>(
   fileUrl: string,
   setStatus: (status: { downloaded: number; total: number }) => void,
 ): Promise<T> {
@@ -29,46 +40,44 @@ async function deserializeGzippedMsgpackFile<T>(
   if (!response.ok) {
     throw new Error(`Failed to fetch the file: ${response.statusText}`);
   }
-  return new Promise<T>((resolve) => {
-    const gzipTotalLength = parseInt(response.headers.get("Content-Length")!);
-    if (typeof DecompressionStream === "undefined") {
-      // Implementation without DecompressionStream.
-      console.log("DecompressionStream is unavailable. Using fallback.");
-      setStatus({ downloaded: 0.1 * gzipTotalLength, total: gzipTotalLength });
-      response.arrayBuffer().then((buffer) => {
-        setStatus({
-          downloaded: 0.8 * gzipTotalLength,
-          total: gzipTotalLength,
-        });
-        decompress(new Uint8Array(buffer), (error, result) => {
-          setStatus({
-            downloaded: 1.0 * gzipTotalLength,
-            total: gzipTotalLength,
-          });
-          resolve(decode(result) as T);
-        });
-      });
-    } else {
-      // Stream: fetch -> gzip -> msgpack.
-      let gzipReceived = 0;
-      const progressStream = // Count number of (compressed) bytes.
-        new TransformStream({
-          transform(chunk, controller) {
-            gzipReceived += chunk.length;
-            setStatus({ downloaded: gzipReceived, total: gzipTotalLength });
-            controller.enqueue(chunk);
-          },
-        });
-      decodeAsync(
-        response
-          .body!.pipeThrough(progressStream)
-          .pipeThrough(new DecompressionStream("gzip")),
-      ).then((val) => resolve(val as T));
-    }
-  });
+
+  const totalLength = parseInt(response.headers.get("Content-Length")!);
+  setStatus({ downloaded: 0, total: totalLength });
+
+  // Stream the download to track progress.
+  const reader = response.body!.getReader();
+  const chunks: Uint8Array[] = [];
+  let downloadedLength = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    downloadedLength += value.length;
+    setStatus({ downloaded: downloadedLength, total: totalLength });
+  }
+
+  // Concatenate chunks into a single buffer.
+  const bytes = new Uint8Array(downloadedLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  // Read decompressed size from 4-byte little-endian header.
+  const view = new DataView(bytes.buffer);
+  const decompressedSize = view.getUint32(0, true);
+  const compressedData = bytes.slice(4);
+
+  // Decompress with zstd. Progress bar already at 100% from download.
+  const decoder = await getZstdDecoder();
+  const decompressed = decoder.decode(compressedData, decompressedSize);
+
+  return msgpack.decode(decompressed) as T;
 }
 
-/** Deserialize embedded base64-encoded gzip-compressed msgpack data.
+/** Deserialize embedded base64-encoded zstd-compressed msgpack data.
  * Used for static embedding where scene data is inlined in the HTML. */
 async function deserializeEmbeddedData<T>(
   base64Data: string,
@@ -80,18 +89,20 @@ async function deserializeEmbeddedData<T>(
   for (let i = 0; i < binaryString.length; i++) {
     bytes[i] = binaryString.charCodeAt(i);
   }
-  setStatus({ downloaded: 0.5, total: 1.0 });
 
-  // Decompress and decode msgpack.
-  return new Promise<T>((resolve) => {
-    decompress(bytes, (error, result) => {
-      if (error) {
-        console.error("Failed to decompress embedded data:", error);
-      }
-      setStatus({ downloaded: 1.0, total: 1.0 });
-      resolve(decode(result) as T);
-    });
-  });
+  // Data is already embedded, so mark download as complete.
+  setStatus({ downloaded: 1.0, total: 1.0 });
+
+  // Read decompressed size from 4-byte little-endian header.
+  const view = new DataView(bytes.buffer);
+  const decompressedSize = view.getUint32(0, true);
+  const compressedData = bytes.slice(4);
+
+  // Decompress with zstd and decode msgpack.
+  const decoder = await getZstdDecoder();
+  const decompressed = decoder.decode(compressedData, decompressedSize);
+
+  return msgpack.decode(decompressed) as T;
 }
 
 export interface SerializedMessages {
@@ -145,7 +156,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
   const theme = useMantineTheme();
 
   useEffect(() => {
-    deserializeGzippedMsgpackFile<SerializedMessages>(fileUrl, setStatus).then(
+    deserializeZstdMsgpackFile<SerializedMessages>(fileUrl, setStatus).then(
       (data) => {
         console.log(
           "File loaded! Saved with Viser version:",

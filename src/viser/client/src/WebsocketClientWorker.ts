@@ -1,7 +1,20 @@
-import { encode, decode } from "@msgpack/msgpack";
+import * as msgpack from "@msgpack/msgpack";
 import { Message } from "./WebsocketMessages";
 import AwaitLock from "await-lock";
 import { VISER_VERSION } from "./VersionInfo";
+import { ZSTDDecoder } from "zstddec";
+
+// Lazily initialized zstd decoder.
+let zstdDecoder: ZSTDDecoder | null = null;
+
+async function getZstdDecoder(): Promise<ZSTDDecoder> {
+  if (zstdDecoder === null) {
+    zstdDecoder = new ZSTDDecoder();
+    await zstdDecoder.init();
+  }
+  return zstdDecoder;
+}
+
 
 export type WsWorkerIncoming =
   | { type: "send"; message: Message }
@@ -108,11 +121,21 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
     };
 
     ws.onmessage = async (event) => {
-      const dataPromise = new Promise<SerializedStruct>((resolve) => {
-        (event.data.arrayBuffer() as Promise<ArrayBuffer>).then((buffer) => {
-          resolve(decode(new Uint8Array(buffer)) as SerializedStruct);
-        });
-      });
+      const dataPromise = (async () => {
+        const buffer = await (event.data.arrayBuffer() as Promise<ArrayBuffer>);
+        const bytes = new Uint8Array(buffer);
+
+        // Read decompressed size from 4-byte little-endian header.
+        // 4 bytes (uint32) supports up to 4GB, which far exceeds our max message size.
+        const view = new DataView(buffer);
+        const decompressedSize = view.getUint32(0, true); // little-endian
+        const compressedData = bytes.slice(4);
+
+        // Decompress and decode.
+        const decoder = await getZstdDecoder();
+        const decompressed = decoder.decode(compressedData, decompressedSize);
+        return msgpack.decode(decompressed) as SerializedStruct;
+      })();
 
       // Try our best to handle messages in order. If this takes more than 10 seconds, we give up. :)
       const jsReceivedMs = performance.now();
@@ -183,7 +206,7 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
     const data: WsWorkerIncoming = e.data;
 
     if (data.type === "send") {
-      ws!.send(encode(data.message));
+      ws!.send(msgpack.encode(data.message));
     } else if (data.type === "set_server") {
       server = data.server;
       tryConnect();
