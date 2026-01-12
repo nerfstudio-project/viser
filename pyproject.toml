@@ -46,6 +46,11 @@ dependencies = [
     "yourdfpy>=0.0.53,<1.0.0",
     "typing_extensions>=4.0.0",
     "nodeenv>=1.9.1,<2.0.0",
+    # TODO: migrate to backports.zstd when we drop Python 3.8 support.
+    # https://pypi.org/project/backports.zstd/
+    # Then migrate to stdlib compression.zstd in Python 3.14+.
+    # https://docs.python.org/3.14/library/compression.zstd.html
+    "zstandard>=0.20.0,<1.0.0",
 ]
 
 [project.optional-dependencies]

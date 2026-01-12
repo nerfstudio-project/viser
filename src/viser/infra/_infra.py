@@ -23,6 +23,7 @@ import msgspec.msgpack
 import websockets.asyncio.server
 import websockets.datastructures
 import websockets.exceptions
+import zstandard
 from typing_extensions import Literal, assert_never, override
 from websockets import Headers
 from websockets.asyncio.server import ServerConnection
@@ -93,7 +94,10 @@ class StateSerializer:
         )
         assert isinstance(packed_bytes, bytes)
         self._handler._record_handles.remove(self)
-        return gzip.compress(packed_bytes, compresslevel=9)
+        # Use zstd for better compression ratio and speed.
+        # Prepend 8-byte size header for decompressor.
+        compressed = zstandard.ZstdCompressor(level=12).compress(packed_bytes)
+        return len(packed_bytes).to_bytes(8, "little") + compressed
 
     def show(self, height: int = 400, dark_mode: bool = False) -> None:
         """Display the serialized scene in a Jupyter notebook or web browser.
@@ -680,6 +684,7 @@ async def _message_producer(
 ) -> None:
     """Infinite loop to broadcast windows of messages from a buffer."""
     window_generator = buffer.window_generator(client_id)
+    zstd = zstandard.ZstdCompressor(level=1)
     while not buffer.done:
         try:
             outgoing = await window_generator.__anext__()
@@ -687,7 +692,8 @@ async def _message_producer(
             break
 
         if client_api_version == 1:
-            serialized = msgspec.msgpack.encode(
+            # Encode the message structure.
+            inner = msgspec.msgpack.encode(
                 {
                     "messages": tuple(
                         message.as_serializable_dict() for message in outgoing
@@ -695,7 +701,9 @@ async def _message_producer(
                     "timestampSec": time.perf_counter(),
                 }
             )
-            assert isinstance(serialized, bytes)
+            # Compress and prepend size header (8 bytes, little-endian uint64).
+            compressed = zstd.compress(inner)
+            serialized = len(inner).to_bytes(8, "little") + compressed
             await websocket.send(serialized)
         elif client_api_version == 0:
             for msg in outgoing:

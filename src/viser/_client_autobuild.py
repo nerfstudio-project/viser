@@ -175,7 +175,7 @@ def _install_sandboxed_node() -> Path:
 
     env_dir = client_dir / ".nodeenv"
     result = subprocess.run(
-        [sys.executable, "-m", "nodeenv", "--node=20.4.0", env_dir], check=False
+        [sys.executable, "-m", "nodeenv", "--node=24.12.0", env_dir], check=False
     )
 
     if result.returncode != 0:

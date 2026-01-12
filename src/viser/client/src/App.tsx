@@ -960,8 +960,6 @@ function ViserLogo() {
         <Box
           style={{
             textAlign: "left",
-            maxHeight: "120px",
-            overflowY: "auto",
             lineHeight: "1",
             fontSize: "0.8rem",
             opacity: "0.75",
@@ -976,7 +974,11 @@ function ViserLogo() {
                 <Anchor
                   href={contributor.html_url}
                   target="_blank"
-                  style={{ textDecoration: "none", fontSize: "0.75rem" }}
+                  style={{
+                    textDecoration: "none",
+                    fontSize: "0.75rem",
+                    lineHeight: "1.2",
+                  }}
                 >
                   {contributor.login}
                 </Anchor>

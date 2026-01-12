@@ -1,7 +1,13 @@
-import { encode, decode } from "@msgpack/msgpack";
+import * as msgpack from "@msgpack/msgpack";
 import { Message } from "./WebsocketMessages";
 import AwaitLock from "await-lock";
 import { VISER_VERSION } from "./VersionInfo";
+import { ZSTDDecoder } from "zstddec";
+
+// Initialize zstd decoder at module load.
+const zstdDecoder = new ZSTDDecoder();
+const zstdReady = zstdDecoder.init();
+
 
 export type WsWorkerIncoming =
   | { type: "send"; message: Message }
@@ -108,11 +114,20 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
     };
 
     ws.onmessage = async (event) => {
-      const dataPromise = new Promise<SerializedStruct>((resolve) => {
-        (event.data.arrayBuffer() as Promise<ArrayBuffer>).then((buffer) => {
-          resolve(decode(new Uint8Array(buffer)) as SerializedStruct);
-        });
-      });
+      const dataPromise = (async () => {
+        const buffer = await (event.data.arrayBuffer() as Promise<ArrayBuffer>);
+        const bytes = new Uint8Array(buffer);
+
+        // Read decompressed size from 8-byte little-endian header.
+        const view = new DataView(buffer);
+        const decompressedSize = Number(view.getBigUint64(0, true));
+        const compressedData = bytes.slice(8);
+
+        // Decompress and decode.
+        await zstdReady;
+        const decompressed = zstdDecoder.decode(compressedData, decompressedSize);
+        return msgpack.decode(decompressed) as SerializedStruct;
+      })();
 
       // Try our best to handle messages in order. If this takes more than 10 seconds, we give up. :)
       const jsReceivedMs = performance.now();
@@ -183,7 +198,7 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
     const data: WsWorkerIncoming = e.data;
 
     if (data.type === "send") {
-      ws!.send(encode(data.message));
+      ws!.send(msgpack.encode(data.message));
     } else if (data.type === "set_server") {
       server = data.server;
       tryConnect();
