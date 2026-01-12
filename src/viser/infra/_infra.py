@@ -20,7 +20,6 @@ from pathlib import Path
 from typing import Any, Callable, Generator, NewType, TypeVar
 
 import msgspec.msgpack
-import viser  # Import for version checking
 import websockets.asyncio.server
 import websockets.datastructures
 import websockets.exceptions
@@ -30,6 +29,8 @@ from websockets import Headers
 from websockets.asyncio.server import ServerConnection
 from websockets.http11 import Request, Response
 from websockets.typing import Subprotocol
+
+import viser  # Import for version checking
 
 from ._async_message_buffer import AsyncMessageBuffer
 from ._messages import Message
