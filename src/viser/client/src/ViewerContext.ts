@@ -65,6 +65,9 @@ export type ViewerMutable = {
     position: [number, number, number] | null;
     lookAt: [number, number, number] | null;
     up: [number, number, number] | null;
+    fov: number | null;
+    near: number | null;
+    far: number | null;
   };
 };
 

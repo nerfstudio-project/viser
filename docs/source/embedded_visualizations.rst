@@ -227,7 +227,16 @@ To find the camera parameters, add a ``&logCamera`` parameter to the URL:
 Then, open your Javascript console. You should see the camera pose printed
 whenever you move the camera. It should look something like this:
 
-* ``&initialCameraPosition=2.216,-4.233,-0.947&initialCameraLookAt=-0.115,0.346,-0.192&initialCameraUp=0.329,-0.904,0.272``
+* ``&initialCameraPosition=2.216,-4.233,-0.947&initialCameraLookAt=-0.115,0.346,-0.192&initialCameraUp=0.329,-0.904,0.272&initialCameraFov=0.7854&initialCameraNear=0.01&initialCameraFar=1000``
 
 You can then add this string to the URL to set the initial camera pose. URL
 parameters take priority over the Python-configured initial camera.
+
+Available URL parameters:
+
+* ``initialCameraPosition`` - Camera position as ``x,y,z``
+* ``initialCameraLookAt`` - Look-at target as ``x,y,z``
+* ``initialCameraUp`` - Up direction as ``x,y,z``
+* ``initialCameraFov`` - Field of view in radians
+* ``initialCameraNear`` - Near clipping plane distance
+* ``initialCameraFar`` - Far clipping plane distance

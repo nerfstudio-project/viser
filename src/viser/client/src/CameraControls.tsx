@@ -386,6 +386,7 @@ export function SynchronizedCameraControls() {
 
     // Log camera.
     if (logCamera) {
+      const fovRadians = (three_camera.fov * Math.PI) / 180.0;
       console.log(
         `&initialCameraPosition=${t_world_camera.x.toFixed(
           3,
@@ -395,7 +396,10 @@ export function SynchronizedCameraControls() {
           )},${lookAt.z.toFixed(3)}` +
           `&initialCameraUp=${up.x.toFixed(3)},${up.y.toFixed(
             3,
-          )},${up.z.toFixed(3)}`,
+          )},${up.z.toFixed(3)}` +
+          `&initialCameraFov=${fovRadians.toFixed(4)}` +
+          `&initialCameraNear=${three_camera.near}` +
+          `&initialCameraFar=${three_camera.far}`,
       );
     }
   }, [camera, sendCameraThrottled]);
@@ -442,6 +446,25 @@ export function SynchronizedCameraControls() {
         initialCameraLookAt.z,
         false,
       );
+
+      // Apply fov/near/far from URL params if provided.
+      if (initialCameraFromUrl.fov !== null) {
+        // tan(fov / 2.0) = 0.5 * film height / focal length
+        // focal length = 0.5 * film height / tan(fov / 2.0)
+        camera.setFocalLength(
+          (0.5 * camera.getFilmHeight()) /
+            Math.tan(initialCameraFromUrl.fov / 2.0),
+        );
+      }
+      if (initialCameraFromUrl.near !== null) {
+        camera.near = initialCameraFromUrl.near;
+        camera.updateProjectionMatrix();
+      }
+      if (initialCameraFromUrl.far !== null) {
+        camera.far = initialCameraFromUrl.far;
+        camera.updateProjectionMatrix();
+      }
+
       initialCameraPositionSet.current = true;
     }
 

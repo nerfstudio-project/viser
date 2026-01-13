@@ -719,6 +719,7 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
 
         _client_autobuild.ensure_client_is_built()
 
+        self._initial_camera = InitialCameraConfig()
         self._connection = server
         self._connected_clients: dict[int, ClientHandle] = {}
         self._client_lock = threading.Lock()
@@ -881,15 +882,13 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         self.gui.reset()
         self.gui.set_panel_label(label)
 
-        self._initial_camera = InitialCameraConfig()
-
     @property
     def initial_camera(self) -> InitialCameraConfig:
         """Configuration for initial camera pose.
 
         Set these values to control the initial camera position for new
         clients and serialized/embedded scenes. The API is designed to match
-        :class:`CameraHandle`, which is used for per-client camera control.
+        :class:`viser.CameraHandle`, which is used for per-client camera control.
 
         Example usage::
 

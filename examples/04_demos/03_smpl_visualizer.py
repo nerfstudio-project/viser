@@ -136,7 +136,6 @@ def main(
     while True:
         # Do nothing if no change.
         time.sleep(0.02)
-        server.scene.show()
         if not gui_elements.changed:
             continue
 

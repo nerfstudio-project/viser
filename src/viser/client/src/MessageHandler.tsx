@@ -320,6 +320,11 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraFovMessage": {
+        // Skip initial camera setup if URL param was provided.
+        if (message.initial && viewerMutable.initialCameraFromUrlParams.fov) {
+          return;
+        }
+
         const camera = viewerMutable.camera!;
         // tan(fov / 2.0) = 0.5 * film height / focal length
         // focal length = 0.5 * film height / tan(fov / 2.0)
@@ -330,12 +335,22 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraNearMessage": {
+        // Skip initial camera setup if URL param was provided.
+        if (message.initial && viewerMutable.initialCameraFromUrlParams.near) {
+          return;
+        }
+
         const camera = viewerMutable.camera!;
         camera.near = message.near;
         camera.updateProjectionMatrix();
         return;
       }
       case "SetCameraFarMessage": {
+        // Skip initial camera setup if URL param was provided.
+        if (message.initial && viewerMutable.initialCameraFromUrlParams.far) {
+          return;
+        }
+
         const camera = viewerMutable.camera!;
         camera.far = message.far;
         camera.updateProjectionMatrix();

@@ -281,6 +281,15 @@ function ViewerRoot() {
             number,
           ])
         : null,
+      fov: searchParams.has("initialCameraFov")
+        ? Number(searchParams.get("initialCameraFov"))
+        : null,
+      near: searchParams.has("initialCameraNear")
+        ? Number(searchParams.get("initialCameraNear"))
+        : null,
+      far: searchParams.has("initialCameraFar")
+        ? Number(searchParams.get("initialCameraFar"))
+        : null,
     },
   });
 
