@@ -257,6 +257,31 @@ function ViewerRoot() {
 
     // Global hover state tracking.
     hoveredElementsCount: 0,
+
+    // Initial camera from URL params (if provided).
+    initialCameraFromUrlParams: {
+      position: searchParams.has("initialCameraPosition")
+        ? (searchParams.get("initialCameraPosition")!.split(",").map(Number) as [
+            number,
+            number,
+            number,
+          ])
+        : null,
+      lookAt: searchParams.has("initialCameraLookAt")
+        ? (searchParams.get("initialCameraLookAt")!.split(",").map(Number) as [
+            number,
+            number,
+            number,
+          ])
+        : null,
+      up: searchParams.has("initialCameraUp")
+        ? (searchParams.get("initialCameraUp")!.split(",").map(Number) as [
+            number,
+            number,
+            number,
+          ])
+        : null,
+    },
   });
 
   // Create the scene tree state and extract store and actions.

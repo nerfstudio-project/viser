@@ -967,6 +967,8 @@ class SetCameraPositionMessage(Message):
     """Server -> client message to set the camera's position."""
 
     position: Tuple[float, float, float]
+    initial: bool = False
+    """If True, this is an initial camera setup that can be overridden by URL params."""
 
 
 @dataclasses.dataclass
@@ -974,6 +976,8 @@ class SetCameraUpDirectionMessage(Message):
     """Server -> client message to set the camera's up direction."""
 
     position: Tuple[float, float, float]
+    initial: bool = False
+    """If True, this is an initial camera setup that can be overridden by URL params."""
 
 
 @dataclasses.dataclass
@@ -981,6 +985,8 @@ class SetCameraLookAtMessage(Message):
     """Server -> client message to set the camera's look-at point."""
 
     look_at: Tuple[float, float, float]
+    initial: bool = False
+    """If True, this is an initial camera setup that can be overridden by URL params."""
 
 
 @dataclasses.dataclass
@@ -988,6 +994,8 @@ class SetCameraNearMessage(Message):
     """Server -> client message to set the camera's near clipping plane."""
 
     near: float
+    initial: bool = False
+    """If True, this is an initial camera setup that can be overridden by URL params."""
 
 
 @dataclasses.dataclass
@@ -995,6 +1003,8 @@ class SetCameraFarMessage(Message):
     """Server -> client message to set the camera's far clipping plane."""
 
     far: float
+    initial: bool = False
+    """If True, this is an initial camera setup that can be overridden by URL params."""
 
 
 @dataclasses.dataclass
@@ -1002,6 +1012,8 @@ class SetCameraFovMessage(Message):
     """Server -> client message to set the camera's field of view."""
 
     fov: float
+    initial: bool = False
+    """If True, this is an initial camera setup that can be overridden by URL params."""
 
 
 @dataclasses.dataclass

@@ -58,6 +58,14 @@ export type ViewerMutable = {
 
   // Global hover state tracking.
   hoveredElementsCount: number;
+
+  // Initial camera from URL params (if provided).
+  // Used to override server-sent initial camera settings.
+  initialCameraFromUrlParams: {
+    position: [number, number, number] | null;
+    lookAt: [number, number, number] | null;
+    up: [number, number, number] | null;
+  };
 };
 
 export type ViewerContextContents = {

@@ -238,6 +238,11 @@ function useMessageHandler() {
         break;
       }
       case "SetCameraLookAtMessage": {
+        // Skip initial camera setup if URL param was provided.
+        if (message.initial && viewerMutable.initialCameraFromUrlParams.lookAt) {
+          return;
+        }
+
         const cameraControls = viewerMutable.cameraControl!;
 
         const T_threeworld_world = computeT_threeworld_world(viewer);
@@ -251,6 +256,11 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraUpDirectionMessage": {
+        // Skip initial camera setup if URL param was provided.
+        if (message.initial && viewerMutable.initialCameraFromUrlParams.up) {
+          return;
+        }
+
         const camera = viewerMutable.camera!;
         const cameraControls = viewerMutable.cameraControl!;
         const T_threeworld_world = computeT_threeworld_world(viewer);
@@ -281,6 +291,14 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraPositionMessage": {
+        // Skip initial camera setup if URL param was provided.
+        if (
+          message.initial &&
+          viewerMutable.initialCameraFromUrlParams.position
+        ) {
+          return;
+        }
+
         const cameraControls = viewerMutable.cameraControl!;
 
         // Set the camera position. Due to the look-at, note that this will
