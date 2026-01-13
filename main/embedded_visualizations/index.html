@@ -594,16 +594,53 @@ git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </
 </section>
 <section id="step-4-setting-the-initial-camera-pose">
 <h2>Step 4: Setting the initial camera pose<a class="headerlink" href="#step-4-setting-the-initial-camera-pose" title="Link to this heading">¶</a></h2>
-<p>To set the initial camera pose, you can add a <code class="docutils literal notranslate"><span class="pre">&amp;logCamera</span></code> parameter to the URL:</p>
+<section id="using-python">
+<h3>Using Python<a class="headerlink" href="#using-python" title="Link to this heading">¶</a></h3>
+<p>The easiest way to set the initial camera pose is using <a class="reference internal" href="../api/core/server/#viser.ViserServer.initial_camera" title="viser.ViserServer.initial_camera"><code class="xref py py-attr docutils literal notranslate"><span class="pre">viser.ViserServer.initial_camera</span></code></a>
+before serializing or calling <a class="reference internal" href="../api/core/scene_api/#viser.SceneApi.show" title="viser.SceneApi.show"><code class="xref py py-meth docutils literal notranslate"><span class="pre">show()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
+
+<span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
+<span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_box</span><span class="p">(</span><span class="s2">&quot;/box&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dimensions</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+<span class="c1"># Set the initial camera pose.</span>
+<span class="n">server</span><span class="o">.</span><span class="n">initial_camera</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="n">server</span><span class="o">.</span><span class="n">initial_camera</span><span class="o">.</span><span class="n">look_at</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="n">server</span><span class="o">.</span><span class="n">initial_camera</span><span class="o">.</span><span class="n">up</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+<span class="c1"># The initial camera is included when serializing.</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">get_scene_serializer</span><span class="p">()</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This sets the camera pose that will be used when the visualization first loads.
+See <a class="reference internal" href="../api/handles/camera_handles/#viser.InitialCameraConfig" title="viser.InitialCameraConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">viser.InitialCameraConfig</span></code></a> for all available options including
+<code class="docutils literal notranslate"><span class="pre">fov</span></code>, <code class="docutils literal notranslate"><span class="pre">near</span></code>, and <code class="docutils literal notranslate"><span class="pre">far</span></code>.</p>
+</section>
+<section id="using-url-parameters">
+<h3>Using URL Parameters<a class="headerlink" href="#using-url-parameters" title="Link to this heading">¶</a></h3>
+<p>You can also override the initial camera pose using URL parameters. This is
+useful for fine-tuning the camera position after export.</p>
+<p>To find the camera parameters, add a <code class="docutils literal notranslate"><span class="pre">&amp;logCamera</span></code> parameter to the URL:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">http://localhost:8000/viser-client/?playbackPath=http://localhost:8000/recordings/recording.viser&amp;logCamera</span></code></p></li>
 </ul>
 <p>Then, open your Javascript console. You should see the camera pose printed
 whenever you move the camera. It should look something like this:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">&amp;initialCameraPosition=2.216,-4.233,-0.947&amp;initialCameraLookAt=-0.115,0.346,-0.192&amp;initialCameraUp=0.329,-0.904,0.272</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&amp;initialCameraPosition=2.216,-4.233,-0.947&amp;initialCameraLookAt=-0.115,0.346,-0.192&amp;initialCameraUp=0.329,-0.904,0.272&amp;initialCameraFov=0.7854&amp;initialCameraNear=0.01&amp;initialCameraFar=1000</span></code></p></li>
 </ul>
-<p>You can then add this string to the URL to set the initial camera pose.</p>
+<p>You can then add this string to the URL to set the initial camera pose. URL
+parameters take priority over the Python-configured initial camera.</p>
+<p>Available URL parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">initialCameraPosition</span></code> - Camera position as <code class="docutils literal notranslate"><span class="pre">x,y,z</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">initialCameraLookAt</span></code> - Look-at target as <code class="docutils literal notranslate"><span class="pre">x,y,z</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">initialCameraUp</span></code> - Up direction as <code class="docutils literal notranslate"><span class="pre">x,y,z</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">initialCameraFov</span></code> - Field of view in radians</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">initialCameraNear</span></code> - Near clipping plane distance</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">initialCameraFar</span></code> - Far clipping plane distance</p></li>
+</ul>
+</section>
 </section>
 </section>
 
@@ -682,7 +719,11 @@ whenever you move the camera. It should look something like this:</p>
 <li><a class="reference internal" href="#github-pages-deployment">GitHub Pages Deployment</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#step-4-setting-the-initial-camera-pose">Step 4: Setting the initial camera pose</a></li>
+<li><a class="reference internal" href="#step-4-setting-the-initial-camera-pose">Step 4: Setting the initial camera pose</a><ul>
+<li><a class="reference internal" href="#using-python">Using Python</a></li>
+<li><a class="reference internal" href="#using-url-parameters">Using URL Parameters</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -552,6 +552,55 @@ too quickly for higher-resolution images.</p></li>
 
 </dd></dl>
 
+<section id="initial-camera-configuration">
+<h2>Initial Camera Configuration<a class="headerlink" href="#initial-camera-configuration" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="viser.InitialCameraConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">InitialCameraConfig</span></span><a class="reference internal" href="../../../_modules/viser/_viser/#InitialCameraConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.InitialCameraConfig" title="Link to this definition">¶</a></dt>
+<dd><p>Configuration for the initial camera pose.</p>
+<p>Accessed via <a class="reference internal" href="../../core/server/#viser.ViserServer.initial_camera" title="viser.ViserServer.initial_camera"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ViserServer.initial_camera</span></code></a>. Values set here are
+applied to new client connections and serialized scenes.</p>
+<p>The API is designed to match <a class="reference internal" href="#viser.CameraHandle" title="viser.CameraHandle"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraHandle</span></code></a>, which is used for
+per-client camera control.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.InitialCameraConfig.position">
+<span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.InitialCameraConfig.position" title="Link to this definition">¶</a></dt>
+<dd><p>Camera position in world coordinates.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.InitialCameraConfig.look_at">
+<span class="sig-name descname"><span class="pre">look_at</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.InitialCameraConfig.look_at" title="Link to this definition">¶</a></dt>
+<dd><p>Point the camera looks at in world coordinates.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.InitialCameraConfig.up">
+<span class="sig-name descname"><span class="pre">up</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.InitialCameraConfig.up" title="Link to this definition">¶</a></dt>
+<dd><p>Camera up direction.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.InitialCameraConfig.fov">
+<span class="sig-name descname"><span class="pre">fov</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.InitialCameraConfig.fov" title="Link to this definition">¶</a></dt>
+<dd><p>Vertical field of view in radians.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.InitialCameraConfig.near">
+<span class="sig-name descname"><span class="pre">near</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.InitialCameraConfig.near" title="Link to this definition">¶</a></dt>
+<dd><p>Near clipping plane distance.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.InitialCameraConfig.far">
+<span class="sig-name descname"><span class="pre">far</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.InitialCameraConfig.far" title="Link to this definition">¶</a></dt>
+<dd><p>Far clipping plane distance.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 </section>
 
         </article>
@@ -632,6 +681,18 @@ too quickly for higher-resolution images.</p></li>
 <li><a class="reference internal" href="#viser.CameraHandle.up_direction"><code class="docutils literal notranslate"><span class="pre">CameraHandle.up_direction</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.on_update"><code class="docutils literal notranslate"><span class="pre">CameraHandle.on_update()</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.get_render"><code class="docutils literal notranslate"><span class="pre">CameraHandle.get_render()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#initial-camera-configuration">Initial Camera Configuration</a><ul>
+<li><a class="reference internal" href="#viser.InitialCameraConfig"><code class="docutils literal notranslate"><span class="pre">InitialCameraConfig</span></code></a><ul>
+<li><a class="reference internal" href="#viser.InitialCameraConfig.position"><code class="docutils literal notranslate"><span class="pre">InitialCameraConfig.position</span></code></a></li>
+<li><a class="reference internal" href="#viser.InitialCameraConfig.look_at"><code class="docutils literal notranslate"><span class="pre">InitialCameraConfig.look_at</span></code></a></li>
+<li><a class="reference internal" href="#viser.InitialCameraConfig.up"><code class="docutils literal notranslate"><span class="pre">InitialCameraConfig.up</span></code></a></li>
+<li><a class="reference internal" href="#viser.InitialCameraConfig.fov"><code class="docutils literal notranslate"><span class="pre">InitialCameraConfig.fov</span></code></a></li>
+<li><a class="reference internal" href="#viser.InitialCameraConfig.near"><code class="docutils literal notranslate"><span class="pre">InitialCameraConfig.near</span></code></a></li>
+<li><a class="reference internal" href="#viser.InitialCameraConfig.far"><code class="docutils literal notranslate"><span class="pre">InitialCameraConfig.far</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

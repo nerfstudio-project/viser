@@ -464,6 +464,20 @@ connected clients. To show elements that are local to a single client, see
 <dd><p>Handle for interacting with the GUI.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.ViserServer.initial_camera">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">initial_camera</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../handles/camera_handles/#viser.InitialCameraConfig" title="viser._viser.InitialCameraConfig"><span class="pre">InitialCameraConfig</span></a></em><a class="headerlink" href="#viser.ViserServer.initial_camera" title="Link to this definition">¶</a></dt>
+<dd><p>Configuration for initial camera pose.</p>
+<p>Set these values to control the initial camera position for new
+clients and serialized/embedded scenes. The API is designed to match
+<a class="reference internal" href="../../handles/camera_handles/#viser.CameraHandle" title="viser.CameraHandle"><code class="xref py py-class docutils literal notranslate"><span class="pre">viser.CameraHandle</span></code></a>, which is used for per-client camera control.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">server</span><span class="o">.</span><span class="n">initial_camera</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
+<span class="n">server</span><span class="o">.</span><span class="n">initial_camera</span><span class="o">.</span><span class="n">look_at</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.get_host">
 <span class="sig-name descname"><span class="pre">get_host</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/viser/_viser/#ViserServer.get_host"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.get_host" title="Link to this definition">¶</a></dt>
@@ -748,6 +762,7 @@ visualization.</p>
 <li><a class="reference internal" href="#viser.ViserServer"><code class="docutils literal notranslate"><span class="pre">ViserServer</span></code></a><ul>
 <li><a class="reference internal" href="#viser.ViserServer.scene"><code class="docutils literal notranslate"><span class="pre">ViserServer.scene</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.gui"><code class="docutils literal notranslate"><span class="pre">ViserServer.gui</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.initial_camera"><code class="docutils literal notranslate"><span class="pre">ViserServer.initial_camera</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.get_host"><code class="docutils literal notranslate"><span class="pre">ViserServer.get_host()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.get_port"><code class="docutils literal notranslate"><span class="pre">ViserServer.get_port()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.request_share_url"><code class="docutils literal notranslate"><span class="pre">ViserServer.request_share_url()</span></code></a></li>
