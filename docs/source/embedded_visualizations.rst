@@ -189,13 +189,54 @@ You can embed this into other webpages using an HTML ``<iframe />`` tag.
 Step 4: Setting the initial camera pose
 -----------------------------------------------
 
-To set the initial camera pose, you can add a ``&logCamera`` parameter to the URL:
+Using Python
+~~~~~~~~~~~~
+
+The easiest way to set the initial camera pose is using :attr:`viser.ViserServer.initial_camera`
+before serializing or calling :meth:`~viser.SceneApi.show`:
+
+.. code-block:: python
+
+   import viser
+
+   server = viser.ViserServer()
+   server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
+
+   # Set the initial camera pose.
+   server.initial_camera.position = (2.0, -4.0, 1.0)
+   server.initial_camera.look_at = (0.0, 0.0, 0.0)
+   server.initial_camera.up = (0.0, 0.0, 1.0)
+
+   # The initial camera is included when serializing.
+   data = server.get_scene_serializer().serialize()
+
+This sets the camera pose that will be used when the visualization first loads.
+See :class:`viser.InitialCameraConfig` for all available options including
+``fov``, ``near``, and ``far``.
+
+Using URL Parameters
+~~~~~~~~~~~~~~~~~~~~
+
+You can also override the initial camera pose using URL parameters. This is
+useful for fine-tuning the camera position after export.
+
+To find the camera parameters, add a ``&logCamera`` parameter to the URL:
 
 * ``http://localhost:8000/viser-client/?playbackPath=http://localhost:8000/recordings/recording.viser&logCamera``
 
 Then, open your Javascript console. You should see the camera pose printed
 whenever you move the camera. It should look something like this:
 
-* ``&initialCameraPosition=2.216,-4.233,-0.947&initialCameraLookAt=-0.115,0.346,-0.192&initialCameraUp=0.329,-0.904,0.272``
+* ``&initialCameraPosition=2.216,-4.233,-0.947&initialCameraLookAt=-0.115,0.346,-0.192&initialCameraUp=0.329,-0.904,0.272&initialCameraFov=0.7854&initialCameraNear=0.01&initialCameraFar=1000``
 
-You can then add this string to the URL to set the initial camera pose.
+You can then add this string to the URL to set the initial camera pose. URL
+parameters take priority over the Python-configured initial camera.
+
+Available URL parameters:
+
+* ``initialCameraPosition`` - Camera position as ``x,y,z``
+* ``initialCameraLookAt`` - Look-at target as ``x,y,z``
+* ``initialCameraUp`` - Up direction as ``x,y,z``
+* ``initialCameraFov`` - Field of view in radians
+* ``initialCameraNear`` - Near clipping plane distance
+* ``initialCameraFar`` - Far clipping plane distance

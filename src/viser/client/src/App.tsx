@@ -257,6 +257,35 @@ function ViewerRoot() {
 
     // Global hover state tracking.
     hoveredElementsCount: 0,
+
+    // Initial camera from URL params (if provided).
+    initialCameraFromUrlParams: (() => {
+      // Helper to parse and validate a vector URL param.
+      const parseVec3 = (
+        param: string,
+      ): [number, number, number] | null => {
+        const str = searchParams.get(param);
+        if (str === null) return null;
+        const parts = str.split(",").map(Number);
+        if (parts.length !== 3 || !parts.every(Number.isFinite)) return null;
+        return parts as [number, number, number];
+      };
+      // Helper to parse and validate a scalar URL param.
+      const parseScalar = (param: string): number | null => {
+        const str = searchParams.get(param);
+        if (str === null) return null;
+        const val = Number(str);
+        return Number.isFinite(val) ? val : null;
+      };
+      return {
+        position: parseVec3("initialCameraPosition"),
+        lookAt: parseVec3("initialCameraLookAt"),
+        up: parseVec3("initialCameraUp"),
+        fov: parseScalar("initialCameraFov"),
+        near: parseScalar("initialCameraNear"),
+        far: parseScalar("initialCameraFar"),
+      };
+    })(),
   });
 
   // Create the scene tree state and extract store and actions.

@@ -17,20 +17,25 @@ function CrosshairVisual({
   visible: boolean;
   children?: React.ReactNode;
 }) {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const groupRef = useRef<THREE.Group>(null);
+
+  // Target crosshair size in pixels.
+  const TARGET_PIXEL_SIZE = 20;
 
   const worldPos = new THREE.Vector3();
   useFrame(() => {
     if (groupRef.current && visible) {
       // Get world position of the crosshair.
       groupRef.current.getWorldPosition(worldPos);
-      // Scale based on distance and FOV to maintain consistent visual size.
+      // Scale based on distance, FOV, and viewport size to maintain consistent pixel size.
       const distance = camera.position.distanceTo(worldPos);
       const fovScale = Math.tan(
         ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 360,
       );
-      groupRef.current.scale.setScalar((distance / 20) * fovScale);
+      // Convert target pixel size to world-space scale.
+      const pixelToWorldScale = (2 * distance * fovScale) / size.height;
+      groupRef.current.scale.setScalar(TARGET_PIXEL_SIZE * pixelToWorldScale);
     }
   });
 
@@ -381,6 +386,7 @@ export function SynchronizedCameraControls() {
 
     // Log camera.
     if (logCamera) {
+      const fovRadians = (three_camera.fov * Math.PI) / 180.0;
       console.log(
         `&initialCameraPosition=${t_world_camera.x.toFixed(
           3,
@@ -390,18 +396,19 @@ export function SynchronizedCameraControls() {
           )},${lookAt.z.toFixed(3)}` +
           `&initialCameraUp=${up.x.toFixed(3)},${up.y.toFixed(
             3,
-          )},${up.z.toFixed(3)}`,
+          )},${up.z.toFixed(3)}` +
+          `&initialCameraFov=${fovRadians.toFixed(4)}` +
+          `&initialCameraNear=${three_camera.near}` +
+          `&initialCameraFar=${three_camera.far}`,
       );
     }
   }, [camera, sendCameraThrottled]);
 
-  // Camera control search parameters.
+  // Initial camera from URL parameters (read from context).
   // EXPERIMENTAL: these may be removed or renamed in the future. Please pin to
   // a commit/version if you're relying on this (undocumented) feature.
+  const initialCameraFromUrl = viewerMutable.initialCameraFromUrlParams;
   const searchParams = new URLSearchParams(window.location.search);
-  const initialCameraPosString = searchParams.get("initialCameraPosition");
-  const initialCameraLookAtString = searchParams.get("initialCameraLookAt");
-  const initialCameraUpString = searchParams.get("initialCameraUp");
   const forceOrbitOriginTool = searchParams.get("forceOrbitOriginTool") === "1";
   const logCamera = viewer.useDevSettings((state) => state.logCamera);
 
@@ -414,33 +421,15 @@ export function SynchronizedCameraControls() {
   React.useEffect(() => {
     if (!initialCameraPositionSet.current) {
       const initialCameraPos = new THREE.Vector3(
-        ...((initialCameraPosString
-          ? (initialCameraPosString.split(",").map(Number) as [
-              number,
-              number,
-              number,
-            ])
-          : [3.0, 3.0, 3.0]) as [number, number, number]),
+        ...(initialCameraFromUrl.position ?? ([3.0, 3.0, 3.0] as const)),
       );
       initialCameraPos.applyMatrix4(computeT_threeworld_world(viewer));
       const initialCameraLookAt = new THREE.Vector3(
-        ...((initialCameraLookAtString
-          ? (initialCameraLookAtString.split(",").map(Number) as [
-              number,
-              number,
-              number,
-            ])
-          : [0, 0, 0]) as [number, number, number]),
+        ...(initialCameraFromUrl.lookAt ?? ([0, 0, 0] as const)),
       );
       initialCameraLookAt.applyMatrix4(computeT_threeworld_world(viewer));
       const initialCameraUp = new THREE.Vector3(
-        ...((initialCameraUpString
-          ? (initialCameraUpString.split(",").map(Number) as [
-              number,
-              number,
-              number,
-            ])
-          : [0, 0, 1]) as [number, number, number]),
+        ...(initialCameraFromUrl.up ?? ([0, 0, 1] as const)),
       );
       initialCameraUp.applyMatrix4(computeT_threeworld_world(viewer));
       initialCameraUp.normalize();
@@ -457,6 +446,25 @@ export function SynchronizedCameraControls() {
         initialCameraLookAt.z,
         false,
       );
+
+      // Apply fov/near/far from URL params if provided.
+      if (initialCameraFromUrl.fov !== null) {
+        // tan(fov / 2.0) = 0.5 * film height / focal length
+        // focal length = 0.5 * film height / tan(fov / 2.0)
+        camera.setFocalLength(
+          (0.5 * camera.getFilmHeight()) /
+            Math.tan(initialCameraFromUrl.fov / 2.0),
+        );
+      }
+      if (initialCameraFromUrl.near !== null) {
+        camera.near = initialCameraFromUrl.near;
+        camera.updateProjectionMatrix();
+      }
+      if (initialCameraFromUrl.far !== null) {
+        camera.far = initialCameraFromUrl.far;
+        camera.updateProjectionMatrix();
+      }
+
       initialCameraPositionSet.current = true;
     }
 

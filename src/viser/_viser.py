@@ -30,6 +30,78 @@ from .infra._infra import StateSerializer
 
 
 @dataclasses.dataclass
+class InitialCameraConfig:
+    """Configuration for the initial camera pose.
+
+    Accessed via :attr:`ViserServer.initial_camera`. Values set here are
+    applied to new client connections and serialized scenes.
+
+    The API is designed to match :class:`CameraHandle`, which is used for
+    per-client camera control.
+    """
+
+    position: tuple[float, float, float] | npt.NDArray[np.floating] | None = None
+    """Camera position in world coordinates."""
+
+    look_at: tuple[float, float, float] | npt.NDArray[np.floating] | None = None
+    """Point the camera looks at in world coordinates."""
+
+    up: tuple[float, float, float] | npt.NDArray[np.floating] | None = None
+    """Camera up direction."""
+
+    fov: float | None = None
+    """Vertical field of view in radians."""
+
+    near: float | None = None
+    """Near clipping plane distance."""
+
+    far: float | None = None
+    """Far clipping plane distance."""
+
+    def _get_messages(self) -> list[_messages.Message]:
+        """Get camera messages for all non-None fields.
+
+        Messages are marked with initial=True so the client can skip them
+        if URL parameters were provided.
+        """
+        messages: list[_messages.Message] = []
+        if self.position is not None:
+            messages.append(
+                _messages.SetCameraPositionMessage(
+                    cast_vector(self.position, 3),
+                    initial=True,
+                )
+            )
+        if self.look_at is not None:
+            messages.append(
+                _messages.SetCameraLookAtMessage(
+                    cast_vector(self.look_at, 3),
+                    initial=True,
+                )
+            )
+        if self.up is not None:
+            messages.append(
+                _messages.SetCameraUpDirectionMessage(
+                    cast_vector(self.up, 3),
+                    initial=True,
+                )
+            )
+        if self.fov is not None:
+            messages.append(
+                _messages.SetCameraFovMessage(float(self.fov), initial=True)
+            )
+        if self.near is not None:
+            messages.append(
+                _messages.SetCameraNearMessage(float(self.near), initial=True)
+            )
+        if self.far is not None:
+            messages.append(
+                _messages.SetCameraFarMessage(float(self.far), initial=True)
+            )
+        return messages
+
+
+@dataclasses.dataclass
 class _CameraHandleState:
     """Information about a client's camera state."""
 
@@ -639,6 +711,7 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
 
         _client_autobuild.ensure_client_is_built()
 
+        self._initial_camera = InitialCameraConfig()
         self._connection = server
         self._connected_clients: dict[int, ClientHandle] = {}
         self._client_lock = threading.Lock()
@@ -706,6 +779,10 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
                         ).add_done_callback(print_threadpool_errors)
 
             conn.register_handler(_messages.ViewerCameraMessage, handle_camera_message)
+
+            # Send initial camera messages.
+            for msg in self._initial_camera._get_messages():
+                conn.queue_message(msg)
 
         # Remove clients when they disconnect.
         @server.on_client_disconnect
@@ -796,6 +873,21 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         self.scene.set_up_direction("+z")
         self.gui.reset()
         self.gui.set_panel_label(label)
+
+    @property
+    def initial_camera(self) -> InitialCameraConfig:
+        """Configuration for initial camera pose.
+
+        Set these values to control the initial camera position for new
+        clients and serialized/embedded scenes. The API is designed to match
+        :class:`viser.CameraHandle`, which is used for per-client camera control.
+
+        Example usage::
+
+            server.initial_camera.position = (5.0, 5.0, 3.0)
+            server.initial_camera.look_at = (0.0, 0.0, 0.0)
+        """
+        return self._initial_camera
 
     def _run_garbage_collector(self, force: bool = False) -> None:
         """Clean up old messages. This is not elegant; a refactor of our
@@ -1105,4 +1197,12 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         # Insert current scene state.
         for message in self._websock_server._broadcast_buffer.message_from_id.values():
             serializer._insert_message(message)
+
+        # Prepend initial camera messages.
+        camera_messages = [
+            (0.0, msg.as_serializable_dict())
+            for msg in self._initial_camera._get_messages()
+        ]
+        serializer._messages = camera_messages + serializer._messages
+
         return serializer
