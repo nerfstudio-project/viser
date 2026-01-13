@@ -189,8 +189,8 @@ You can embed this into other webpages using an HTML ``<iframe />`` tag.
 Step 4: Setting the initial camera pose
 -----------------------------------------------
 
-Using Python (Recommended)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using Python
+~~~~~~~~~~~~
 
 The easiest way to set the initial camera pose is using :attr:`viser.ViserServer.initial_camera`
 before serializing or calling :meth:`~viser.SceneApi.show`:
