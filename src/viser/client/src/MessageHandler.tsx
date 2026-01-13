@@ -321,7 +321,10 @@ function useMessageHandler() {
       }
       case "SetCameraFovMessage": {
         // Skip initial camera setup if URL param was provided.
-        if (message.initial && viewerMutable.initialCameraFromUrlParams.fov) {
+        if (
+          message.initial &&
+          viewerMutable.initialCameraFromUrlParams.fov !== null
+        ) {
           return;
         }
 
@@ -336,7 +339,10 @@ function useMessageHandler() {
       }
       case "SetCameraNearMessage": {
         // Skip initial camera setup if URL param was provided.
-        if (message.initial && viewerMutable.initialCameraFromUrlParams.near) {
+        if (
+          message.initial &&
+          viewerMutable.initialCameraFromUrlParams.near !== null
+        ) {
           return;
         }
 
@@ -347,7 +353,10 @@ function useMessageHandler() {
       }
       case "SetCameraFarMessage": {
         // Skip initial camera setup if URL param was provided.
-        if (message.initial && viewerMutable.initialCameraFromUrlParams.far) {
+        if (
+          message.initial &&
+          viewerMutable.initialCameraFromUrlParams.far !== null
+        ) {
           return;
         }
 

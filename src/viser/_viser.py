@@ -68,29 +68,21 @@ class InitialCameraConfig:
         if self.position is not None:
             messages.append(
                 _messages.SetCameraPositionMessage(
-                    (
-                        float(self.position[0]),
-                        float(self.position[1]),
-                        float(self.position[2]),
-                    ),
+                    cast_vector(self.position, 3),
                     initial=True,
                 )
             )
         if self.look_at is not None:
             messages.append(
                 _messages.SetCameraLookAtMessage(
-                    (
-                        float(self.look_at[0]),
-                        float(self.look_at[1]),
-                        float(self.look_at[2]),
-                    ),
+                    cast_vector(self.look_at, 3),
                     initial=True,
                 )
             )
         if self.up is not None:
             messages.append(
                 _messages.SetCameraUpDirectionMessage(
-                    (float(self.up[0]), float(self.up[1]), float(self.up[2])),
+                    cast_vector(self.up, 3),
                     initial=True,
                 )
             )
