@@ -1,0 +1,154 @@
+/**
+ * Initial Camera State Store
+ *
+ * This module manages the initial camera configuration used for "Reset View"
+ * functionality. It tracks where each camera property came from (source) to
+ * handle priority between different configuration methods.
+ *
+ * ## Source Priority (lowest to highest)
+ * - "default": Built-in defaults (position [3,3,3], lookAt [0,0,0], up [0,0,1])
+ * - "message": Server's initial_camera configuration sent via websocket
+ * - "url": URL parameters (highest priority, always wins)
+ *
+ * When server.initial_camera properties are changed after clients connect,
+ * "Reset View" targets are updated without disrupting users' current camera
+ * positions.
+ */
+
+import React from "react";
+import { create } from "zustand";
+
+/** Source of a camera property value. Priority: default < message < url. */
+export type CameraPropertySource = "default" | "message" | "url";
+
+interface InitialCameraProperty<T> {
+  value: T;
+  source: CameraPropertySource;
+}
+
+export interface InitialCameraState {
+  position: InitialCameraProperty<[number, number, number]>;
+  lookAt: InitialCameraProperty<[number, number, number]>;
+  up: InitialCameraProperty<[number, number, number]>;
+  fov: InitialCameraProperty<number> | null;
+  near: InitialCameraProperty<number> | null;
+  far: InitialCameraProperty<number> | null;
+}
+
+export interface InitialCameraActions {
+  /**
+   * Set a camera property. Only updates if the new source has higher or equal
+   * priority than the current source. Returns true if the state was updated.
+   */
+  setPosition: (
+    value: [number, number, number],
+    source: CameraPropertySource,
+  ) => boolean;
+  setLookAt: (
+    value: [number, number, number],
+    source: CameraPropertySource,
+  ) => boolean;
+  setUp: (
+    value: [number, number, number],
+    source: CameraPropertySource,
+  ) => boolean;
+  setFov: (value: number, source: CameraPropertySource) => boolean;
+  setNear: (value: number, source: CameraPropertySource) => boolean;
+  setFar: (value: number, source: CameraPropertySource) => boolean;
+}
+
+export type UseInitialCamera = ReturnType<typeof useInitialCameraState>;
+
+/** Priority ordering for camera property sources. */
+const SOURCE_PRIORITY: Record<CameraPropertySource, number> = {
+  default: 0,
+  message: 1,
+  url: 2,
+};
+
+/** Check if a new source can override the current source. */
+function canOverride(
+  currentSource: CameraPropertySource,
+  newSource: CameraPropertySource,
+): boolean {
+  return SOURCE_PRIORITY[newSource] >= SOURCE_PRIORITY[currentSource];
+}
+
+export interface InitialCameraConfig {
+  position: [number, number, number] | null;
+  lookAt: [number, number, number] | null;
+  up: [number, number, number] | null;
+  fov: number | null;
+  near: number | null;
+  far: number | null;
+}
+
+/**
+ * Create the initial camera state store.
+ * @param urlParams - Camera properties parsed from URL parameters (null if not provided)
+ */
+export function useInitialCameraState(urlParams: InitialCameraConfig) {
+  return React.useState(() =>
+    create<InitialCameraState & InitialCameraActions>((set, get) => ({
+      // Initialize with URL params if available, otherwise defaults.
+      position: urlParams.position
+        ? { value: urlParams.position, source: "url" as const }
+        : { value: [3.0, 3.0, 3.0], source: "default" as const },
+      lookAt: urlParams.lookAt
+        ? { value: urlParams.lookAt, source: "url" as const }
+        : { value: [0, 0, 0], source: "default" as const },
+      up: urlParams.up
+        ? { value: urlParams.up, source: "url" as const }
+        : { value: [0, 0, 1], source: "default" as const },
+      fov: urlParams.fov
+        ? { value: urlParams.fov, source: "url" as const }
+        : null,
+      near: urlParams.near
+        ? { value: urlParams.near, source: "url" as const }
+        : null,
+      far: urlParams.far
+        ? { value: urlParams.far, source: "url" as const }
+        : null,
+
+      setPosition: (value, source) => {
+        const current = get().position;
+        if (!canOverride(current.source, source)) return false;
+        set({ position: { value, source } });
+        return true;
+      },
+      setLookAt: (value, source) => {
+        const current = get().lookAt;
+        if (!canOverride(current.source, source)) return false;
+        set({ lookAt: { value, source } });
+        return true;
+      },
+      setUp: (value, source) => {
+        const current = get().up;
+        if (!canOverride(current.source, source)) return false;
+        set({ up: { value, source } });
+        return true;
+      },
+      setFov: (value, source) => {
+        const current = get().fov;
+        if (current !== null && !canOverride(current.source, source))
+          return false;
+        set({ fov: { value, source } });
+        return true;
+      },
+      setNear: (value, source) => {
+        const current = get().near;
+        if (current !== null && !canOverride(current.source, source))
+          return false;
+        set({ near: { value, source } });
+        return true;
+      },
+      setFar: (value, source) => {
+        const current = get().far;
+        if (current !== null && !canOverride(current.source, source))
+          return false;
+        set({ far: { value, source } });
+        return true;
+      },
+    })),
+  )[0];
+}
