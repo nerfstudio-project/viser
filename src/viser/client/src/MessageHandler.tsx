@@ -33,6 +33,9 @@ function useMessageHandler() {
   const removeSceneNode = viewer.sceneTreeActions.removeSceneNode;
   const addSceneNode = viewer.sceneTreeActions.addSceneNode;
   const setTheme = viewer.useGui((state) => state.setTheme);
+
+  // Initial camera store actions for updating reset view state.
+  const initialCamera = viewer.useInitialCamera;
   const setShareUrl = viewer.useGui((state) => state.setShareUrl);
   const addGui = viewer.useGui((state) => state.addGui);
   const addModal = viewer.useGui((state) => state.addModal);
@@ -238,8 +241,11 @@ function useMessageHandler() {
         break;
       }
       case "SetCameraLookAtMessage": {
-        // Skip initial camera setup if URL param was provided.
-        if (message.initial && viewerMutable.initialCameraFromUrlParams.lookAt) {
+        // initial=true: update the store only (for Reset View), don't move camera.
+        // initial=false: move the camera only, don't update store.
+        if (message.initial) {
+          // URL params take priority, ignore server's initial value.
+          initialCamera.getState().setLookAt(message.look_at, "message");
           return;
         }
 
@@ -256,8 +262,10 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraUpDirectionMessage": {
-        // Skip initial camera setup if URL param was provided.
-        if (message.initial && viewerMutable.initialCameraFromUrlParams.up) {
+        // initial=true: update the store only (for Reset View), don't move camera.
+        // initial=false: move the camera only, don't update store.
+        if (message.initial) {
+          initialCamera.getState().setUp(message.position, "message");
           return;
         }
 
@@ -291,11 +299,10 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraPositionMessage": {
-        // Skip initial camera setup if URL param was provided.
-        if (
-          message.initial &&
-          viewerMutable.initialCameraFromUrlParams.position
-        ) {
+        // initial=true: update the store only (for Reset View), don't move camera.
+        // initial=false: move the camera only, don't update store.
+        if (message.initial) {
+          initialCamera.getState().setPosition(message.position, "message");
           return;
         }
 
@@ -320,11 +327,10 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraFovMessage": {
-        // Skip initial camera setup if URL param was provided.
-        if (
-          message.initial &&
-          viewerMutable.initialCameraFromUrlParams.fov !== null
-        ) {
+        // initial=true: update the store only (for Reset View), don't move camera.
+        // initial=false: move the camera only, don't update store.
+        if (message.initial) {
+          initialCamera.getState().setFov(message.fov, "message");
           return;
         }
 
@@ -338,11 +344,10 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraNearMessage": {
-        // Skip initial camera setup if URL param was provided.
-        if (
-          message.initial &&
-          viewerMutable.initialCameraFromUrlParams.near !== null
-        ) {
+        // initial=true: update the store only (for Reset View), don't move camera.
+        // initial=false: move the camera only, don't update store.
+        if (message.initial) {
+          initialCamera.getState().setNear(message.near, "message");
           return;
         }
 
@@ -352,11 +357,10 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraFarMessage": {
-        // Skip initial camera setup if URL param was provided.
-        if (
-          message.initial &&
-          viewerMutable.initialCameraFromUrlParams.far !== null
-        ) {
+        // initial=true: update the store only (for Reset View), don't move camera.
+        // initial=false: move the camera only, don't update store.
+        if (message.initial) {
+          initialCamera.getState().setFar(message.far, "message");
           return;
         }
 

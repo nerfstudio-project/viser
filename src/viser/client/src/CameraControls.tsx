@@ -139,12 +139,6 @@ export function SynchronizedCameraControls() {
 
   const sendCameraThrottled = useThrottledMessageSender(20).send;
 
-  // Helper for resetting camera poses.
-  const initialCameraRef = useRef<{
-    camera: PerspectiveCamera;
-    lookAt: THREE.Vector3;
-  } | null>(null);
-
   const pivotRef = useRef<THREE.Group>(null);
 
   const viewerMutable = viewer.mutable.current;
@@ -299,19 +293,30 @@ export function SynchronizedCameraControls() {
   };
 
   viewerMutable.resetCameraView = () => {
-    camera.up.set(
-      initialCameraRef.current!.camera.up.x,
-      initialCameraRef.current!.camera.up.y,
-      initialCameraRef.current!.camera.up.z,
-    );
+    // Read initial camera state from the Zustand store.
+    const initialCameraState = viewer.useInitialCamera.getState();
+    const T_threeworld_world = computeT_threeworld_world(viewer);
+
+    // Transform from world coordinates to threeworld coordinates.
+    const initialUp = new THREE.Vector3(...initialCameraState.up.value);
+    initialUp.applyMatrix4(T_threeworld_world);
+    initialUp.normalize();
+
+    const initialPos = new THREE.Vector3(...initialCameraState.position.value);
+    initialPos.applyMatrix4(T_threeworld_world);
+
+    const initialLookAt = new THREE.Vector3(...initialCameraState.lookAt.value);
+    initialLookAt.applyMatrix4(T_threeworld_world);
+
+    camera.up.set(initialUp.x, initialUp.y, initialUp.z);
     viewerMutable.cameraControl!.updateCameraUp();
     viewerMutable.cameraControl!.setLookAt(
-      initialCameraRef.current!.camera.position.x,
-      initialCameraRef.current!.camera.position.y,
-      initialCameraRef.current!.camera.position.z,
-      initialCameraRef.current!.lookAt.x,
-      initialCameraRef.current!.lookAt.y,
-      initialCameraRef.current!.lookAt.z,
+      initialPos.x,
+      initialPos.y,
+      initialPos.z,
+      initialLookAt.x,
+      initialLookAt.y,
+      initialLookAt.z,
       true,
     );
   };
@@ -356,14 +361,6 @@ export function SynchronizedCameraControls() {
     camera_control.getTarget(lookAt).applyQuaternion(R_world_threeworld);
     const up = three_camera.up.clone().applyQuaternion(R_world_threeworld);
 
-    // Store initial camera values.
-    if (initialCameraRef.current === null) {
-      initialCameraRef.current = {
-        camera: three_camera.clone(),
-        lookAt: camera_control.getTarget(new THREE.Vector3()),
-      };
-    }
-
     T_world_camera.decompose(t_world_camera, R_world_camera, scale);
 
     sendCameraThrottled({
@@ -404,10 +401,6 @@ export function SynchronizedCameraControls() {
     }
   }, [camera, sendCameraThrottled]);
 
-  // Initial camera from URL parameters (read from context).
-  // EXPERIMENTAL: these may be removed or renamed in the future. Please pin to
-  // a commit/version if you're relying on this (undocumented) feature.
-  const initialCameraFromUrl = viewerMutable.initialCameraFromUrlParams;
   const searchParams = new URLSearchParams(window.location.search);
   const forceOrbitOriginTool = searchParams.get("forceOrbitOriginTool") === "1";
   const logCamera = viewer.useDevSettings((state) => state.logCamera);
@@ -420,18 +413,23 @@ export function SynchronizedCameraControls() {
   const initialCameraPositionSet = React.useRef(false);
   React.useEffect(() => {
     if (!initialCameraPositionSet.current) {
+      // Read initial camera state from the Zustand store.
+      // This contains defaults, URL params, or will be updated by server messages.
+      const initialCameraState = viewer.useInitialCamera.getState();
+      const T_threeworld_world = computeT_threeworld_world(viewer);
+
       const initialCameraPos = new THREE.Vector3(
-        ...(initialCameraFromUrl.position ?? ([3.0, 3.0, 3.0] as const)),
+        ...initialCameraState.position.value,
       );
-      initialCameraPos.applyMatrix4(computeT_threeworld_world(viewer));
+      initialCameraPos.applyMatrix4(T_threeworld_world);
       const initialCameraLookAt = new THREE.Vector3(
-        ...(initialCameraFromUrl.lookAt ?? ([0, 0, 0] as const)),
+        ...initialCameraState.lookAt.value,
       );
-      initialCameraLookAt.applyMatrix4(computeT_threeworld_world(viewer));
+      initialCameraLookAt.applyMatrix4(T_threeworld_world);
       const initialCameraUp = new THREE.Vector3(
-        ...(initialCameraFromUrl.up ?? ([0, 0, 1] as const)),
+        ...initialCameraState.up.value,
       );
-      initialCameraUp.applyMatrix4(computeT_threeworld_world(viewer));
+      initialCameraUp.applyMatrix4(T_threeworld_world);
       initialCameraUp.normalize();
 
       camera.up.set(initialCameraUp.x, initialCameraUp.y, initialCameraUp.z);
@@ -447,21 +445,21 @@ export function SynchronizedCameraControls() {
         false,
       );
 
-      // Apply fov/near/far from URL params if provided.
-      if (initialCameraFromUrl.fov !== null) {
+      // Apply fov/near/far if set in the store.
+      if (initialCameraState.fov !== null) {
         // tan(fov / 2.0) = 0.5 * film height / focal length
         // focal length = 0.5 * film height / tan(fov / 2.0)
         camera.setFocalLength(
           (0.5 * camera.getFilmHeight()) /
-            Math.tan(initialCameraFromUrl.fov / 2.0),
+            Math.tan(initialCameraState.fov.value / 2.0),
         );
       }
-      if (initialCameraFromUrl.near !== null) {
-        camera.near = initialCameraFromUrl.near;
+      if (initialCameraState.near !== null) {
+        camera.near = initialCameraState.near.value;
         camera.updateProjectionMatrix();
       }
-      if (initialCameraFromUrl.far !== null) {
-        camera.far = initialCameraFromUrl.far;
+      if (initialCameraState.far !== null) {
+        camera.far = initialCameraState.far.value;
         camera.updateProjectionMatrix();
       }
 

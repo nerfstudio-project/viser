@@ -29,75 +29,135 @@ from ._tunnel import ViserTunnel
 from .infra._infra import StateSerializer
 
 
-@dataclasses.dataclass
 class InitialCameraConfig:
     """Configuration for the initial camera pose.
 
-    Accessed via :attr:`ViserServer.initial_camera`. Values set here are
-    applied to new client connections and serialized scenes.
+    Accessed via :attr:`ViserServer.initial_camera`. Values set here determine:
+
+    1. The starting camera pose for new client connections
+    2. The pose that "Reset View" returns to in the client
+
+    When properties are changed after clients are connected, only the "Reset
+    View" target is updated. Clients' current camera positions are not moved,
+    allowing users to continue working undisturbed.
+
+    Note that URL parameters (e.g., ``?initialCameraPosition=1,2,3``) take
+    priority over server-set values.
 
     The API is designed to match :class:`CameraHandle`, which is used for
     per-client camera control.
     """
 
-    position: tuple[float, float, float] | npt.NDArray[np.floating] | None = None
-    """Camera position in world coordinates."""
+    def __init__(
+        self, broadcast: Callable[[_messages.Message], None] | None = None
+    ) -> None:
+        self._broadcast = broadcast
+        self._position: tuple[float, float, float] | None = None
+        self._look_at: tuple[float, float, float] | None = None
+        self._up: tuple[float, float, float] | None = None
+        self._fov: float | None = None
+        self._near: float | None = None
+        self._far: float | None = None
 
-    look_at: tuple[float, float, float] | npt.NDArray[np.floating] | None = None
-    """Point the camera looks at in world coordinates."""
+    @property
+    def position(self) -> tuple[float, float, float] | None:
+        """Camera position in world coordinates."""
+        return self._position
 
-    up: tuple[float, float, float] | npt.NDArray[np.floating] | None = None
-    """Camera up direction."""
+    @position.setter
+    def position(
+        self, value: tuple[float, float, float] | npt.NDArray[np.floating] | None
+    ) -> None:
+        if value is not None:
+            value = cast_vector(value, 3)
+        self._position = value
+        if value is not None and self._broadcast is not None:
+            self._broadcast(_messages.SetCameraPositionMessage(value, initial=True))
 
-    fov: float | None = None
-    """Vertical field of view in radians."""
+    @property
+    def look_at(self) -> tuple[float, float, float] | None:
+        """Point the camera looks at in world coordinates."""
+        return self._look_at
 
-    near: float | None = None
-    """Near clipping plane distance."""
+    @look_at.setter
+    def look_at(
+        self, value: tuple[float, float, float] | npt.NDArray[np.floating] | None
+    ) -> None:
+        if value is not None:
+            value = cast_vector(value, 3)
+        self._look_at = value
+        if value is not None and self._broadcast is not None:
+            self._broadcast(_messages.SetCameraLookAtMessage(value, initial=True))
 
-    far: float | None = None
-    """Far clipping plane distance."""
+    @property
+    def up(self) -> tuple[float, float, float] | None:
+        """Camera up direction."""
+        return self._up
 
-    def _get_messages(self) -> list[_messages.Message]:
-        """Get camera messages for all non-None fields.
+    @up.setter
+    def up(
+        self, value: tuple[float, float, float] | npt.NDArray[np.floating] | None
+    ) -> None:
+        if value is not None:
+            value = cast_vector(value, 3)
+        self._up = value
+        if value is not None and self._broadcast is not None:
+            self._broadcast(_messages.SetCameraUpDirectionMessage(value, initial=True))
 
-        Messages are marked with initial=True so the client can skip them
-        if URL parameters were provided.
-        """
+    @property
+    def fov(self) -> float | None:
+        """Vertical field of view in radians."""
+        return self._fov
+
+    @fov.setter
+    def fov(self, value: float | None) -> None:
+        self._fov = float(value) if value is not None else None
+        if value is not None and self._broadcast is not None:
+            self._broadcast(_messages.SetCameraFovMessage(float(value), initial=True))
+
+    @property
+    def near(self) -> float | None:
+        """Near clipping plane distance."""
+        return self._near
+
+    @near.setter
+    def near(self, value: float | None) -> None:
+        self._near = float(value) if value is not None else None
+        if value is not None and self._broadcast is not None:
+            self._broadcast(_messages.SetCameraNearMessage(float(value), initial=True))
+
+    @property
+    def far(self) -> float | None:
+        """Far clipping plane distance."""
+        return self._far
+
+    @far.setter
+    def far(self, value: float | None) -> None:
+        self._far = float(value) if value is not None else None
+        if value is not None and self._broadcast is not None:
+            self._broadcast(_messages.SetCameraFarMessage(float(value), initial=True))
+
+    def _get_messages(self, initial: bool) -> list[_messages.Message]:
+        """Get camera messages for all non-None fields."""
         messages: list[_messages.Message] = []
-        if self.position is not None:
+        if self._position is not None:
             messages.append(
-                _messages.SetCameraPositionMessage(
-                    cast_vector(self.position, 3),
-                    initial=True,
-                )
+                _messages.SetCameraPositionMessage(self._position, initial=initial)
             )
-        if self.look_at is not None:
+        if self._look_at is not None:
             messages.append(
-                _messages.SetCameraLookAtMessage(
-                    cast_vector(self.look_at, 3),
-                    initial=True,
-                )
+                _messages.SetCameraLookAtMessage(self._look_at, initial=initial)
             )
-        if self.up is not None:
+        if self._up is not None:
             messages.append(
-                _messages.SetCameraUpDirectionMessage(
-                    cast_vector(self.up, 3),
-                    initial=True,
-                )
+                _messages.SetCameraUpDirectionMessage(self._up, initial=initial)
             )
-        if self.fov is not None:
-            messages.append(
-                _messages.SetCameraFovMessage(float(self.fov), initial=True)
-            )
-        if self.near is not None:
-            messages.append(
-                _messages.SetCameraNearMessage(float(self.near), initial=True)
-            )
-        if self.far is not None:
-            messages.append(
-                _messages.SetCameraFarMessage(float(self.far), initial=True)
-            )
+        if self._fov is not None:
+            messages.append(_messages.SetCameraFovMessage(self._fov, initial=initial))
+        if self._near is not None:
+            messages.append(_messages.SetCameraNearMessage(self._near, initial=initial))
+        if self._far is not None:
+            messages.append(_messages.SetCameraFarMessage(self._far, initial=initial))
         return messages
 
 
@@ -711,7 +771,7 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
 
         _client_autobuild.ensure_client_is_built()
 
-        self._initial_camera = InitialCameraConfig()
+        self._initial_camera = InitialCameraConfig(broadcast=server.queue_message)
         self._connection = server
         self._connected_clients: dict[int, ClientHandle] = {}
         self._client_lock = threading.Lock()
@@ -781,7 +841,11 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
             conn.register_handler(_messages.ViewerCameraMessage, handle_camera_message)
 
             # Send initial camera messages.
-            for msg in self._initial_camera._get_messages():
+            # initial=True updates the client's store (for Reset View).
+            # initial=False actually moves the camera.
+            for msg in self._initial_camera._get_messages(initial=True):
+                conn.queue_message(msg)
+            for msg in self._initial_camera._get_messages(initial=False):
                 conn.queue_message(msg)
 
         # Remove clients when they disconnect.
@@ -1199,9 +1263,14 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
             serializer._insert_message(message)
 
         # Prepend initial camera messages.
+        # initial=True updates the client's store (for Reset View).
+        # initial=False actually moves the camera.
         camera_messages = [
             (0.0, msg.as_serializable_dict())
-            for msg in self._initial_camera._get_messages()
+            for msg in self._initial_camera._get_messages(initial=True)
+        ] + [
+            (0.0, msg.as_serializable_dict())
+            for msg in self._initial_camera._get_messages(initial=False)
         ]
         serializer._messages = camera_messages + serializer._messages
 

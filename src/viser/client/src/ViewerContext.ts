@@ -9,6 +9,7 @@ import React from "react";
 import { UseSceneTree } from "./SceneTree";
 
 import { UseGui } from "./ControlPanel/GuiState";
+import { UseInitialCamera } from "./InitialCameraState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 
 // Type definitions for all mutable state.
@@ -58,17 +59,6 @@ export type ViewerMutable = {
 
   // Global hover state tracking.
   hoveredElementsCount: number;
-
-  // Initial camera from URL params (if provided).
-  // Used to override server-sent initial camera settings.
-  initialCameraFromUrlParams: {
-    position: [number, number, number] | null;
-    lookAt: [number, number, number] | null;
-    up: [number, number, number] | null;
-    fov: number | null;
-    near: number | null;
-    far: number | null;
-  };
 };
 
 export type ViewerContextContents = {
@@ -85,6 +75,7 @@ export type ViewerContextContents = {
   useDevSettings: ReturnType<
     typeof import("./DevSettingsStore").useDevSettingsStore
   >;
+  useInitialCamera: UseInitialCamera;
 
   // Single reference to all mutable state.
   mutable: React.MutableRefObject<ViewerMutable>;
