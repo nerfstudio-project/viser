@@ -6,9 +6,17 @@
  * handle priority between different configuration methods.
  *
  * ## Source Priority (lowest to highest)
- * - "default": Built-in defaults (position [3,3,3], lookAt [0,0,0], up [0,0,1])
+ * - "default": Built-in defaults matching Three.js/Python server defaults
  * - "message": Server's initial_camera configuration sent via websocket
  * - "url": URL parameters (highest priority, always wins)
+ *
+ * ## Default Values
+ * - position: [3, 3, 3]
+ * - lookAt: [0, 0, 0]
+ * - up: [0, 0, 1]
+ * - fov: 50 degrees (≈0.873 radians, Three.js PerspectiveCamera default)
+ * - near: 0.01
+ * - far: 1000
  *
  * When server.initial_camera properties are changed after clients connect,
  * "Reset View" targets are updated without disrupting users' current camera
@@ -30,9 +38,9 @@ export interface InitialCameraState {
   position: InitialCameraProperty<[number, number, number]>;
   lookAt: InitialCameraProperty<[number, number, number]>;
   up: InitialCameraProperty<[number, number, number]>;
-  fov: InitialCameraProperty<number> | null;
-  near: InitialCameraProperty<number> | null;
-  far: InitialCameraProperty<number> | null;
+  fov: InitialCameraProperty<number>;
+  near: InitialCameraProperty<number>;
+  far: InitialCameraProperty<number>;
 }
 
 export interface InitialCameraActions {
@@ -100,15 +108,16 @@ export function useInitialCameraState(urlParams: InitialCameraConfig) {
       up: urlParams.up
         ? { value: urlParams.up, source: "url" as const }
         : { value: [0, 0, 1], source: "default" as const },
+      // Default FOV matches Three.js PerspectiveCamera default of 50 degrees.
       fov: urlParams.fov
         ? { value: urlParams.fov, source: "url" as const }
-        : null,
+        : { value: (50.0 * Math.PI) / 180.0, source: "default" as const },
       near: urlParams.near
         ? { value: urlParams.near, source: "url" as const }
-        : null,
+        : { value: 0.01, source: "default" as const },
       far: urlParams.far
         ? { value: urlParams.far, source: "url" as const }
-        : null,
+        : { value: 1000.0, source: "default" as const },
 
       setPosition: (value, source) => {
         const current = get().position;
@@ -130,22 +139,19 @@ export function useInitialCameraState(urlParams: InitialCameraConfig) {
       },
       setFov: (value, source) => {
         const current = get().fov;
-        if (current !== null && !canOverride(current.source, source))
-          return false;
+        if (!canOverride(current.source, source)) return false;
         set({ fov: { value, source } });
         return true;
       },
       setNear: (value, source) => {
         const current = get().near;
-        if (current !== null && !canOverride(current.source, source))
-          return false;
+        if (!canOverride(current.source, source)) return false;
         set({ near: { value, source } });
         return true;
       },
       setFar: (value, source) => {
         const current = get().far;
-        if (current !== null && !canOverride(current.source, source))
-          return false;
+        if (!canOverride(current.source, source)) return false;
         set({ far: { value, source } });
         return true;
       },

@@ -445,23 +445,16 @@ export function SynchronizedCameraControls() {
         false,
       );
 
-      // Apply fov/near/far if set in the store.
-      if (initialCameraState.fov !== null) {
-        // tan(fov / 2.0) = 0.5 * film height / focal length
-        // focal length = 0.5 * film height / tan(fov / 2.0)
-        camera.setFocalLength(
-          (0.5 * camera.getFilmHeight()) /
-            Math.tan(initialCameraState.fov.value / 2.0),
-        );
-      }
-      if (initialCameraState.near !== null) {
-        camera.near = initialCameraState.near.value;
-        camera.updateProjectionMatrix();
-      }
-      if (initialCameraState.far !== null) {
-        camera.far = initialCameraState.far.value;
-        camera.updateProjectionMatrix();
-      }
+      // Apply fov/near/far from the store.
+      // tan(fov / 2.0) = 0.5 * film height / focal length
+      // focal length = 0.5 * film height / tan(fov / 2.0)
+      camera.setFocalLength(
+        (0.5 * camera.getFilmHeight()) /
+          Math.tan(initialCameraState.fov.value / 2.0),
+      );
+      camera.near = initialCameraState.near.value;
+      camera.far = initialCameraState.far.value;
+      camera.updateProjectionMatrix();
 
       initialCameraPositionSet.current = true;
     }

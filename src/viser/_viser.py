@@ -37,6 +37,14 @@ class InitialCameraConfig:
     1. The starting camera pose for new client connections
     2. The pose that "Reset View" returns to in the client
 
+    Default values:
+        - ``position``: ``(3.0, 3.0, 3.0)``
+        - ``look_at``: ``(0.0, 0.0, 0.0)``
+        - ``up``: ``(0.0, 0.0, 1.0)``
+        - ``fov``: 50 degrees (~0.873 radians, Three.js default)
+        - ``near``: ``0.01``
+        - ``far``: ``1000.0``
+
     When properties are changed after clients are connected, only the "Reset
     View" target is updated. Clients' current camera positions are not moved,
     allowing users to continue working undisturbed.
@@ -48,117 +56,104 @@ class InitialCameraConfig:
     per-client camera control.
     """
 
+    # Default FOV matches Three.js PerspectiveCamera default of 50 degrees.
+    DEFAULT_FOV: float = 50.0 * np.pi / 180.0
+
     def __init__(
         self, broadcast: Callable[[_messages.Message], None] | None = None
     ) -> None:
         self._broadcast = broadcast
-        self._position: tuple[float, float, float] | None = None
-        self._look_at: tuple[float, float, float] | None = None
-        self._up: tuple[float, float, float] | None = None
-        self._fov: float | None = None
-        self._near: float | None = None
-        self._far: float | None = None
+        # Defaults match the TypeScript client defaults in InitialCameraState.ts.
+        self._position: tuple[float, float, float] = (3.0, 3.0, 3.0)
+        self._look_at: tuple[float, float, float] = (0.0, 0.0, 0.0)
+        self._up: tuple[float, float, float] = (0.0, 0.0, 1.0)
+        self._fov: float = InitialCameraConfig.DEFAULT_FOV
+        self._near: float = 0.01
+        self._far: float = 1000.0
 
     @property
-    def position(self) -> tuple[float, float, float] | None:
+    def position(self) -> tuple[float, float, float]:
         """Camera position in world coordinates."""
         return self._position
 
     @position.setter
     def position(
-        self, value: tuple[float, float, float] | npt.NDArray[np.floating] | None
+        self, value: tuple[float, float, float] | npt.NDArray[np.floating]
     ) -> None:
-        if value is not None:
-            value = cast_vector(value, 3)
+        value = cast_vector(value, 3)
         self._position = value
-        if value is not None and self._broadcast is not None:
+        if self._broadcast is not None:
             self._broadcast(_messages.SetCameraPositionMessage(value, initial=True))
 
     @property
-    def look_at(self) -> tuple[float, float, float] | None:
+    def look_at(self) -> tuple[float, float, float]:
         """Point the camera looks at in world coordinates."""
         return self._look_at
 
     @look_at.setter
     def look_at(
-        self, value: tuple[float, float, float] | npt.NDArray[np.floating] | None
+        self, value: tuple[float, float, float] | npt.NDArray[np.floating]
     ) -> None:
-        if value is not None:
-            value = cast_vector(value, 3)
+        value = cast_vector(value, 3)
         self._look_at = value
-        if value is not None and self._broadcast is not None:
+        if self._broadcast is not None:
             self._broadcast(_messages.SetCameraLookAtMessage(value, initial=True))
 
     @property
-    def up(self) -> tuple[float, float, float] | None:
+    def up(self) -> tuple[float, float, float]:
         """Camera up direction."""
         return self._up
 
     @up.setter
-    def up(
-        self, value: tuple[float, float, float] | npt.NDArray[np.floating] | None
-    ) -> None:
-        if value is not None:
-            value = cast_vector(value, 3)
+    def up(self, value: tuple[float, float, float] | npt.NDArray[np.floating]) -> None:
+        value = cast_vector(value, 3)
         self._up = value
-        if value is not None and self._broadcast is not None:
+        if self._broadcast is not None:
             self._broadcast(_messages.SetCameraUpDirectionMessage(value, initial=True))
 
     @property
-    def fov(self) -> float | None:
+    def fov(self) -> float:
         """Vertical field of view in radians."""
         return self._fov
 
     @fov.setter
-    def fov(self, value: float | None) -> None:
-        self._fov = float(value) if value is not None else None
-        if value is not None and self._broadcast is not None:
-            self._broadcast(_messages.SetCameraFovMessage(float(value), initial=True))
+    def fov(self, value: float) -> None:
+        self._fov = float(value)
+        if self._broadcast is not None:
+            self._broadcast(_messages.SetCameraFovMessage(self._fov, initial=True))
 
     @property
-    def near(self) -> float | None:
+    def near(self) -> float:
         """Near clipping plane distance."""
         return self._near
 
     @near.setter
-    def near(self, value: float | None) -> None:
-        self._near = float(value) if value is not None else None
-        if value is not None and self._broadcast is not None:
-            self._broadcast(_messages.SetCameraNearMessage(float(value), initial=True))
+    def near(self, value: float) -> None:
+        self._near = float(value)
+        if self._broadcast is not None:
+            self._broadcast(_messages.SetCameraNearMessage(self._near, initial=True))
 
     @property
-    def far(self) -> float | None:
+    def far(self) -> float:
         """Far clipping plane distance."""
         return self._far
 
     @far.setter
-    def far(self, value: float | None) -> None:
-        self._far = float(value) if value is not None else None
-        if value is not None and self._broadcast is not None:
-            self._broadcast(_messages.SetCameraFarMessage(float(value), initial=True))
+    def far(self, value: float) -> None:
+        self._far = float(value)
+        if self._broadcast is not None:
+            self._broadcast(_messages.SetCameraFarMessage(self._far, initial=True))
 
     def _get_messages(self, initial: bool) -> list[_messages.Message]:
-        """Get camera messages for all non-None fields."""
-        messages: list[_messages.Message] = []
-        if self._position is not None:
-            messages.append(
-                _messages.SetCameraPositionMessage(self._position, initial=initial)
-            )
-        if self._look_at is not None:
-            messages.append(
-                _messages.SetCameraLookAtMessage(self._look_at, initial=initial)
-            )
-        if self._up is not None:
-            messages.append(
-                _messages.SetCameraUpDirectionMessage(self._up, initial=initial)
-            )
-        if self._fov is not None:
-            messages.append(_messages.SetCameraFovMessage(self._fov, initial=initial))
-        if self._near is not None:
-            messages.append(_messages.SetCameraNearMessage(self._near, initial=initial))
-        if self._far is not None:
-            messages.append(_messages.SetCameraFarMessage(self._far, initial=initial))
-        return messages
+        """Get camera messages for current configuration."""
+        return [
+            _messages.SetCameraPositionMessage(self._position, initial=initial),
+            _messages.SetCameraLookAtMessage(self._look_at, initial=initial),
+            _messages.SetCameraUpDirectionMessage(self._up, initial=initial),
+            _messages.SetCameraFovMessage(self._fov, initial=initial),
+            _messages.SetCameraNearMessage(self._near, initial=initial),
+            _messages.SetCameraFarMessage(self._far, initial=initial),
+        ]
 
 
 @dataclasses.dataclass
