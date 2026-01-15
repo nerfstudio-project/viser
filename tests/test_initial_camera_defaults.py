@@ -11,8 +11,8 @@ from viser._viser import InitialCameraConfig
 
 def test_initial_camera_defaults_match():
     """Verify that InitialCameraConfig defaults match InitialCameraState.ts defaults."""
-    # Get the Python defaults.
-    config = InitialCameraConfig()
+    # Get the Python defaults. Pass a no-op broadcast function.
+    config = InitialCameraConfig(broadcast=lambda _: None)
     py_defaults = {
         "position": config.position,
         "look_at": config.look_at,

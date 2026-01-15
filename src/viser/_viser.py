@@ -59,9 +59,7 @@ class InitialCameraConfig:
     # Default FOV matches Three.js PerspectiveCamera default of 50 degrees.
     DEFAULT_FOV: float = 50.0 * np.pi / 180.0
 
-    def __init__(
-        self, broadcast: Callable[[_messages.Message], None] | None = None
-    ) -> None:
+    def __init__(self, broadcast: Callable[[_messages.Message], None]) -> None:
         self._broadcast = broadcast
         # Defaults match the TypeScript client defaults in InitialCameraState.ts.
         self._position: tuple[float, float, float] = (3.0, 3.0, 3.0)
@@ -82,8 +80,7 @@ class InitialCameraConfig:
     ) -> None:
         value = cast_vector(value, 3)
         self._position = value
-        if self._broadcast is not None:
-            self._broadcast(_messages.SetCameraPositionMessage(value, initial=True))
+        self._broadcast(_messages.SetCameraPositionMessage(value, initial=True))
 
     @property
     def look_at(self) -> tuple[float, float, float]:
@@ -96,8 +93,7 @@ class InitialCameraConfig:
     ) -> None:
         value = cast_vector(value, 3)
         self._look_at = value
-        if self._broadcast is not None:
-            self._broadcast(_messages.SetCameraLookAtMessage(value, initial=True))
+        self._broadcast(_messages.SetCameraLookAtMessage(value, initial=True))
 
     @property
     def up(self) -> tuple[float, float, float]:
@@ -108,8 +104,7 @@ class InitialCameraConfig:
     def up(self, value: tuple[float, float, float] | npt.NDArray[np.floating]) -> None:
         value = cast_vector(value, 3)
         self._up = value
-        if self._broadcast is not None:
-            self._broadcast(_messages.SetCameraUpDirectionMessage(value, initial=True))
+        self._broadcast(_messages.SetCameraUpDirectionMessage(value, initial=True))
 
     @property
     def fov(self) -> float:
@@ -119,8 +114,7 @@ class InitialCameraConfig:
     @fov.setter
     def fov(self, value: float) -> None:
         self._fov = float(value)
-        if self._broadcast is not None:
-            self._broadcast(_messages.SetCameraFovMessage(self._fov, initial=True))
+        self._broadcast(_messages.SetCameraFovMessage(self._fov, initial=True))
 
     @property
     def near(self) -> float:
@@ -130,8 +124,7 @@ class InitialCameraConfig:
     @near.setter
     def near(self, value: float) -> None:
         self._near = float(value)
-        if self._broadcast is not None:
-            self._broadcast(_messages.SetCameraNearMessage(self._near, initial=True))
+        self._broadcast(_messages.SetCameraNearMessage(self._near, initial=True))
 
     @property
     def far(self) -> float:
@@ -141,8 +134,7 @@ class InitialCameraConfig:
     @far.setter
     def far(self, value: float) -> None:
         self._far = float(value)
-        if self._broadcast is not None:
-            self._broadcast(_messages.SetCameraFarMessage(self._far, initial=True))
+        self._broadcast(_messages.SetCameraFarMessage(self._far, initial=True))
 
     def _get_messages(self, initial: bool) -> list[_messages.Message]:
         """Get camera messages for current configuration."""
