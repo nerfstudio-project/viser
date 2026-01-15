@@ -56,7 +56,7 @@ export const BasicMesh = React.forwardRef<
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
     return geometry;
-  }, [message.props.vertices.buffer, message.props.faces.buffer]);
+  }, [message.props.vertices, message.props.faces]);
 
   // Clean up geometry when it changes.
   React.useEffect(() => {
