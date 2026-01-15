@@ -111,7 +111,7 @@ def props_setattr(self, name: str, value: Any) -> None:
             hash(current_value)
             if current_value == value:
                 return
-        except TypeError:
+        except (TypeError, ValueError):
             pass
 
         # Update the value based on type.
