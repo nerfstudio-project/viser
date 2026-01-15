@@ -115,6 +115,11 @@ def _build_viser_client(out_dir: Path, cached: bool = True) -> None:
         + subprocess_env["PATH"]
     )
     npm_path = node_bin_dir / "npm"
+
+    if sys.platform == "win32":
+        npx_path = npx_path.with_suffix(".cmd")
+        npm_path = npm_path.with_suffix(".cmd")
+
     subprocess.run(
         args=[str(npm_path), "install"],
         env=subprocess_env,
