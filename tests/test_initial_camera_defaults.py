@@ -1,11 +1,12 @@
 """Test that initial camera defaults match between Python and TypeScript."""
 
+from __future__ import annotations
+
 import math
 import re
 from pathlib import Path
 
 import pytest
-
 from viser._viser import InitialCameraConfig
 
 
