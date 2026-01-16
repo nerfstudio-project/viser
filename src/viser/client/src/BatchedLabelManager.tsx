@@ -261,7 +261,7 @@ export const BatchedLabelManager: React.FC<{
   );
 
   // Billboard rotation, position updates, and visibility culling in render loop.
-  useFrame(({ camera }) => {
+  useFrame(({ camera, size }) => {
     if (!group) return;
 
     // Sync dirty batches (batches multiple add/remove/update calls).
@@ -324,7 +324,7 @@ export const BatchedLabelManager: React.FC<{
           let paddingY = LABEL_BACKGROUND_PADDING_Y;
 
           if (textInfo.fontSizeMode === "screen") {
-            // Scale based on distance and FOV to maintain consistent visual size.
+            // Scale based on distance, FOV, and viewport size to maintain consistent pixel size.
             // Convert text position from local space to world space using group's matrix.
             tempWorldPos.copy(text.position);
             tempWorldPos.applyMatrix4(group.matrixWorld);
@@ -332,6 +332,7 @@ export const BatchedLabelManager: React.FC<{
               camera,
               tempWorldPos,
               tempCameraSpacePos,
+              size.height,
             );
 
             // Set fontSize directly - Troika applies this as a scale, no sync needed.
