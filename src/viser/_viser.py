@@ -29,76 +29,136 @@ from ._tunnel import ViserTunnel
 from .infra._infra import StateSerializer
 
 
-@dataclasses.dataclass
 class InitialCameraConfig:
     """Configuration for the initial camera pose.
 
-    Accessed via :attr:`ViserServer.initial_camera`. Values set here are
-    applied to new client connections and serialized scenes.
+    Accessed via :attr:`ViserServer.initial_camera`. Values set here determine:
+
+    1. The starting camera pose for new client connections
+    2. The pose that "Reset View" returns to in the client
+
+    Default values:
+        - ``position``: ``(3.0, 3.0, 3.0)``
+        - ``look_at``: ``(0.0, 0.0, 0.0)``
+        - ``up``: ``(0.0, 0.0, 1.0)``
+        - ``fov``: 50 degrees (~0.873 radians, Three.js default)
+        - ``near``: ``0.01``
+        - ``far``: ``1000.0``
+
+    When properties are changed after clients are connected, only the "Reset
+    View" target is updated. Clients' current camera positions are not moved,
+    allowing users to continue working undisturbed.
+
+    Note that URL parameters (e.g., ``?initialCameraPosition=1,2,3``) take
+    priority over server-set values.
 
     The API is designed to match :class:`CameraHandle`, which is used for
     per-client camera control.
     """
 
-    position: tuple[float, float, float] | npt.NDArray[np.floating] | None = None
-    """Camera position in world coordinates."""
+    # Default FOV matches Three.js PerspectiveCamera default of 50 degrees.
+    DEFAULT_FOV: float = 50.0 * np.pi / 180.0
 
-    look_at: tuple[float, float, float] | npt.NDArray[np.floating] | None = None
-    """Point the camera looks at in world coordinates."""
+    def __init__(self, broadcast: Callable[[_messages.Message], None]) -> None:
+        self._broadcast = broadcast
+        # Defaults match the TypeScript client defaults in InitialCameraState.ts.
+        self._position: npt.NDArray[np.float64] = np.array(
+            [3.0, 3.0, 3.0], dtype=np.float64
+        )
+        self._look_at: npt.NDArray[np.float64] = np.array(
+            [0.0, 0.0, 0.0], dtype=np.float64
+        )
+        self._up: npt.NDArray[np.float64] = np.array([0.0, 0.0, 1.0], dtype=np.float64)
+        self._fov: float = InitialCameraConfig.DEFAULT_FOV
+        self._near: float = 0.01
+        self._far: float = 1000.0
 
-    up: tuple[float, float, float] | npt.NDArray[np.floating] | None = None
-    """Camera up direction."""
+    @property
+    def position(self) -> npt.NDArray[np.float64]:
+        """Camera position in world coordinates."""
+        return self._position
 
-    fov: float | None = None
-    """Vertical field of view in radians."""
+    @position.setter
+    def position(
+        self, value: tuple[float, float, float] | npt.NDArray[np.floating]
+    ) -> None:
+        self._position = np.asarray(value, dtype=np.float64)
+        self._broadcast(
+            _messages.SetCameraPositionMessage(cast_vector(value, 3), initial=True)
+        )
 
-    near: float | None = None
-    """Near clipping plane distance."""
+    @property
+    def look_at(self) -> npt.NDArray[np.float64]:
+        """Point the camera looks at in world coordinates."""
+        return self._look_at
 
-    far: float | None = None
-    """Far clipping plane distance."""
+    @look_at.setter
+    def look_at(
+        self, value: tuple[float, float, float] | npt.NDArray[np.floating]
+    ) -> None:
+        self._look_at = np.asarray(value, dtype=np.float64)
+        self._broadcast(
+            _messages.SetCameraLookAtMessage(cast_vector(value, 3), initial=True)
+        )
+
+    @property
+    def up(self) -> npt.NDArray[np.float64]:
+        """Camera up direction."""
+        return self._up
+
+    @up.setter
+    def up(self, value: tuple[float, float, float] | npt.NDArray[np.floating]) -> None:
+        self._up = np.asarray(value, dtype=np.float64)
+        self._broadcast(
+            _messages.SetCameraUpDirectionMessage(cast_vector(value, 3), initial=True)
+        )
+
+    @property
+    def fov(self) -> float:
+        """Vertical field of view in radians."""
+        return self._fov
+
+    @fov.setter
+    def fov(self, value: float) -> None:
+        self._fov = float(value)
+        self._broadcast(_messages.SetCameraFovMessage(self._fov, initial=True))
+
+    @property
+    def near(self) -> float:
+        """Near clipping plane distance."""
+        return self._near
+
+    @near.setter
+    def near(self, value: float) -> None:
+        self._near = float(value)
+        self._broadcast(_messages.SetCameraNearMessage(self._near, initial=True))
+
+    @property
+    def far(self) -> float:
+        """Far clipping plane distance."""
+        return self._far
+
+    @far.setter
+    def far(self, value: float) -> None:
+        self._far = float(value)
+        self._broadcast(_messages.SetCameraFarMessage(self._far, initial=True))
 
     def _get_messages(self) -> list[_messages.Message]:
-        """Get camera messages for all non-None fields.
-
-        Messages are marked with initial=True so the client can skip them
-        if URL parameters were provided.
-        """
-        messages: list[_messages.Message] = []
-        if self.position is not None:
-            messages.append(
-                _messages.SetCameraPositionMessage(
-                    cast_vector(self.position, 3),
-                    initial=True,
-                )
-            )
-        if self.look_at is not None:
-            messages.append(
-                _messages.SetCameraLookAtMessage(
-                    cast_vector(self.look_at, 3),
-                    initial=True,
-                )
-            )
-        if self.up is not None:
-            messages.append(
-                _messages.SetCameraUpDirectionMessage(
-                    cast_vector(self.up, 3),
-                    initial=True,
-                )
-            )
-        if self.fov is not None:
-            messages.append(
-                _messages.SetCameraFovMessage(float(self.fov), initial=True)
-            )
-        if self.near is not None:
-            messages.append(
-                _messages.SetCameraNearMessage(float(self.near), initial=True)
-            )
-        if self.far is not None:
-            messages.append(
-                _messages.SetCameraFarMessage(float(self.far), initial=True)
-            )
-        return messages
+        """Get camera messages for current configuration."""
+        return [
+            _messages.SetCameraPositionMessage(
+                cast_vector(self._position, 3), initial=True
+            ),
+            _messages.SetCameraLookAtMessage(
+                cast_vector(self._look_at, 3), initial=True
+            ),
+            _messages.SetCameraUpDirectionMessage(
+                cast_vector(self._up, 3), initial=True
+            ),
+            _messages.SetCameraFovMessage(self._fov, initial=True),
+            _messages.SetCameraNearMessage(self._near, initial=True),
+            _messages.SetCameraFarMessage(self._far, initial=True),
+        ]
 
 
 @dataclasses.dataclass
@@ -711,7 +771,7 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
 
         _client_autobuild.ensure_client_is_built()
 
-        self._initial_camera = InitialCameraConfig()
+        self._initial_camera = InitialCameraConfig(broadcast=server.queue_message)
         self._connection = server
         self._connected_clients: dict[int, ClientHandle] = {}
         self._client_lock = threading.Lock()
@@ -781,6 +841,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
             conn.register_handler(_messages.ViewerCameraMessage, handle_camera_message)
 
             # Send initial camera messages.
+            # initial=True sets the "Reset View" target, and on first load also
+            # moves the camera.
             for msg in self._initial_camera._get_messages():
                 conn.queue_message(msg)
 
@@ -1199,6 +1261,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
             serializer._insert_message(message)
 
         # Prepend initial camera messages.
+        # initial=True sets the "Reset View" target, and on first load also
+        # moves the camera.
         camera_messages = [
             (0.0, msg.as_serializable_dict())
             for msg in self._initial_camera._get_messages()

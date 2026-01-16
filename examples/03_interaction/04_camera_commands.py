@@ -6,6 +6,7 @@ This example demonstrates how to programmatically control client cameras, includ
 
 **Key features:**
 
+* :attr:`viser.ViserServer.initial_camera` for setting the default camera pose
 * :attr:`viser.CameraHandle.wxyz` and :attr:`viser.CameraHandle.position` for setting camera pose
 * :attr:`viser.CameraHandle.near` and :attr:`viser.CameraHandle.far` for clipping plane control
 * :attr:`viser.CameraHandle.look_at` for orbit center positioning
@@ -24,6 +25,11 @@ import viser.transforms as tf
 
 server = viser.ViserServer()
 num_frames = 20
+
+# Set the initial camera pose. This is the pose that new clients will start at,
+# and also what "Reset View" will return to.
+server.initial_camera.position = (5.0, -5.0, 3.0)
+server.initial_camera.look_at = (0.0, 0.0, 0.0)
 
 
 @server.on_client_connect

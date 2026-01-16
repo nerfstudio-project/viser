@@ -40,6 +40,7 @@ import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
 import { useEnvironmentState } from "./EnvironmentState";
 import { useDevSettingsStore } from "./DevSettingsStore";
+import { useInitialCameraState } from "./InitialCameraState";
 import { useThrottledMessageSender } from "./WebsocketUtils";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { theme } from "./AppTheme";
@@ -257,9 +258,21 @@ function ViewerRoot() {
 
     // Global hover state tracking.
     hoveredElementsCount: 0,
+  });
 
-    // Initial camera from URL params (if provided).
-    initialCameraFromUrlParams: (() => {
+  // Create the scene tree state and extract store and actions.
+  const sceneTreeState = useSceneTreeState(mutable.current.nodeRefFromName);
+
+  // Create the environment state and extract store and actions.
+  const environmentState = useEnvironmentState();
+
+  // Create the dev settings store.
+  const devSettingsStore = useDevSettingsStore();
+
+  // Create the initial camera store with URL params.
+  const initialCameraState = useInitialCameraState(
+    // Parse URL params once during initialization.
+    React.useMemo(() => {
       // Helper to parse and validate a vector URL param.
       const parseVec3 = (
         param: string,
@@ -285,17 +298,8 @@ function ViewerRoot() {
         near: parseScalar("initialCameraNear"),
         far: parseScalar("initialCameraFar"),
       };
-    })(),
-  });
-
-  // Create the scene tree state and extract store and actions.
-  const sceneTreeState = useSceneTreeState(mutable.current.nodeRefFromName);
-
-  // Create the environment state and extract store and actions.
-  const environmentState = useEnvironmentState();
-
-  // Create the dev settings store.
-  const devSettingsStore = useDevSettingsStore();
+    }, []),
+  );
 
   // Create the context value with hooks and single ref.
   const viewer: ViewerContextContents = {
@@ -305,6 +309,7 @@ function ViewerRoot() {
     useEnvironment: environmentState,
     useGui: useGuiState(initialServer),
     useDevSettings: devSettingsStore,
+    useInitialCamera: initialCameraState,
     mutable,
   };
 

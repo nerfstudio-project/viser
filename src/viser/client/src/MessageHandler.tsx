@@ -33,6 +33,9 @@ function useMessageHandler() {
   const removeSceneNode = viewer.sceneTreeActions.removeSceneNode;
   const addSceneNode = viewer.sceneTreeActions.addSceneNode;
   const setTheme = viewer.useGui((state) => state.setTheme);
+
+  // Initial camera store actions for updating reset view state.
+  const initialCamera = viewer.useInitialCamera;
   const setShareUrl = viewer.useGui((state) => state.setShareUrl);
   const addGui = viewer.useGui((state) => state.addGui);
   const addModal = viewer.useGui((state) => state.addModal);
@@ -238,9 +241,15 @@ function useMessageHandler() {
         break;
       }
       case "SetCameraLookAtMessage": {
-        // Skip initial camera setup if URL param was provided.
-        if (message.initial && viewerMutable.initialCameraFromUrlParams.lookAt) {
-          return;
+        // Setting initial camera parameters.
+        const wasDefault = initialCamera.getState().lookAt.source === "default";
+        if (message.initial) {
+          // URL params take priority, ignore server's initial value.
+          initialCamera.getState().setLookAt(message.look_at, "message");
+
+          // If this is the first initial camera: we'll also move the actual
+          // camera. If not, we return immediately.
+          if (!wasDefault) return;
         }
 
         const cameraControls = viewerMutable.cameraControl!;
@@ -256,9 +265,15 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraUpDirectionMessage": {
-        // Skip initial camera setup if URL param was provided.
-        if (message.initial && viewerMutable.initialCameraFromUrlParams.up) {
-          return;
+        // Setting initial camera parameters.
+        const wasDefault = initialCamera.getState().up.source === "default";
+        if (message.initial) {
+          // URL params take priority, ignore server's initial value.
+          initialCamera.getState().setUp(message.position, "message");
+
+          // If this is the first initial camera: we'll also move the actual
+          // camera. If not, we return immediately.
+          if (!wasDefault) return;
         }
 
         const camera = viewerMutable.camera!;
@@ -291,12 +306,15 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraPositionMessage": {
-        // Skip initial camera setup if URL param was provided.
-        if (
-          message.initial &&
-          viewerMutable.initialCameraFromUrlParams.position
-        ) {
-          return;
+        // Setting initial camera parameters.
+        const wasDefault = initialCamera.getState().position.source === "default";
+        if (message.initial) {
+          // URL params take priority, ignore server's initial value.
+          initialCamera.getState().setPosition(message.position, "message");
+
+          // If this is the first initial camera: we'll also move the actual
+          // camera. If not, we return immediately.
+          if (!wasDefault) return;
         }
 
         const cameraControls = viewerMutable.cameraControl!;
@@ -320,12 +338,15 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraFovMessage": {
-        // Skip initial camera setup if URL param was provided.
-        if (
-          message.initial &&
-          viewerMutable.initialCameraFromUrlParams.fov !== null
-        ) {
-          return;
+        // Setting initial camera parameters.
+        const wasDefault = initialCamera.getState().fov.source === "default";
+        if (message.initial) {
+          // URL params take priority, ignore server's initial value.
+          initialCamera.getState().setFov(message.fov, "message");
+
+          // If this is the first initial camera: we'll also move the actual
+          // camera. If not, we return immediately.
+          if (!wasDefault) return;
         }
 
         const camera = viewerMutable.camera!;
@@ -338,12 +359,15 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraNearMessage": {
-        // Skip initial camera setup if URL param was provided.
-        if (
-          message.initial &&
-          viewerMutable.initialCameraFromUrlParams.near !== null
-        ) {
-          return;
+        // Setting initial camera parameters.
+        const wasDefault = initialCamera.getState().near.source === "default";
+        if (message.initial) {
+          // URL params take priority, ignore server's initial value.
+          initialCamera.getState().setNear(message.near, "message");
+
+          // If this is the first initial camera: we'll also move the actual
+          // camera. If not, we return immediately.
+          if (!wasDefault) return;
         }
 
         const camera = viewerMutable.camera!;
@@ -352,12 +376,15 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraFarMessage": {
-        // Skip initial camera setup if URL param was provided.
-        if (
-          message.initial &&
-          viewerMutable.initialCameraFromUrlParams.far !== null
-        ) {
-          return;
+        // Setting initial camera parameters.
+        const wasDefault = initialCamera.getState().far.source === "default";
+        if (message.initial) {
+          // URL params take priority, ignore server's initial value.
+          initialCamera.getState().setFar(message.far, "message");
+
+          // If this is the first initial camera: we'll also move the actual
+          // camera. If not, we return immediately.
+          if (!wasDefault) return;
         }
 
         const camera = viewerMutable.camera!;
