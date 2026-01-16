@@ -62,15 +62,19 @@ class InitialCameraConfig:
     def __init__(self, broadcast: Callable[[_messages.Message], None]) -> None:
         self._broadcast = broadcast
         # Defaults match the TypeScript client defaults in InitialCameraState.ts.
-        self._position: tuple[float, float, float] = (3.0, 3.0, 3.0)
-        self._look_at: tuple[float, float, float] = (0.0, 0.0, 0.0)
-        self._up: tuple[float, float, float] = (0.0, 0.0, 1.0)
+        self._position: npt.NDArray[np.float64] = np.array(
+            [3.0, 3.0, 3.0], dtype=np.float64
+        )
+        self._look_at: npt.NDArray[np.float64] = np.array(
+            [0.0, 0.0, 0.0], dtype=np.float64
+        )
+        self._up: npt.NDArray[np.float64] = np.array([0.0, 0.0, 1.0], dtype=np.float64)
         self._fov: float = InitialCameraConfig.DEFAULT_FOV
         self._near: float = 0.01
         self._far: float = 1000.0
 
     @property
-    def position(self) -> tuple[float, float, float]:
+    def position(self) -> npt.NDArray[np.float64]:
         """Camera position in world coordinates."""
         return self._position
 
@@ -78,12 +82,13 @@ class InitialCameraConfig:
     def position(
         self, value: tuple[float, float, float] | npt.NDArray[np.floating]
     ) -> None:
-        value = cast_vector(value, 3)
-        self._position = value
-        self._broadcast(_messages.SetCameraPositionMessage(value, initial=True))
+        self._position = np.asarray(value, dtype=np.float64)
+        self._broadcast(
+            _messages.SetCameraPositionMessage(cast_vector(value, 3), initial=True)
+        )
 
     @property
-    def look_at(self) -> tuple[float, float, float]:
+    def look_at(self) -> npt.NDArray[np.float64]:
         """Point the camera looks at in world coordinates."""
         return self._look_at
 
@@ -91,20 +96,22 @@ class InitialCameraConfig:
     def look_at(
         self, value: tuple[float, float, float] | npt.NDArray[np.floating]
     ) -> None:
-        value = cast_vector(value, 3)
-        self._look_at = value
-        self._broadcast(_messages.SetCameraLookAtMessage(value, initial=True))
+        self._look_at = np.asarray(value, dtype=np.float64)
+        self._broadcast(
+            _messages.SetCameraLookAtMessage(cast_vector(value, 3), initial=True)
+        )
 
     @property
-    def up(self) -> tuple[float, float, float]:
+    def up(self) -> npt.NDArray[np.float64]:
         """Camera up direction."""
         return self._up
 
     @up.setter
     def up(self, value: tuple[float, float, float] | npt.NDArray[np.floating]) -> None:
-        value = cast_vector(value, 3)
-        self._up = value
-        self._broadcast(_messages.SetCameraUpDirectionMessage(value, initial=True))
+        self._up = np.asarray(value, dtype=np.float64)
+        self._broadcast(
+            _messages.SetCameraUpDirectionMessage(cast_vector(value, 3), initial=True)
+        )
 
     @property
     def fov(self) -> float:
@@ -136,15 +143,21 @@ class InitialCameraConfig:
         self._far = float(value)
         self._broadcast(_messages.SetCameraFarMessage(self._far, initial=True))
 
-    def _get_messages(self, initial: bool) -> list[_messages.Message]:
+    def _get_messages(self) -> list[_messages.Message]:
         """Get camera messages for current configuration."""
         return [
-            _messages.SetCameraPositionMessage(self._position, initial=initial),
-            _messages.SetCameraLookAtMessage(self._look_at, initial=initial),
-            _messages.SetCameraUpDirectionMessage(self._up, initial=initial),
-            _messages.SetCameraFovMessage(self._fov, initial=initial),
-            _messages.SetCameraNearMessage(self._near, initial=initial),
-            _messages.SetCameraFarMessage(self._far, initial=initial),
+            _messages.SetCameraPositionMessage(
+                cast_vector(self._position, 3), initial=True
+            ),
+            _messages.SetCameraLookAtMessage(
+                cast_vector(self._look_at, 3), initial=True
+            ),
+            _messages.SetCameraUpDirectionMessage(
+                cast_vector(self._up, 3), initial=True
+            ),
+            _messages.SetCameraFovMessage(self._fov, initial=True),
+            _messages.SetCameraNearMessage(self._near, initial=True),
+            _messages.SetCameraFarMessage(self._far, initial=True),
         ]
 
 
@@ -830,9 +843,7 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
             # Send initial camera messages.
             # initial=True updates the client's store (for Reset View).
             # initial=False actually moves the camera.
-            for msg in self._initial_camera._get_messages(initial=True):
-                conn.queue_message(msg)
-            for msg in self._initial_camera._get_messages(initial=False):
+            for msg in self._initial_camera._get_messages():
                 conn.queue_message(msg)
 
         # Remove clients when they disconnect.
@@ -1254,10 +1265,7 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         # initial=False actually moves the camera.
         camera_messages = [
             (0.0, msg.as_serializable_dict())
-            for msg in self._initial_camera._get_messages(initial=True)
-        ] + [
-            (0.0, msg.as_serializable_dict())
-            for msg in self._initial_camera._get_messages(initial=False)
+            for msg in self._initial_camera._get_messages()
         ]
         serializer._messages = camera_messages + serializer._messages
 
