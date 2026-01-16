@@ -841,8 +841,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
             conn.register_handler(_messages.ViewerCameraMessage, handle_camera_message)
 
             # Send initial camera messages.
-            # initial=True updates the client's store (for Reset View).
-            # initial=False actually moves the camera.
+            # initial=True sets the "Reset View" target, and on first load also
+            # moves the camera.
             for msg in self._initial_camera._get_messages():
                 conn.queue_message(msg)
 
@@ -1261,8 +1261,8 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
             serializer._insert_message(message)
 
         # Prepend initial camera messages.
-        # initial=True updates the client's store (for Reset View).
-        # initial=False actually moves the camera.
+        # initial=True sets the "Reset View" target, and on first load also
+        # moves the camera.
         camera_messages = [
             (0.0, msg.as_serializable_dict())
             for msg in self._initial_camera._get_messages()
