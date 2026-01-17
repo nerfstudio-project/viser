@@ -166,7 +166,6 @@ function useMessageHandler() {
 
       // Add a notification.
       case "NotificationMessage": {
-        console.log(message.uuid, message.props.loading);
         (message.mode === "show" ? notifications.show : notifications.update)({
           id: message.uuid,
           title: message.props.title,
@@ -174,7 +173,10 @@ function useMessageHandler() {
           withCloseButton: message.props.with_close_button,
           loading: message.props.loading,
           autoClose:
-            message.props.auto_close_seconds === null
+            // Handle both null and falsy values (e.g., if False is accidentally
+            // passed from Python) as "no auto-close".
+            message.props.auto_close_seconds === null ||
+            !message.props.auto_close_seconds
               ? false
               : message.props.auto_close_seconds * 1000,
           color: toMantineColor(message.props.color),
@@ -306,14 +308,17 @@ function useMessageHandler() {
         return;
       }
       case "SetCameraPositionMessage": {
+        console.log("set camera position");
         // Setting initial camera parameters.
-        const wasDefault = initialCamera.getState().position.source === "default";
+        const wasDefault =
+          initialCamera.getState().position.source === "default";
         if (message.initial) {
           // URL params take priority, ignore server's initial value.
           initialCamera.getState().setPosition(message.position, "message");
 
           // If this is the first initial camera: we'll also move the actual
           // camera. If not, we return immediately.
+          console.log(message.initial, wasDefault);
           if (!wasDefault) return;
         }
 
@@ -663,6 +668,7 @@ export function FrameSynchronizedMessageHandler() {
   const messageQueue = viewerMutable.messageQueue;
   const splatContext = React.useContext(GaussianSplatsContext)!;
   const gl = useThree((state) => state.gl);
+  const isFirstBatchRef = React.useRef(true);
 
   useFrame(
     () => {
@@ -786,6 +792,31 @@ export function FrameSynchronizedMessageHandler() {
             ? requestRenderIndex + 1
             : messageQueue.length;
         const processBatch = messageQueue.splice(0, numMessages);
+
+        // Hack: On the very first batch, handle any root node SetOrientationMessage
+        // (from set_up_direction()) before all other messages. This ensures
+        // T_threeworld_world is up-to-date when initial camera messages are processed.
+        if (isFirstBatchRef.current) {
+          isFirstBatchRef.current = false;
+          const rootOrientationIndex = processBatch.findIndex(
+            (msg) => msg.type === "SetOrientationMessage" && msg.name === "",
+          );
+          if (rootOrientationIndex !== -1) {
+            const rootNodeUpdate = handleMessage(
+              processBatch[rootOrientationIndex],
+            )!;
+            const rootNode = viewer.useSceneTree.getState()[""]!;
+            viewer.useSceneTree.setState({
+              "": {
+                ...rootNode,
+                wxyz: rootNodeUpdate.updates.wxyz!,
+              },
+            });
+
+            // Remove the message from the batch.
+            processBatch.splice(rootOrientationIndex, 1);
+          }
+        }
 
         // Handle messages and accumulate updates.
         const updates = processBatch.map(handleMessage).reduce(

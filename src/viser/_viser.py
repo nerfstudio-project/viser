@@ -37,13 +37,14 @@ class InitialCameraConfig:
     1. The starting camera pose for new client connections
     2. The pose that "Reset View" returns to in the client
 
-    Default values:
-        - ``position``: ``(3.0, 3.0, 3.0)``
-        - ``look_at``: ``(0.0, 0.0, 0.0)``
-        - ``up``: ``(0.0, 0.0, 1.0)``
-        - ``fov``: 50 degrees (~0.873 radians, Three.js default)
-        - ``near``: ``0.01``
-        - ``far``: ``1000.0``
+    Default behavior (when properties are not explicitly set):
+        The client uses a built-in default camera position that provides a
+        reasonable view regardless of the scene's up direction. This default
+        is specified in three.js coordinates and does not require world
+        coordinate transformation.
+
+    When properties are explicitly set, they are interpreted as viser world
+    coordinates and transformed appropriately based on the scene's up direction.
 
     When properties are changed after clients are connected, only the "Reset
     View" target is updated. Clients' current camera positions are not moved,
@@ -56,20 +57,14 @@ class InitialCameraConfig:
     per-client camera control.
     """
 
-    # Default FOV matches Three.js PerspectiveCamera default of 50 degrees.
-    DEFAULT_FOV: float = 50.0 * np.pi / 180.0
-
     def __init__(self, broadcast: Callable[[_messages.Message], None]) -> None:
         self._broadcast = broadcast
-        # Defaults match the TypeScript client defaults in InitialCameraState.ts.
-        self._position: npt.NDArray[np.float64] = np.array(
-            [3.0, 3.0, 3.0], dtype=np.float64
-        )
-        self._look_at: npt.NDArray[np.float64] = np.array(
-            [0.0, 0.0, 0.0], dtype=np.float64
-        )
-        self._up: npt.NDArray[np.float64] = np.array([0.0, 0.0, 1.0], dtype=np.float64)
-        self._fov: float = InitialCameraConfig.DEFAULT_FOV
+        self._position: npt.NDArray[np.float64] = np.array([3.0, 3.0, 3.0])
+        self._look_at: npt.NDArray[np.float64] = np.array([0.0, 0.0, 0.0])
+        # None means "same as the scene up direction".
+        self._up: npt.NDArray[np.float64] | None = None
+        # 50 degrees in radians; matches three.js PerspectiveCamera default.
+        self._fov: float = 50.0 * np.pi / 180.0
         self._near: float = 0.01
         self._far: float = 1000.0
 
@@ -102,8 +97,8 @@ class InitialCameraConfig:
         )
 
     @property
-    def up(self) -> npt.NDArray[np.float64]:
-        """Camera up direction."""
+    def up(self) -> npt.NDArray[np.float64] | None:
+        """Camera up direction, or None for scene up direction."""
         return self._up
 
     @up.setter
@@ -142,23 +137,6 @@ class InitialCameraConfig:
     def far(self, value: float) -> None:
         self._far = float(value)
         self._broadcast(_messages.SetCameraFarMessage(self._far, initial=True))
-
-    def _get_messages(self) -> list[_messages.Message]:
-        """Get camera messages for current configuration."""
-        return [
-            _messages.SetCameraPositionMessage(
-                cast_vector(self._position, 3), initial=True
-            ),
-            _messages.SetCameraLookAtMessage(
-                cast_vector(self._look_at, 3), initial=True
-            ),
-            _messages.SetCameraUpDirectionMessage(
-                cast_vector(self._up, 3), initial=True
-            ),
-            _messages.SetCameraFovMessage(self._fov, initial=True),
-            _messages.SetCameraNearMessage(self._near, initial=True),
-            _messages.SetCameraFarMessage(self._far, initial=True),
-        ]
 
 
 @dataclasses.dataclass
@@ -840,12 +818,6 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
 
             conn.register_handler(_messages.ViewerCameraMessage, handle_camera_message)
 
-            # Send initial camera messages.
-            # initial=True sets the "Reset View" target, and on first load also
-            # moves the camera.
-            for msg in self._initial_camera._get_messages():
-                conn.queue_message(msg)
-
         # Remove clients when they disconnect.
         @server.on_client_disconnect
         async def _(conn: infra.WebsockClientConnection) -> None:
@@ -1259,14 +1231,4 @@ class ViserServer(DeprecatedAttributeShim if not TYPE_CHECKING else object):
         # Insert current scene state.
         for message in self._websock_server._broadcast_buffer.message_from_id.values():
             serializer._insert_message(message)
-
-        # Prepend initial camera messages.
-        # initial=True sets the "Reset View" target, and on first load also
-        # moves the camera.
-        camera_messages = [
-            (0.0, msg.as_serializable_dict())
-            for msg in self._initial_camera._get_messages()
-        ]
-        serializer._messages = camera_messages + serializer._messages
-
         return serializer

@@ -157,6 +157,13 @@ class NotificationMessage(Message):
     uuid: str
     props: NotificationProps
 
+    @override
+    def redundancy_key(self) -> str:
+        # Include mode in the key so "show" and "update" messages are kept
+        # separately. Without this, an "update" message would cull the "show"
+        # message, preventing the notification from being created.
+        return f"{type(self).__name__}_{self.uuid}_{self.mode}"
+
 
 @dataclasses.dataclass
 class NotificationProps:

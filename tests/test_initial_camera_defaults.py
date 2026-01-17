@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 
 import pytest
+
 from viser._viser import InitialCameraConfig
 
 
@@ -109,7 +110,9 @@ def test_initial_camera_defaults_match():
     # Check all values match.
     assert_vec3_close("position", py_defaults["position"], ts_defaults["position"])
     assert_vec3_close("look_at", py_defaults["look_at"], ts_defaults["lookAt"])
-    assert_vec3_close("up", py_defaults["up"], ts_defaults["up"])
+    # Skip up comparison: Python default is None (meaning "same as scene up direction"),
+    # while TypeScript has a concrete default [0, 1, 0] in three.js coordinates.
+    assert py_defaults["up"] is None
     assert_close("fov", py_defaults["fov"], ts_defaults["fov"])
     assert_close("near", py_defaults["near"], ts_defaults["near"])
     assert_close("far", py_defaults["far"], ts_defaults["far"])

@@ -46,6 +46,7 @@ export const rootNodeTemplate: SceneNode = {
     );
     return [quat.w, quat.x, quat.y, quat.z] as [number, number, number, number];
   })(),
+  position: [0.0, 0.0, 0.0],
 };
 const worldAxesNodeTemplate: SceneNode = {
   message: {
