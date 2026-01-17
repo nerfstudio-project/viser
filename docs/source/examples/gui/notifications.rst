@@ -71,7 +71,7 @@ Code
                title="Controlled notification",
                body="This cannot be closed by the user and is controlled in code only!",
                with_close_button=False,
-               auto_close_seconds=False,
+               auto_close_seconds=None,
            )
    
            @remove_controlled_notif.on_click

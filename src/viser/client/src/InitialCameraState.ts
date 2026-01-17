@@ -6,17 +6,21 @@
  * handle priority between different configuration methods.
  *
  * ## Source Priority (lowest to highest)
- * - "default": Built-in defaults matching Three.js/Python server defaults
- * - "message": Server's initial_camera configuration sent via websocket
- * - "url": URL parameters (highest priority, always wins)
+ * - "default": Built-in defaults in three.js coordinates (no world transform applied)
+ * - "message": Server's initial_camera configuration sent via websocket (viser world coords)
+ * - "url": URL parameters (highest priority, viser world coords)
  *
- * ## Default Values
+ * ## Default Values (in three.js coordinates, Y-up)
  * - position: [3, 3, 3]
  * - lookAt: [0, 0, 0]
- * - up: [0, 0, 1]
+ * - up: [0, 1, 0]
  * - fov: 50 degrees (≈0.873 radians, Three.js PerspectiveCamera default)
  * - near: 0.01
  * - far: 1000
+ *
+ * Default values are in three.js coordinates and work regardless of the scene's
+ * up direction (set via set_up_direction()). Values from "message" or "url"
+ * sources are in viser world coordinates and are transformed appropriately.
  *
  * When server.initial_camera properties are changed after clients connect,
  * "Reset View" targets are updated without disrupting users' current camera
@@ -105,9 +109,12 @@ export function useInitialCameraState(urlParams: InitialCameraConfig) {
       lookAt: urlParams.lookAt
         ? { value: urlParams.lookAt, source: "url" as const }
         : { value: [0, 0, 0], source: "default" as const },
+      // Default up is Y-up in three.js coordinates. When source is "default",
+      // the world transform is not applied, so this gives correct behavior
+      // regardless of set_up_direction().
       up: urlParams.up
         ? { value: urlParams.up, source: "url" as const }
-        : { value: [0, 0, 1], source: "default" as const },
+        : { value: [0, 1, 0], source: "default" as const },
       // Default FOV matches Three.js PerspectiveCamera default of 50 degrees.
       fov: urlParams.fov
         ? { value: urlParams.fov, source: "url" as const }

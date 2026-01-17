@@ -6,8 +6,8 @@ import * as THREE from "three";
  * between +Y and +Z up directions for the world frame. */
 export function computeT_threeworld_world(viewer: ViewerContextContents) {
   const rootNode = viewer.useSceneTree.getState()[""];
-  const wxyz = rootNode?.wxyz ?? [1, 0, 0, 0];
-  const position = rootNode?.position ?? [0, 0, 0];
+  const wxyz = rootNode!.wxyz!;
+  const position = rootNode!.position!;
   return new THREE.Matrix4()
     .makeRotationFromQuaternion(
       new THREE.Quaternion(wxyz[1], wxyz[2], wxyz[3], wxyz[0]),

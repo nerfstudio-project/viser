@@ -17,7 +17,7 @@ export type ViewerMutable = {
   // Function references.
   sendMessage: (message: Message) => void;
   sendCamera: (() => void) | null;
-  resetCameraView: (() => void) | null;
+  resetCameraPose: (() => void) | null;
 
   // DOM/Three.js references.
   canvas: HTMLCanvasElement | null;

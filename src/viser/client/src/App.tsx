@@ -227,7 +227,7 @@ function ViewerRoot() {
             )
         : () => null,
     sendCamera: null,
-    resetCameraView: null,
+    resetCameraPose: null,
 
     // DOM/Three.js references.
     canvas: null,
@@ -274,9 +274,7 @@ function ViewerRoot() {
     // Parse URL params once during initialization.
     React.useMemo(() => {
       // Helper to parse and validate a vector URL param.
-      const parseVec3 = (
-        param: string,
-      ): [number, number, number] | null => {
+      const parseVec3 = (param: string): [number, number, number] | null => {
         const str = searchParams.get(param);
         if (str === null) return null;
         const parts = str.split(",").map(Number);
@@ -590,7 +588,6 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       style={{ position: "relative", zIndex: 0, width: "100%", height: "100%" }}
     >
       <Canvas
-        camera={{ position: [-3.0, 3.0, -3.0], near: 0.01, far: 1000.0 }}
         gl={{ preserveDrawingBuffer: true }}
         style={{ width: "100%", height: "100%" }}
         ref={(el) => (viewer.mutable.current.canvas = el)}

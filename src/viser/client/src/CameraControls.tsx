@@ -292,14 +292,18 @@ export function SynchronizedCameraControls() {
     pivotRef.current.updateMatrixWorld(true);
   };
 
-  viewerMutable.resetCameraView = () => {
+  viewerMutable.resetCameraPose = () => {
     // Read initial camera state from the Zustand store.
     const initialCameraState = viewer.useInitialCamera.getState();
     const T_threeworld_world = computeT_threeworld_world(viewer);
 
-    // Transform from world coordinates to threeworld coordinates.
+    // Skip the up direction transform for the default up direction. This makes
+    // it so the initial camera up always matches the initial scene up, except
+    // in the case where the up direction was explicitly set.
     const initialUp = new THREE.Vector3(...initialCameraState.up.value);
-    initialUp.applyMatrix4(T_threeworld_world);
+    if (initialCameraState.position.source !== "default") {
+      initialUp.applyMatrix4(T_threeworld_world);
+    }
     initialUp.normalize();
 
     const initialPos = new THREE.Vector3(...initialCameraState.position.value);
@@ -413,37 +417,12 @@ export function SynchronizedCameraControls() {
   const initialCameraPositionSet = React.useRef(false);
   React.useEffect(() => {
     if (!initialCameraPositionSet.current) {
+      // Reset position, orientation, and up direction.
+      viewerMutable.resetCameraPose!();
+
       // Read initial camera state from the Zustand store.
       // This contains defaults, URL params, or will be updated by server messages.
       const initialCameraState = viewer.useInitialCamera.getState();
-      const T_threeworld_world = computeT_threeworld_world(viewer);
-
-      const initialCameraPos = new THREE.Vector3(
-        ...initialCameraState.position.value,
-      );
-      initialCameraPos.applyMatrix4(T_threeworld_world);
-      const initialCameraLookAt = new THREE.Vector3(
-        ...initialCameraState.lookAt.value,
-      );
-      initialCameraLookAt.applyMatrix4(T_threeworld_world);
-      const initialCameraUp = new THREE.Vector3(
-        ...initialCameraState.up.value,
-      );
-      initialCameraUp.applyMatrix4(T_threeworld_world);
-      initialCameraUp.normalize();
-
-      camera.up.set(initialCameraUp.x, initialCameraUp.y, initialCameraUp.z);
-      viewerMutable.cameraControl!.updateCameraUp();
-
-      viewerMutable.cameraControl!.setLookAt(
-        initialCameraPos.x,
-        initialCameraPos.y,
-        initialCameraPos.z,
-        initialCameraLookAt.x,
-        initialCameraLookAt.y,
-        initialCameraLookAt.z,
-        false,
-      );
 
       // Apply fov/near/far from the store.
       // tan(fov / 2.0) = 0.5 * film height / focal length
