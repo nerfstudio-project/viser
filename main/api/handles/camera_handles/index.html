@@ -564,16 +564,14 @@ too quickly for higher-resolution images.</p></li>
 <li><p>The pose that “Reset View” returns to in the client</p></li>
 </ol>
 <dl class="simple">
-<dt>Default values:</dt><dd><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">position</span></code>: <code class="docutils literal notranslate"><span class="pre">(3.0,</span> <span class="pre">3.0,</span> <span class="pre">3.0)</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">look_at</span></code>: <code class="docutils literal notranslate"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">up</span></code>: <code class="docutils literal notranslate"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">1.0)</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">fov</span></code>: 50 degrees (~0.873 radians, Three.js default)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">near</span></code>: <code class="docutils literal notranslate"><span class="pre">0.01</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">far</span></code>: <code class="docutils literal notranslate"><span class="pre">1000.0</span></code></p></li>
-</ul>
+<dt>Default behavior (when properties are not explicitly set):</dt><dd><p>The client uses a built-in default camera position that provides a
+reasonable view regardless of the scene’s up direction. This default
+is specified in three.js coordinates and does not require world
+coordinate transformation.</p>
 </dd>
 </dl>
+<p>When properties are explicitly set, they are interpreted as viser world
+coordinates and transformed appropriately based on the scene’s up direction.</p>
 <p>When properties are changed after clients are connected, only the “Reset
 View” target is updated. Clients’ current camera positions are not moved,
 allowing users to continue working undisturbed.</p>
@@ -581,11 +579,6 @@ allowing users to continue working undisturbed.</p>
 priority over server-set values.</p>
 <p>The API is designed to match <a class="reference internal" href="#viser.CameraHandle" title="viser.CameraHandle"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraHandle</span></code></a>, which is used for
 per-client camera control.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.InitialCameraConfig.DEFAULT_FOV">
-<span class="sig-name descname"><span class="pre">DEFAULT_FOV</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.8726646259971648</span></em><a class="headerlink" href="#viser.InitialCameraConfig.DEFAULT_FOV" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.InitialCameraConfig.position">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.InitialCameraConfig.position" title="Link to this definition">¶</a></dt>
@@ -600,8 +593,8 @@ per-client camera control.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.InitialCameraConfig.up">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">up</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.InitialCameraConfig.up" title="Link to this definition">¶</a></dt>
-<dd><p>Camera up direction.</p>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">up</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#viser.InitialCameraConfig.up" title="Link to this definition">¶</a></dt>
+<dd><p>Camera up direction, or None for scene up direction.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -709,7 +702,6 @@ per-client camera control.</p>
 </li>
 <li><a class="reference internal" href="#initial-camera-configuration">Initial Camera Configuration</a><ul>
 <li><a class="reference internal" href="#viser.InitialCameraConfig"><code class="docutils literal notranslate"><span class="pre">InitialCameraConfig</span></code></a><ul>
-<li><a class="reference internal" href="#viser.InitialCameraConfig.DEFAULT_FOV"><code class="docutils literal notranslate"><span class="pre">InitialCameraConfig.DEFAULT_FOV</span></code></a></li>
 <li><a class="reference internal" href="#viser.InitialCameraConfig.position"><code class="docutils literal notranslate"><span class="pre">InitialCameraConfig.position</span></code></a></li>
 <li><a class="reference internal" href="#viser.InitialCameraConfig.look_at"><code class="docutils literal notranslate"><span class="pre">InitialCameraConfig.look_at</span></code></a></li>
 <li><a class="reference internal" href="#viser.InitialCameraConfig.up"><code class="docutils literal notranslate"><span class="pre">InitialCameraConfig.up</span></code></a></li>
