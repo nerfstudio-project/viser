@@ -63,8 +63,8 @@ class InitialCameraConfig:
         self._look_at: npt.NDArray[np.float64] = np.array([0.0, 0.0, 0.0])
         # None means "same as the scene up direction".
         self._up: npt.NDArray[np.float64] | None = None
-        # 50 degrees in radians; matches three.js PerspectiveCamera default.
-        self._fov: float = 50.0 * np.pi / 180.0
+        # 75 degrees in radians; matches three.js PerspectiveCamera default.
+        self._fov: float = 75.0 * np.pi / 180.0
         self._near: float = 0.01
         self._far: float = 1000.0
 
