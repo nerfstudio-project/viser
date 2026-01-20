@@ -292,7 +292,7 @@ export function SynchronizedCameraControls() {
     pivotRef.current.updateMatrixWorld(true);
   };
 
-  viewerMutable.resetCameraPose = () => {
+  viewerMutable.resetCameraPose = (animate: boolean) => {
     // Read initial camera state from the Zustand store.
     const initialCameraState = viewer.useInitialCamera.getState();
     const T_threeworld_world = computeT_threeworld_world(viewer);
@@ -314,15 +314,32 @@ export function SynchronizedCameraControls() {
 
     camera.up.set(initialUp.x, initialUp.y, initialUp.z);
     viewerMutable.cameraControl!.updateCameraUp();
-    viewerMutable.cameraControl!.setLookAt(
-      initialPos.x,
-      initialPos.y,
-      initialPos.z,
-      initialLookAt.x,
-      initialLookAt.y,
-      initialLookAt.z,
-      true,
-    );
+    if (animate) {
+      viewerMutable.cameraControl!.setLookAt(
+        initialPos.x,
+        initialPos.y,
+        initialPos.z,
+        initialLookAt.x,
+        initialLookAt.y,
+        initialLookAt.z,
+        true,
+      );
+    } else {
+      // Calling setLookAt with animate = false seems to break future calls to
+      // setLookAt. Possible dpeendency bug.
+      viewerMutable.cameraControl!.setPosition(
+        initialPos.x,
+        initialPos.y,
+        initialPos.z,
+        false,
+      );
+      viewerMutable.cameraControl!.setTarget(
+        initialLookAt.x,
+        initialLookAt.y,
+        initialLookAt.z,
+        false,
+      );
+    }
   };
 
   // Callback for sending cameras.
@@ -418,7 +435,7 @@ export function SynchronizedCameraControls() {
   React.useEffect(() => {
     if (!initialCameraPositionSet.current) {
       // Reset position, orientation, and up direction.
-      viewerMutable.resetCameraPose!();
+      viewerMutable.resetCameraPose!(false);
 
       // Read initial camera state from the Zustand store.
       // This contains defaults, URL params, or will be updated by server messages.

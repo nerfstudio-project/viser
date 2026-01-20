@@ -122,7 +122,7 @@ export default function ServerControls() {
           </Button>
           <Button
             onClick={() => {
-              viewerMutable.resetCameraPose!();
+              viewerMutable.resetCameraPose!(true);
             }}
             flex={1}
             leftSection={

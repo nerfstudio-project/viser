@@ -14,7 +14,7 @@
  * - position: [3, 3, 3]
  * - lookAt: [0, 0, 0]
  * - up: [0, 1, 0]
- * - fov: 50 degrees (≈0.873 radians, Three.js PerspectiveCamera default)
+ * - fov: 75 degrees (≈1.309 radians, Three.js PerspectiveCamera default)
  * - near: 0.01
  * - far: 1000
  *
@@ -115,10 +115,10 @@ export function useInitialCameraState(urlParams: InitialCameraConfig) {
       up: urlParams.up
         ? { value: urlParams.up, source: "url" as const }
         : { value: [0, 1, 0], source: "default" as const },
-      // Default FOV matches Three.js PerspectiveCamera default of 50 degrees.
+      // Default FOV matches Three.js PerspectiveCamera default of 75 degrees.
       fov: urlParams.fov
         ? { value: urlParams.fov, source: "url" as const }
-        : { value: (50.0 * Math.PI) / 180.0, source: "default" as const },
+        : { value: (75.0 * Math.PI) / 180.0, source: "default" as const },
       near: urlParams.near
         ? { value: urlParams.near, source: "url" as const }
         : { value: 0.01, source: "default" as const },
