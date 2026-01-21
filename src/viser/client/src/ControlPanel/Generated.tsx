@@ -62,26 +62,8 @@ export default function GeneratedGuiContainer({
 function GuiContainer({ containerUuid }: { containerUuid: string }) {
   const viewer = React.useContext(ViewerContext)!;
 
-  // Ensure that the container exists in state. We use useEffect to avoid calling
-  // setState during render, which violates React's rules and can cause issues
-  // with other components that subscribe to the same store.
-  React.useEffect(() => {
-    if (
-      viewer.useGui.getState().guiUuidSetFromContainerUuid[containerUuid] ===
-      undefined
-    ) {
-      viewer.useGui.setState({
-        ...viewer.useGui.getState(),
-        guiUuidSetFromContainerUuid: {
-          ...viewer.useGui.getState().guiUuidSetFromContainerUuid,
-          [containerUuid]: {},
-        },
-      });
-    }
-  }, [viewer.useGui, containerUuid]);
-
-  // Use a fallback empty object for the case where the container doesn't exist
-  // yet in state (before the effect runs).
+  // Use a fallback empty object for containers that don't exist yet. Containers
+  // are created on-demand by the addGui action when GUI elements are added.
   const guiIdSet = viewer.useGui(
     (state) => state.guiUuidSetFromContainerUuid[containerUuid] ?? {},
     shallowObjectKeysEqual,
