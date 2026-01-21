@@ -104,7 +104,11 @@ export function HDRJPGEnvironment({
   }, [files, gl]);
 
   // Dispose of previous texture when changed.
-  useEffect(() => texture?.dispose, [texture]);
+  useEffect(() => {
+    return () => {
+      texture?.dispose();
+    };
+  }, [texture]);
 
   // Animate fade-in (only runs while fading).
   useFrame(() => {
