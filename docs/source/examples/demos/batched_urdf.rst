@@ -27,6 +27,8 @@ positions. Row ``k`` updates robot ``robot_indices[k]``. Indices must be unique
 integers in ``[0, N)``. This avoids FK for unchanged robots; changed visual
 properties still transmit full-N arrays through the existing dense protocol.
 No frontend or message schema change is required.
+Joint and base-pose arrays must be real and finite; complex arrays are rejected
+before conversion so imaginary components cannot be silently discarded.
 
 .. literalinclude:: ../../../../examples/04_demos/06_batched_urdf.py
    :language: python

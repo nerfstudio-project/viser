@@ -186,7 +186,7 @@ class BatchedViserUrdf:
 
         Forward kinematics is evaluated only for the selected robots. Mesh
         properties contain all N instances, and changed properties send full
-        arrays through the existing dense protocol. Inputs must be finite;
+        arrays through the existing dense protocol. Inputs must be real and finite;
         validation failures leave all displayed poses unchanged.
         """
         with self._lock:
@@ -220,7 +220,8 @@ class BatchedViserUrdf:
         Arrays have shape ``(N, 4)`` and ``(N, 3)`` by default, or ``(K, 4)``
         and ``(K, 3)`` for the K rows specified by ``robot_indices``. Indices
         follow :meth:`update_cfg` conventions. Quaternions use ``wxyz``
-        order and are normalized; zero or non-finite quaternions are rejected.
+        order and are normalized; zero quaternions are rejected. Both arrays must
+        be real and finite, so complex arrays are rejected before conversion.
         Inputs are copied and later caller mutations do not affect the batch.
         """
         with self._lock:
@@ -301,6 +302,8 @@ class BatchedViserUrdf:
     def _validate_array(
         value: np.ndarray, shape: tuple[int, int], name: str
     ) -> np.ndarray:
+        if np.iscomplexobj(value):
+            raise ValueError(f"{name} must be a real array")
         array = np.array(value, dtype=np.float64, copy=True)
         if array.shape != shape or not np.all(np.isfinite(array)):
             raise ValueError(f"{name} must be a finite array with shape {shape}")

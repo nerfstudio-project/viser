@@ -248,6 +248,159 @@ def test_invalid_cfg_does_not_partially_update(server, invalid):
         np.testing.assert_array_equal(handle.batched_positions, positions)
 
 
+@pytest.mark.parametrize("client_scoped", [False, True])
+def test_external_atomic_and_parallel_update_finish_without_lock_inversion(
+    server, client_scoped, monkeypatch
+):
+    """Coordinate the alleged ABBA ordering instead of relying on timing sleeps."""
+    import threading
+
+    target = make_synthetic_client(server, 103) if client_scoped else server
+    batch = BatchedViserUrdf(target, URDF_PATH, 2, root_node_name="/atomic_order")
+    outer_entered = threading.Event()
+    helper_at_publish = threading.Event()
+    outer_about_to_update = threading.Event()
+    errors = []
+    original_publish = batch._publish_poses
+
+    def publish(wxyzs, positions):
+        if threading.current_thread().name == "helper-first":
+            # update_cfg holds the helper RLock here, before target.atomic().
+            helper_at_publish.set()
+            if not outer_about_to_update.wait(3):
+                raise TimeoutError("outer atomic worker did not reach update")
+        original_publish(wxyzs, positions)
+
+    monkeypatch.setattr(batch, "_publish_poses", publish)
+
+    def outer_first():
+        try:
+            with target.atomic():
+                outer_entered.set()
+                if not helper_at_publish.wait(3):
+                    raise TimeoutError("helper worker did not reach publishing")
+                outer_about_to_update.set()
+                batch.update_cfg(np.array([[0.4, 0.12]]), robot_indices=np.array([1]))
+        except BaseException as error:
+            errors.append(error)
+
+    def helper_first():
+        try:
+            if not outer_entered.wait(3):
+                raise TimeoutError("outer atomic worker did not enter context")
+            batch.update_cfg(np.array([[0.2, 0.08]]), robot_indices=np.array([0]))
+        except BaseException as error:
+            errors.append(error)
+
+    workers = [
+        threading.Thread(target=outer_first, name="outer-first", daemon=True),
+        threading.Thread(target=helper_first, name="helper-first", daemon=True),
+    ]
+    for worker in workers:
+        worker.start()
+    for worker in workers:
+        worker.join(timeout=4)
+    assert not any(worker.is_alive() for worker in workers), (
+        "atomic/helper lock inversion"
+    )
+    assert not errors
+    connection = target._websock_connection if client_scoped else server._websock_server
+    assert connection.get_message_buffer().atomic_counter == 0
+    reference = yourdfpy.URDF.load(URDF_PATH)
+    for row, configuration in enumerate([[0.2, 0.08], [0.4, 0.12]]):
+        reference.update_cfg(np.array(configuration))
+        for link_index, link in enumerate(batch._link_names):
+            np.testing.assert_allclose(
+                batch._link_transforms[row, link_index], reference.get_transform(link)
+            )
+
+
+@pytest.mark.parametrize("quaternion_scale", [1e-300, 1e300])
+def test_readonly_strided_inputs_and_extreme_quaternion_scales(
+    server, quaternion_scale
+):
+    """Accept real views/unsigned indices without aliasing or norm under/overflow."""
+    batch = BatchedViserUrdf(server, URDF_PATH, 4)
+    index_storage = np.array([3, 0, 1, 0], dtype=np.uint16)
+    indices = index_storage[::2]
+    cfg_storage = np.zeros((4, 4), dtype=np.float32)
+    cfg = cfg_storage[::2, ::2]
+    cfg[:] = [[0.3, 0.12], [-0.4, 0.2]]
+    position_storage = np.zeros((4, 6))
+    positions = position_storage[::2, ::2]
+    positions[:] = [[0.4, 0.5, 0.6], [-0.5, -0.4, 0.3]]
+    quaternion_storage = np.zeros((4, 8))
+    wxyzs = quaternion_storage[::2, ::2]
+    wxyzs[:] = np.array([[1, 1, 0, 0], [-1, 0, 0, 1]]) * quaternion_scale
+    for value in (indices, cfg, positions, wxyzs):
+        value.flags.writeable = False
+        assert not value.flags.c_contiguous
+    before = [
+        (handle.batched_wxyzs.copy(), handle.batched_positions.copy())
+        for handle in batch._meshes
+    ]
+    with np.errstate(all="raise"):
+        batch.update_cfg(cfg, robot_indices=indices)
+        batch.update_base_poses(
+            batched_wxyzs=wxyzs, batched_positions=positions, robot_indices=indices
+        )
+    expected_wxyzs = np.array([[1, 1, 0, 0], [-1, 0, 0, 1]]) / np.sqrt(2)
+    np.testing.assert_allclose(batch._base_wxyzs[[3, 1]], expected_wxyzs)
+    np.testing.assert_array_equal(batch._base_positions[[3, 1]], positions)
+    for handle, (old_wxyzs, old_positions) in zip(batch._meshes, before):
+        np.testing.assert_array_equal(handle.batched_wxyzs[[0, 2]], old_wxyzs[[0, 2]])
+        np.testing.assert_array_equal(
+            handle.batched_positions[[0, 2]], old_positions[[0, 2]]
+        )
+        assert handle.batched_wxyzs.dtype == np.float32
+        assert handle.batched_positions.dtype == np.float32
+    # Mutate backing storage to prove these read-only views were copied.
+    index_storage[:] = 0
+    cfg_storage[:] = 0
+    quaternion_storage[:] = 0
+    position_storage[:] = 0
+    np.testing.assert_allclose(batch._base_wxyzs[[3, 1]], expected_wxyzs)
+    np.testing.assert_array_equal(
+        batch._base_positions[[3, 1]], [[0.4, 0.5, 0.6], [-0.5, -0.4, 0.3]]
+    )
+
+
+def test_constructor_export_failure_cleans_owned_subtree(server, monkeypatch):
+    """A third mesh export failure must release partial handles and atomic state."""
+    root = server.scene.add_frame("/failed_batch")
+    sibling = server.scene.add_frame("/failed_batch/sibling")
+    original_export = trimesh.Trimesh.export
+    exports = 0
+
+    def fail_third_export(mesh, *args, **kwargs):
+        nonlocal exports
+        exports += 1
+        if exports == 3:
+            raise RuntimeError("injected third visual export failure")
+        return original_export(mesh, *args, **kwargs)
+
+    with monkeypatch.context() as context:
+        context.setattr(trimesh.Trimesh, "export", fail_third_export)
+        with pytest.raises(RuntimeError, match="third visual export failure"):
+            BatchedViserUrdf(server, URDF_PATH, 2, root_node_name=root.name)
+    assert exports == 3
+    assert server.scene.get_handle_by_name(root.name) is root
+    assert server.scene.get_handle_by_name(sibling.name) is sibling
+    assert server.scene.get_handle_by_name(root.name + "/visual") is None
+    for index in range(6):
+        assert (
+            server.scene.get_handle_by_name(f"{root.name}/visual/mesh_{index}") is None
+        )
+    assert server._websock_server.get_message_buffer().atomic_counter == 0
+    recreated = BatchedViserUrdf(server, URDF_PATH, 2, root_node_name=root.name)
+    recreated.update_cfg(np.array([[0.2, 0.1], [-0.3, 0.15]]))
+    recreated.remove()
+    assert server.scene.get_handle_by_name(root.name) is root
+    assert server.scene.get_handle_by_name(sibling.name) is sibling
+    assert server.scene.get_handle_by_name(root.name + "/visual") is None
+    assert server._websock_server.get_message_buffer().atomic_counter == 0
+
+
 @pytest.mark.parametrize(
     "field,invalid",
     [
@@ -724,3 +877,51 @@ def test_indexed_edits_use_existing_full_array_protocol(server, client_scoped):
             old = initial[message.name][0 if key == "batched_wxyzs" else 1]
             np.testing.assert_array_equal(value[[0, 2]], old[[0, 2]])
     assert fields == {"batched_wxyzs", "batched_positions"}
+
+
+@pytest.mark.parametrize(
+    "field", ["configurations", "batched_wxyzs", "batched_positions"]
+)
+@pytest.mark.parametrize("imaginary", [1.0, np.nan, np.inf])
+@pytest.mark.parametrize("indexed", [False, True])
+def test_complex_pose_inputs_rejected_without_state_changes(
+    server, field, imaginary, indexed
+):
+    """Dropping imaginary components can hide non-finite input and alter poses."""
+    batch = BatchedViserUrdf(server, URDF_PATH, 2)
+    count = 1 if indexed else 2
+    selector = {"robot_indices": np.array([1])} if indexed else {}
+    args = {
+        "configurations": np.tile([0.3, 0.12], (count, 1)),
+        "batched_wxyzs": np.tile([1.0, 0, 0, 0], (count, 1)),
+        "batched_positions": np.full((count, 3), 0.5),
+    }
+    value = args[field].astype(np.complex128)
+    value.imag.flat[0] = imaginary
+    args[field] = value
+    transforms = batch._link_transforms.copy()
+    bases = batch._base_wxyzs.copy(), batch._base_positions.copy()
+    configuration = batch._urdf.cfg.copy()
+    before = [
+        (handle.batched_wxyzs.copy(), handle.batched_positions.copy())
+        for handle in batch._meshes
+    ]
+    buffer = server._websock_server._broadcast_buffer
+    counter = buffer.message_counter
+    with pytest.raises(ValueError, match="real array"):
+        if field == "configurations":
+            batch.update_cfg(args[field], **selector)
+        else:
+            batch.update_base_poses(
+                batched_wxyzs=args["batched_wxyzs"],
+                batched_positions=args["batched_positions"],
+                **selector,
+            )
+    assert buffer.message_counter == counter
+    np.testing.assert_array_equal(batch._urdf.cfg, configuration)
+    np.testing.assert_array_equal(batch._link_transforms, transforms)
+    np.testing.assert_array_equal(batch._base_wxyzs, bases[0])
+    np.testing.assert_array_equal(batch._base_positions, bases[1])
+    for handle, (wxyzs, positions) in zip(batch._meshes, before):
+        np.testing.assert_array_equal(handle.batched_wxyzs, wxyzs)
+        np.testing.assert_array_equal(handle.batched_positions, positions)
