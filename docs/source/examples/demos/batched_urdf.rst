@@ -29,6 +29,7 @@ properties still transmit full-N arrays through the existing dense protocol.
 No frontend or message schema change is required.
 Joint and base-pose arrays must be real and finite; complex arrays are rejected
 before conversion so imaginary components cannot be silently discarded.
+This also applies to complex scalars inside object arrays.
 
 .. literalinclude:: ../../../../examples/04_demos/06_batched_urdf.py
    :language: python

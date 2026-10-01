@@ -884,8 +884,9 @@ def test_indexed_edits_use_existing_full_array_protocol(server, client_scoped):
 )
 @pytest.mark.parametrize("imaginary", [1.0, np.nan, np.inf])
 @pytest.mark.parametrize("indexed", [False, True])
+@pytest.mark.parametrize("storage", ["complex", "object"])
 def test_complex_pose_inputs_rejected_without_state_changes(
-    server, field, imaginary, indexed
+    server, field, imaginary, indexed, storage
 ):
     """Dropping imaginary components can hide non-finite input and alter poses."""
     batch = BatchedViserUrdf(server, URDF_PATH, 2)
@@ -898,6 +899,12 @@ def test_complex_pose_inputs_rejected_without_state_changes(
     }
     value = args[field].astype(np.complex128)
     value.imag.flat[0] = imaginary
+    if storage == "object":
+        complex_values = value
+        value = np.empty(complex_values.shape, dtype=object)
+        for index in np.ndindex(value.shape):
+            value[index] = complex_values[index]
+        assert isinstance(value.flat[0], np.complexfloating)
     args[field] = value
     transforms = batch._link_transforms.copy()
     bases = batch._base_wxyzs.copy(), batch._base_positions.copy()
@@ -925,3 +932,28 @@ def test_complex_pose_inputs_rejected_without_state_changes(
     for handle, (wxyzs, positions) in zip(batch._meshes, before):
         np.testing.assert_array_equal(handle.batched_wxyzs, wxyzs)
         np.testing.assert_array_equal(handle.batched_positions, positions)
+
+
+def test_real_numeric_object_arrays_remain_compatible(server):
+    """Reject complex object scalars without rejecting existing real inputs."""
+    batch = BatchedViserUrdf(server, URDF_PATH, 2)
+    cfg = np.array([[np.float32(0.3), np.float64(0.12)], [-0.4, 0.2]], dtype=object)
+    wxyzs = np.array([[1, 0, 0, 0], [1, 0, 0, 1]], dtype=object)
+    positions = np.array([[1, 2, 3], [-1.0, np.float32(0.5), 0]], dtype=object)
+    batch.update_cfg(cfg)
+    batch.update_base_poses(batched_wxyzs=wxyzs, batched_positions=positions)
+    np.testing.assert_array_equal(batch._base_positions, positions.astype(float))
+    np.testing.assert_allclose(
+        batch._base_wxyzs, [[1, 0, 0, 0], [1 / np.sqrt(2), 0, 0, 1 / np.sqrt(2)]]
+    )
+    reference = yourdfpy.URDF.load(URDF_PATH)
+    for row, configuration in enumerate(cfg.astype(float)):
+        reference.update_cfg(configuration)
+        for link_index, link in enumerate(batch._link_names):
+            np.testing.assert_allclose(
+                batch._link_transforms[row, link_index], reference.get_transform(link)
+            )
+    cfg[:] = 0
+    wxyzs[:] = 0
+    positions[:] = 0
+    np.testing.assert_array_equal(batch._base_positions, [[1, 2, 3], [-1, 0.5, 0]])

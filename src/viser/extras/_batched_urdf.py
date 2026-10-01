@@ -302,9 +302,13 @@ class BatchedViserUrdf:
     def _validate_array(
         value: np.ndarray, shape: tuple[int, int], name: str
     ) -> np.ndarray:
-        if np.iscomplexobj(value):
+        array = np.asarray(value)
+        if np.iscomplexobj(array) or (
+            array.dtype.kind == "O"
+            and any(np.iscomplexobj(item) for item in array.flat)
+        ):
             raise ValueError(f"{name} must be a real array")
-        array = np.array(value, dtype=np.float64, copy=True)
+        array = np.array(array, dtype=np.float64, copy=True)
         if array.shape != shape or not np.all(np.isfinite(array)):
             raise ValueError(f"{name} must be a finite array with shape {shape}")
         return array
