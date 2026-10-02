@@ -1,5 +1,5 @@
 Batched URDF visualization
-=========================
+==========================
 
 Render multiple copies of one robot using
 :class:`viser.extras.BatchedViserUrdf`. Visual geometry is exported once per
