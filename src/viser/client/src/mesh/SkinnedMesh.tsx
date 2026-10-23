@@ -135,7 +135,7 @@ export const SkinnedMesh = React.forwardRef<
     const addedBones = bonesRef.current;
     return () => {
       const parentNode = viewerMutable.nodeRefFromName[message.name];
-      if (parentNode !== undefined && addedBones !== undefined) {
+      if (parentNode != null && addedBones !== undefined) {
         addedBones.forEach((bone) => parentNode.remove(bone));
       }
       // Release the claim so a successor (this instance's own next effect
